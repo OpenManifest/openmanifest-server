@@ -1,0 +1,18 @@
+# == Schema Information
+#
+# Table name: slot_extras
+#
+#  id         :integer          not null, primary key
+#  slot_id    :integer          not null
+#  extra_id   :integer          not null
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
+
+one:
+  slot: one
+  extra: one
+
+two:
+  slot: two
+  extra: two

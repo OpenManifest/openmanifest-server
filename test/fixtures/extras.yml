@@ -1,0 +1,19 @@
+# == Schema Information
+#
+# Table name: extras
+#
+#  id          :integer          not null, primary key
+#  cost        :float
+#  name        :string
+#  dropzone_id :integer          not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
+
+one:
+  cost: 1.5
+  name: MyString
+
+two:
+  cost: 1.5
+  name: MyString

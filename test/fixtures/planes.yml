@@ -1,0 +1,30 @@
+# == Schema Information
+#
+# Table name: planes
+#
+#  id                     :integer          not null, primary key
+#  name                   :string
+#  min_slots              :integer
+#  max_slots              :integer
+#  hours                  :integer
+#  next_maintenance_hours :integer
+#  registration           :string
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#
+
+one:
+  name: MyString
+  min_slots: 1
+  max_slots: 1
+  hours: 1
+  next_maintenance_hours: 1
+  registration: MyString
+
+two:
+  name: MyString
+  min_slots: 1
+  max_slots: 1
+  hours: 1
+  next_maintenance_hours: 1
+  registration: MyString

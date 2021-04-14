@@ -1,0 +1,18 @@
+# == Schema Information
+#
+# Table name: ticket_type_extras
+#
+#  id             :integer          not null, primary key
+#  ticket_type_id :integer          not null
+#  extra_id       :integer          not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#
+
+one:
+  ticket_type: one
+  extra: one
+
+two:
+  ticket_type: two
+  extra: two
