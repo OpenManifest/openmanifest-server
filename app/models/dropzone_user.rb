@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: dropzone_users
@@ -14,4 +16,14 @@
 class DropzoneUser < ApplicationRecord
   belongs_to :user
   belongs_to :dropzone
+  belongs_to :user_role
+
+  def permissions
+    Permission.includes(user_role: :dropzone_users).where(
+      dropzone: dropzone_id,
+      user_roles: {
+        user_id: user.id
+      }
+    ).pluck(:name)
+  end
 end

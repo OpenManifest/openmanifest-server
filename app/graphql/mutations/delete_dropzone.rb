@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DeleteDropzone < Mutations::BaseMutation
     field :dropzone, Types::DropzoneType, null: true
@@ -8,7 +10,7 @@ module Mutations
       model = Dropzone.find(id)
 
       model.destroy
-      {dropzone: model}
+      { dropzone: model }
     end
   end
 end

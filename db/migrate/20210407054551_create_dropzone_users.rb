@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateDropzoneUsers < ActiveRecord::Migration[6.1]
   def change
     create_table :dropzone_users do |t|

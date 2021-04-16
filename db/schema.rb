@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_14_115102) do
+ActiveRecord::Schema.define(version: 2021_04_15_121411) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -78,6 +78,18 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
     t.index ["updated_by_id"], name: "index_checklist_items_on_updated_by_id"
   end
 
+  create_table "checklist_values", force: :cascade do |t|
+    t.integer "checklist_item_id", null: false
+    t.integer "created_by_id", null: false
+    t.integer "updated_by_id", null: false
+    t.text "value", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["checklist_item_id"], name: "index_checklist_values_on_checklist_item_id"
+    t.index ["created_by_id"], name: "index_checklist_values_on_created_by_id"
+    t.index ["updated_by_id"], name: "index_checklist_values_on_updated_by_id"
+  end
+
   create_table "checklists", force: :cascade do |t|
     t.string "name"
     t.integer "created_by_id", null: false
@@ -111,6 +123,8 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
     t.boolean "is_public"
     t.string "primary_color"
     t.string "secondary_color"
+    t.integer "checklist_id"
+    t.index ["checklist_id"], name: "index_dropzones_on_checklist_id"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
   end
 
@@ -164,7 +178,8 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
-    t.integer "slots"
+    t.integer "max_slots", default: 0
+    t.boolean "is_open"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -181,9 +196,11 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
   end
 
   create_table "permissions", force: :cascade do |t|
-    t.string "name"
+    t.integer "name"
+    t.integer "user_role_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["user_role_id"], name: "index_permissions_on_user_role_id"
   end
 
   create_table "planes", force: :cascade do |t|
@@ -205,7 +222,9 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
     t.integer "rig_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "dropzone_user_id", null: false
     t.index ["checklist_id"], name: "index_rig_inspections_on_checklist_id"
+    t.index ["dropzone_user_id"], name: "index_rig_inspections_on_dropzone_user_id"
     t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
     t.index ["rig_id"], name: "index_rig_inspections_on_rig_id"
   end
@@ -325,11 +344,15 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
   add_foreign_key "checklist_items", "checklists"
   add_foreign_key "checklist_items", "users", column: "created_by_id"
   add_foreign_key "checklist_items", "users", column: "updated_by_id"
+  add_foreign_key "checklist_values", "checklist_items"
+  add_foreign_key "checklist_values", "dropzone_user", column: "created_by_id"
+  add_foreign_key "checklist_values", "dropzone_user", column: "updated_by_id"
   add_foreign_key "checklists", "users", column: "created_by_id"
   add_foreign_key "checklists", "users", column: "updated_by_id"
   add_foreign_key "dropzone_users", "dropzones"
   add_foreign_key "dropzone_users", "user_roles"
   add_foreign_key "dropzone_users", "users"
+  add_foreign_key "dropzones", "checklists"
   add_foreign_key "extras", "dropzones"
   add_foreign_key "licensed_jump_types", "jump_types"
   add_foreign_key "licensed_jump_types", "licenses"
@@ -340,8 +363,10 @@ ActiveRecord::Schema.define(version: 2021_04_14_115102) do
   add_foreign_key "loads", "users", column: "pilot_id"
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
+  add_foreign_key "permissions", "user_roles"
   add_foreign_key "planes", "dropzones"
   add_foreign_key "rig_inspections", "checklists"
+  add_foreign_key "rig_inspections", "dropzone_users"
   add_foreign_key "rig_inspections", "rigs"
   add_foreign_key "rig_inspections", "users", column: "inspected_by_id"
   add_foreign_key "rigs", "dropzones"

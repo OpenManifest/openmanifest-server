@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 # Make sure jump types exist
-load(Rails.root.join('db', 'seeds', 'jump_types.rb'))
+load(Rails.root.join("db", "seeds", "jump_types.rb"))
 
 # Create APF
 apf = Federation.find_or_create_by(
@@ -9,7 +11,6 @@ apf = Federation.find_or_create_by(
 
 # Create licenses
 ["A", "B", "C", "D", "E", "F"].each do |license|
-  
 end
 
 

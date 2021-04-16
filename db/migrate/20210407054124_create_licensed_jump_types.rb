@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateLicensedJumpTypes < ActiveRecord::Migration[6.1]
   def change
     create_table :licensed_jump_types do |t|

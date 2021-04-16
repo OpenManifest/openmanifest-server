@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateTicketType < Mutations::BaseMutation
     field :ticket_type, Types::TicketTypeType, null: true
 
     argument :id, Int, required: true
     argument :attributes, Types::Input::TicketTypeInput, required: true
-    
+
     def resolve(attributes:, id:)
       model = TicketType.find(id)
 
@@ -23,7 +25,7 @@ module Mutations
           end
         end
 
-        {ticket_type: model}
+        { ticket_type: model }
       else
         model_errors!(model)
       end

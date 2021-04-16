@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 class UserRole < ApplicationRecord
-  has_many :role_permissions
-  has_many :permissions, through: :role_permissions
+  has_many :permissions
+  belongs_to :dropzone
+  has_many :dropzone_users
 end

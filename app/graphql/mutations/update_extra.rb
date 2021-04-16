@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateExtra < Mutations::BaseMutation
     field :extra, Types::ExtraType, null: true
@@ -24,9 +26,9 @@ module Mutations
           end
         end
 
-        {extra: model}
+        { extra: model }
       else
-        {errors: model.errors.full_messages}
+        { errors: model.errors.full_messages }
       end
     end
 

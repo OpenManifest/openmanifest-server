@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateRigInspections < ActiveRecord::Migration[6.1]
   def change
     create_table :rig_inspections do |t|

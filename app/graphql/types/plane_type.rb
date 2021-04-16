@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class PlaneType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false

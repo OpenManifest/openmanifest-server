@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DeleteTicketType < Mutations::BaseMutation
     field :ticket_type, Types::TicketTypeType, null: true
@@ -8,7 +10,7 @@ module Mutations
       model = TicketType.find(id)
 
       model.destroy
-      {ticket_type: model}
+      { ticket_type: model }
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateUser < Mutations::BaseMutation
     field :user, Types::UserType, null: true
@@ -11,9 +13,9 @@ module Mutations
 
 
       if model.save
-        {user: model}
+        { user: model }
       else
-        {errors: model.errors.full_messages}
+        { errors: model.errors.full_messages }
       end
     end
 

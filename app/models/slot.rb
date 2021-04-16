@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: slots
@@ -17,7 +19,7 @@ class Slot < ApplicationRecord
   belongs_to :load
   belongs_to :rig
   belongs_to :jump_type
-  
+
   has_many :slot_extras
   has_many :extras, through: :slot_extras
 

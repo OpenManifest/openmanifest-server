@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class DropzoneType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
@@ -7,12 +9,40 @@ module Types
     field :federation, FederationType, null: false
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
+    field :rig_inspection_checklist, Types::ChecklistType, null: true
+
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-      DropzoneUser.where(
+      ::DropzoneUser.find_by(
         dropzone: object,
         user: context[:current_resource]
       )
+    end
+
+    field :user_roles, [Types::UserRoleType], null: false
+
+    field :dropzone_users, Types::DropzoneUserType.connection_type, null: false do
+      argument :permissions, [Types::PermissionType], required: false
+      argument :search, String, required: false
+    end
+    def dropzone_users(permissions: nil, search: nil)
+      query = object.dropzone_users.includes(:user)
+      if permissions
+        query = query.where(
+          user_role_id: Permission.includes(
+              user_role: :dropzone_users
+            ).where(
+              user_roles: {
+                dropzone_users: {
+                  dropzone_id: object.id
+                  }
+                }
+              ).where(name: permissions.to_a).pluck("user_roles.id")
+            )
+      end
+
+      query = query.where("name like %?%", search) if !search.nil?
+      query || []
     end
 
     field :is_public, Boolean, null: false
@@ -25,14 +55,6 @@ module Types
     field :loads, Types::LoadType.connection_type, null: false do
       argument :earliest_timestamp, Int, required: false
     end
-    field :current_user_role, String, null: false
-    def current_user_role
-      if object.dropzone_users.where(user: context[:current_resource]).exists?
-        object.dropzone_users.find_by(user: context[:current_resource]).role
-      end
-      "visitor"
-    end
-
     def loads(earliest_timestamp: nil)
       loads = object.loads
       loads = loads.where("created_at > ?", earliest_timestamp) unless earliest_timestamp.nil?

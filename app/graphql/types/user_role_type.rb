@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class UserRoleType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
@@ -9,7 +11,7 @@ module Types
 
     field :permissions, [String], null: false
     def permissions
-      object.permissions.map(&:name)
+      object.permissions.pluck(:name)
     end
   end
 end

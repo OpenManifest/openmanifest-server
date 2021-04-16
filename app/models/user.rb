@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: users
@@ -27,9 +29,22 @@ class User < ApplicationRecord
   has_many :dropzones, through: :dropzone_users
   has_many :slots
   has_many :loads, through: :slots
-  has_many :roles, through: :dropzone_users
-  
+  has_many :user_roles, through: :dropzone_users
+
   belongs_to :license, optional: true
   has_many :licensed_jump_types, through: :license
   has_many :jump_types, through: :licensed_jump_types
+
+  def can?(permission_name, dropzone_id:)
+    Permission.includes(
+      user_role: :dropzone_users
+    ).where(
+      user_roles: {
+        dropzone_users: {
+          user_id: id,
+          dropzone_id: dropzone_id
+          }
+        }
+    ).exists?(name: permission_name)
+  end
 end

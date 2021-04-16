@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: loads
@@ -14,8 +16,9 @@
 #
 class Load < ApplicationRecord
   belongs_to :plane
-  belongs_to :load_master, class_name: "User"
-  belongs_to :gca, class_name: "User"
+  belongs_to :load_master, class_name: "User", optional: true, foreign_key: :load_master_id
+  belongs_to :gca, class_name: "User", optional: true, foreign_key: :gca_id
+  belongs_to :pilot, class_name: "User", optional: true, foreign_key: :pilot_id
 
   has_many :slots
 

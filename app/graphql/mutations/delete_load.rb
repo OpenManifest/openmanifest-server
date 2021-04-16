@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DeleteLoad < Mutations::BaseMutation
     field :load, Types::LoadType, null: true
@@ -8,7 +10,7 @@ module Mutations
       model = Load.find(id)
 
       model.destroy
-      {load: model}
+      { load: model }
     end
   end
 end

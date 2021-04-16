@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
@@ -44,7 +46,15 @@ module Types
       loads = loads.where("created_at > ?", earliest_timestamp) unless earliest_timestamp.nil?
       loads.order(created_at: :desc)
     end
-    
+
+    field :load, Types::LoadType,
+    null: false, description: "Get load by id" do
+      argument :id, Int, required: true
+    end
+    def load(id:)
+      Load.includes(:gca, :load_master, :pilot, :plane, slots: :user).find(id)
+    end
+
 
     field :planes, [Types::PlaneType],
     null: false, description: "Get planes from a dropzone" do
@@ -57,9 +67,16 @@ module Types
     field :ticket_types, [Types::TicketTypeType],
     null: false, description: "Get ticket types for a dropzone" do
       argument :dropzone_id, Int, required: true
+      argument :allow_manifesting_self, Boolean, required: false
     end
-    def ticket_types(dropzone_id:)
-      TicketType.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id).order(name: :asc)
+    def ticket_types(dropzone_id: nil, allow_manifesting_self: nil)
+      query = TicketType.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id)
+
+      if allow_manifesting_self
+        query = query.where(allow_manifesting_self: allow_manifesting_self)
+      end
+
+      query.order(name: :asc)
     end
 
     field :extras, [Types::ExtraType],
@@ -68,6 +85,18 @@ module Types
     end
     def extras(dropzone_id:)
       Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: dropzone_id).order(name: :asc)
+    end
+
+    field :jump_types, [Types::JumpTypeType],
+    null: false, description: "Get all jump types" do
+      argument :allowed_for_user_id, Int, required: false
+    end
+    def jump_types(allowed_for_user_id: nil)
+      if allowed_for_user_id
+        User.find(allowed_for_user_id).jump_types.order(name: :asc)
+      else
+        JumpType.order(name: :asc)
+      end
     end
   end
 end

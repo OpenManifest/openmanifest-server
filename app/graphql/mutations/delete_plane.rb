@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DeletePlane < Mutations::BaseMutation
     field :plane, Types::PlaneType, null: true
@@ -8,7 +10,7 @@ module Mutations
       model = Plane.find(id)
 
       model.destroy
-      {plane: model}
+      { plane: model }
     end
   end
 end

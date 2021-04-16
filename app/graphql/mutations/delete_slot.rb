@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class DeleteSlot < Mutations::BaseMutation
     field :slot, Types::SlotType, null: true
@@ -8,7 +10,7 @@ module Mutations
       model = Slot.find(id)
 
       model.destroy
-      {slot: model}
+      { slot: model }
     end
   end
 end

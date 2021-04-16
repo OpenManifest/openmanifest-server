@@ -1,9 +1,16 @@
+# frozen_string_literal: true
+
 module Types
   class ChecklistItemType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
     field :value_type, Int, null: true
     field :is_required, Boolean, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :created_at, Int, null: false
+    field :updated_at, Int, null: false
+
+    field :value, Types::ChecklistValue, null: true
+    def value
+      # FIXME: FIGURE OUT HOW TO FIND VALUES FOR CHECKLIST ITEMS
+    end
   end
 end

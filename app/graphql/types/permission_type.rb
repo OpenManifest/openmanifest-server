@@ -1,8 +1,7 @@
-module Types
-  class PermissionType < Types::BaseObject
-    field :id, GraphQL::Types::ID, null: false
-    field :name, String, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+# frozen_string_literal: true
+
+class Types::PermissionType < Types::BaseEnum
+  Permission.names.each do |name,|
+    value name.to_s, name.to_s
   end
 end
