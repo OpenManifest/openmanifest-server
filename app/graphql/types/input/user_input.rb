@@ -8,6 +8,8 @@ module Types
       argument :image, String, required: false
       argument :phone, String, required: false
       argument :email, String, required: false
+      argument :license_id, Int, required: false
+      argument :exit_weight, Float, required: false
     end
   end
 end

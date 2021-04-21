@@ -1,58 +1,44 @@
-# frozen_string_literal: true
-
 module Mutations
-  class CreatePlane < Mutations::BaseMutation
-    field :plane, Types::PlaneType, null: true
+  class SignUp < GraphqlDevise::Mutations::SignUp
+    argument :phone, String, required: true
+    argument :exit_weight, Float, required: true
+    argument :name, String, required: true
+    argument :license_id, Int, required: false
+
+    field :authenticatable, Types::UserType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :attributes, Types::Input::PlaneInput, required: true
-
-    def resolve(attributes:)
-      model = Plane.new(attributes.to_h)
-
-      model.save!
-
-      {
-        plane: model,
+    def resolve(email:, **attrs)
+      original_payload = super
+      original_payload.merge(
+        authenticatable: original_payload[:authenticatable],
         errors: nil,
         field_errors: nil,
-      }
+      )
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        plane: nil,
+        authenticatable: nil,
+        credentials: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        plane: nil,
+        authenticatable: nil,
+        credentials: nil,
         field_errors: nil,
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        plane: nil,
+        authenticatable: nil,
+        credentials: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
-    end
-
-    def authorized?(dropzone_id: nil)
-      if context[:current_resource].can?(
-        "createPlane",
-        dropzone_id: dropzone_id
-      )
-        return true
-      else
-        return false, {
-          errors: [
-            "You don't have permissions to create planes"
-            ]
-          }
-      end
     end
   end
 end

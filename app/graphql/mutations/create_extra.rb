@@ -30,34 +30,38 @@ module Mutations
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        dropzone: nil,
-        field_errors: invalid.record.errors.messages,
+        extra: nil,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        dropzone: nil,
+        extra: nil,
         field_errors: nil,
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        dropzone: nil,
+        extra: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
     end
 
-    def authorized?(attributes: nil)
-      return context[:current_resource].can?(
+    def authorized?(attributes: nil, id: nil)
+      if context[:current_resource].can?(
         "createExtra",
         dropzone_id: attributes[:dropzone_id]
-      ), {
-        errors: [
-          "You don't have permissions to create ticket addons"
-          ]
-        }
+      ) 
+        return true
+      else
+        return false, {
+          errors: [
+            "You don't have permissions to create ticket addons"
+            ]
+          }
+      end
     end
 
     def find_or_build_model(id)

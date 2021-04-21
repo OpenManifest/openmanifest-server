@@ -21,34 +21,37 @@ module Mutations
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        ticket_type: nil,
-        field_errors: invalid.record.errors.messages,
+        dropzone: nil,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        ticket_type: nil,
+        dropzone: nil,
         field_errors: nil,
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        ticket_type: nil,
+        dropzone: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
     end
 
-    def authorized?(id: nil)
-      return context[:current_resource].can?(
-        "createTicketType",
+    def authorized?(id: nil, attributes: nil)
+      if context[:current_resource].can?(
+        "updateDropzone",
         dropzone_id: id
-      ), {
+      )
+        return true
+      return false, {
         errors: [
-          "You don't have permissions to create ticket types"
+          "You don't have permissions to edit this dropzone"
           ]
         }
+      end
     end
   end
 end

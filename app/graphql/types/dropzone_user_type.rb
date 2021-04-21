@@ -24,6 +24,7 @@ module Types
     end
 
     field :expires_at, Int, null: true
+    field :credits, Int, null: true
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
   end

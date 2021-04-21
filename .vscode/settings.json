@@ -1,0 +1,4 @@
+{
+  "ruby.rubocop.useBundler": true,
+  "ruby.rubocop.configFilePath": "/Users/amnesthesia/Documents/Development/dz/.rubocop.yml"
+}

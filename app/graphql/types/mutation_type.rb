@@ -2,6 +2,8 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :updateRig, mutation: Mutations::UpdateRig
+		field :createRig, mutation: Mutations::CreateRig
     field :updateExtra, mutation: Mutations::UpdateExtra
     field :createExtra, mutation: Mutations::CreateExtra
     field :updateUser, mutation: Mutations::UpdateUser

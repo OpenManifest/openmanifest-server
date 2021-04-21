@@ -68,5 +68,6 @@ class Permission < ApplicationRecord
     :actAsLoadMaster,
     :actAsGCA,
     :actAsDZSO,
+    :actAsRigInspector,
   ]
 end

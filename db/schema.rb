@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_15_121411) do
+ActiveRecord::Schema.define(version: 2021_04_21_090550) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -73,6 +73,8 @@ ActiveRecord::Schema.define(version: 2021_04_15_121411) do
     t.boolean "is_required"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "name"
+    t.text "description"
     t.index ["checklist_id"], name: "index_checklist_items_on_checklist_id"
     t.index ["created_by_id"], name: "index_checklist_items_on_created_by_id"
     t.index ["updated_by_id"], name: "index_checklist_items_on_updated_by_id"
@@ -124,6 +126,7 @@ ActiveRecord::Schema.define(version: 2021_04_15_121411) do
     t.string "primary_color"
     t.string "secondary_color"
     t.integer "checklist_id"
+    t.boolean "is_credit_system_enabled", default: false
     t.index ["checklist_id"], name: "index_dropzones_on_checklist_id"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
   end
@@ -240,6 +243,7 @@ ActiveRecord::Schema.define(version: 2021_04_15_121411) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.integer "dropzone_id"
+    t.integer "canopy_size"
     t.index ["dropzone_id"], name: "index_rigs_on_dropzone_id"
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
@@ -270,6 +274,7 @@ ActiveRecord::Schema.define(version: 2021_04_15_121411) do
     t.integer "jump_type_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.float "exit_weight"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["rig_id"], name: "index_slots_on_rig_id"

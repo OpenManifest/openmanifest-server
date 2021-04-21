@@ -5,7 +5,9 @@ class DzSchema < GraphQL::Schema
     query:            Types::QueryType,
     mutation:         Types::MutationType,
     resource_loaders: [
-      GraphqlDevise::ResourceLoader.new("User"),
+      GraphqlDevise::ResourceLoader.new("User", operations: {
+        sign_up: Mutations::SignUp
+      }),
     ]
   )
   mutation(Types::MutationType)

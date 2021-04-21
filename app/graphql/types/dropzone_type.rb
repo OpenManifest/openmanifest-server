@@ -10,13 +10,24 @@ module Types
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
     field :rig_inspection_checklist, Types::ChecklistType, null: true
-
+    field :is_credit_system_enabled, Boolean, null: false
+    def is_credit_system_enabled
+      object.is_credit_system_enabled?
+    end
+    
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-      ::DropzoneUser.find_by(
+      dz_user = ::DropzoneUser.find_or_initialize_by(
         dropzone: object,
         user: context[:current_resource]
       )
+
+      if dz_user.new_record?
+        dz_user.user_role = object.user_roles.first
+        dz_user.save
+      end
+
+      dz_user
     end
 
     field :user_roles, [Types::UserRoleType], null: false

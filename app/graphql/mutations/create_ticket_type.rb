@@ -29,10 +29,10 @@ module Mutations
       # Failed save, return the errors to the client
       {
         ticket_type: nil,
-        field_errors: invalid.record.errors.messages,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         ticket_type: nil,
@@ -48,14 +48,18 @@ module Mutations
     end
 
     def authorized?(attributes: nil)
-      return context[:current_resource].can?(
+      if context[:current_resource].can?(
         "createTicketType",
         dropzone_id: attributes[:dropzone_id]
-      ), {
-        errors: [
-          "You don't have permissions to create ticket addons"
-          ]
-        }
+      )
+        return true
+      else
+        return false, {
+          errors: [
+            "You don't have permissions to create ticket addons"
+            ]
+          }
+      end
     end
   end
 end

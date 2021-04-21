@@ -9,6 +9,7 @@ module Types
       argument :is_public, Boolean, required: false
       argument :primary_color, String, required: false
       argument :secondary_color, String, required: false
+      argument :is_credit_system_enabled, Boolean, required: false
     end
   end
 end

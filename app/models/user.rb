@@ -32,8 +32,8 @@ class User < ApplicationRecord
   has_many :user_roles, through: :dropzone_users
 
   belongs_to :license, optional: true
-  has_many :licensed_jump_types, through: :license
-  has_many :jump_types, through: :licensed_jump_types
+  has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
+  has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
   def can?(permission_name, dropzone_id:)
     Permission.includes(

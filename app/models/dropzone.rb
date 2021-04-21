@@ -13,23 +13,23 @@
 #  updated_at    :datetime         not null
 #
 class Dropzone < ApplicationRecord
-  has_many :dropzone_users
+  has_many :dropzone_users, dependent: :destroy
   has_many :users, through: :dropzone_users
 
-  has_many :planes
+  has_many :planes, dependent: :destroy
   has_many :loads, through: :planes
   has_many :load_masters, through: :loads
-  has_many :ticket_types
-  has_many :user_roles
+  has_many :ticket_types, dependent: :destroy
+  has_many :user_roles, dependent: :destroy
+  has_many :rigs, dependent: :destroy
+  has_many :extras, dependent: :destroy
 
   belongs_to :federation
-  belongs_to :rig_inspection_checklist, class_name: "Checklist"
+  belongs_to :rig_inspection_checklist, class_name: "Checklist", optional: true
 
   has_one_base64_attached :banner
 
-  after_create :create_default_roles,
-               :create_default_rig_inspection_checklist
-
+  after_create :create_default_roles
 
 
   def create_default_roles

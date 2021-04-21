@@ -17,7 +17,7 @@ class Slot < ApplicationRecord
   belongs_to :user
   belongs_to :ticket_type
   belongs_to :load
-  belongs_to :rig
+  belongs_to :rig, optional: true
   belongs_to :jump_type
 
   has_many :slot_extras
@@ -29,5 +29,12 @@ class Slot < ApplicationRecord
 
   def ready?
     user.present? && ticket_type.present? && load.present? && jump_type.present?
+  end
+
+  def wing_loading
+    if rig && rig.canopy_size && exit_weight
+      weight_in_lbs = exit_weight * 2.20462
+      weight_in_lbs /= canopy_size
+    end
   end
 end

@@ -98,5 +98,39 @@ module Types
         JumpType.order(name: :asc)
       end
     end
+
+    field :licenses, [Types::LicenseType],
+    null: false, description: "Get all licenses for a federation" do
+      argument :federation_id, Int, required: false
+    end
+    def licenses(federation_id: nil)
+      License.where(federation_id: federation_id).order(name: :asc)
+    end
+
+    field :rigs, [Types::RigType],
+    null: true, description: "Get rigs for user or dropzone" do
+      argument :user_id, Int, required: false
+      argument :dropzone_id, Int, required: false
+    end
+    def rigs(dropzone_id: nil, user_id: nil)
+      query = Rig
+      if dropzone_id && context[:current_resource].can?("readRig", dropzone_id: dropzone_id)
+        query = query.where(dropzone_id: dropzone_id)
+      end
+
+      if user_id
+        if context[:current_resource].id == user_id
+          query = query.or(
+            Rig.where(user_id: user_id)
+          )
+        elsif dropzone_id && context[:current_resource].can?("readRig", dropzone_id: dropzone_id)
+          query = query.or(
+            Rig.where(user_id: user_id)
+          )
+        end
+      end
+
+      query
+    end
   end
 end

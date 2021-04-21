@@ -17,6 +17,8 @@
 #
 class Rig < ApplicationRecord
   belongs_to :user
+  belongs_to :dropzone, optional: true
   has_many :packs
+
   has_many :users, as: :packers, through: :packs
 end

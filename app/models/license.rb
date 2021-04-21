@@ -13,4 +13,5 @@
 class License < ApplicationRecord
   belongs_to :federation
   has_many :users
+  has_many :licensed_jump_types
 end

@@ -15,7 +15,7 @@
 #  updated_at             :datetime         not null
 #
 class Plane < ApplicationRecord
-  has_many :loads
+  has_many :loads, dependent: :destroy
   has_many :pilots, through: :loads
   belongs_to :dropzone
 end

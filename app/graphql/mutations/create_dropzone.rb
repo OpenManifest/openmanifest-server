@@ -25,7 +25,47 @@ module Mutations
 
 
 
+
       ## Set up default rig inspection checklist
+      rig_inspection_checklist = Checklist.create(
+        name: "Rig Inspection",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+
+      rig_inspection_checklist.checklist_items.create(
+        name: "Reserve repack due",
+        value_type: "date",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+      rig_inspection_checklist.checklist_items.create(
+        name: "Three-rings routed correctly?",
+        value_type: "boolean",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+      rig_inspection_checklist.checklist_items.create(
+        name: "Canopy size",
+        value_type: "integer",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+  
+      rig_inspection_checklist.checklist_items.create(
+        name: "Reserve canopy size",
+        value_type: "integer",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+  
+      rig_inspection_checklist.checklist_items.create(
+        name: "Home dropzone",
+        value_type: "integer",
+        created_by: context[:current_resource],
+        updated_by: context[:current_resource]
+      )
+
       {
         dropzone: model,
         errors: nil,
@@ -35,7 +75,7 @@ module Mutations
       # Failed save, return the errors to the client
       {
         dropzone: nil,
-        field_errors: invalid.record.errors.messages,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
@@ -53,7 +93,7 @@ module Mutations
       }
     end
 
-    def authorized?
+    def authorized?(attributes: nil)
       true
     end
   end
