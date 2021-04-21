@@ -8,7 +8,7 @@ module Types
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
 
-    field :value, Types::ChecklistValue, null: true
+    field :value, Types::ChecklistValueType, null: true
     def value
       # FIXME: FIGURE OUT HOW TO FIND VALUES FOR CHECKLIST ITEMS
     end
