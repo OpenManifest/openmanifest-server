@@ -20,6 +20,10 @@ class DropzoneUser < ApplicationRecord
   
   has_many :notifications, foreign_key: :received_by_id
 
+  search_scope :search do
+    attributes name: "user.name"
+  end
+
   def permissions
     Permission.includes(user_role: :dropzone_users).where(
       dropzone: dropzone_id,

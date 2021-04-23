@@ -42,7 +42,7 @@ module Mutations
     def authorized?(attributes: nil)
       if context[:current_resource].can?(
         "createLoad",
-        dropzone_id: attributes[:dropzone_id]
+        dropzone_id: Plane.find(attributes[:plane_id]).dropzone.id
       )
         return true
       else

@@ -44,6 +44,7 @@ gem "rubocop-rails_config", group: :development
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
 gem "annotate"
+gem "search_cop"
 
 
 group :development, :test do

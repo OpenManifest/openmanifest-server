@@ -43,7 +43,7 @@ module Types
     def loads(dropzone_id:, earliest_timestamp:)
       dz = Dropzone.includes(loads: :slots).find(id)
       loads = dz.loads
-      loads = loads.where("created_at > ?", earliest_timestamp) unless earliest_timestamp.nil?
+      loads = loads.where("loads.created_at > ?", Time.at(earliest_timestamp)) unless earliest_timestamp.nil?
       loads.order(created_at: :desc)
     end
 

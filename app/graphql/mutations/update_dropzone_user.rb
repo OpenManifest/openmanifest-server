@@ -1,61 +1,57 @@
 module Mutations
-  class UpdateRig < Mutations::BaseMutation
-    field :rig, Types::RigType, null: true
+  class UpdateDropzoneUser < Mutations::BaseMutation
+    field :dropzone_user, Types::DropzoneUserType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :attributes, Types::Input::RigInput, required: true
+    argument :attributes, Types::Input::DropzoneUserInput, required: true
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = find_or_build_model(id)
+      model = DropzoneUser.find(id)
 
       attrs = attributes.to_h
-      if attrs[:repack_expires_at]
-        attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
+      if attrs[:expires_at]
+        attrs[:expires_at] = Time.at(attributes[:expires_at])
       end
-      model.assign_attributes(attributes.to_h)
+      model.assign_attributes(attrs)
 
       {
-        rig: model,
+        dropzone_user: model,
         errors: nil,
         field_errors: nil,
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        rig: nil,
+        dropzone_user: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        rig: nil,
+        dropzone_user: nil,
         field_errors: nil,
         errors: error.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        rig: nil,
+        dropzone_user: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
     end
 
     def authorized?(id: nil, attributes: nil)
-      rig = Rig.find(id)
+      dropzone_user = DropzoneUser.find(id)
 
-      if rig.user_id && rig.user_id != context[:current_resource].id
+      allowed_to_update_others = context[:current_resource].can?("updateUser", dropzone_id: dropzone_user.dropzone_id)
+
+      if !allowed_to_update_others
         return false, {
           errors: [
-            "You can't update other users' rigs"
-          ]
-        }
-      elsif rig.dropzone_id && !context[:current_resource].can?("updateDropzone", dropzone_id: rig.dropzone_id)
-        return false, {
-          errors: [
-            "You can't update rigs for this dropzone"
+            "You don't have permission to update this"
           ]
         }
       else

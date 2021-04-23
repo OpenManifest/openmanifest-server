@@ -2,6 +2,7 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :updateDropzoneUser, mutation: Mutations::UpdateDropzoneUser
 		field :updateRig, mutation: Mutations::UpdateRig
 		field :createRig, mutation: Mutations::CreateRig
     field :updateExtra, mutation: Mutations::UpdateExtra

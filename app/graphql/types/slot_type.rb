@@ -8,6 +8,10 @@ module Types
     field :exit_weight, Float, null: false
 
     field :user, Types::UserType, null: true
+    def user
+      object.user || object.passenger
+    end
+
     field :ticket_type, Types::TicketTypeType, null: true
     field :load, Types::LoadType, null: false
     field :rig, Types::RigType, null: true
