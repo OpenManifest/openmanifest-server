@@ -13,6 +13,9 @@
 #  pilot_id       :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  name           :string
+#  max_slots      :integer          default(0)
+#  is_open        :boolean
 #
 class Load < ApplicationRecord
   belongs_to :plane

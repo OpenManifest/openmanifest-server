@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_21_090550) do
+ActiveRecord::Schema.define(version: 2021_04_23_074617) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -189,6 +189,20 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
     t.index ["plane_id"], name: "index_loads_on_plane_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.string "message"
+    t.integer "received_by_id", null: false
+    t.integer "sent_by_id"
+    t.string "resource_type"
+    t.integer "resource_id"
+    t.integer "notification_type"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["received_by_id"], name: "index_notifications_on_received_by_id"
+    t.index ["resource_type", "resource_id"], name: "index_notifications_on_resource"
+    t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
+  end
+
   create_table "packs", force: :cascade do |t|
     t.integer "rig_id", null: false
     t.integer "user_id", null: false
@@ -196,6 +210,15 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["rig_id"], name: "index_packs_on_rig_id"
     t.index ["user_id"], name: "index_packs_on_user_id"
+  end
+
+  create_table "passengers", force: :cascade do |t|
+    t.string "name"
+    t.float "exit_weight"
+    t.integer "dropzone_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_id"], name: "index_passengers_on_dropzone_id"
   end
 
   create_table "permissions", force: :cascade do |t|
@@ -275,8 +298,10 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.float "exit_weight"
+    t.integer "passenger_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
+    t.index ["passenger_id"], name: "index_slots_on_passenger_id"
     t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["user_id"], name: "index_slots_on_user_id"
@@ -300,6 +325,7 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
     t.boolean "allow_manifesting_self"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.boolean "is_tandem", default: false
     t.index ["dropzone_id"], name: "index_ticket_types_on_dropzone_id"
   end
 
@@ -366,8 +392,11 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
   add_foreign_key "loads", "users", column: "gca_id"
   add_foreign_key "loads", "users", column: "load_master_id"
   add_foreign_key "loads", "users", column: "pilot_id"
+  add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
+  add_foreign_key "notifications", "dropzone_users", column: "sent_by_id"
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
+  add_foreign_key "passengers", "dropzones"
   add_foreign_key "permissions", "user_roles"
   add_foreign_key "planes", "dropzones"
   add_foreign_key "rig_inspections", "checklists"
@@ -382,6 +411,7 @@ ActiveRecord::Schema.define(version: 2021_04_21_090550) do
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "jump_types"
   add_foreign_key "slots", "loads"
+  add_foreign_key "slots", "passengers"
   add_foreign_key "slots", "rigs"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "users"

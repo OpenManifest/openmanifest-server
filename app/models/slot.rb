@@ -12,9 +12,11 @@
 #  jump_type_id   :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
+#  exit_weight    :float
 #
 class Slot < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
+  belongs_to :passenger, optional: true
   belongs_to :ticket_type
   belongs_to :load
   belongs_to :rig, optional: true
@@ -28,7 +30,7 @@ class Slot < ApplicationRecord
   end
 
   def ready?
-    user.present? && ticket_type.present? && load.present? && jump_type.present?
+    (passenger.present? || user.present?) && ticket_type.present? && load.present? && jump_type.present?
   end
 
   def wing_loading

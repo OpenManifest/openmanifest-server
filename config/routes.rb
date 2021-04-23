@@ -25,9 +25,7 @@ Rails.application.routes.draw do
 
     root to: "dropzones#index"
   end
-  if Rails.env.development?
-    mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
-  end
+  mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
 
   post "/graphql", to: "graphql#execute"
   get "/graphql", to: "graphql#index"

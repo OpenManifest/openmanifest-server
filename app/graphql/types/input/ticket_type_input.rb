@@ -9,6 +9,7 @@ module Types
       argument :altitude, Int, required: false
       argument :allow_manifesting_self, Boolean, required: false
       argument :dropzone_id, Int, required: false
+      argument :is_tandem, Boolean, required: false
 
       argument :extra_ids, [Int], required: false
     end

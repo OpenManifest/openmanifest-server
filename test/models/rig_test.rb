@@ -14,6 +14,8 @@
 #  user_id           :integer
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  dropzone_id       :integer
+#  canopy_size       :integer
 #
 require "test_helper"
 
