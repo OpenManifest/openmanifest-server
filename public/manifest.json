@@ -2,8 +2,8 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
-  "name": "manyfest",
-  "short_name": "manyfest",
+  "name": "deezed",
+  "short_name": "deezed",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait",
   "icons": [
