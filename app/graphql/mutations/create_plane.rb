@@ -40,10 +40,10 @@ module Mutations
       }
     end
 
-    def authorized?(dropzone_id: nil)
+    def authorized?(attributes: nil)
       if context[:current_resource].can?(
         "createPlane",
-        dropzone_id: dropzone_id
+        dropzone_id: attributes[:dropzone_id]
       )
         return true
       else
