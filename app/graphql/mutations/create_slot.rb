@@ -15,6 +15,33 @@ module Mutations
       )
       model.assign_attributes(attributes.to_h)
 
+      dropzone = model.load.plane.dropzone
+      # Show errors if the dropzone is using credits
+      # and the user doesn't have the funds for this slot
+      if dropzone.is_credit_system_enabled?
+        # Find extras
+        extra_cost = Extra.where(
+          dropzone: dropzone,
+          id: attributes[:extra_ids],
+        ).map(&:cost).reduce(&:sum)
+        extra_cost ||= 0
+
+        cost = model.ticket_type.cost + extra_cost
+
+        credits = dropzone.dropzone_users.find_by(user_id: attributes[:user_id]).credits || 0
+
+        if cost > credits
+          return {
+            slot: nil,
+            errors: ["Not enough credits to manifest for this jump"],
+            field_errors: [
+              { field: "credits", message: "Not enough credits to manifest for this jump"}
+            ],
+          }
+        end
+      end
+
+
       model.save!
 
       {

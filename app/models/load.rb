@@ -24,6 +24,16 @@ class Load < ApplicationRecord
   belongs_to :pilot, class_name: "User", optional: true, foreign_key: :pilot_id
 
   has_many :slots
+  after_save :charge_credits!
+  def charge_credits!
+    # If has_landed? changed to true:
+    if saved_change_to_has_landed? && has_landed?
+      if plane.dropzone.is_credit_system_enabled?
+        # Charge users credits
+        slots.each(&:charge_credits!)
+      end
+    end
+  end
 
   def ready?
     gca.present? && load_master.present? && plane.present? && slots.select(&:ready?).count >= plane.min_slots
