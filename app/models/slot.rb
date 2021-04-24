@@ -24,6 +24,28 @@ class Slot < ApplicationRecord
 
   has_many :slot_extras
   has_many :extras, through: :slot_extras
+  has_many :transactions
+
+  def charge_credits!
+    # Tandem passengers are not real accounts and will
+    # not be charged credits:
+    return unless user.present?
+
+    # Find Dropzone user:
+    if dz_user = DropzoneUser.find_by(
+        dropzone_id: load.plane.dropzone_id,
+        user_id: user.id
+      )
+      transactions.create!(
+        status: :paid,
+        # Make negative to charge credits
+        amount: cost * -1,
+        dropzone_user: dz_user
+      )
+      update(is_paid: true)
+    end
+  end
+  
 
   def cost
     extras.map(&:cost).reduce(&:+) + ticket_type.cost

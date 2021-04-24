@@ -7,6 +7,8 @@ module Types
     field :user, Types::UserType, null: false
     field :notifications, Types::NotificationType, null: true
     field :role, Types::UserRoleType, null: true
+    field :transactions, Types::TransactionType.connection_type, null: true
+
     def role
       object.user_role
     end
