@@ -20,6 +20,18 @@ module Types
     field :slots, [Types::SlotType], null: true
     field :plane, Types::PlaneType, null: false
     field :load_master, Types::DropzoneUserType, null: true
+    field :load_number, Int, null: false
+    def load_number
+      load_index = object.plane.dropzone.loads.where(
+        "created_at > ?",
+        DateTime.now.beginning_of_day
+      ).order(created_at: :asc).find_index do |load|
+        load.id == object.id
+      end
+
+      (load_index || 0) + 1
+    end
+
     def load_master
       if object.load_master
         object.load_master.dropzone_users.find_by(dropzone_id: object.plane.dropzone_id)

@@ -15,6 +15,7 @@ module Mutations
         attrs[:expires_at] = Time.at(attributes[:expires_at])
       end
       model.assign_attributes(attrs)
+      model.save!
 
       {
         dropzone_user: model,
