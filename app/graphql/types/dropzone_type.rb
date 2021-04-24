@@ -136,6 +136,8 @@ module Types
       if object.banner.attached?
         "data:%s;base64,%s" % [object.banner.blob.content_type, Base64.strict_encode64(object.banner.blob.download)]
       end
+    rescue ActiveStorage::FileNotFoundError
+      nil
     end
   end
 end
