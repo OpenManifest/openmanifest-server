@@ -99,13 +99,29 @@ module Types
     end
     def loads(earliest_timestamp: nil)
       loads = object.loads
-      loads = loads.where("loads.created_at > ?", Time.at(earliest_timestamp)) unless earliest_timestamp.nil?
+      loads = loads.where(
+        "loads.created_at > ?",
+        Time.at(earliest_timestamp)
+      ) unless earliest_timestamp.nil?
       loads.order(created_at: :desc)
     end
 
     field :roles, [Types::UserRoleType], null: false
     def roles
       object.user_roles.order(id: :asc)
+    end
+
+    field :master_log, Types::MasterLogType, null: false,
+    description: "Get the master log entry for a given date" do
+      argument :date, Int, null: false,
+      description: "This should be the timestamp of the beginning of the day"
+    end
+    def master_log(date: nil)
+      log = object.master_log.find_or_initialize_by(created_at: Time.at(date))
+
+      # Creating log record if none exists
+      log.save! if log.new_record?
+      log
     end
 
     field :banner_id, Int, null: true

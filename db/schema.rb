@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_23_074617) do
+ActiveRecord::Schema.define(version: 2021_04_24_054140) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -189,6 +189,16 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
     t.index ["plane_id"], name: "index_loads_on_plane_id"
   end
 
+  create_table "master_logs", force: :cascade do |t|
+    t.integer "dzso_id"
+    t.integer "dropzone_id", null: false
+    t.text "notes"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_id"], name: "index_master_logs_on_dropzone_id"
+    t.index ["dzso_id"], name: "index_master_logs_on_dzso_id"
+  end
+
   create_table "notifications", force: :cascade do |t|
     t.string "message"
     t.integer "received_by_id", null: false
@@ -271,6 +281,15 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
 
+  create_table "role_permissions", force: :cascade do |t|
+    t.integer "role_id", null: false
+    t.integer "permission_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
+    t.index ["role_id"], name: "index_role_permissions_on_role_id"
+  end
+
   create_table "slot_extras", force: :cascade do |t|
     t.integer "slot_id", null: false
     t.integer "extra_id", null: false
@@ -290,6 +309,7 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
     t.datetime "updated_at", precision: 6, null: false
     t.float "exit_weight"
     t.integer "passenger_id"
+    t.boolean "is_paid"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["passenger_id"], name: "index_slots_on_passenger_id"
@@ -318,6 +338,18 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_tandem", default: false
     t.index ["dropzone_id"], name: "index_ticket_types_on_dropzone_id"
+  end
+
+  create_table "transactions", force: :cascade do |t|
+    t.integer "dropzone_user_id", null: false
+    t.integer "slot_id"
+    t.integer "status"
+    t.float "amount"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_user_id"], name: "index_transactions_on_dropzone_user_id"
+    t.index ["slot_id"], name: "index_transactions_on_slot_id"
+    t.index ["status"], name: "index_transactions_on_status"
   end
 
   create_table "user_roles", force: :cascade do |t|
@@ -367,8 +399,8 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
   add_foreign_key "checklist_items", "users", column: "created_by_id"
   add_foreign_key "checklist_items", "users", column: "updated_by_id"
   add_foreign_key "checklist_values", "checklist_items"
-  add_foreign_key "checklist_values", "dropzone_users", column: "created_by_id"
-  add_foreign_key "checklist_values", "dropzone_users", column: "updated_by_id"
+  add_foreign_key "checklist_values", "dropzone_user", column: "created_by_id"
+  add_foreign_key "checklist_values", "dropzone_user", column: "updated_by_id"
   add_foreign_key "checklists", "users", column: "created_by_id"
   add_foreign_key "checklists", "users", column: "updated_by_id"
   add_foreign_key "dropzone_users", "dropzones"
@@ -383,6 +415,8 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
   add_foreign_key "loads", "users", column: "gca_id"
   add_foreign_key "loads", "users", column: "load_master_id"
   add_foreign_key "loads", "users", column: "pilot_id"
+  add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
+  add_foreign_key "master_logs", "dropzones"
   add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
   add_foreign_key "notifications", "dropzone_users", column: "sent_by_id"
   add_foreign_key "packs", "rigs"
@@ -396,6 +430,8 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
   add_foreign_key "rig_inspections", "users", column: "inspected_by_id"
   add_foreign_key "rigs", "dropzones"
   add_foreign_key "rigs", "users"
+  add_foreign_key "role_permissions", "permissions"
+  add_foreign_key "role_permissions", "roles"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "jump_types"
@@ -407,6 +443,8 @@ ActiveRecord::Schema.define(version: 2021_04_23_074617) do
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "dropzones"
+  add_foreign_key "transactions", "dropzone_users"
+  add_foreign_key "transactions", "slots"
   add_foreign_key "user_roles", "dropzones"
   add_foreign_key "users", "licenses"
 end
