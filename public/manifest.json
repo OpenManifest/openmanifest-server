@@ -2,8 +2,8 @@
   "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
-  "name": "deezed",
-  "short_name": "deezed",
+  "name": "Deezed",
+  "short_name": "Deezed",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait",
   "icons": [

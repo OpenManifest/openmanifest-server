@@ -12,7 +12,11 @@ module Mutations
     def resolve(attributes:, id:)
       model = Load.find(id)
 
-      model.update!(attributes.to_h)
+      attrs = attributes.to_h
+      if attrs[:dispatch_at]
+        attrs[:dispatch_at] = Time.at(attrs[:dispatch_at])
+      end
+      model.update!(attrs)
       
       {
         load: model,

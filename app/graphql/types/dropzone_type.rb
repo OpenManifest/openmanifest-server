@@ -113,7 +113,7 @@ module Types
 
     field :master_log, Types::MasterLogType, null: false,
     description: "Get the master log entry for a given date" do
-      argument :date, Int, null: false,
+      argument :date, Int, required: true,
       description: "This should be the timestamp of the beginning of the day"
     end
     def master_log(date: nil)

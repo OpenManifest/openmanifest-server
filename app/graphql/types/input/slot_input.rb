@@ -7,7 +7,6 @@ module Types
       argument :ticket_type_id, Int, required: false
       argument :load_id, Int, required: false
       argument :rig_id, Int, required: false
-      argument :jump_type_id, Int, required: false
       argument :exit_weight, Float, required: false
       argument :extra_ids, [Int], required: false
     end
