@@ -28,6 +28,7 @@ class Dropzone < ApplicationRecord
   has_many :user_roles, dependent: :destroy
   has_many :rigs, dependent: :destroy
   has_many :extras, dependent: :destroy
+  has_many :master_logs, dependent: :destroy
 
   belongs_to :federation
   belongs_to :rig_inspection_checklist, class_name: "Checklist", optional: true

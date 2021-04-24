@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_24_052014) do
+
+ActiveRecord::Schema.define(version: 2021_04_24_054140) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -187,6 +188,16 @@ ActiveRecord::Schema.define(version: 2021_04_24_052014) do
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
     t.index ["plane_id"], name: "index_loads_on_plane_id"
+  end
+
+  create_table "master_logs", force: :cascade do |t|
+    t.integer "dzso_id"
+    t.integer "dropzone_id", null: false
+    t.text "notes"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_id"], name: "index_master_logs_on_dropzone_id"
+    t.index ["dzso_id"], name: "index_master_logs_on_dzso_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -405,6 +416,8 @@ ActiveRecord::Schema.define(version: 2021_04_24_052014) do
   add_foreign_key "loads", "users", column: "gca_id"
   add_foreign_key "loads", "users", column: "load_master_id"
   add_foreign_key "loads", "users", column: "pilot_id"
+  add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
+  add_foreign_key "master_logs", "dropzones"
   add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
   add_foreign_key "notifications", "dropzone_users", column: "sent_by_id"
   add_foreign_key "packs", "rigs"
