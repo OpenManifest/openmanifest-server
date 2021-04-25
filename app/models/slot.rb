@@ -48,7 +48,9 @@ class Slot < ApplicationRecord
   
 
   def cost
-    extras.map(&:cost).reduce(&:+) + ticket_type.cost
+    extra_cost = extras.map(&:cost).reduce(&:+)
+    extra_cost ||= 0
+    extra_cost + ticket_type.cost
   end
 
   def ready?

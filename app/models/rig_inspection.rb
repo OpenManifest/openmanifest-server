@@ -14,6 +14,8 @@
 #
 class RigInspection < ApplicationRecord
   belongs_to :checklist
-  belongs_to :inspected_by
+  belongs_to :inspected_by, class_name: "User"
   belongs_to :rig
+  belongs_to :dropzone_user
+  has_many :checklist_values
 end

@@ -27,7 +27,7 @@ module Mutations
 
 
       ## Set up default rig inspection checklist
-      rig_inspection_checklist = Checklist.create(
+      rig_inspection_checklist = Checklist.create!(
         name: "Rig Inspection",
         created_by: context[:current_resource],
         updated_by: context[:current_resource]
@@ -66,6 +66,9 @@ module Mutations
         updated_by: context[:current_resource]
       )
 
+      model.rig_inspection_checklist = rig_inspection_checklist
+
+      model.save!
       {
         dropzone: model,
         errors: nil,

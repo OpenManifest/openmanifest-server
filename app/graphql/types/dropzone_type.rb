@@ -37,7 +37,7 @@ module Types
     end
     def allowed_jump_types(user_id: nil)
       # Get allowed jump types for each user:
-      jump_type_ids = object.dropzone_user.where(user_id: user_id).map do |user|
+      jump_type_ids = object.dropzone_users.where(user_id: user_id).map do |user|
         user.licensed_jump_types.pluck(:jump_type_id)
       end
 
