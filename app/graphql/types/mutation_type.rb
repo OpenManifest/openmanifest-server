@@ -2,6 +2,11 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :updateRigInspection, mutation: Mutations::UpdateRigInspection
+		field :createRigInspection, mutation: Mutations::CreateRigInspection
+		field :updateChecklistItem, mutation: Mutations::UpdateChecklistItem
+		field :createChecklistItem, mutation: Mutations::CreateChecklistItem
+		field :updateChecklistValue, mutation: Mutations::UpdateChecklistValue
 		field :updateDropzoneUser, mutation: Mutations::UpdateDropzoneUser
 		field :updateRig, mutation: Mutations::UpdateRig
 		field :createRig, mutation: Mutations::CreateRig

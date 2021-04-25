@@ -31,7 +31,7 @@ class Dropzone < ApplicationRecord
   has_many :master_logs, dependent: :destroy
 
   belongs_to :federation
-  belongs_to :rig_inspection_checklist, class_name: "Checklist", optional: true
+  belongs_to :rig_inspection_checklist, class_name: "Checklist", optional: true, foreign_key: "checklist_id"
 
   has_one_base64_attached :banner
 

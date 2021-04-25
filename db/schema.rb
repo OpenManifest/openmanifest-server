@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_04_24_054140) do
+ActiveRecord::Schema.define(version: 2021_04_25_040538) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -87,8 +87,10 @@ ActiveRecord::Schema.define(version: 2021_04_24_054140) do
     t.text "value", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "rig_inspection_id", null: false
     t.index ["checklist_item_id"], name: "index_checklist_values_on_checklist_item_id"
     t.index ["created_by_id"], name: "index_checklist_values_on_created_by_id"
+    t.index ["rig_inspection_id"], name: "index_checklist_values_on_rig_inspection_id"
     t.index ["updated_by_id"], name: "index_checklist_values_on_updated_by_id"
   end
 
@@ -281,15 +283,6 @@ ActiveRecord::Schema.define(version: 2021_04_24_054140) do
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
 
-  create_table "role_permissions", force: :cascade do |t|
-    t.integer "role_id", null: false
-    t.integer "permission_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-    t.index ["permission_id"], name: "index_role_permissions_on_permission_id"
-    t.index ["role_id"], name: "index_role_permissions_on_role_id"
-  end
-
   create_table "slot_extras", force: :cascade do |t|
     t.integer "slot_id", null: false
     t.integer "extra_id", null: false
@@ -399,8 +392,9 @@ ActiveRecord::Schema.define(version: 2021_04_24_054140) do
   add_foreign_key "checklist_items", "users", column: "created_by_id"
   add_foreign_key "checklist_items", "users", column: "updated_by_id"
   add_foreign_key "checklist_values", "checklist_items"
-  add_foreign_key "checklist_values", "dropzone_user", column: "created_by_id"
-  add_foreign_key "checklist_values", "dropzone_user", column: "updated_by_id"
+  add_foreign_key "checklist_values", "dropzone_users", column: "created_by_id"
+  add_foreign_key "checklist_values", "dropzone_users", column: "updated_by_id"
+  add_foreign_key "checklist_values", "rig_inspections"
   add_foreign_key "checklists", "users", column: "created_by_id"
   add_foreign_key "checklists", "users", column: "updated_by_id"
   add_foreign_key "dropzone_users", "dropzones"
@@ -430,8 +424,6 @@ ActiveRecord::Schema.define(version: 2021_04_24_054140) do
   add_foreign_key "rig_inspections", "users", column: "inspected_by_id"
   add_foreign_key "rigs", "dropzones"
   add_foreign_key "rigs", "users"
-  add_foreign_key "role_permissions", "permissions"
-  add_foreign_key "role_permissions", "roles"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "jump_types"

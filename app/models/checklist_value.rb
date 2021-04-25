@@ -14,6 +14,7 @@
 #
 class ChecklistValue < ApplicationRecord
   belongs_to :checklist_item
-  belongs_to :created_by
-  belongs_to :updated_by
+  belongs_to :rig_inspection
+  belongs_to :created_by, class_name: "User"
+  belongs_to :updated_by, class_name: "User"
 end

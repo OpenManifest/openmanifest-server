@@ -8,6 +8,7 @@ module Types
     field :name, String, null: true
     field :altitude, Int, null: true
     field :allow_manifesting_self, Boolean, null: true
+    field :is_tandem, Boolean, null: true
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
     field :extras, [Types::ExtraType], null: false

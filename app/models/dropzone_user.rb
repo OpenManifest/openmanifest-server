@@ -18,6 +18,7 @@ class DropzoneUser < ApplicationRecord
   belongs_to :dropzone
   belongs_to :user_role
   has_many :transactions
+  has_many :rig_inspections
   
   has_many :notifications, foreign_key: :received_by_id
 

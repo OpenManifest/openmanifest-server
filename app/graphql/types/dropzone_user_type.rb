@@ -8,6 +8,7 @@ module Types
     field :notifications, Types::NotificationType, null: true
     field :role, Types::UserRoleType, null: true
     field :transactions, Types::TransactionType.connection_type, null: true
+    field :rig_inspections, [Types::RigInspectionType], null: true
 
     def role
       object.user_role

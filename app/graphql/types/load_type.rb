@@ -23,7 +23,7 @@ module Types
     field :load_number, Int, null: false
     def load_number
       load_index = object.plane.dropzone.loads.where(
-        "created_at > ?",
+        "loads.created_at > ?",
         DateTime.now.beginning_of_day
       ).order(created_at: :asc).find_index do |load|
         load.id == object.id
