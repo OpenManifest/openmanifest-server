@@ -1,21 +1,21 @@
 # == Schema Information
 #
-# Table name: passengers
+# Table name: master_logs
 #
 #  id          :integer          not null, primary key
-#  name        :string
-#  exit_weight :float
+#  dzso_id     :integer
 #  dropzone_id :integer          not null
+#  notes       :text
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
 
 one:
-  name: MyString
-  exit_weight: 1.5
+  dzso: one
   dropzone: one
+  notes: MyText
 
 two:
-  name: MyString
-  exit_weight: 1.5
+  dzso: two
   dropzone: two
+  notes: MyText

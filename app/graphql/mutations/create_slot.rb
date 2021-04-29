@@ -9,13 +9,16 @@ module Mutations
     argument :attributes, Types::Input::SlotInput, required: true
 
     def resolve(attributes:)
+      plane_load = Load.find(attributes[:load_id])
+      dropzone = plane_load.plane.dropzone
+
       model = Slot.find_or_initialize_by(
         user_id: attributes[:user_id],
         load_id: attributes[:load_id],
       )
-      model.assign_attributes(attributes.to_h)
+      model.assign_attributes(attributes.to_h.except(:passenger_name, :passenger_exit_weight))
 
-      dropzone = model.load.plane.dropzone
+      
       # Show errors if the dropzone is using credits
       # and the user doesn't have the funds for this slot
       if dropzone.is_credit_system_enabled?
@@ -41,6 +44,28 @@ module Mutations
         end
       end
 
+      if model.ticket_type.is_tandem? && attributes[:passenger_name]
+        if model.passenger_slot.present?
+          model.passenger_slot.passenger.update(
+            name: attributes[:passenger_name],
+            exit_weight: attributes[:passenger_exit_weight],
+          )
+        else
+          passenger = Passenger.create(
+            name: attributes[:passenger_name],
+            exit_weight: attributes[:passenger_exit_weight],
+            dropzone: model.load.plane.dropzone
+          )
+
+          model.passenger_slot = Slot.create(
+            load: model.load,
+            passenger: passenger,
+            exit_weight: attributes[:passenger_exit_weight],
+            ticket_type: model.ticket_type,
+            jump_type: model.jump_type,
+          )
+        end
+      end
 
       model.save!
 

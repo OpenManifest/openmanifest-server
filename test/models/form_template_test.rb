@@ -1,21 +1,20 @@
 # == Schema Information
 #
-# Table name: checklists
+# Table name: form_templates
 #
 #  id            :integer          not null, primary key
 #  name          :string
+#  definition    :text
+#  dropzone_id   :integer
 #  created_by_id :integer          not null
 #  updated_by_id :integer          not null
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #
+require "test_helper"
 
-one:
-  name: MyString
-  created_by: one
-  updated_by: one
-
-two:
-  name: MyString
-  created_by: two
-  updated_by: two
+class FormTemplateTest < ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
+end

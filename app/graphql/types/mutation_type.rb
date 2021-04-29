@@ -2,11 +2,10 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :createTransaction, mutation: Mutations::CreateTransaction
+		field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate
 		field :updateRigInspection, mutation: Mutations::UpdateRigInspection
 		field :createRigInspection, mutation: Mutations::CreateRigInspection
-		field :updateChecklistItem, mutation: Mutations::UpdateChecklistItem
-		field :createChecklistItem, mutation: Mutations::CreateChecklistItem
-		field :updateChecklistValue, mutation: Mutations::UpdateChecklistValue
 		field :updateDropzoneUser, mutation: Mutations::UpdateDropzoneUser
 		field :updateRig, mutation: Mutations::UpdateRig
 		field :createRig, mutation: Mutations::CreateRig
@@ -21,6 +20,7 @@ module Types
     field :updateLoad, mutation: Mutations::UpdateLoad
     field :deleteSlot, mutation: Mutations::DeleteSlot
     field :createSlot, mutation: Mutations::CreateSlot
+    field :createSlots, mutation: Mutations::CreateSlots
     field :updateSlot, mutation: Mutations::UpdateSlot
     field :deletePlane, mutation: Mutations::DeletePlane
     field :createPlane, mutation: Mutations::CreatePlane

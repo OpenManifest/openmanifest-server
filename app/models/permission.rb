@@ -64,10 +64,10 @@ class Permission < ApplicationRecord
     :deletePackjob,
     :readPackjob,
 
-    :createChecklist,
-    :updateChecklist,
-    :deleteChecklist,
-    :readChecklist,
+    :createFormTemplate,
+    :updateFormTemplate,
+    :deleteFormTemplate,
+    :readFormTemplate,
 
     :readUser,
     :updateUser,
@@ -79,5 +79,7 @@ class Permission < ApplicationRecord
     :actAsGCA,
     :actAsDZSO,
     :actAsRigInspector,
+
+    :createUserTransaction,
   ]
 end

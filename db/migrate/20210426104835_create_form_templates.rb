@@ -1,9 +1,9 @@
-# frozen_string_literal: true
-
-class CreateChecklists < ActiveRecord::Migration[6.1]
+class CreateFormTemplates < ActiveRecord::Migration[6.1]
   def change
-    create_table :checklists do |t|
+    create_table :form_templates do |t|
       t.string :name
+      t.text :definition
+      t.references :dropzone, null: true, foreign_key: true
       t.references :created_by, null: false, foreign_key: { to_table: :users }
       t.references :updated_by, null: false, foreign_key: { to_table: :users }
 

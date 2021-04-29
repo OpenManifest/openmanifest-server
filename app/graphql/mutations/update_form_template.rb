@@ -1,61 +1,53 @@
 module Mutations
-  class UpdateChecklistItem < Mutations::BaseMutation
-    field :checklist_item, Types::ChecklistItemType, null: true
+  class UpdateFormTemplate < Mutations::BaseMutation
+    field :form_template, Types::FormTemplateType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-
-    argument :attributes, Types::Input::ChecklistItemInput, required: true
+    argument :attributes, Types::Input::FormTemplateInput, required: true
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = ChecklistItem.find(id)
-      model.assign_attributes(attributes.to_h)
-
-      model.save!
-
+      model = FormTemplate.find(id)
+      
+      model.update!(attributes.to_h)
       {
-        checklist_item: model,
+        form_template: model,
         errors: nil,
         field_errors: nil,
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        checklist_item: nil,
+        form_template: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
-        checklist_item: nil,
+        form_template: nil,
         field_errors: nil,
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        checklist_item: nil,
+        form_template: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
     end
 
-    def authorized?(attributes: nil, id: nil)
-      # FIXME: This will only work for rig inspections and not all checklists
-      dropzone = Dropzone.find_by(
-        rig_inspection_checklist_id: ChecklistItem.find(id).checklist.id
-      )
-
+    def authorized?(id: nil, attributes: nil)
       if context[:current_resource].can?(
-        "actAsRigInspector",
-        dropzone_id: dropzone.id
+        "updateFormTemplate",
+        dropzone_id: attributes[:dropzone_id]
       )
         return true
       else
         return false, {
           errors: [
-            "You don't have permissions to inspect rigs"
+            "You don't have permissions to update this form"
             ]
           }
       end

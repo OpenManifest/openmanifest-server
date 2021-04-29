@@ -9,7 +9,7 @@ module Types
     field :federation, FederationType, null: false
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
-    field :rig_inspection_checklist, Types::ChecklistType, null: true
+    field :rig_inspection_template, Types::FormTemplateType, null: true
     field :is_credit_system_enabled, Boolean, null: false
     def is_credit_system_enabled
       object.is_credit_system_enabled?
@@ -37,18 +37,23 @@ module Types
     end
     def allowed_jump_types(user_id: nil)
       # Get allowed jump types for each user:
-      jump_type_ids = object.dropzone_users.where(user_id: user_id).map do |user|
-        user.licensed_jump_types.pluck(:jump_type_id)
+      jump_type_ids = object.dropzone_users.where(user_id: user_id).map do |dz_user|
+        dz_user.user.licensed_jump_types.pluck(:jump_type_id)
       end
 
       JumpType.where(id: jump_type_ids.reduce(&:intersection))
     end
 
     field :dropzone_user, Types::DropzoneUserType, null: true do
-      argument :id, Int, required: true
+      argument :id, Int, required: false
+      argument :user_id, Int, required: false
     end
-    def dropzone_user(id: nil)
-      object.dropzone_users.includes(:user).find(id)
+    def dropzone_user(id: nil, user_id: nil)
+      if id
+        object.dropzone_users.includes(:user).find(id)
+      elsif user_id
+        object.dropzone_users.includes(:user).find_by(user_id: user_id)
+      end
     end
 
     field :dropzone_users, Types::DropzoneUserType.connection_type, null: false do
@@ -88,7 +93,7 @@ module Types
     end
     def ticket_types(is_public: nil)
       query = object.ticket_types
-      query = query.where(is_public: is_public) unless is_public.nil?
+      query = query.where(allow_manifesting_self: is_public) unless is_public.nil?
       query.order(name: :asc)
     end
 

@@ -10,10 +10,16 @@ module Mutations
     def resolve(attributes:, id: nil)
       dropzone = Dropzone.find(attributes[:dropzone_id])
       rig = Rig.find(attributes[:rig_id])
-      model = RigInspection.new(attributes.to_h.except(:dropzone_id))
-      model.checklist = dropzone.rig_inspection_checklist
+      dz_user = dropzone.dropzone_users.find_by(user_id: rig.user.id )
+
+      model = RigInspection.find_or_initialize_by(
+        rig: rig,
+        dropzone_user_id: dz_user.id
+      )
+      model.assign_attributes(attributes.to_h.except(:dropzone_id))
+
+      model.form_template = dropzone.rig_inspection_template
       model.inspected_by = context[:current_resource]
-      model.dropzone_user = dropzone.dropzone_users.find_by(user_id: rig.user.id)
 
       model.save!
 

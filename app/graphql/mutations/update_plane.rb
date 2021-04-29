@@ -40,7 +40,7 @@ module Mutations
       }
     end
 
-    def authorized?(id: nil, attribues: nil)
+    def authorized?(id: nil, attributes: nil)
       if context[:current_resource].can?(
         "updatePlane",
         dropzone_id: Plane.find(id).dropzone_id

@@ -1,21 +1,18 @@
 # == Schema Information
 #
-# Table name: passengers
+# Table name: master_logs
 #
 #  id          :integer          not null, primary key
-#  name        :string
-#  exit_weight :float
+#  dzso_id     :integer
 #  dropzone_id :integer          not null
+#  notes       :text
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
+require "test_helper"
 
-one:
-  name: MyString
-  exit_weight: 1.5
-  dropzone: one
-
-two:
-  name: MyString
-  exit_weight: 1.5
-  dropzone: two
+class MasterLogTest < ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
+end
