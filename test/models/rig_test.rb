@@ -16,6 +16,7 @@
 #  updated_at        :datetime         not null
 #  dropzone_id       :integer
 #  canopy_size       :integer
+#  is_public         :boolean          default(FALSE)
 #
 require "test_helper"
 

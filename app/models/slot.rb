@@ -13,6 +13,9 @@
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  exit_weight    :float
+#  passenger_id   :integer
+#  is_paid        :boolean
+#  transaction_id :integer
 #
 class Slot < ApplicationRecord
   belongs_to :user, optional: true
@@ -22,28 +25,51 @@ class Slot < ApplicationRecord
   belongs_to :rig, optional: true
   belongs_to :jump_type
 
+  belongs_to :passenger_slot, optional: true, class_name: "Slot"
+
   has_many :slot_extras
   has_many :extras, through: :slot_extras
-  has_many :transactions
+  belongs_to :payment, foreign_key: :transaction_id, class_name: "Transaction", optional: true
+
+
+  def reserve_transaction!
+    # Tandem passengers are not real accounts and will
+    # not be charged credits:
+    return unless user.present?
+    slot = self
+
+    # Find Dropzone user:
+    if dz_user = DropzoneUser.find_by(
+        dropzone_id: slot.load.plane.dropzone_id,
+        user_id: user.id
+      )
+
+      message = [
+        "#{ticket_type.name} (#{ticket_type.cost})"
+      ] + (extras || []).map { |e| "#{e.name} (#{e.cost})" }
+
+      
+      update(
+        payment: Transaction.create(
+          status: :reserved,
+          message: message.join(" + "),
+          # Make negative to charge credits
+          amount: cost * -1,
+          dropzone_user: dz_user
+        )
+      ) unless payment.present?
+    end
+  end
 
   def charge_credits!
     # Tandem passengers are not real accounts and will
     # not be charged credits:
     return unless user.present?
-
-    # Find Dropzone user:
-    if dz_user = DropzoneUser.find_by(
-        dropzone_id: load.plane.dropzone_id,
-        user_id: user.id
-      )
-      transactions.create!(
-        status: :paid,
-        # Make negative to charge credits
-        amount: cost * -1,
-        dropzone_user: dz_user
-      )
-      update(is_paid: true)
-    end
+    reserve_transaction! unless payment.present?
+    
+    payment.update(
+      status: :paid,
+    )
   end
   
 

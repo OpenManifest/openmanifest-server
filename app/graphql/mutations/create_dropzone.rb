@@ -23,52 +23,15 @@ module Mutations
         user_role: UserRole.find_by(dropzone_id: model.id, name: "owner")
       )
 
-
-
-
-      ## Set up default rig inspection checklist
-      rig_inspection_checklist = Checklist.create!(
+      model.rig_inspection_template = FormTemplate.create(
         name: "Rig Inspection",
+        definition: RigInspection.default_form.to_json,
         created_by: context[:current_resource],
-        updated_by: context[:current_resource]
+        updated_by: context[:current_resource],
       )
-
-      rig_inspection_checklist.checklist_items.create(
-        name: "Reserve repack due",
-        value_type: "date",
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource]
-      )
-      rig_inspection_checklist.checklist_items.create(
-        name: "Three-rings routed correctly?",
-        value_type: "boolean",
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource]
-      )
-      rig_inspection_checklist.checklist_items.create(
-        name: "Canopy size",
-        value_type: "integer",
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource]
-      )
-  
-      rig_inspection_checklist.checklist_items.create(
-        name: "Reserve canopy size",
-        value_type: "integer",
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource]
-      )
-  
-      rig_inspection_checklist.checklist_items.create(
-        name: "Home dropzone",
-        value_type: "integer",
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource]
-      )
-
-      model.rig_inspection_checklist = rig_inspection_checklist
-
       model.save!
+      model.rig_inspection_template.update(dropzone: model)
+
       {
         dropzone: model,
         errors: nil,

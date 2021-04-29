@@ -1,4 +1,17 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# == Schema Information
+#
+# Table name: notifications
+#
+#  id                :integer          not null, primary key
+#  message           :string
+#  received_by_id    :integer          not null
+#  sent_by_id        :integer
+#  resource_type     :string
+#  resource_id       :integer
+#  notification_type :integer
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#
 
 one:
   message: MyString

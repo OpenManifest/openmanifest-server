@@ -1,8 +1,12 @@
 module Types
   class TransactionType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
-    field :status, Int, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :status, String, null: true
+    field :message, String, null: true
+    field :amount, Float, null: false
+    field :created_at, Int, null: false
+    field :updated_at, Int, null: false
+
+    field :dropzone_user, Types::DropzoneUserType, null: false
   end
 end

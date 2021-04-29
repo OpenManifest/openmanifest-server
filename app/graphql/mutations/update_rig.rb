@@ -8,14 +8,15 @@ module Mutations
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = find_or_build_model(id)
+      model = Rig.find(id)
 
       attrs = attributes.to_h
       if attrs[:repack_expires_at]
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
       end
-      model.assign_attributes(attributes.to_h)
+      model.assign_attributes(attrs.to_h)
 
+      model.save!
       {
         rig: model,
         errors: nil,

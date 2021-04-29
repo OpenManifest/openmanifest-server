@@ -4,18 +4,18 @@
 #
 # Table name: dropzones
 #
-#  id                       :integer          not null, primary key
-#  name                     :string
-#  federation_id            :integer
-#  lat                      :float
-#  lng                      :float
-#  created_at               :datetime         not null
-#  updated_at               :datetime         not null
-#  is_public                :boolean
-#  primary_color            :string
-#  secondary_color          :string
-#  checklist_id             :integer
-#  is_credit_system_enabled :boolean          default(FALSE)
+#  id                         :integer          not null, primary key
+#  name                       :string
+#  federation_id              :integer
+#  lat                        :float
+#  lng                        :float
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  is_public                  :boolean
+#  primary_color              :string
+#  secondary_color            :string
+#  is_credit_system_enabled   :boolean          default(FALSE)
+#  rig_inspection_template_id :integer
 #
 class Dropzone < ApplicationRecord
   has_many :dropzone_users, dependent: :destroy
@@ -31,7 +31,10 @@ class Dropzone < ApplicationRecord
   has_many :master_logs, dependent: :destroy
 
   belongs_to :federation
-  belongs_to :rig_inspection_checklist, class_name: "Checklist", optional: true, foreign_key: "checklist_id"
+  belongs_to :rig_inspection_template,
+             class_name: "FormTemplate",
+             optional: true,
+             foreign_key: "rig_inspection_template_id"
 
   has_one_base64_attached :banner
 
@@ -97,6 +100,8 @@ class Dropzone < ApplicationRecord
         :deletePackjob,
         :readPackjob,
 
+        :readUserTransactions,
+
         :readUser,
         :actAsLoadMaster,
         :actAsGCA,
@@ -110,6 +115,8 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
+
+        :readUserTransactions,
 
         :createPackjob,
         :updatePackjob,
@@ -135,6 +142,8 @@ class Dropzone < ApplicationRecord
         :deletePackjob,
         :readPackjob,
 
+        :readUserTransactions,
+
         :readUser,
         :actAsLoadMaster,
         :actAsGCA,
@@ -157,6 +166,14 @@ class Dropzone < ApplicationRecord
         :updatePackjob,
         :deletePackjob,
         :readPackjob,
+
+        :createFormTemplate,
+        :updateFormTemplate,
+        :deleteFormTemplate,
+        :readFormTemplate,
+
+        :createUserTransaction,
+        :readUserTransactions,
 
         :readUser,
         :actAsLoadMaster,

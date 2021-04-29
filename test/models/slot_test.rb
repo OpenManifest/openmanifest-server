@@ -13,6 +13,9 @@
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  exit_weight    :float
+#  passenger_id   :integer
+#  is_paid        :boolean
+#  transaction_id :integer
 #
 require "test_helper"
 

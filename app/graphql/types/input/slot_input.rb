@@ -10,6 +10,11 @@ module Types
       argument :rig_id, Int, required: false
       argument :exit_weight, Float, required: false
       argument :extra_ids, [Int], required: false
+
+      argument :user_group, [Types::Input::SlotUser], required: false
+
+      argument :passenger_name, String, required: false
+      argument :passenger_exit_weight, Float, required: false
     end
   end
 end

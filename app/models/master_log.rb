@@ -1,3 +1,14 @@
+# == Schema Information
+#
+# Table name: master_logs
+#
+#  id          :integer          not null, primary key
+#  dzso_id     :integer
+#  dropzone_id :integer          not null
+#  notes       :text
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
 class MasterLog < ApplicationRecord
   belongs_to :dzso, optional: true
   belongs_to :dropzone
