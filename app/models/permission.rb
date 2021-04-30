@@ -81,5 +81,6 @@ class Permission < ApplicationRecord
     :actAsRigInspector,
 
     :createUserTransaction,
+    :readUserTransactions,
   ]
 end

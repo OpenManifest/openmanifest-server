@@ -9,20 +9,15 @@ apf = Federation.find_or_create_by(
   name: "APF"
 )
 
-# Create licenses
-["A", "B", "C", "D", "E", "F"].each do |license|
-end
-
-
 
 # Assign jump types to licenses
 {
-  A: ["hnp", "hp", "fs"],
-  B: ["hnp", "hp", "fs", "angle", "freefly"],
-  C: ["hnp", "hp", "fs", "angle", "freefly", "cam"],
-  D: ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
-  E: ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
-  F: ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
+  "Certificate A" => ["hnp", "hp", "fs"],
+  "Certificate B" => ["hnp", "hp", "fs", "angle", "freefly"],
+  "Certificate C" => ["hnp", "hp", "fs", "angle", "freefly", "cam"],
+  "Certificate D" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
+  "Certificate E" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
+  "Certificate F" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
 }.each do |(license_name, types)|
   license = License.find_or_create_by(
     name: license_name,
