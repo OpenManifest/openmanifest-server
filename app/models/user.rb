@@ -32,12 +32,15 @@
 #  updated_at             :datetime         not null
 #
 class User < ApplicationRecord
+  include CloudinaryHelper
+
   # Include default devise modules.
   devise :database_authenticatable, :registerable,
   :recoverable, :rememberable, :trackable, :validatable
   include GraphqlDevise::Concerns::Model
   include DeviseTokenAuth::Concerns::User
 
+  mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
 
   has_many :rigs
   has_many :packs
@@ -51,6 +54,8 @@ class User < ApplicationRecord
   has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
+
+
   def can?(permission_name, dropzone_id:)
     Permission.includes(
       user_role: :dropzone_users
@@ -62,5 +67,24 @@ class User < ApplicationRecord
           }
         }
     ).exists?(name: permission_name)
+  end
+
+  def self.create_fake
+    random_user, = JSON.parse(
+      open("https://randomuser.me/api/").read,
+      symbolize_names: true
+    )[:results]
+
+    user = User.create(
+      name: "#{random_user[:name][:first]} #{random_user[:name][:last]}",
+      email: random_user[:email],
+      phone: random_user[:phone],
+      password: random_user[:login][:password],
+      exit_weight: ((Random.rand * 100) % 50) + 50,
+    )
+
+    user.image = "data:image/jpeg;base64,#{Base64.encode64(open(random_user[:picture][:medium]).read)}"
+    user.save(validate: false)
+    user
   end
 end

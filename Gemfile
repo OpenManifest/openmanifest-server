@@ -8,13 +8,14 @@ ruby "2.7.3"
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem "rails", "~> 6.1.3", ">= 6.1.3.1"
 
+# Heroku database
 gem 'pg', group: :production
 
 
 # Use Puma as the app server
 gem "puma", "~> 5.0"
 # Use SCSS for stylesheets
-gem "sass-rails", ">= 6"
+# gem "sass-rails", ">= 6"
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
 gem "webpacker", "~> 5.0"
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
@@ -26,16 +27,28 @@ gem "redis", "~> 4.0"
 # Use Active Model has_secure_password
 gem "bcrypt", "~> 3.1.7"
 
-# gem 'devise', github: 'heartcombo/devise', branch: 'ca-omniauth-2'
+# Set CLOUDINARY_URL and other env variables
+gem 'dotenv-rails', groups: [:development, :test], require: 'dotenv/rails-now'
 
+# File upload
+gem "cloudinary"
+gem "carrierwave"
+gem "carrierwave-base64"
+
+
+# GraphQL queries
 gem "graphql"
 gem "graphql_devise"
+
+# Admin backend
 gem "administrate"
+
+# CORS headers
 gem "rack-cors"
+
+# Store base64 images
 gem "active_storage_base64"
-gem "solargraph", group: :development
-gem "rubocop", group: :development
-gem "rubocop-rails_config", group: :development
+
 
 
 # Use Active Storage variant
@@ -43,11 +56,13 @@ gem "rubocop-rails_config", group: :development
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
-gem "annotate"
+
+# Searchable models
 gem "search_cop"
 
 
 group :development, :test do
+  
   # Use sqlite3 as the database for Active Record
   gem "sqlite3", "~> 1.4"
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -55,6 +70,16 @@ group :development, :test do
 end
 
 group :development do
+  # Annotate with database schema
+  gem "annotate"
+
+  # VSCode ruby intellisense
+  gem "solargraph"
+
+  # Linting
+  gem "rubocop"
+  gem "rubocop-rails_config"
+
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem "web-console", ">= 4.1.0"
   gem "graphql-rails-generators", group: :development

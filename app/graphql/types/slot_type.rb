@@ -5,7 +5,10 @@ module Types
     field :id, GraphQL::Types::ID, null: false
     field :created_at, Int, null: false
     field :created_at, Int, null: false
-    field :exit_weight, Float, null: false
+    field :exit_weight, Int, null: false
+    def exit_weight
+      object.exit_weight.to_i
+    end
     field :group_number, Int, null: false
 
     field :user, Types::UserType, null: true

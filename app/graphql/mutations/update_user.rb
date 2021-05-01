@@ -12,8 +12,9 @@ module Mutations
     def resolve(attributes: nil, id: nil)
       model = User.find(id)
       model.assign_attributes(attributes.to_h)
-
+      
       model.save!
+
       {
         user: model,
         errors: nil,

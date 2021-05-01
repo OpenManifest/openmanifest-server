@@ -12,7 +12,7 @@ module Mutations
       model.save!
 
       {
-        transaction: model,
+        transaction: model.reload,
         errors: nil,
         field_errors: nil,
       }

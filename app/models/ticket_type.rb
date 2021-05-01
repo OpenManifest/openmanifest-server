@@ -17,6 +17,6 @@
 #
 class TicketType < ApplicationRecord
   belongs_to :dropzone
-  has_many :ticket_type_extras
+  has_many :ticket_type_extras, dependent: :destroy
   has_many :extras, through: :ticket_type_extras
 end

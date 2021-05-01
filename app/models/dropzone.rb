@@ -36,9 +36,17 @@ class Dropzone < ApplicationRecord
              optional: true,
              foreign_key: "rig_inspection_template_id"
 
-  has_one_base64_attached :banner
+  mount_base64_uploader :image, BannerUploader, file_name: -> (u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
 
   after_create :create_default_roles
+
+  before_destroy do
+    template = rig_inspection_template
+    update(rig_inspection_template: nil)
+    if !template.nil?
+      template.destroy
+    end
+  end
 
 
   def create_default_roles
@@ -49,6 +57,11 @@ class Dropzone < ApplicationRecord
       student: [
         :readLoad,
         :createSlot,
+      ],
+      pilot: [
+        :readLoad,
+        :createSlot,
+        :actAsPilot,
       ],
       fun_jumper: [
         :readLoad,
@@ -151,6 +164,9 @@ class Dropzone < ApplicationRecord
       ],
       manifest: [
         :readLoad,
+        :updateLoad,
+        :createLoad,
+
         :createSlot,
         :updateSlot,
         :deleteSlot,
@@ -176,6 +192,7 @@ class Dropzone < ApplicationRecord
         :readUserTransactions,
 
         :readUser,
+        :updateUser,
         :actAsLoadMaster,
         :actAsGCA,
         :actAsDZSO,

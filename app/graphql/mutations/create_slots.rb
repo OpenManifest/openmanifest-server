@@ -47,13 +47,13 @@ module Mutations
           extra_cost ||= 0
 
           cost = model.ticket_type.cost + extra_cost
-
-          credits = dropzone.dropzone_users.find_by(user_id: user[:id]).credits || 0
+          dz_user = dropzone.dropzone_users.find_by(user_id: user[:id])
+          credits = dz_user.credits || 0
 
           if cost > credits
             return {
               slot: nil,
-              errors: ["Not enough credits to manifest for this jump"],
+              errors: ["#{dz_user.user.name} doesn't have enough credits to manifest for this jump"],
               field_errors: [
                 { field: "credits", message: "Not enough credits to manifest for this jump"}
               ],

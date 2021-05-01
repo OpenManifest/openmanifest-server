@@ -12,7 +12,7 @@
 #  updated_at  :datetime         not null
 #
 class Extra < ApplicationRecord
-  has_many :ticket_type_extras
+  has_many :ticket_type_extras, dependent: :destroy
   has_many :ticket_types, through: :ticket_type_extras
   belongs_to :dropzone
 

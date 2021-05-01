@@ -59,11 +59,14 @@ module Types
     field :dropzone_users, Types::DropzoneUserType.connection_type, null: false do
       argument :permissions, [Types::PermissionType], required: false
       argument :search, String, required: false
+      argument :licensed, Boolean, required: false
     end
-    def dropzone_users(permissions: nil, search: nil)
+    def dropzone_users(permissions: nil, search: nil, licensed: nil)
       query = object.dropzone_users.includes(:user)
 
-
+      if licensed
+        query = query.where.not(users: { license_id: nil })
+      end
 
       if permissions
         query = query.where(
@@ -129,18 +132,10 @@ module Types
       log
     end
 
-    field :banner_id, Int, null: true
-    def banner_id
-      if object.banner.attached?
-        object.banner.blob.id
-      end
-    end
-
+    
     field :banner, String, null: true
     def banner
-      if object.banner.attached?
-        "data:%s;base64,%s" % [object.banner.blob.content_type, Base64.strict_encode64(object.banner.blob.download)]
-      end
+      object.image_url
     rescue ActiveStorage::FileNotFoundError
       nil
     end
