@@ -2,7 +2,7 @@
 
 module Mutations
   class CreateSlots < Mutations::BaseMutation
-    field :slots, [Types::SlotType], null: true
+    field :load, Types::LoadType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
@@ -68,27 +68,27 @@ module Mutations
 
 
       {
-        slots: slots,
+        load: slots.first.load.reload,
         errors: nil,
         field_errors: nil,
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        slots: nil,
+        load: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        slots: nil,
+        load: nil,
         field_errors: nil,
         errors: error.record.errors.full_messages
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        slots: nil,
+        load: nil,
         field_errors: nil,
         errors: [ error.message ]
       }
