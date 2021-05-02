@@ -26,6 +26,10 @@ class DropzoneUser < ApplicationRecord
     attributes name: "user.name"
   end
 
+  def can?(permission)
+    user.can?(permission, dropzone_id: dropzone_id)
+  end
+
   def permissions
     Permission.includes(user_role: :dropzone_users).where(
       dropzone: dropzone_id,

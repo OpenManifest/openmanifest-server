@@ -29,9 +29,11 @@ class MasterLog < ApplicationRecord
     # FIXME: This is gonna have timezone issues with servers in
     # different timezones
     Load.includes(:slots).where(
-      "loads.created_at > ?", created_at.beginning_of_day
+      plane_id: dropzone.planes.pluck(:id)
     ).where(
-      "loads.created_at < ?", created_at.end_of_day,
+      "loads.created_at > ?", created_at
+    ).where(
+      "loads.created_at < ?", created_at + 24.hours,
     ).order(created_at: :desc)
   end
 end

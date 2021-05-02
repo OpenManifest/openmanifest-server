@@ -9,6 +9,8 @@ module Types
       argument :maintained_at, Int, required: false
       argument :dropzone_id, Int, required: false
       argument :user_id, Int, required: false
+      argument :rig_type, String, required: false,
+      description: Rig.rig_types.keys.join(" / ")
       argument :canopy_size, Int, required: false
     end
   end

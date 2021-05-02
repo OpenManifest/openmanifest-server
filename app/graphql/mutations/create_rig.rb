@@ -12,7 +12,13 @@ module Mutations
               else
                 Dropzone.find(attributes[:dropzone_id]).rigs.new
               end
-      model.assign_attributes(attributes.to_h)
+      
+      attrs = attributes.to_h
+
+      if attrs.key?(:repack_expires_at)
+        attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
+      end
+      model.assign_attributes(attrs)
 
       model.save!
 
@@ -50,7 +56,7 @@ module Mutations
             "You can't create rigs for other users"
           ]
         }
-      elsif attributes[:dropzone_id] && !context[:current_resource].can?("updateDropzone", dropzone_id: attributes[:dropzone_id])
+      elsif attributes[:dropzone_id] && !context[:current_resource].can?("createRig", dropzone_id: attributes[:dropzone_id])
         return false, {
           errors: [
             "You can't create rigs for this dropzone"

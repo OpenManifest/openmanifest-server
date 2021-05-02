@@ -19,9 +19,19 @@
 #  is_public         :boolean          default(FALSE)
 #
 class Rig < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :dropzone, optional: true
   has_many :packs
 
   has_many :users, as: :packers, through: :packs
+
+  enum rig_type: [
+    :student,
+    :sport,
+    :tandem,
+  ]
+
+  before_save do
+    rig_type = :sport unless rig_type.present?
+  end
 end

@@ -17,14 +17,23 @@ module Types
     
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-      dz_user = ::DropzoneUser.find_or_initialize_by(
-        dropzone: object,
+      dz_user = object.dropzone_users.find_or_initialize_by(
         user: context[:current_resource]
       )
 
+      
       if dz_user.new_record?
         dz_user.user_role = object.user_roles.first
         dz_user.save
+      end
+
+      # If the user has a rig, has set up exit weight, and
+      # has a license, the user should be set to fun jumper
+      # if the user is anything less
+      if dz_user.user.rigs.present? && dz_user.user.license.present? && !dz_user.user.exit_weight.blank?
+        if dz_user.user_role_id == object.user_roles.first.id
+          dz_user.update(user_role: object.user_roles.second)
+        end
       end
 
       dz_user
@@ -125,7 +134,7 @@ module Types
       description: "This should be the timestamp of the beginning of the day"
     end
     def master_log(date: nil)
-      log = object.master_log.find_or_initialize_by(created_at: Time.at(date))
+      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date))
 
       # Creating log record if none exists
       log.save! if log.new_record?

@@ -116,7 +116,7 @@ module Types
       query = Rig
       if dropzone_id && context[:current_resource].can?("readRig", dropzone_id: dropzone_id)
         query = query.where(dropzone_id: dropzone_id)
-      end
+      end 
 
       if user_id
         if context[:current_resource].id == user_id
