@@ -11,6 +11,7 @@ module Types
     field :rig_type, String, null: true
     field :repack_expires_at, Int, null: true
     field :maintained_at, Int, null: true
+    field :is_public, Boolean, null: false
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
     field :dropzone, Types::DropzoneType, null: true

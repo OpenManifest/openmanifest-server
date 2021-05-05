@@ -107,6 +107,11 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
+        
+        :readDropzoneRig,
+        :updateDropzoneRig,
+        :createDropzoneRig,
+        :updateDropzoneRig,
 
         :createPackjob,
         :updatePackjob,
@@ -128,6 +133,10 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
+        :readDropzoneRig,
+        :updateDropzoneRig,
+        :createDropzoneRig,
+        :updateDropzoneRig,
 
         :readUserTransactions,
 
@@ -149,6 +158,10 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
+        :readDropzoneRig,
+        :updateDropzoneRig,
+        :createDropzoneRig,
+        :updateDropzoneRig,
 
         :createPackjob,
         :updatePackjob,
@@ -174,7 +187,13 @@ class Dropzone < ApplicationRecord
         :updateRig,
         :deleteRig,
 
+        :readDropzoneRig,
+        :updateDropzoneRig,
+        :createDropzoneRig,
+        :updateDropzoneRig,
+
         :createUserSlot,
+        :createUserSlotWithSelf,
         :deleteUserSlot,
         :updateUserSlot,
 

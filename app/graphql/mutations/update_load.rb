@@ -16,6 +16,26 @@ module Mutations
       if attrs[:dispatch_at]
         attrs[:dispatch_at] = Time.at(attrs[:dispatch_at])
       end
+
+      if attributes[:plane_id]
+        plane = Plane.find(attributes[:plane_id])
+
+        # If the plane is too small to fit all manifested slot,
+        # show an error
+        if plane[:max_slots] < model.slots.count
+          return {
+            load: nil,
+            errors: ["This plane cannot fit all manifested jumpers"],
+            field_errors: nil,
+          }
+        end
+
+        # If the plane changes, change max slots on the load accordingly
+        if plane[:max_slots] != model.max_slots
+          model.max_slots = plane[:max_slots]
+        end
+      end
+
       model.update!(attrs)
       
       {

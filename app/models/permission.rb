@@ -27,6 +27,7 @@ class Permission < ApplicationRecord
 
 
     :createUserSlot,
+    :createUserSlotWithSelf,
     :updateUserSlot,
     :deleteUserSlot,
 
@@ -55,6 +56,7 @@ class Permission < ApplicationRecord
     :createDropzoneRig,
     :updateDropzoneRig,
     :deleteDropzoneRig,
+    :readDropzoneRig,
 
     :readPermissions,
     :updatePermissions,

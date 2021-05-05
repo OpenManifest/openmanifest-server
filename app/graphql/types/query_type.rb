@@ -61,7 +61,7 @@ module Types
       argument :dropzone_id, Int, required: true
     end
     def planes(dropzone_id:)
-      Plane.where(dropzone_id: dropzone_id).order(name: :asc)
+      Plane.where(dropzone_id: dropzone_id, is_deleted: false).order(name: :asc)
     end
 
     field :ticket_types, [Types::TicketTypeType], null: false,
@@ -70,7 +70,7 @@ module Types
       argument :allow_manifesting_self, Boolean, required: false
     end
     def ticket_types(dropzone_id: nil, allow_manifesting_self: nil)
-      query = TicketType.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id)
+      query = TicketType.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id, is_deleted: false)
 
       if allow_manifesting_self
         query = query.where(allow_manifesting_self: allow_manifesting_self)
@@ -84,7 +84,7 @@ module Types
       argument :dropzone_id, Int, required: true
     end
     def extras(dropzone_id:)
-      Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: dropzone_id).order(name: :asc)
+      Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: dropzone_id, is_deleted: false).order(name: :asc)
     end
 
     field :jump_types, [Types::JumpTypeType], null: false,
@@ -105,32 +105,6 @@ module Types
     end
     def licenses(federation_id: nil)
       License.where(federation_id: federation_id).order(name: :asc)
-    end
-
-    field :rigs, [Types::RigType], null: true,
-    description: "Get rigs for user or dropzone" do
-      argument :user_id, Int, required: false
-      argument :dropzone_id, Int, required: false
-    end
-    def rigs(dropzone_id: nil, user_id: nil)
-      query = Rig
-      if dropzone_id && context[:current_resource].can?("readRig", dropzone_id: dropzone_id)
-        query = query.where(dropzone_id: dropzone_id)
-      end 
-
-      if user_id
-        if context[:current_resource].id == user_id
-          query = query.or(
-            Rig.where(user_id: user_id)
-          )
-        elsif dropzone_id && context[:current_resource].can?("readRig", dropzone_id: dropzone_id)
-          query = query.or(
-            Rig.where(user_id: user_id)
-          )
-        end
-      end
-
-      query
     end
   end
 end

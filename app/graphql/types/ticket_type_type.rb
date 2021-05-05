@@ -4,6 +4,7 @@ module Types
   class TicketTypeType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
     field :currency, String, null: true
+    field :dropzone, Types::DropzoneType, null: true
     field :cost, Float, null: true
     field :name, String, null: true
     field :altitude, Int, null: true

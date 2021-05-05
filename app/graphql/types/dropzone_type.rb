@@ -104,13 +104,32 @@ module Types
       argument :is_public, Boolean, required: false
     end
     def ticket_types(is_public: nil)
-      query = object.ticket_types
+      query = object.ticket_types.where(is_deleted: false)
       query = query.where(allow_manifesting_self: is_public) unless is_public.nil?
       query.order(name: :asc)
     end
 
+    field :extras, [Types::ExtraType], null: false
+    def extras
+      Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: object.id).order(name: :asc)
+    end
+
+    field :rigs, [Types::RigType], null: true,
+    description: "Get rigs for dropzone"
+    def rigs
+      if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
+        object.rigs.order(rig_type: :asc)
+      else 
+        []
+      end 
+    end
+
 
     field :planes, [Types::PlaneType], null: false
+    def planes
+      object.planes.where(is_deleted: false)
+    end
+
     field :loads, Types::LoadType.connection_type, null: false do
       argument :earliest_timestamp, Int, required: false
     end

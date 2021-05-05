@@ -96,8 +96,18 @@ module Mutations
 
     def authorized?(attributes: nil)
       dropzone = Load.find(attributes[:load_id]).plane.dropzone
-      if context[:current_resource].can?("createUserSlot", dropzone_id: dropzone.id)
+      contains_current_user = attributes[:user_group].any { |member| member[:id] == context[:current_resource].user_id }
+
+      if context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
         return true
+      elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
+        return true
+      elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
+        return false, {
+          errors: [
+            "You can only manifest a group if you're a part of it"
+          ]
+        }
       else
         return false, {
           errors: [

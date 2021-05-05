@@ -53,7 +53,7 @@ module Mutations
             "You can't update other users' rigs"
           ]
         }
-      elsif rig.dropzone_id && !context[:current_resource].can?("updateDropzone", dropzone_id: rig.dropzone_id)
+      elsif rig.dropzone_id && !context[:current_resource].can?(:updateDropzoneRig, dropzone_id: rig.dropzone_id)
         return false, {
           errors: [
             "You can't update rigs for this dropzone"

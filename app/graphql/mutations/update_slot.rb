@@ -13,6 +13,7 @@ module Mutations
       model = Slot.find(id)
 
       model.update(attributes.to_h)
+
       {
         slot: model,
         errors: nil,

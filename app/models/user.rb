@@ -55,6 +55,7 @@ class User < ApplicationRecord
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
 
+  
 
   def can?(permission_name, dropzone_id:)
     Permission.includes(

@@ -3,14 +3,57 @@
 module Mutations
   class DeletePlane < Mutations::BaseMutation
     field :plane, Types::PlaneType, null: true
+    field :errors, [String], null: true
+    field :field_errors, [Types::FieldErrorType], null: true
 
     argument :id, Int, required: true
 
     def resolve(id:)
       model = Plane.find(id)
 
-      model.destroy
-      { plane: model }
+      model.update!(is_deleted: true)
+
+      {
+        plane: model.reload,
+        field_errors: nil,
+        errors: nil
+      }
+    rescue ActiveRecord::RecordInvalid => invalid
+      # Failed save, return the errors to the client
+      {
+        plane: nil,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
+        errors: invalid.record.errors.full_messages
+      }
+    rescue ActiveRecord::RecordNotSaved => error
+      # Failed save, return the errors to the client
+      {
+        plane: nil,
+        field_errors: nil,
+        errors: error.record.errors.full_messages
+      }
+    rescue ActiveRecord::RecordNotFound => error
+      {
+        plane: nil,
+        field_errors: nil,
+        errors: [ error.message ]
+      }
+    end
+
+    def authorized?(id: nil, attributes: nil)
+      plane = Plane.find(id)
+
+
+      if context[:current_resource].can?(
+        :deletePlane,
+        dropzone_id: plane.dropzone_id
+      )
+        return true
+      else 
+        return false, {
+          errors: ["You cant delete this aircraft"]
+        }
+      end
     end
   end
 end
