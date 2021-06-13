@@ -22,6 +22,10 @@ class Notification < ApplicationRecord
     :packjob_pending_confirm,
     :packjob_confirmed,
     :rig_pending_inspection,
-    :boarding_call
+    :boarding_call,
+    :user_manifested,
+    :funds_added,
+    :rig_inspection_completed,
+    :membership_updated
   ]
 end

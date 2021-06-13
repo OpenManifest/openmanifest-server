@@ -2,6 +2,7 @@
 
 module Types
   class SlotType < Types::BaseObject
+    implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
     field :created_at, Int, null: false
     field :created_at, Int, null: false

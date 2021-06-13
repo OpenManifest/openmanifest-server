@@ -2,6 +2,7 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :updateNotification, mutation: Mutations::UpdateNotification
 		field :createTransaction, mutation: Mutations::CreateTransaction
 		field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate
 		field :updateRigInspection, mutation: Mutations::UpdateRigInspection

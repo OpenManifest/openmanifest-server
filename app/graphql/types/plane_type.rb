@@ -2,6 +2,8 @@
 
 module Types
   class PlaneType < Types::BaseObject
+    implements Types::AnyResourceType
+
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :min_slots, Int, null: true

@@ -96,7 +96,7 @@ module Mutations
 
     def authorized?(attributes: nil)
       dropzone = Load.find(attributes[:load_id]).plane.dropzone
-      contains_current_user = attributes[:user_group].any { |member| member[:id] == context[:current_resource].user_id }
+      contains_current_user = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] == context[:current_resource].id }
 
       if context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
         return true

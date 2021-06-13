@@ -31,19 +31,32 @@ class Slot < ApplicationRecord
   has_many :extras, through: :slot_extras
   belongs_to :payment, foreign_key: :transaction_id, class_name: "Transaction", optional: true
 
+  after_create :notify!
+
+
+  def notify!
+    Notification.create(
+      received_by: dropzone_user,
+      notification_type: :user_manifested,
+      message: "You have been manifested on Load ##{load.load_number}",
+      resource: self
+    )
+  end
+
+  def dropzone_user
+    DropzoneUser.find_by(
+      dropzone_id: load.plane.dropzone_id,
+      user_id: user.id
+    )
+  end
 
   def reserve_transaction!
     # Tandem passengers are not real accounts and will
     # not be charged credits:
     return unless user.present?
-    slot = self
 
     # Find Dropzone user:
-    if dz_user = DropzoneUser.find_by(
-        dropzone_id: slot.load.plane.dropzone_id,
-        user_id: user.id
-      )
-
+    if dropzone_user
       message = [
         "#{ticket_type.name} (#{ticket_type.cost})"
       ] + (extras || []).map { |e| "#{e.name} (#{e.cost})" }
@@ -55,7 +68,7 @@ class Slot < ApplicationRecord
           message: message.join(" + "),
           # Make negative to charge credits
           amount: cost * -1,
-          dropzone_user: dz_user
+          dropzone_user: dropzone_user
         )
       ) unless payment.present?
     end

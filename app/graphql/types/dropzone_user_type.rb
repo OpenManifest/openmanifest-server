@@ -2,10 +2,26 @@
 
 module Types
   class DropzoneUserType < Types::BaseObject
+    implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
 
     field :user, Types::UserType, null: false
-    field :notifications, Types::NotificationType, null: true
+    field :unseen_notifications, Int, null: false
+    def unseen_notifications
+      object.notifications.where(is_seen: false).count
+    end
+
+    field :notifications, Types::NotificationType.connection_type, null: true
+    def notifications
+      # Only allow viewing this if this is the current user
+      if context[:current_resource].id == object.user.id
+        object.notifications.order(created_at: :desc)
+      else
+        []
+      end
+    end
+
+
     field :transactions, Types::TransactionType.connection_type, null: true
     def transactions
       is_self = context[:current_resource].id == object.user.id
