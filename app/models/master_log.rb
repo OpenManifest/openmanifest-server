@@ -10,7 +10,7 @@
 #  updated_at  :datetime         not null
 #
 class MasterLog < ApplicationRecord
-  belongs_to :dzso, optional: true
+  belongs_to :dzso, optional: true, class_name: "DropzoneUser"
   belongs_to :dropzone
 
   # 12.3.3 Master Log Contents

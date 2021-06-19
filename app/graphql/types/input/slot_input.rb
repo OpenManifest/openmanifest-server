@@ -3,7 +3,7 @@
 module Types
   module Input
     class SlotInput < Types::BaseInputObject
-      argument :user_id, Int, required: false
+      argument :dropzone_user_id, Int, required: false
       argument :ticket_type_id, Int, required: false
       argument :jump_type_id, Int, required: false
       argument :load_id, Int, required: false

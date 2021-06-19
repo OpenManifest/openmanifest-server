@@ -40,6 +40,9 @@ gem "carrierwave-base64"
 gem "graphql"
 gem "graphql_devise"
 
+# Send HTTP requests easily
+gem "httparty"
+
 # Admin backend
 gem "administrate"
 
@@ -48,8 +51,6 @@ gem "rack-cors"
 
 # Store base64 images
 gem "active_storage_base64"
-
-
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
@@ -67,11 +68,18 @@ group :development, :test do
   gem "sqlite3", "~> 1.4"
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
+
+  gem "rspec-rails", "~> 5.0"
+  gem "database_cleaner"
 end
 
 group :development do
   # Annotate with database schema
   gem "annotate"
+
+  # Generate an ER diagram
+  gem "railroady"
+  gem "rails-erd"
 
   # VSCode ruby intellisense
   gem "solargraph"

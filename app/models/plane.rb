@@ -14,6 +14,7 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  dropzone_id            :integer          not null
+#  is_deleted             :boolean          default(FALSE)
 #
 class Plane < ApplicationRecord
   has_many :loads, dependent: :destroy

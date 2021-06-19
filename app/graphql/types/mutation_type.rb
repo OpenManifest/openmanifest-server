@@ -2,6 +2,8 @@
 
 module Types
   class MutationType < Types::BaseObject
+		field :revokePermission, mutation: Mutations::RevokePermission
+		field :grantPermission, mutation: Mutations::GrantPermission
 		field :updateNotification, mutation: Mutations::UpdateNotification
 		field :createTransaction, mutation: Mutations::CreateTransaction
 		field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate

@@ -4,21 +4,25 @@
 #
 # Table name: slots
 #
-#  id             :integer          not null, primary key
-#  user_id        :integer
-#  ticket_type_id :integer
-#  load_id        :integer
-#  rig_id         :integer
-#  jump_type_id   :integer
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  exit_weight    :float
-#  passenger_id   :integer
-#  is_paid        :boolean
-#  transaction_id :integer
+#  id                :integer          not null, primary key
+#  ticket_type_id    :integer
+#  load_id           :integer
+#  rig_id            :integer
+#  jump_type_id      :integer
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  exit_weight       :float
+#  passenger_id      :integer
+#  is_paid           :boolean
+#  transaction_id    :integer
+#  passenger_slot_id :integer
+#  group_number      :integer          default(0), not null
+#  dropzone_user_id  :integer
 #
 class Slot < ApplicationRecord
-  belongs_to :user, optional: true
+  belongs_to :dropzone_user, optional: true
+  delegate :user, to: :dropzone_user
+  
   belongs_to :passenger, optional: true
   belongs_to :ticket_type
   belongs_to :load
@@ -26,15 +30,12 @@ class Slot < ApplicationRecord
   belongs_to :jump_type
 
   belongs_to :passenger_slot, optional: true, class_name: "Slot"
+  belongs_to :payment, foreign_key: :transaction_id, class_name: "Transaction", optional: true
 
   has_many :slot_extras
   has_many :extras, through: :slot_extras
-  belongs_to :payment, foreign_key: :transaction_id, class_name: "Transaction", optional: true
 
-  after_create :notify!
-
-
-  def notify!
+  after_create do
     Notification.create(
       received_by: dropzone_user,
       notification_type: :user_manifested,
@@ -42,13 +43,16 @@ class Slot < ApplicationRecord
       resource: self
     )
   end
-
-  def dropzone_user
-    DropzoneUser.find_by(
-      dropzone_id: load.plane.dropzone_id,
-      user_id: user.id
+  
+  before_destroy do
+    Notification.create(
+      received_by: dropzone_user,
+      notification_type: :user_manifested,
+      message: "You're no longer manifested on Load ##{load.load_number}",
+      resource: self
     )
   end
+
 
   def reserve_transaction!
     # Tandem passengers are not real accounts and will

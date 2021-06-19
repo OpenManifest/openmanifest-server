@@ -18,7 +18,7 @@ module Mutations
       slots = attributes[:user_group].map do |user|
 
         model = Slot.find_or_initialize_by(
-          user_id: user[:id],
+          dropzone_user_id: user[:id],
           load_id: attributes[:load_id],
         )
         

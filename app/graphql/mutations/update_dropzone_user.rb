@@ -46,10 +46,22 @@ module Mutations
 
     def authorized?(id: nil, attributes: nil)
       dropzone_user = DropzoneUser.find(id)
+      current_dz_user = context[:current_resource].dropzone_users.find_by(
+        dropzone: dropzone_user.dropzone
+      )
 
-      allowed_to_update_others = context[:current_resource].can?("updateUser", dropzone_id: dropzone_user.dropzone_id)
+      allowed_to_update_others = current_dz_user.can?(:updateUser)
+      is_role_changed = attributes[:user_role_id] && attributes[:user_role_id] != dropzone_user.user_role_id
+      is_allowed_to_change_role = current_dz_user.can?(:grantPermission) && attributes[:user_role_id] < current_dz_user.user_role_id
 
-      if !allowed_to_update_others
+      # Check if the user is trying to change the UserRole:
+      if allowed_to_update_others && is_role_changed && !is_allowed_to_change_role
+        return false, {
+          errors: [
+            "You don't have permissions to assign this role"
+          ]
+        }
+      elsif !allowed_to_update_others
         return false, {
           errors: [
             "You don't have permission to update this"

@@ -12,10 +12,8 @@ module Types
     end
     field :group_number, Int, null: false
 
+    field :dropzone_user, Types::DropzoneUserType, null: true
     field :user, Types::UserType, null: true
-    def user
-      object.user || object.passenger
-    end
 
     field :ticket_type, Types::TicketTypeType, null: true
     field :load, Types::LoadType, null: false

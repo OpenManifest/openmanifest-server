@@ -4,6 +4,7 @@ module Mutations
     argument :exit_weight, Float, required: true
     argument :name, String, required: true
     argument :license_id, Int, required: false
+    argument :push_token, String, required: false
 
     field :authenticatable, Types::UserType, null: true
     field :errors, [String], null: true

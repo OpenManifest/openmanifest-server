@@ -58,16 +58,8 @@ class User < ApplicationRecord
   
 
   def can?(permission_name, dropzone_id:)
-    Permission.includes(
-      user_role: :dropzone_users
-    ).where(
-      user_roles: {
-        dropzone_users: {
-          user_id: id,
-          dropzone_id: dropzone_id
-          }
-        }
-    ).exists?(name: permission_name)
+    dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)
+    dz_user.can?(permission_name)
   end
 
   def self.create_fake

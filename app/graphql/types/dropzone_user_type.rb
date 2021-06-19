@@ -5,6 +5,7 @@ module Types
     implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
 
+    field :dropzone, Types::DropzoneType, null: false
     field :user, Types::UserType, null: false
     field :unseen_notifications, Int, null: false
     def unseen_notifications
@@ -95,18 +96,7 @@ module Types
 
     field :permissions, [Types::PermissionType], null: true
     def permissions
-      Permission.includes(
-        user_role: :dropzone_users
-      ).where(
-        user_roles: {
-          dropzone_users: {
-            user_id: object.user_id,
-            dropzone_id: object.dropzone_id
-            }
-          }
-        ).pluck(:name)
+      object.all_permissions.pluck(:name)
     end
-
-    
   end
 end

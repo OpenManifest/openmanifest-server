@@ -17,6 +17,7 @@
 #  dropzone_id       :integer
 #  canopy_size       :integer
 #  is_public         :boolean          default(FALSE)
+#  rig_type          :integer
 #
 require "test_helper"
 

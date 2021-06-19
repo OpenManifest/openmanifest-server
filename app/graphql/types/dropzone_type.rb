@@ -72,7 +72,7 @@ module Types
       argument :licensed, Boolean, required: false
     end
     def dropzone_users(permissions: nil, search: nil, licensed: nil)
-      query = object.dropzone_users.includes(:user)
+      query = object.dropzone_users.includes(:user, :user_role, user_permissions: :permission)
 
       if licensed
         query = query.where.not(users: { license_id: nil })
@@ -80,16 +80,17 @@ module Types
 
       if permissions
         query = query.where(
-          user_role_id: Permission.includes(
-              user_role: :dropzone_users
-            ).where(
-              user_roles: {
-                dropzone_users: {
-                  dropzone_id: object.id
-                  }
-                }
-              ).where(name: permissions.to_a).pluck("user_roles.id")
-            )
+          user_role_id: UserRolePermission.includes(:permission, :user_role).where(
+            permission: { name: permissions },
+            user_role: { dropzone_id: object.id }
+          ).pluck(:user_role_id)
+        ).or(
+          query.where(
+            user_permissions: {
+              permissions: { name: permissions }
+            }
+          )
+        )
       end
 
       query = query.search(name: search) if !search.nil?

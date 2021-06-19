@@ -10,6 +10,7 @@
 #  dropzone_id :integer          not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  is_deleted  :boolean          default(FALSE)
 #
 class Extra < ApplicationRecord
   has_many :ticket_type_extras, dependent: :destroy

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_13_044719) do
+ActiveRecord::Schema.define(version: 2021_06_19_015256) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -211,11 +211,9 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   end
 
   create_table "permissions", force: :cascade do |t|
-    t.integer "name"
-    t.integer "user_role_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["user_role_id"], name: "index_permissions_on_user_role_id"
+    t.string "name"
   end
 
   create_table "planes", force: :cascade do |t|
@@ -275,7 +273,6 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   end
 
   create_table "slots", force: :cascade do |t|
-    t.integer "user_id"
     t.integer "ticket_type_id"
     t.integer "load_id"
     t.integer "rig_id"
@@ -288,6 +285,8 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.integer "transaction_id"
     t.integer "passenger_slot_id"
     t.integer "group_number", default: 0, null: false
+    t.integer "dropzone_user_id"
+    t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["passenger_id"], name: "index_slots_on_passenger_id"
@@ -295,7 +294,6 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["transaction_id"], name: "index_slots_on_transaction_id"
-    t.index ["user_id"], name: "index_slots_on_user_id"
   end
 
   create_table "ticket_type_extras", force: :cascade do |t|
@@ -334,6 +332,24 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.index ["status"], name: "index_transactions_on_status"
   end
 
+  create_table "user_permissions", force: :cascade do |t|
+    t.integer "permission_id", null: false
+    t.integer "dropzone_user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_user_id"], name: "index_user_permissions_on_dropzone_user_id"
+    t.index ["permission_id"], name: "index_user_permissions_on_permission_id"
+  end
+
+  create_table "user_role_permissions", force: :cascade do |t|
+    t.integer "permission_id", null: false
+    t.integer "user_role_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["permission_id"], name: "index_user_role_permissions_on_permission_id"
+    t.index ["user_role_id"], name: "index_user_role_permissions_on_user_role_id"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -368,6 +384,7 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.text "tokens"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "push_token"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"
@@ -399,7 +416,6 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
   add_foreign_key "passengers", "dropzones"
-  add_foreign_key "permissions", "user_roles"
   add_foreign_key "planes", "dropzones"
   add_foreign_key "rig_inspections", "dropzone_users"
   add_foreign_key "rig_inspections", "form_templates"
@@ -409,6 +425,7 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "rigs", "users"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
+  add_foreign_key "slots", "dropzone_users"
   add_foreign_key "slots", "jump_types"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "passengers"
@@ -416,12 +433,15 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "slots", "slots", column: "passenger_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"
-  add_foreign_key "slots", "users"
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "dropzones"
   add_foreign_key "transactions", "dropzone_users"
   add_foreign_key "transactions", "slots"
+  add_foreign_key "user_permissions", "dropzone_users"
+  add_foreign_key "user_permissions", "permissions"
+  add_foreign_key "user_role_permissions", "permissions"
+  add_foreign_key "user_role_permissions", "user_roles"
   add_foreign_key "user_roles", "dropzones"
   add_foreign_key "users", "licenses"
 end

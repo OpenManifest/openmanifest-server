@@ -41,12 +41,13 @@ module Mutations
 
     def authorized?(id: nil, attributes: nil)
       slot = Slot.find(id)
+      dropzone = slot.load.plane.dropzone
+      dz_user = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
 
-      is_current_user = context[:current_resource].id == slot.user_id
+      is_current_user = dz_user.id == slot.dropzone_user_id
 
-      if context[:current_resource].can?(
+      if dz_user.can?(
         is_current_user ? :deleteSlot : :deleteUserSlot,
-        dropzone_id: Slot.find(id).load.plane.dropzone_id
       )
         return true
       else 

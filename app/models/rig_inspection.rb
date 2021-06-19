@@ -14,7 +14,7 @@
 #
 class RigInspection < ApplicationRecord
   belongs_to :form_template
-  belongs_to :inspected_by, class_name: "User"
+  belongs_to :inspected_by, class_name: "DropzoneUser"
   belongs_to :dropzone_user
   belongs_to :rig
 

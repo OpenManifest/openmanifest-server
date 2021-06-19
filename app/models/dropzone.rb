@@ -16,6 +16,7 @@
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
 #  rig_inspection_template_id :integer
+#  image                      :string
 #
 class Dropzone < ApplicationRecord
   has_many :dropzone_users, dependent: :destroy
@@ -169,6 +170,8 @@ class Dropzone < ApplicationRecord
         :readPackjob,
 
         :readUserTransactions,
+        :grantPermission,
+        :revokePermission,
 
         :readUser,
         :actAsLoadMaster,
@@ -210,20 +213,22 @@ class Dropzone < ApplicationRecord
         :createUserTransaction,
         :readUserTransactions,
 
+        :grantPermission,
+        :revokePermission,
+
         :readUser,
         :updateUser,
         :actAsLoadMaster,
         :actAsGCA,
         :actAsDZSO,
       ],
-      admin: Permission.names.keys,
-      owner: Permission.names.keys
+      admin: Permission.without_acting.pluck(:name),
+      owner: Permission.without_acting.pluck(:name)
     }.map do |role, permissions|
       role = UserRole.find_or_create_by(name: role, dropzone_id: id)
       permissions.each do |permission|
-        role.permissions.create(
-          name: permission
-        )
+        next if permission.nil?
+        role.grant! permission
       end
     end
   end

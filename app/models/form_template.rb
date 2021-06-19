@@ -13,6 +13,6 @@
 #
 class FormTemplate < ApplicationRecord
   belongs_to :dropzone, optional: true
-  belongs_to :created_by, class_name: "User"
-  belongs_to :updated_by, class_name: "User"
+  belongs_to :created_by, class_name: "DropzoneUser"
+  belongs_to :updated_by, class_name: "DropzoneUser"
 end

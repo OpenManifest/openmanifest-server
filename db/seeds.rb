@@ -6,3 +6,6 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+# Create default permissions
+load(Rails.root.join("db", "seeds", "australia.rb"))

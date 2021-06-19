@@ -2,6 +2,7 @@
 
 # Make sure jump types exist
 load(Rails.root.join("db", "seeds", "jump_types.rb"))
+load(Rails.root.join("db", "seeds", "permissions.rb"))
 
 # Create APF
 apf = Federation.find_or_create_by(

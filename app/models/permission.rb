@@ -11,78 +11,89 @@
 #  updated_at   :datetime         not null
 #
 class Permission < ApplicationRecord
-  belongs_to :user_role
-  enum name: [
-    :updateDropzone,
-    :deleteDropzone,
+  scope :without_acting, -> { where('name NOT LIKE (?)', "actAs%") }
+  scope :only_acting, -> { where('name LIKE (?)', "actAs%") }
 
-    :createLoad,
-    :updateLoad,
-    :deleteLoad,
-    :readLoad,
+  validates_presence_of :name
+  has_many :user_role_permissions, dependent: :destroy
+  has_many :user_permissions, dependent: :destroy
 
-    :createSlot,
-    :updateSlot,
-    :deleteSlot,
+  def self.names
+    [
+      :updateDropzone,
+      :deleteDropzone,
+    
+      :createLoad,
+      :updateLoad,
+      :deleteLoad,
+      :readLoad,
+    
+      :createSlot,
+      :updateSlot,
+      :deleteSlot,
+    
+    
+      :createUserSlot,
+      :createUserSlotWithSelf,
+      :updateUserSlot,
+      :deleteUserSlot,
+    
+      :createStudentSlot,
+      :updateStudentSlot,
+      :deleteStudentSlot,
+    
+      :createTicketType,
+      :updateTicketType,
+      :deleteTicketType,
+    
+      :createExtra,
+      :updateExtra,
+      :deleteExtra,
+      :readExtra,
+    
+      :createPlane,
+      :updatePlane,
+      :deletePlane,
+    
+      :createRig,
+      :updateRig,
+      :deleteRig,
+      :readRig,
+    
+      :createDropzoneRig,
+      :updateDropzoneRig,
+      :deleteDropzoneRig,
+      :readDropzoneRig,
+    
+      :readPermissions,
+      :updatePermissions,
+    
+      :createPackjob,
+      :updatePackjob,
+      :deletePackjob,
+      :readPackjob,
+    
+      :createFormTemplate,
+      :updateFormTemplate,
+      :deleteFormTemplate,
+      :readFormTemplate,
+    
+      :readUser,
+      :updateUser,
+      :deleteUser,
+      :createUser,
+    
+      :actAsPilot,
+      :actAsLoadMaster,
+      :actAsGCA,
+      :actAsDZSO,
+      :actAsRigInspector,
+    
+      :createUserTransaction,
+      :readUserTransactions,
 
-
-    :createUserSlot,
-    :createUserSlotWithSelf,
-    :updateUserSlot,
-    :deleteUserSlot,
-
-    :createStudentSlot,
-    :updateStudentSlot,
-    :deleteStudentSlot,
-
-    :createTicketType,
-    :updateTicketType,
-    :deleteTicketType,
-
-    :createExtra,
-    :updateExtra,
-    :deleteExtra,
-    :readExtra,
-
-    :createPlane,
-    :updatePlane,
-    :deletePlane,
-
-    :createRig,
-    :updateRig,
-    :deleteRig,
-    :readRig,
-
-    :createDropzoneRig,
-    :updateDropzoneRig,
-    :deleteDropzoneRig,
-    :readDropzoneRig,
-
-    :readPermissions,
-    :updatePermissions,
-
-    :createPackjob,
-    :updatePackjob,
-    :deletePackjob,
-    :readPackjob,
-
-    :createFormTemplate,
-    :updateFormTemplate,
-    :deleteFormTemplate,
-    :readFormTemplate,
-
-    :readUser,
-    :updateUser,
-    :deleteUser,
-    :createUser,
-
-    :actAsPilot,
-    :actAsLoadMaster,
-    :actAsGCA,
-    :actAsDZSO,
-    :actAsRigInspector,
-
-    :createUserTransaction,
-    :readUserTransactions,
-  ]
+      :grantPermission,
+      :revokePermission
+    ]
+  end
 end

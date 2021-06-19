@@ -19,9 +19,9 @@
 #
 class Load < ApplicationRecord
   belongs_to :plane
-  belongs_to :load_master, class_name: "User", optional: true, foreign_key: :load_master_id
-  belongs_to :gca, class_name: "User", optional: true, foreign_key: :gca_id
-  belongs_to :pilot, class_name: "User", optional: true, foreign_key: :pilot_id
+  belongs_to :load_master, class_name: "DropzoneUser", optional: true, foreign_key: :load_master_id
+  belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
+  belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
   has_many :slots
   after_save :charge_credits!,
@@ -50,22 +50,31 @@ class Load < ApplicationRecord
 
   def notify!
     if saved_change_to_dispatch_at?
-      if dispatch_at_was.nil?
+      if dispatch_at_was.nil? && !dispatch_at.nil?
         slots.each do |slot|
           if slot.user.present?
             Notification.create(
-              message: "Load ##{load_number} is on a call",
+              message: "Load ##{load_number} take off at #{dispatch_at.strftime("%H:%M")}",
               resource: self,
               received_by: slot.dropzone_user,
               notification_type: :boarding_call
             )
           end
         end
+      elsif dispatch_at.nil?
+        slots.each do |slot|
+          Notification.create(
+            message: "Load ##{load_number} call canceled",
+            resource: self,
+            received_by: slot.dropzone_user,
+            notification_type: :boarding_call_canceled
+          )
+        end
       else
         slots.each do |slot|
           if slot.user.present?
             Notification.create(
-              message: "Load ##{load_number} call changed",
+              message: "Load ##{load_number} call changed to take off at #{dispatch_at.strftime("%H:%M")}",
               resource: self,
               received_by: slot.dropzone_user,
               notification_type: :boarding_call

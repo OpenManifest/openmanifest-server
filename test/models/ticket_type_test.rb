@@ -14,6 +14,7 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  is_tandem              :boolean          default(FALSE)
+#  is_deleted             :boolean          default(FALSE)
 #
 require "test_helper"
 

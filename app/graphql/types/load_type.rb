@@ -9,11 +9,6 @@ module Types
     field :name, String, null: true
     field :has_landed, Boolean, null: true
     field :pilot, Types::DropzoneUserType, null: true
-    def pilot
-      if object.pilot
-        object.pilot.dropzone_users.find_by(dropzone_id: object.plane.dropzone_id)
-      end
-    end
 
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
@@ -24,18 +19,7 @@ module Types
     field :load_master, Types::DropzoneUserType, null: true
     field :load_number, Int, null: false
 
-    def load_master
-      if object.load_master
-        object.load_master.dropzone_users.find_by(dropzone_id: object.plane.dropzone_id)
-      end
-    end
-
     field :gca, Types::DropzoneUserType, null: true
-    def gca
-      if object.gca
-        object.gca.dropzone_users.find_by(dropzone_id: object.plane.dropzone_id)
-      end
-    end
 
 
     field :is_ready, Boolean, null: false

@@ -52,7 +52,7 @@ module Types
       argument :id, Int, required: true
     end
     def load(id:)
-      Load.includes(:gca, :load_master, :pilot, :plane, slots: :user).find(id)
+      Load.includes(:gca, :load_master, :pilot, :plane, slots: :dropzone_user).find(id)
     end
 
 
