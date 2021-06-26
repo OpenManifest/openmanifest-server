@@ -12,8 +12,8 @@
     "app.js.map": "/static/js/app.a0a71813.chunk.js.map",
     "runtime~app.js": "/static/js/runtime~app.1f12bc78.js",
     "runtime~app.js.map": "/static/js/runtime~app.1f12bc78.js.map",
-    "static/js/6.95c7dee3.chunk.js": "/static/js/6.95c7dee3.chunk.js",
-    "static/js/6.95c7dee3.chunk.js.map": "/static/js/6.95c7dee3.chunk.js.map",
+    "static/js/6.fe2a4b65.chunk.js": "/static/js/6.fe2a4b65.chunk.js",
+    "static/js/6.fe2a4b65.chunk.js.map": "/static/js/6.fe2a4b65.chunk.js.map",
     "static/js/7.cffc3d8d.chunk.js": "/static/js/7.cffc3d8d.chunk.js",
     "static/js/7.cffc3d8d.chunk.js.map": "/static/js/7.cffc3d8d.chunk.js.map",
     "static/js/8.02b21a93.chunk.js": "/static/js/8.02b21a93.chunk.js",
@@ -86,14 +86,14 @@
     "manifest.json": "/manifest.json",
     "serve.json": "/serve.json",
     "static/js/0.69df15b7.chunk.js.LICENSE.txt": "/static/js/0.69df15b7.chunk.js.LICENSE.txt",
-    "static/js/6.95c7dee3.chunk.js.LICENSE.txt": "/static/js/6.95c7dee3.chunk.js.LICENSE.txt",
+    "static/js/6.fe2a4b65.chunk.js.LICENSE.txt": "/static/js/6.fe2a4b65.chunk.js.LICENSE.txt",
     "static/media/color-circle.png": "/static/media/color-circle.16251760.png",
     "static/media/hsv_triangle_mask.png": "/static/media/hsv_triangle_mask.851ea126.png",
     "static/media/logo.png": "/static/media/logo.6fa2ed95.png"
   },
   "entrypoints": [
     "static/js/runtime~app.1f12bc78.js",
-    "static/js/6.95c7dee3.chunk.js",
+    "static/js/6.fe2a4b65.chunk.js",
     "static/js/app.a0a71813.chunk.js"
   ]
 }
