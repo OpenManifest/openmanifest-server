@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_19_015256) do
+ActiveRecord::Schema.define(version: 2021_06_26_050210) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -385,6 +385,7 @@ ActiveRecord::Schema.define(version: 2021_06_19_015256) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "push_token"
+    t.string "unconfirmed_email"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"
