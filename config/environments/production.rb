@@ -57,7 +57,7 @@ Rails.application.configure do
     :authentication => :plain,
     :user_name => Rails.application.credentials.dig(:sendgrid, :user_name),
     :password => Rails.application.credentials.dig(:sendgrid, :password),
-    :domain => 'heroku.com',
+    :domain => 'openmanifest.org',
     :enable_starttls_auto => true
   }
   config.action_mailer.default_url_options ={:host => 'openmanifest.org', :protocol => 'https'}
