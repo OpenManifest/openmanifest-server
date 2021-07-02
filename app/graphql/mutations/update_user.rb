@@ -44,8 +44,9 @@ module Mutations
 
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].id == id
+        puts "#{context[:current_resource].id} != #{id}"
         return true
-      else 
+      else
         return false, {
         errors: [
           "You cant update other users"

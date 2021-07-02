@@ -25,6 +25,6 @@ class UserRole < ApplicationRecord
   end
 
   def revoke!(permission_name)
-    permissions.includes(:permissions).where(permissions: { name: permission_name }).destroy_all
+    user_role_permissions.includes(:permission).where(permission: { name: permission_name }).destroy_all
   end
 end

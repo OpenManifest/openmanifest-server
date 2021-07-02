@@ -12,13 +12,9 @@ module Mutations
       model = UserRole.find(id)
 
       if enabled
-        perm = Permission.find_or_initialize_by(
-          name: permission,
-          user_role_id: id,
-        )
-        perm.save!
+        model.grant! permission
       else
-        model.permissions.where(name: permission).delete_all
+        model.revoke! permission
       end
 
       model.reload

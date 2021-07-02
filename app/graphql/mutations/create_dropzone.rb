@@ -17,7 +17,7 @@ module Mutations
       end
 
       ## Make current user owner
-      DropzoneUser.create(
+      dz_user = DropzoneUser.create(
         dropzone: model,
         user: context[:current_resource],
         user_role: UserRole.find_by(dropzone_id: model.id, name: "owner")
@@ -26,8 +26,8 @@ module Mutations
       model.rig_inspection_template = FormTemplate.create(
         name: "Rig Inspection",
         definition: RigInspection.default_form.to_json,
-        created_by: context[:current_resource],
-        updated_by: context[:current_resource],
+        created_by: dz_user,
+        updated_by: dz_user,
       )
       model.save!
       model.rig_inspection_template.update(dropzone: model)
