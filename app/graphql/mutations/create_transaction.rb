@@ -41,7 +41,7 @@ module Mutations
     def authorized?(attributes: nil)
       dz_user = DropzoneUser.find(attributes[:dropzone_user_id])
 
-      if context[:current_resource].can?("createUserTransaction", dropzone_id: dz_user.dropzone.id)
+      if !context[:current_resource].can?("createUserTransaction", dropzone_id: dz_user.dropzone.id)
         return false, {
           errors: [
             "You can't create transactions"
