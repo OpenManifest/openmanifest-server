@@ -1,13 +1,13 @@
 {
   "files": {
-    "static/js/0.afa5d99a.chunk.js": "/static/js/0.afa5d99a.chunk.js",
-    "static/js/0.afa5d99a.chunk.js.map": "/static/js/0.afa5d99a.chunk.js.map",
+    "static/js/0.2f38bb4a.chunk.js": "/static/js/0.2f38bb4a.chunk.js",
+    "static/js/0.2f38bb4a.chunk.js.map": "/static/js/0.2f38bb4a.chunk.js.map",
     "static/js/1.ab66c9ed.chunk.js": "/static/js/1.ab66c9ed.chunk.js",
     "static/js/1.ab66c9ed.chunk.js.map": "/static/js/1.ab66c9ed.chunk.js.map",
     "app.js": "/static/js/app.c379607c.chunk.js",
     "app.js.map": "/static/js/app.c379607c.chunk.js.map",
-    "runtime~app.js": "/static/js/runtime~app.1f1fd04b.js",
-    "runtime~app.js.map": "/static/js/runtime~app.1f1fd04b.js.map",
+    "runtime~app.js": "/static/js/runtime~app.fcda4fc1.js",
+    "runtime~app.js.map": "/static/js/runtime~app.fcda4fc1.js.map",
     "static/js/4.41905023.chunk.js": "/static/js/4.41905023.chunk.js",
     "static/js/4.41905023.chunk.js.map": "/static/js/4.41905023.chunk.js.map",
     "static/js/5.c6c853bf.chunk.js": "/static/js/5.c6c853bf.chunk.js",
@@ -28,8 +28,8 @@
     "static/js/12.511ff7d8.chunk.js.map": "/static/js/12.511ff7d8.chunk.js.map",
     "static/js/13.e35341ea.chunk.js": "/static/js/13.e35341ea.chunk.js",
     "static/js/13.e35341ea.chunk.js.map": "/static/js/13.e35341ea.chunk.js.map",
-    "static/js/14.96ecd6ed.chunk.js": "/static/js/14.96ecd6ed.chunk.js",
-    "static/js/14.96ecd6ed.chunk.js.map": "/static/js/14.96ecd6ed.chunk.js.map",
+    "static/js/14.c544fa1d.chunk.js": "/static/js/14.c544fa1d.chunk.js",
+    "static/js/14.c544fa1d.chunk.js.map": "/static/js/14.c544fa1d.chunk.js.map",
     "static/js/15.a79729b6.chunk.js": "/static/js/15.a79729b6.chunk.js",
     "static/js/15.a79729b6.chunk.js.map": "/static/js/15.a79729b6.chunk.js.map",
     "static/js/16.691306f2.chunk.js": "/static/js/16.691306f2.chunk.js",
@@ -92,7 +92,7 @@
     "static/media/logo.png": "/static/media/logo.6fa2ed95.png"
   },
   "entrypoints": [
-    "static/js/runtime~app.1f1fd04b.js",
+    "static/js/runtime~app.fcda4fc1.js",
     "static/js/4.41905023.chunk.js",
     "static/js/app.c379607c.chunk.js"
   ]
