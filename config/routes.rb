@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   get "/.well-known/apple-app-site-association", to: "resource#aasa"
   
   get "/", to: "application#index"
+  get "/index.html", to: "application#index"
   #get '*path', to: 'application#index', constraints: ->(request) do
   #  !request.xhr? && !request.format.html?
   #end
