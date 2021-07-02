@@ -4,6 +4,6 @@ class ApplicationController < ActionController::Base
   include GraphqlDevise::Concerns::SetUserByToken
 
   def index
-    render file: 'public/index.html'
+    render file: 'app/views/web-build/index.html', cache: false
   end
 end
