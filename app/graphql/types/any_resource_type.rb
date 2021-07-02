@@ -14,7 +14,8 @@ module Types
           Pack => Types::PackType,
           Plane => Types::PlaneType,
           DropzoneUser => Types::DropzoneUserType,
-          User => Types::UserType
+          User => Types::UserType,
+          Transaction => Types::TransactionType
         }[object.class]
       end
     end
