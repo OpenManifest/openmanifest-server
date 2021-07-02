@@ -29,7 +29,7 @@ class DropzoneUser < ApplicationRecord
   
   after_initialize do
     if user_role.nil?
-      assign_attributes(user_role:  dropzone.user_roles.first)
+      assign_attributes(user_role:  dropzone.user_roles.second)
     end
   end
 
