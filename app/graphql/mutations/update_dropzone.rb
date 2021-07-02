@@ -12,7 +12,10 @@ module Mutations
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
 
-      model.update!(attributes.to_h)
+      if attributes[:banner] && attributes[:banner].size > 0
+        model.banner.attach(data: attributes[:banner].force_encoding("UTF-8"))
+      end
+      model.update!(attributes.to_h.except(:banner))
       {
         dropzone: model,
         errors: nil,
