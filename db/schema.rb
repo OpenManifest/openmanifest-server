@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_26_050210) do
+ActiveRecord::Schema.define(version: 2021_07_03_083043) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -116,12 +116,14 @@ ActiveRecord::Schema.define(version: 2021_06_26_050210) do
     t.string "name"
     t.text "definition"
     t.integer "dropzone_id"
-    t.integer "created_by_id", null: false
-    t.integer "updated_by_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "dropzone_users_id"
+    t.integer "created_by_id"
+    t.integer "updated_by_id"
     t.index ["created_by_id"], name: "index_form_templates_on_created_by_id"
     t.index ["dropzone_id"], name: "index_form_templates_on_dropzone_id"
+    t.index ["dropzone_users_id"], name: "index_form_templates_on_dropzone_users_id"
     t.index ["updated_by_id"], name: "index_form_templates_on_updated_by_id"
   end
 
@@ -400,9 +402,9 @@ ActiveRecord::Schema.define(version: 2021_06_26_050210) do
   add_foreign_key "dropzone_users", "users"
   add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"
   add_foreign_key "extras", "dropzones"
+  add_foreign_key "form_templates", "dropzone_users", column: "created_by_id"
+  add_foreign_key "form_templates", "dropzone_users", column: "updated_by_id"
   add_foreign_key "form_templates", "dropzones"
-  add_foreign_key "form_templates", "users", column: "created_by_id"
-  add_foreign_key "form_templates", "users", column: "updated_by_id"
   add_foreign_key "licensed_jump_types", "jump_types"
   add_foreign_key "licensed_jump_types", "licenses"
   add_foreign_key "licenses", "federations"
