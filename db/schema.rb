@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_03_083043) do
+ActiveRecord::Schema.define(version: 2021_07_03_102154) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -155,14 +155,14 @@ ActiveRecord::Schema.define(version: 2021_07_03_083043) do
     t.datetime "dispatch_at"
     t.boolean "has_landed"
     t.integer "plane_id", null: false
-    t.integer "load_master_id"
-    t.integer "gca_id"
-    t.integer "pilot_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
     t.integer "max_slots", default: 0
     t.boolean "is_open"
+    t.integer "gca_id"
+    t.integer "load_master_id"
+    t.integer "pilot_id"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -408,10 +408,10 @@ ActiveRecord::Schema.define(version: 2021_07_03_083043) do
   add_foreign_key "licensed_jump_types", "jump_types"
   add_foreign_key "licensed_jump_types", "licenses"
   add_foreign_key "licenses", "federations"
+  add_foreign_key "loads", "dropzone_users", column: "gca_id"
+  add_foreign_key "loads", "dropzone_users", column: "load_master_id"
+  add_foreign_key "loads", "dropzone_users", column: "pilot_id"
   add_foreign_key "loads", "planes"
-  add_foreign_key "loads", "users", column: "gca_id"
-  add_foreign_key "loads", "users", column: "load_master_id"
-  add_foreign_key "loads", "users", column: "pilot_id"
   add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
   add_foreign_key "master_logs", "dropzones"
   add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
