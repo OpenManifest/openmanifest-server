@@ -26,6 +26,8 @@ class Load < ApplicationRecord
   has_many :slots
   after_save :charge_credits!,
              :notify!
+
+  
   def charge_credits!
     # If has_landed? changed to true:
     if saved_change_to_has_landed? && has_landed?

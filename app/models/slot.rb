@@ -81,12 +81,18 @@ class Slot < ApplicationRecord
   def charge_credits!
     # Tandem passengers are not real accounts and will
     # not be charged credits:
-    return unless user.present?
+    return unless dropzone_user.present?
     reserve_transaction! unless payment.present?
     
     payment.update(
       status: :paid,
     )
+  end
+
+  def refund_credits!
+    return unless payment.present?
+    
+    payment.destroy
   end
   
 

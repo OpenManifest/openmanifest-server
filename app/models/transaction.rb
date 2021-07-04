@@ -17,6 +17,7 @@ class Transaction < ApplicationRecord
 
   after_create :update_credits,
                :notify!
+  before_destroy :refund!
 
   enum status: [
     :paid,
@@ -52,6 +53,13 @@ class Transaction < ApplicationRecord
     DropzoneUser.update_counters(
       dropzone_user_id,
       credits: amount
+    )
+  end
+  
+  def refund!
+    DropzoneUser.update_counters(
+      dropzone_user_id,
+      credits: amount * -1
     )
   end
 end
