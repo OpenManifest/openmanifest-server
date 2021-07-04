@@ -52,7 +52,7 @@ class Load < ApplicationRecord
     if saved_change_to_dispatch_at?
       if dispatch_at_was.nil? && !dispatch_at.nil?
         slots.each do |slot|
-          if slot.user.present?
+          if slot.dropzone_user.present?
             Notification.create(
               message: "Load ##{load_number} take off at #{dispatch_at.strftime("%H:%M")}",
               resource: self,
@@ -72,7 +72,7 @@ class Load < ApplicationRecord
         end
       else
         slots.each do |slot|
-          if slot.user.present?
+          if slot.dropzone_user.present?
             Notification.create(
               message: "Load ##{load_number} call changed to take off at #{dispatch_at.strftime("%H:%M")}",
               resource: self,
