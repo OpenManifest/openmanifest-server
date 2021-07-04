@@ -46,7 +46,11 @@ module Mutations
 
       is_current_user = dz_user.id == slot.dropzone_user_id
 
-      if dz_user.can?(
+      if slot.load.has_landed?
+        return false, {
+          errors: ["You can't take slots off a load that has landed"]
+        }
+      elsif dz_user.can?(
         is_current_user ? :deleteSlot : :deleteUserSlot,
       )
         return true
