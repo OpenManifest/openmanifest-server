@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_03_102154) do
+ActiveRecord::Schema.define(version: 2021_07_04_025711) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -234,13 +234,13 @@ ActiveRecord::Schema.define(version: 2021_07_03_102154) do
 
   create_table "rig_inspections", force: :cascade do |t|
     t.integer "form_template_id", null: false
-    t.integer "inspected_by_id", null: false
     t.integer "dropzone_user_id", null: false
     t.integer "rig_id", null: false
     t.boolean "is_ok", default: false, null: false
     t.text "definition"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "inspected_by_id"
     t.index ["dropzone_user_id"], name: "index_rig_inspections_on_dropzone_user_id"
     t.index ["form_template_id"], name: "index_rig_inspections_on_form_template_id"
     t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
@@ -421,9 +421,9 @@ ActiveRecord::Schema.define(version: 2021_07_03_102154) do
   add_foreign_key "passengers", "dropzones"
   add_foreign_key "planes", "dropzones"
   add_foreign_key "rig_inspections", "dropzone_users"
+  add_foreign_key "rig_inspections", "dropzone_users", column: "inspected_by_id"
   add_foreign_key "rig_inspections", "form_templates"
   add_foreign_key "rig_inspections", "rigs"
-  add_foreign_key "rig_inspections", "users", column: "inspected_by_id"
   add_foreign_key "rigs", "dropzones"
   add_foreign_key "rigs", "users"
   add_foreign_key "slot_extras", "extras"
