@@ -63,12 +63,14 @@ class Load < ApplicationRecord
         end
       elsif dispatch_at.nil?
         slots.each do |slot|
-          Notification.create(
-            message: "Load ##{load_number} call canceled",
-            resource: self,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call_canceled
-          )
+          if slot.dropzone_user.present?
+            Notification.create(
+              message: "Load ##{load_number} call canceled",
+              resource: self,
+              received_by: slot.dropzone_user,
+              notification_type: :boarding_call_canceled
+            )
+          end
         end
       else
         slots.each do |slot|
