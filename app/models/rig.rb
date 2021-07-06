@@ -25,6 +25,7 @@ class Rig < ApplicationRecord
   has_many :packs
 
   has_many :users, as: :packers, through: :packs
+  has_many :rig_inspections
 
   enum rig_type: [
     :student,
