@@ -11,8 +11,8 @@ module Mutations
     def resolve(attributes:, id: nil)
       model = RigInspection.find(id)
       model.assign_attributes(attributes.to_h)
-
-
+      
+      
       model.save!
 
       {
