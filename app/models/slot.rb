@@ -108,7 +108,7 @@ class Slot < ApplicationRecord
   def wing_loading
     if rig && rig.canopy_size && exit_weight
       weight_in_lbs = exit_weight * 2.20462
-      weight_in_lbs /= canopy_size
+      weight_in_lbs /= rig.canopy_size
     end
   end
 end
