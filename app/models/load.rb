@@ -26,7 +26,7 @@ class Load < ApplicationRecord
   has_many :slots
   before_save do 
     # Default to open
-    assign_attributes(state: :open)
+    assign_attributes(state: :open) if state.nil?
   end
  
   after_save :notify!,
