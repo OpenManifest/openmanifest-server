@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_04_025711) do
+ActiveRecord::Schema.define(version: 2021_07_06_134311) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -163,6 +163,7 @@ ActiveRecord::Schema.define(version: 2021_07_04_025711) do
     t.integer "gca_id"
     t.integer "load_master_id"
     t.integer "pilot_id"
+    t.integer "state"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"

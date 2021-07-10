@@ -24,17 +24,46 @@ class Load < ApplicationRecord
   belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
   has_many :slots
-  after_save :charge_credits!,
-             :notify!
+  before_save do 
+    # Default to open
+    assign(state: :open)
+  end
+ 
+  after_save :notify!,
+             :change_state!
 
-  
-  def charge_credits!
-    # If has_landed? changed to true:
+  enum state: [
+    :open,
+    :boarding_call,
+    :in_flight,
+    :landed,
+    :cancelled
+  ]
+
+  # Changes the state of the load, which affects whether
+  # users get charged credits or not, and what notifications
+  # are sent to the user. The state changes when dispatch_at
+  # is changed
+  def change_state!
+    # When the plane is marked as landed, charge credits
     if saved_change_to_has_landed? && has_landed?
+      update(state: :landed)
       if plane.dropzone.is_credit_system_enabled?
         # Charge users credits
         slots.each(&:charge_credits!)
       end
+    # Change state to boarding call and notify everyone
+    elsif saved_change_to_dispatch_at? && dispatch_at
+      update(state: :boarding_call)
+
+    # Change state back to open if dispatch_at is reset
+    elsif saved_change_to_dispatch_at? && dispatch_at.nil?
+      update(state: :open)
+    end
+
+    # Refund credits when load is cancelled
+    if saved_change_to_state? && state == 'cancelled'
+      slots.each(&:refund_credits!)
     end
   end
 

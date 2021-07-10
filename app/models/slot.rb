@@ -91,7 +91,6 @@ class Slot < ApplicationRecord
 
   def refund_credits!
     return unless payment.present?
-    
     payment.destroy
   end
   

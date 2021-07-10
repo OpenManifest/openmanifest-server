@@ -18,6 +18,7 @@ module Types
     field :plane, Types::PlaneType, null: false
     field :load_master, Types::DropzoneUserType, null: true
     field :load_number, Int, null: false
+    field :state, Types::LoadStateType, null: false
 
     field :gca, Types::DropzoneUserType, null: true
 
