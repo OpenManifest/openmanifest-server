@@ -9,6 +9,10 @@ module Types
     field :name, String, null: true
     field :has_landed, Boolean, null: true
     field :pilot, Types::DropzoneUserType, null: true
+    field :weight, Integer, null: false
+    def weight
+      object.slots.sum(&:exit_weight)
+    end
 
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
