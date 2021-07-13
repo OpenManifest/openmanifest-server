@@ -30,6 +30,8 @@
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  push_token             :string
+#  unconfirmed_email      :string
 #
 require "test_helper"
 

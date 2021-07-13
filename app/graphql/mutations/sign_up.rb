@@ -10,8 +10,18 @@ module Mutations
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
+    # Override devises initializer to allow 
+    # signing up on an existing user if the user
+    # was created by staff
+    def build_resource(attrs)
+      resource = User.find_or_initialize_by(unconfirmed_email: attrs[:email])
+      resource.assign_attributes(attrs)
+      resource
+    end
+
     def resolve(email:, **attrs)
       original_payload = super
+
       original_payload.merge(
         authenticatable: original_payload[:authenticatable],
         errors: nil,

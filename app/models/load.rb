@@ -8,14 +8,15 @@
 #  dispatch_at    :datetime
 #  has_landed     :boolean
 #  plane_id       :integer          not null
-#  load_master_id :integer
-#  gca_id         :integer
-#  pilot_id       :integer
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  name           :string
 #  max_slots      :integer          default(0)
 #  is_open        :boolean
+#  gca_id         :integer
+#  load_master_id :integer
+#  pilot_id       :integer
+#  state          :integer
 #
 class Load < ApplicationRecord
   belongs_to :plane
@@ -23,6 +24,7 @@ class Load < ApplicationRecord
   belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
   belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
+  has_many :notifications, as: :resource
   has_many :slots
   before_save do 
     # Default to open

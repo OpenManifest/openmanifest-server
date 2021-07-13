@@ -34,6 +34,7 @@ class Slot < ApplicationRecord
 
   has_many :slot_extras
   has_many :extras, through: :slot_extras
+  has_many :notifications, as: :resource
 
   after_create do
     Notification.create(

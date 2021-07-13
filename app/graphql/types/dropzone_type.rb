@@ -54,6 +54,8 @@ module Types
       JumpType.where(id: jump_type_ids.reduce(&:intersection))
     end
 
+    field :current_conditions, Types::WeatherConditionType, null: false
+
     field :dropzone_user, Types::DropzoneUserType, null: true do
       argument :id, Int, required: false
       argument :user_id, Int, required: false
@@ -92,8 +94,9 @@ module Types
           )
         )
       end
+      
+      query = query.search(search) if !search.nil?
 
-      query = query.search(name: search) if !search.nil?
       query || []
     end
 
@@ -144,9 +147,18 @@ module Types
       loads.order(created_at: :desc)
     end
 
-    field :roles, [Types::UserRoleType], null: false
-    def roles
-      object.user_roles.order(id: :asc)
+    field :roles, [Types::UserRoleType], null: false do
+      argument :selectable, Boolean, required: false
+    end
+    def roles(selectable:)
+      query = object.user_roles
+
+      if selectable
+        dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
+        query = query.where('id < ?', dz_user.user_role_id)
+      end
+
+      query.order(id: :asc)
     end
 
     field :master_log, Types::MasterLogType, null: false,

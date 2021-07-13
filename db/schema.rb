@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_06_134311) do
+ActiveRecord::Schema.define(version: 2021_07_11_061449) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -396,6 +396,19 @@ ActiveRecord::Schema.define(version: 2021_07_06_134311) do
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  create_table "weather_conditions", force: :cascade do |t|
+    t.text "winds"
+    t.integer "temperature"
+    t.integer "jump_run"
+    t.integer "exit_spot_miles"
+    t.integer "offset_miles"
+    t.integer "offset_direction"
+    t.integer "dropzone_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_id"], name: "index_weather_conditions_on_dropzone_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "dropzone_users", "dropzones"
@@ -448,4 +461,5 @@ ActiveRecord::Schema.define(version: 2021_07_06_134311) do
   add_foreign_key "user_role_permissions", "user_roles"
   add_foreign_key "user_roles", "dropzones"
   add_foreign_key "users", "licenses"
+  add_foreign_key "weather_conditions", "dropzones"
 end

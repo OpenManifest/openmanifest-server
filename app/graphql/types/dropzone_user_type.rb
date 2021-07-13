@@ -7,6 +7,7 @@ module Types
 
     field :dropzone, Types::DropzoneType, null: false
     field :user, Types::UserType, null: false
+
     field :unseen_notifications, Int, null: false
     def unseen_notifications
       object.notifications.where(is_seen: false).count

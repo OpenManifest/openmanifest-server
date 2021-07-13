@@ -14,6 +14,7 @@
 class Transaction < ApplicationRecord
   belongs_to :dropzone_user
   belongs_to :slot, optional: true
+  has_many :notifications, as: :resource
 
   after_create :update_credits,
                :notify!

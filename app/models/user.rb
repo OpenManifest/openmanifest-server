@@ -30,6 +30,8 @@
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  push_token             :string
+#  unconfirmed_email      :string
 #
 class User < ApplicationRecord
   include CloudinaryHelper
@@ -46,7 +48,7 @@ class User < ApplicationRecord
   has_many :packs
   has_many :dropzone_users
   has_many :dropzones, through: :dropzone_users
-  has_many :slots
+  has_many :slots, through: :dropzone_users
   has_many :loads, through: :slots
   has_many :user_roles, through: :dropzone_users
 

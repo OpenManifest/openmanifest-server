@@ -5,19 +5,21 @@
 # Table name: dropzone_users
 #
 #  id           :integer          not null, primary key
-#  user_id      :integer          not null
+#  user_id      :integer
 #  dropzone_id  :integer          not null
 #  credits      :float
 #  expires_at   :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  user_role_id :integer          not null
+#  ghost_id     :integer
 #
 class DropzoneUser < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :dropzone
   belongs_to :user_role
   has_many :role_permissions, source: :permissions, through: :user_role
+  has_many :slots
   
   has_many :user_permissions
   has_many :permissions, through: :user_permissions

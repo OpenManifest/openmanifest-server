@@ -21,6 +21,7 @@
 class Dropzone < ApplicationRecord
   has_many :dropzone_users, dependent: :destroy
   has_many :users, through: :dropzone_users
+  has_many :weather_conditions
 
   has_many :planes, dependent: :destroy
   has_many :loads, through: :planes
@@ -49,6 +50,11 @@ class Dropzone < ApplicationRecord
     end
   end
 
+  def current_conditions
+    weather_conditions.find_or_create_by(
+      created_at: DateTime.now.beginning_of_day,
+    )
+  end
 
   def create_default_roles
     {
@@ -120,6 +126,7 @@ class Dropzone < ApplicationRecord
         :readPackjob,
 
         :readUserTransactions,
+        :updateWeatherConditions,
 
         :readUser,
         :actAsLoadMaster,
@@ -140,6 +147,7 @@ class Dropzone < ApplicationRecord
         :updateDropzoneRig,
 
         :readUserTransactions,
+        :updateWeatherConditions,
 
         :createPackjob,
         :updatePackjob,
@@ -164,6 +172,8 @@ class Dropzone < ApplicationRecord
         :createDropzoneRig,
         :updateDropzoneRig,
 
+        :updateWeatherConditions,
+
         :createPackjob,
         :updatePackjob,
         :deletePackjob,
@@ -182,6 +192,8 @@ class Dropzone < ApplicationRecord
         :readLoad,
         :updateLoad,
         :createLoad,
+
+        :updateWeatherConditions,
 
         :createSlot,
         :updateSlot,

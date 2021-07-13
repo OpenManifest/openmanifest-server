@@ -13,6 +13,7 @@ apf = Federation.find_or_create_by(
 
 # Assign jump types to licenses
 {
+  "Student" => ["fs", "hnp"],
   "Certificate A" => ["hnp", "hp", "fs"],
   "Certificate B" => ["hnp", "hp", "fs", "angle", "freefly"],
   "Certificate C" => ["hnp", "hp", "fs", "angle", "freefly", "cam"],

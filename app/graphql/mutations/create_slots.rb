@@ -47,8 +47,8 @@ module Mutations
           extra_cost ||= 0
 
           cost = model.ticket_type.cost + extra_cost
-          dz_user = dropzone.dropzone_users.find_by(user_id: user[:id])
-          credits = dz_user.credits || 0
+          dz_user = dropzone.dropzone_users.find_by(id: user[:id])
+          credits = dz_user&.credits || 0
 
           if cost > credits
             return {
