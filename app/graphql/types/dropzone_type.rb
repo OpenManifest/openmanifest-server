@@ -7,6 +7,8 @@ module Types
     field :name, String, null: true
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
+    field :lat, Float, null: true
+    field :lng, Float, null: true
     field :federation, FederationType, null: false
     field :primary_color, String, null: true
     field :secondary_color, String, null: true

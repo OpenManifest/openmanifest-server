@@ -25,6 +25,8 @@ gem "redis", "~> 4.0"
 # Use Active Model has_secure_password
 gem "bcrypt", "~> 3.1.7"
 
+gem "geokit-rails"
+
 # Set CLOUDINARY_URL and other env variables
 gem 'dotenv-rails', groups: [:development, :test], require: 'dotenv/rails-now'
 
