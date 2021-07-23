@@ -152,7 +152,7 @@ module Types
     field :roles, [Types::UserRoleType], null: false do
       argument :selectable, Boolean, required: false
     end
-    def roles(selectable:)
+    def roles(selectable: nil)
       query = object.user_roles
 
       if selectable
