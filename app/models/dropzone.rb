@@ -36,6 +36,7 @@ class Dropzone < ApplicationRecord
   has_many :rigs, dependent: :destroy
   has_many :extras, dependent: :destroy
   has_many :master_logs, dependent: :destroy
+  has_many :form_templates, dependent: :destroy
 
   belongs_to :federation
   belongs_to :rig_inspection_template,

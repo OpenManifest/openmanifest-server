@@ -20,14 +20,12 @@ module Types
     
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-      dz_user = object.dropzone_users.find_or_initialize_by(
-        user: context[:current_resource]
-      )
 
-      
-      if dz_user.new_record?
-        dz_user.user_role = object.user_roles.first
-        dz_user.save
+      unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
+        dz_user = object.dropzone_users.find_or_initialize_by(
+          user: context[:current_resource],
+          user_role: object.user_roles.first
+        )
       end
 
       # If the user has a rig, has set up exit weight, and

@@ -28,6 +28,8 @@ class DropzoneUser < ApplicationRecord
   has_many :rig_inspections
   
   has_many :notifications, foreign_key: :received_by_id
+
+  validates :user_id, uniqueness: { scope: :dropzone_id }
   
   after_initialize do
     if user_role.nil?

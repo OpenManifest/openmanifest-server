@@ -13,7 +13,7 @@
 class UserRole < ApplicationRecord
   belongs_to :dropzone
   has_many :dropzone_users
-  has_many :user_role_permissions
+  has_many :user_role_permissions, dependent: :destroy
   has_many :permissions, through: :user_role_permissions
 
   def grant!(permission_name)
