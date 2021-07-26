@@ -97,7 +97,7 @@ module Types
       
       query = query.search(search) if !search.nil?
 
-      query || []
+      query.distinct || []
     end
 
     field :is_public, Boolean, null: false
