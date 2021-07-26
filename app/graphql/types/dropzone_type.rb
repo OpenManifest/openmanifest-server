@@ -86,12 +86,12 @@ module Types
             permission: { name: permissions },
             user_role: { dropzone_id: object.id }
           ).pluck(:user_role_id)
-        ).distinct.or(
+        ).or(
           query.where(
             user_permissions: {
               permissions: { name: permissions }
             }
-          ).distinct
+          )
         )
       end
       

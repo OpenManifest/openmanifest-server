@@ -5,14 +5,13 @@
 # Table name: dropzone_users
 #
 #  id           :integer          not null, primary key
-#  user_id      :integer
+#  user_id      :integer          not null
 #  dropzone_id  :integer          not null
 #  credits      :float
 #  expires_at   :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  user_role_id :integer          not null
-#  ghost_id     :integer
 #
 class DropzoneUser < ApplicationRecord
   belongs_to :user, optional: true
@@ -21,12 +20,16 @@ class DropzoneUser < ApplicationRecord
   has_many :role_permissions, source: :permissions, through: :user_role
   has_many :slots, dependent: :destroy
   has_many :form_templates, foreign_key: :created_by_id, dependent: :destroy
+
+  has_many :loads_as_gca, class_name: "Load", foreign_key: :gca_id, dependent: :nullify
+  has_many :loads_as_pilot, class_name: "Load", foreign_key: :pilot_id, dependent: :nullify
+  has_many :loads_as_load_master, class_name: "Load", foreign_key: :load_master_id, dependent: :nullify
   
-  has_many :user_permissions
+  has_many :user_permissions, dependent: :destroy
   has_many :permissions, through: :user_permissions
 
   has_many :transactions, dependent: :destroy
-  has_many :rig_inspections
+  has_many :rig_inspections, dependent: :destroy
   
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
 

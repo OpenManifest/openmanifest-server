@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: weather_conditions
+#
+#  id               :integer          not null, primary key
+#  winds            :text
+#  temperature      :integer
+#  jump_run         :integer
+#  exit_spot_miles  :integer
+#  offset_miles     :integer
+#  offset_direction :integer
+#  dropzone_id      :integer          not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#
 class WeatherCondition < ApplicationRecord
   belongs_to :dropzone
   before_create :set_defaults

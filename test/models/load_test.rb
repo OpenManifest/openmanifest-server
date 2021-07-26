@@ -17,6 +17,7 @@
 #  load_master_id :integer
 #  pilot_id       :integer
 #  state          :integer
+#  load_number    :integer
 #
 require "test_helper"
 

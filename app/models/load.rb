@@ -17,6 +17,7 @@
 #  load_master_id :integer
 #  pilot_id       :integer
 #  state          :integer
+#  load_number    :integer
 #
 class Load < ApplicationRecord
   scope :today, -> { where(created_at: DateTime.now.beginning_of_day..DateTime.now.end_of_day) }
@@ -26,7 +27,7 @@ class Load < ApplicationRecord
   belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
   has_many :notifications, as: :resource
-  has_many :slots
+  has_many :slots, dependent: :destroy
   before_save do 
     # Default to open
     assign_attributes(state: :open) if state.nil?
