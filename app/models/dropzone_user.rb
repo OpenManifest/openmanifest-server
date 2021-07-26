@@ -19,15 +19,16 @@ class DropzoneUser < ApplicationRecord
   belongs_to :dropzone
   belongs_to :user_role
   has_many :role_permissions, source: :permissions, through: :user_role
-  has_many :slots
+  has_many :slots, dependent: :destroy
+  has_many :form_templates, foreign_key: :created_by_id, dependent: :destroy
   
   has_many :user_permissions
   has_many :permissions, through: :user_permissions
 
-  has_many :transactions
+  has_many :transactions, dependent: :destroy
   has_many :rig_inspections
   
-  has_many :notifications, foreign_key: :received_by_id
+  has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
 
   validates :user_id, uniqueness: { scope: :dropzone_id }
   

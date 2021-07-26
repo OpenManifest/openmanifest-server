@@ -26,7 +26,7 @@ class Dropzone < ApplicationRecord
                    lng_column_name: :lng
   has_many :dropzone_users, dependent: :destroy
   has_many :users, through: :dropzone_users
-  has_many :weather_conditions
+  has_many :weather_conditions, dependent: :destroy
 
   has_many :planes, dependent: :destroy
   has_many :loads, through: :planes

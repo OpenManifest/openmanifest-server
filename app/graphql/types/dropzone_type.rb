@@ -22,7 +22,7 @@ module Types
     def current_user
 
       unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-        dz_user = object.dropzone_users.find_or_initialize_by(
+        dz_user = object.dropzone_users.find_or_create_by(
           user: context[:current_resource],
           user_role: object.user_roles.first
         )

@@ -60,8 +60,11 @@ class User < ApplicationRecord
   
 
   def can?(permission_name, dropzone_id:)
-    dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)
-    dz_user.can?(permission_name)
+    if dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)
+      dz_user.can?(permission_name)
+    else
+      false
+    end
   end
 
   def self.create_fake
