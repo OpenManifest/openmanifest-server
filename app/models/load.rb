@@ -19,6 +19,7 @@
 #  state          :integer
 #
 class Load < ApplicationRecord
+  scope :today, -> { where(created_at: DateTime.now.beginning_of_day..DateTime.now.end_of_day) }
   belongs_to :plane
   belongs_to :load_master, class_name: "DropzoneUser", optional: true, foreign_key: :load_master_id
   belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
@@ -33,6 +34,7 @@ class Load < ApplicationRecord
  
   after_save :notify!,
              :change_state!
+  before_create :set_load_number
 
   enum state: [
     :open,
@@ -70,24 +72,13 @@ class Load < ApplicationRecord
   end
 
 
-  def load_number
-    load_index = plane.dropzone.loads.where(
-      "loads.created_at > ?",
-      DateTime.now.beginning_of_day
-    ).order(created_at: :asc).find_index do |load|
-      load.id == id
-    end
-
-    (load_index || 0) + 1
-  end
-
   def notify!
     if saved_change_to_dispatch_at?
       if dispatch_at_was.nil? && !dispatch_at.nil?
         slots.each do |slot|
           if slot.dropzone_user.present?
             Notification.create(
-              message: "Load ##{load_number} take off at #{dispatch_at.strftime("%H:%M")}",
+              message: "Load ##{load_number} take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime("%H:%M")}",
               resource: self,
               received_by: slot.dropzone_user,
               notification_type: :boarding_call
@@ -109,7 +100,7 @@ class Load < ApplicationRecord
         slots.each do |slot|
           if slot.dropzone_user.present?
             Notification.create(
-              message: "Load ##{load_number} call changed to take off at #{dispatch_at.strftime("%H:%M")}",
+              message: "Load ##{load_number} call changed to take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime("%H:%M")}",
               resource: self,
               received_by: slot.dropzone_user,
               notification_type: :boarding_call
@@ -122,5 +113,10 @@ class Load < ApplicationRecord
 
   def ready?
     gca.present? && load_master.present? && plane.present? && slots.select(&:ready?).count >= plane.min_slots
+  end
+
+  private
+  def set_load_number
+    assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_11_061449) do
+ActiveRecord::Schema.define(version: 2021_07_26_132854) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -91,6 +91,7 @@ ActiveRecord::Schema.define(version: 2021_07_11_061449) do
     t.boolean "is_credit_system_enabled", default: false
     t.integer "rig_inspection_template_id"
     t.string "image"
+    t.string "time_zone", default: "Australia/Brisbane"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
   end
@@ -164,6 +165,7 @@ ActiveRecord::Schema.define(version: 2021_07_11_061449) do
     t.integer "load_master_id"
     t.integer "pilot_id"
     t.integer "state"
+    t.integer "load_number"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -389,6 +391,7 @@ ActiveRecord::Schema.define(version: 2021_07_11_061449) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "push_token"
     t.string "unconfirmed_email"
+    t.string "time_zone", default: "Australia/Brisbane"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"
