@@ -86,18 +86,18 @@ module Types
             permission: { name: permissions },
             user_role: { dropzone_id: object.id }
           ).pluck(:user_role_id)
-        ).or(
+        ).distinct.or(
           query.where(
             user_permissions: {
               permissions: { name: permissions }
             }
-          )
+          ).distinct
         )
       end
       
       query = query.search(search) if !search.nil?
 
-      query.distinct || []
+      query || []
     end
 
     field :is_public, Boolean, null: false
