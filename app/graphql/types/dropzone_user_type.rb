@@ -44,13 +44,19 @@ module Types
     field :updated_at, Int, null: false
 
     field :available_rigs, [Types::RigType], null: true,
-    description: "Get user rigs that have been inspected and marked as OK + dropzone rigs"
-    def available_rigs
+    description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
+      argument :is_tandem, Boolean, required: false
+    end
+    def available_rigs(is_tandem: nil)
       user_rigs = object.rig_inspections.select(&:is_ok?).map(&:rig).select do |rig|
         rig.repack_expires_at > DateTime.now
       end
 
-      dropzone_rigs = object.dropzone.rigs.where(is_public: true)
+      if is_tandem
+        return object.dropzone.rigs.where(rig_type: 'tandem')
+      else
+        dropzone_rigs = object.dropzone.rigs.where(is_public: true)
+      end
 
       user_rigs.to_a + dropzone_rigs.to_a
     end

@@ -16,9 +16,18 @@ module Types
 
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
+    field :available_slots, Int, null: false
+    field :occupied_slots, Int, null: false
+
     field :max_slots, Int, null: false
     field :is_open, Boolean, null: false
     field :slots, [Types::SlotType], null: true
+    def slots
+      # This exludes tandem passengers as they are part
+      # of the tandem masters slot
+      object.slots.where.not(dropzone_user: nil)
+    end
+
     field :plane, Types::PlaneType, null: false
     field :load_master, Types::DropzoneUserType, null: true
     field :load_number, Int, null: false

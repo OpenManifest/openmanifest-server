@@ -1,6 +1,7 @@
 module Types
   module Input
     class RigInput < Types::BaseInputObject
+      argument :name, String, required: false
       argument :make, String, required: false
       argument :model, String, required: false
       argument :serial, String, required: false

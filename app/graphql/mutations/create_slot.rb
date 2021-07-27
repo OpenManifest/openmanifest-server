@@ -52,7 +52,7 @@ module Mutations
             exit_weight: attributes[:passenger_exit_weight],
           )
         else
-          passenger = Passenger.create(
+          passenger = Passenger.find_or_create_by(
             name: attributes[:passenger_name],
             exit_weight: attributes[:passenger_exit_weight],
             dropzone: model.load.plane.dropzone

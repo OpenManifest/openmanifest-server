@@ -11,6 +11,8 @@ module Mutations
     def resolve(id:)
       model = Slot.find(id)
 
+      model.passenger_slot.destroy if model.has_passenger?
+        
       model.destroy
       {
         slot: model,

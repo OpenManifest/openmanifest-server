@@ -15,6 +15,23 @@ module Mutations
       # Get highest group number on this load
       next_group_number = (plane_load.slots.pluck(:group_number).to_a + [0]).max + 1
 
+      # Check how many users we're manifesting, and return
+      # an error if there aren't enough slots on this load
+      slots_expected = attributes[:user_group].map { |user| user[:passenger_name] ? 2 : 1 }.sum
+
+      if slots_expected > plane_load.reload.available_slots
+        return {
+          load: nil,
+          field_errors: nil,
+          errors: [
+            "Only #{plane_load.available_slots} slots available"
+          ]
+        }
+      end
+
+      # Check if we're manifesting tandems
+      manifesting_tandems = TicketType.find(attributes[:ticket_type_id]).is_tandem?
+
       slots = attributes[:user_group].map do |user|
 
         model = Slot.find_or_initialize_by(
@@ -36,6 +53,34 @@ module Mutations
           )
         )
 
+        if model.ticket_type.is_tandem? && user[:passenger_name]
+          if model.passenger_slot.present?
+            model.passenger_slot.passenger.update(
+              name: user[:passenger_name],
+              exit_weight: user[:passenger_exit_weight],
+            )
+          else
+            passenger = Passenger.find_or_create_by(
+              name: user[:passenger_name],
+              exit_weight: user[:passenger_exit_weight],
+              dropzone: dropzone
+            )
+  
+            model.passenger_slot = Slot.create(
+              load: plane_load,
+              passenger: passenger,
+              exit_weight: user[:passenger_exit_weight],
+              ticket_type: model.ticket_type,
+              jump_type: model.jump_type,
+            )
+          end
+        else
+          puts "--TICKET"
+          puts model.ticket_type
+          puts model.ticket_type.is_tandem?
+          puts attributes.to_h
+        end
+
         # Show errors if the dropzone is using credits
         # and the user doesn't have the funds for this slot
         if dropzone.is_credit_system_enabled?
@@ -50,14 +95,18 @@ module Mutations
           dz_user = dropzone.dropzone_users.find_by(id: user[:id])
           credits = dz_user&.credits || 0
 
-          if cost > credits
-            return {
-              slot: nil,
-              errors: ["#{dz_user.user.name} doesn't have enough credits to manifest for this jump"],
-              field_errors: [
-                { field: "credits", message: "Not enough credits to manifest for this jump"}
-              ],
-            }
+          # Ignore costs for tandems, this is a dropzone expense paid for
+          # in real life anyway. Credits not needed
+          if !manifesting_tandems
+            if cost > credits
+              return {
+                slot: nil,
+                errors: ["#{dz_user.user.name} doesn't have enough credits to manifest for this jump"],
+                field_errors: [
+                  { field: "credits", message: "Not enough credits to manifest for this jump"}
+                ],
+              }
+            end
           end
         end
         model
@@ -97,8 +146,24 @@ module Mutations
     def authorized?(attributes: nil)
       dropzone = Load.find(attributes[:load_id]).plane.dropzone
       contains_current_user = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] == context[:current_resource].id }
+      contains_others = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] != context[:current_resource].id }
 
-      if context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
+      # Check if we're manifesting tandems
+      manifesting_tandems = TicketType.find(attributes[:ticket_type_id]).is_tandem?
+
+      # Check if the user has permissions to manifest others
+      can_manifest_others = context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
+
+
+      if manifesting_tandems && !can_manifest_others && contains_others
+        return false, {
+          load: nil,
+          field_errors: nil,
+          errors: [
+            "You dont have permissions to manifest other people"
+          ]
+        }
+      elsif context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
         return true
       elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
         return true

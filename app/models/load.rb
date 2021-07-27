@@ -116,6 +116,14 @@ class Load < ApplicationRecord
     gca.present? && load_master.present? && plane.present? && slots.select(&:ready?).count >= plane.min_slots
   end
 
+  def available_slots
+    (max_slots || plane.max_slots) - (slots.count || 0)
+  end
+
+  def occupied_slots
+    (max_slots || plane.max_slots) - available_slots
+  end
+
   private
   def set_load_number
     assign_attributes(load_number: plane.dropzone.loads.today.count + 1)

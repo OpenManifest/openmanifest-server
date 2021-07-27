@@ -21,7 +21,7 @@
 #
 class Slot < ApplicationRecord
   belongs_to :dropzone_user, optional: true
-  delegate :user, to: :dropzone_user
+  delegate :user, to: :dropzone_user, allow_nil: true
   
   belongs_to :passenger, optional: true
   belongs_to :ticket_type
@@ -108,8 +108,15 @@ class Slot < ApplicationRecord
 
   def wing_loading
     if rig && rig.canopy_size && exit_weight
-      weight_in_lbs = exit_weight * 2.20462
+      weight = exit_weight
+      weight += (passenger_slot.exit_weight || 0) if has_passenger?
+
+      weight_in_lbs = weight * 2.20462
       weight_in_lbs /= rig.canopy_size
     end
+  end
+
+  def has_passenger?
+    passenger_slot.present?
   end
 end
