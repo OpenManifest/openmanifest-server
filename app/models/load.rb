@@ -20,8 +20,10 @@
 #  load_number    :integer
 #
 class Load < ApplicationRecord
-  scope :today, -> { where(created_at: DateTime.now.beginning_of_day..DateTime.now.end_of_day) }
   belongs_to :plane
+  has_one :dropzone, through: :plane
+  scope :today, -> { where(created_at: DateTime.now.beginning_of_day..DateTime.now.end_of_day) }
+
   belongs_to :load_master, class_name: "DropzoneUser", optional: true, foreign_key: :load_master_id
   belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
   belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
@@ -126,6 +128,8 @@ class Load < ApplicationRecord
 
   private
   def set_load_number
-    assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
+    Time.use_zone(dropzone.time_zone) do
+      assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
+    end
   end
 end

@@ -45,7 +45,7 @@ class Notification < ApplicationRecord
         body: {
           'to' => received_by.user.push_token,
           'body' => message,
-          'title' => notification_type.gsub(/_/, " ").capitalize
+          'title' => received_by.dropzone.name
         }
       )
     end
