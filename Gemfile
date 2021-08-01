@@ -83,6 +83,9 @@ group :development do
   # VSCode ruby intellisense
   gem "solargraph"
 
+  # Make it go fasterer!
+  gem "fasterer"
+
   # Linting
   gem "rubocop"
   gem "rubocop-rails_config"
