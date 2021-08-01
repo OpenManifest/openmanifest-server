@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: notifications
@@ -11,6 +13,7 @@
 #  notification_type :integer
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  is_seen           :boolean          default(FALSE)
 #
 require "test_helper"
 

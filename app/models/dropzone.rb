@@ -16,10 +16,18 @@
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
 #  rig_inspection_template_id :integer
+#  image                      :string
+#  time_zone                  :string           default("Australia/Brisbane")
 #
 class Dropzone < ApplicationRecord
+  acts_as_mappable default_units: :kms,
+                   default_formula: :sphere,
+                   distance_field_name: :distance,
+                   lat_column_name: :lat,
+                   lng_column_name: :lng
   has_many :dropzone_users, dependent: :destroy
   has_many :users, through: :dropzone_users
+  has_many :weather_conditions, dependent: :destroy
 
   has_many :planes, dependent: :destroy
   has_many :loads, through: :planes
@@ -29,6 +37,7 @@ class Dropzone < ApplicationRecord
   has_many :rigs, dependent: :destroy
   has_many :extras, dependent: :destroy
   has_many :master_logs, dependent: :destroy
+  has_many :form_templates, dependent: :destroy
 
   belongs_to :federation
   belongs_to :rig_inspection_template,
@@ -48,6 +57,11 @@ class Dropzone < ApplicationRecord
     end
   end
 
+  def current_conditions
+    weather_conditions.find_or_create_by(
+      created_at: DateTime.now.beginning_of_day,
+    )
+  end
 
   def create_default_roles
     {
@@ -107,7 +121,7 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
-        
+
         :readDropzoneRig,
         :updateDropzoneRig,
         :createDropzoneRig,
@@ -119,6 +133,7 @@ class Dropzone < ApplicationRecord
         :readPackjob,
 
         :readUserTransactions,
+        :updateWeatherConditions,
 
         :readUser,
         :actAsLoadMaster,
@@ -139,6 +154,7 @@ class Dropzone < ApplicationRecord
         :updateDropzoneRig,
 
         :readUserTransactions,
+        :updateWeatherConditions,
 
         :createPackjob,
         :updatePackjob,
@@ -163,12 +179,16 @@ class Dropzone < ApplicationRecord
         :createDropzoneRig,
         :updateDropzoneRig,
 
+        :updateWeatherConditions,
+
         :createPackjob,
         :updatePackjob,
         :deletePackjob,
         :readPackjob,
 
         :readUserTransactions,
+        :grantPermission,
+        :revokePermission,
 
         :readUser,
         :actAsLoadMaster,
@@ -179,6 +199,8 @@ class Dropzone < ApplicationRecord
         :readLoad,
         :updateLoad,
         :createLoad,
+
+        :updateWeatherConditions,
 
         :createSlot,
         :updateSlot,
@@ -210,20 +232,22 @@ class Dropzone < ApplicationRecord
         :createUserTransaction,
         :readUserTransactions,
 
+        :grantPermission,
+        :revokePermission,
+
         :readUser,
         :updateUser,
         :actAsLoadMaster,
         :actAsGCA,
         :actAsDZSO,
       ],
-      admin: Permission.names.keys,
-      owner: Permission.names.keys
+      admin: Permission.without_acting.pluck(:name),
+      owner: Permission.without_acting.pluck(:name)
     }.map do |role, permissions|
       role = UserRole.find_or_create_by(name: role, dropzone_id: id)
       permissions.each do |permission|
-        role.permissions.create(
-          name: permission
-        )
+        next if permission.nil?
+        role.grant! permission
       end
     end
   end

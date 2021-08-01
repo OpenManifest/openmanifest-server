@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   module AnyResourceType
     include Types::BaseInterface
@@ -5,7 +7,6 @@ module Types
     definition_methods do
       # Determine what object type to use for `object`
       def resolve_type(object, context)
-
         {
           Load => Types::LoadType,
           Slot => Types::SlotType,
@@ -14,7 +15,8 @@ module Types
           Pack => Types::PackType,
           Plane => Types::PlaneType,
           DropzoneUser => Types::DropzoneUserType,
-          User => Types::UserType
+          User => Types::UserType,
+          Transaction => Types::TransactionType
         }[object.class]
       end
     end

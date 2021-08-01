@@ -12,10 +12,8 @@ module Types
     end
     field :group_number, Int, null: false
 
+    field :dropzone_user, Types::DropzoneUserType, null: true
     field :user, Types::UserType, null: true
-    def user
-      object.user || object.passenger
-    end
 
     field :ticket_type, Types::TicketTypeType, null: true
     field :load, Types::LoadType, null: false
@@ -25,12 +23,12 @@ module Types
 
     field :passenger_name, String, null: true
     def passenger_name
-      object.passenger_slot.passenger.name if object.passenger_slot.present?
+      object.passenger_slot&.passenger.name
     end
 
     field :passenger_exit_weight, Float, null: true
     def passenger_exit_weight
-      object.passenger_slot.exit_weight if object.passenger_slot.present?
+      object.passenger_slot&.exit_weight
     end
 
     field :extras, [Types::ExtraType], null: true

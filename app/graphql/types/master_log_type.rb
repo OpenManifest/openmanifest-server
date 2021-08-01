@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class MasterLogType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
@@ -7,7 +9,7 @@ module Types
 
     field :loads, [Types::LoadType], null: true
     field :dzso, [Types::DropzoneUserType], null: true
-    
+
     field :dropzone, Types::DropzoneType, null: true
   end
 end

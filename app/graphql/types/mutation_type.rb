@@ -2,14 +2,18 @@
 
 module Types
   class MutationType < Types::BaseObject
-		field :updateNotification, mutation: Mutations::UpdateNotification
-		field :createTransaction, mutation: Mutations::CreateTransaction
-		field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate
-		field :updateRigInspection, mutation: Mutations::UpdateRigInspection
-		field :createRigInspection, mutation: Mutations::CreateRigInspection
-		field :updateDropzoneUser, mutation: Mutations::UpdateDropzoneUser
-		field :updateRig, mutation: Mutations::UpdateRig
-		field :createRig, mutation: Mutations::CreateRig
+    field :createWeatherCondition, mutation: Mutations::CreateWeatherCondition
+    field :createGhost, mutation: Mutations::CreateGhost
+    field :revokePermission, mutation: Mutations::RevokePermission
+    field :grantPermission, mutation: Mutations::GrantPermission
+    field :updateNotification, mutation: Mutations::UpdateNotification
+    field :createTransaction, mutation: Mutations::CreateTransaction
+    field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate
+    field :updateRigInspection, mutation: Mutations::UpdateRigInspection
+    field :createRigInspection, mutation: Mutations::CreateRigInspection
+    field :updateDropzoneUser, mutation: Mutations::UpdateDropzoneUser
+    field :updateRig, mutation: Mutations::UpdateRig
+    field :createRig, mutation: Mutations::CreateRig
     field :updateExtra, mutation: Mutations::UpdateExtra
     field :createExtra, mutation: Mutations::CreateExtra
     field :updateUser, mutation: Mutations::UpdateUser

@@ -7,6 +7,7 @@ module Types
 
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
+    field :push_token, String, null: true
     field :exit_weight, String, null: true
     field :email, String, null: true
     field :phone, String, null: true
@@ -23,4 +24,3 @@ module Types
     end
   end
 end
-

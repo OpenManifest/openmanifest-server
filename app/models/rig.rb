@@ -17,6 +17,7 @@
 #  dropzone_id       :integer
 #  canopy_size       :integer
 #  is_public         :boolean          default(FALSE)
+#  rig_type          :integer
 #
 class Rig < ApplicationRecord
   belongs_to :user, optional: true
@@ -24,6 +25,7 @@ class Rig < ApplicationRecord
   has_many :packs
 
   has_many :users, as: :packers, through: :packs
+  has_many :rig_inspections
 
   enum rig_type: [
     :student,
@@ -32,6 +34,6 @@ class Rig < ApplicationRecord
   ]
 
   before_save do
-    rig_type = :sport unless rig_type.present?
+    assign_attributes(rig_type: :sport) unless rig_type.present?
   end
 end

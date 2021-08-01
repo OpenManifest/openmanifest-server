@@ -12,13 +12,14 @@ module Mutations
       plane_load = Load.find(attributes[:load_id])
       dropzone = plane_load.plane.dropzone
 
+      dz_user = DropzoneUser.find(attributes[:dropzone_user_id])
       model = Slot.find_or_initialize_by(
-        user_id: attributes[:user_id],
+        dropzone_user: dz_user,
         load_id: attributes[:load_id],
       )
       model.assign_attributes(attributes.to_h.except(:passenger_name, :passenger_exit_weight))
 
-      
+
       # Show errors if the dropzone is using credits
       # and the user doesn't have the funds for this slot
       if dropzone.is_credit_system_enabled?
@@ -31,14 +32,14 @@ module Mutations
 
         cost = model.ticket_type.cost + extra_cost
 
-        credits = dropzone.dropzone_users.find_by(user_id: attributes[:user_id]).credits || 0
+        credits = dz_user.credits || 0
 
         if cost > credits
           return {
             slot: nil,
             errors: ["Not enough credits to manifest for this jump"],
             field_errors: [
-              { field: "credits", message: "Not enough credits to manifest for this jump"}
+              { field: "credits", message: "Not enough credits to manifest for this jump" }
             ],
           }
         end
@@ -51,7 +52,7 @@ module Mutations
             exit_weight: attributes[:passenger_exit_weight],
           )
         else
-          passenger = Passenger.create(
+          passenger = Passenger.find_or_create_by(
             name: attributes[:passenger_name],
             exit_weight: attributes[:passenger_exit_weight],
             dropzone: model.load.plane.dropzone
@@ -97,15 +98,17 @@ module Mutations
     end
 
     def authorized?(attributes: nil)
-      if attributes[:user_id] != context[:current_resource].id
+      dropzone = Load.find(attributes[:load_id]).plane.dropzone
+      dz_user = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
+
+      if attributes[:dropzone_user_id] != dz_user.id
         required_permission = "createUserSlot"
       else
         required_permission = "createSlot"
       end
 
-      dropzone = Load.find(attributes[:load_id]).plane.dropzone
-      if context[:current_resource].can?(required_permission, dropzone_id: dropzone.id)
-        return true
+      if dz_user.can?(required_permission)
+        true
       else
         return false, {
           errors: [

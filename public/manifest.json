@@ -1,15 +1,15 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#ff1414",
   "display": "standalone",
   "lang": "en",
-  "name": "Deezed",
-  "short_name": "Deezed",
+  "name": "OpenManifest",
+  "short_name": "OpenManifest",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait",
   "related_applications": [
     {
       "platform": "itunes",
-      "id": "com.dangertechnologies.deezed"
+      "id": "com.dangertechnologies.openmanifest"
     }
   ],
   "prefer_related_applications": true,

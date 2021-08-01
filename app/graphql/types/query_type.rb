@@ -24,7 +24,13 @@ module Types
     field :dropzones, Types::DropzoneType.connection_type, null: false,
     description: "Get all available dropzones"
     def dropzones
-      Dropzone.all.distinct
+      Dropzone.includes(:dropzone_users).where(is_public: true).or(
+        Dropzone.includes(:dropzone_users).where(
+          dropzone_users: {
+            id: context[:current_resource].dropzone_users.includes(:user_role).where(user_role: { name: :owner }).pluck(:id)
+          }
+        )
+      ).distinct
     end
 
     field :dropzone, Types::DropzoneType, null: false,
@@ -52,7 +58,7 @@ module Types
       argument :id, Int, required: true
     end
     def load(id:)
-      Load.includes(:gca, :load_master, :pilot, :plane, slots: :user).find(id)
+      Load.includes(:gca, :load_master, :pilot, :plane, slots: :dropzone_user).find(id)
     end
 
 

@@ -3,6 +3,7 @@
 class GraphqlController < ApplicationController
   include GraphqlDevise::Concerns::SetUserByToken
   protect_from_forgery with: :null_session, except: [:index, :execute]
+
   def index
     # render json: DzSchema.to_json
     render plain: GraphQL::Schema::Printer.print_schema(DzSchema)
@@ -18,7 +19,6 @@ class GraphqlController < ApplicationController
     query = params[:query]
     operation_name = params[:operationName]
 
-    puts graphql_context(:user)
 
     result = DzSchema.execute(
       query,

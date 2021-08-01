@@ -12,11 +12,15 @@ module Mutations
     def resolve(attributes: nil, id: nil)
       model = User.find(id)
       model.assign_attributes(attributes.to_h)
-      
+
+
       model.save!
+      if attributes[:image] && attributes[:image].size > 0
+        model.image.attach(data: attributes[:image].force_encoding("UTF-8"))
+      end
 
       {
-        user: model,
+        user: model.reload,
         errors: nil,
         field_errors: nil,
       }
@@ -44,8 +48,8 @@ module Mutations
 
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].id == id
-        return true
-      else 
+        true
+      else
         return false, {
         errors: [
           "You cant update other users"

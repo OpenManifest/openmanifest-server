@@ -12,7 +12,10 @@ module Mutations
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
 
-      model.update!(attributes.to_h)
+      if attributes[:banner] && attributes[:banner].size > 0
+        model.banner.attach(data: attributes[:banner].force_encoding("UTF-8"))
+      end
+      model.update!(attributes.to_h.except(:banner))
       {
         dropzone: model,
         errors: nil,
@@ -25,7 +28,7 @@ module Mutations
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         dropzone: nil,
@@ -46,12 +49,12 @@ module Mutations
         dropzone_id: id
       )
         return true
+      end
       return false, {
         errors: [
           "You don't have permissions to edit this dropzone"
           ]
         }
-      end
     end
   end
 end

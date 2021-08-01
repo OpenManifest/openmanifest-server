@@ -1,0 +1,20 @@
+{
+  "activitycontinuation": {
+      "apps": [
+        "R3PC2YD7K4.com.dangertechnologies.openmanifest"
+      ]
+  },
+  "applinks": {
+    "apps": [],
+    "details": [{
+      "appID": "R3PC2YD7K4.com.dangertechnologies.openmanifest",
+      "paths": ["/confirm/*"],
+      "components": [
+          {
+            "/": "/confirm/*",
+            "comment": "Matches any URL whose path starts with URL_PATH and instructs the system not to open it as a universal link"
+          }
+        ]
+    }]
+  }
+}

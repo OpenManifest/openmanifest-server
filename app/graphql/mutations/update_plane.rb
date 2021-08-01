@@ -45,7 +45,7 @@ module Mutations
         "updatePlane",
         dropzone_id: Plane.find(id).dropzone_id
       )
-        return true
+        true
       else
         return false, {
           errors: [

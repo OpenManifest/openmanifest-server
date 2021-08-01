@@ -52,7 +52,7 @@ module Mutations
         "createTicketType",
         dropzone_id: attributes[:dropzone_id]
       )
-        return true
+        true
       else
         return false, {
           errors: [

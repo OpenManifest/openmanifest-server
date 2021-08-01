@@ -30,6 +30,9 @@
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  push_token             :string
+#  unconfirmed_email      :string
+#  time_zone              :string           default("Australia/Brisbane")
 #
 require "test_helper"
 

@@ -5,7 +5,7 @@ module Mutations
     field :ticket_type, Types::TicketTypeType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
-    
+
     argument :id, Int, required: true
 
     def resolve(id:)
@@ -52,8 +52,8 @@ module Mutations
         :deleteTicketType,
         dropzone_id: model.dropzone_id
       )
-        return true
-      else 
+        true
+      else
         return false, {
           errors: ["You cannot remove tickets"]
           }

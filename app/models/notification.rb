@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: notifications
@@ -11,6 +13,7 @@
 #  notification_type :integer
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  is_seen           :boolean          default(FALSE)
 #
 class Notification < ApplicationRecord
   belongs_to :received_by, class_name: "DropzoneUser"
@@ -26,6 +29,27 @@ class Notification < ApplicationRecord
     :user_manifested,
     :funds_added,
     :rig_inspection_completed,
-    :membership_updated
+    :membership_updated,
+    :boarding_call_canceled,
   ]
+
+  after_create :send_async!
+
+  def send_async!
+    # Send async
+    NotifyJob.perform_later(id)
+  end
+
+  def send!
+    if received_by.user.push_token.present?
+      HTTParty.post(
+        "https://exp.host/--/api/v2/push/send",
+        body: {
+          "to" => received_by.user.push_token,
+          "body" => message,
+          "title" => received_by.dropzone.name
+        }
+      )
+    end
+  end
 end

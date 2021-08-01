@@ -2,6 +2,7 @@
 
 # Make sure jump types exist
 load(Rails.root.join("db", "seeds", "jump_types.rb"))
+load(Rails.root.join("db", "seeds", "permissions.rb"))
 
 # Create APF
 apf = Federation.find_or_create_by(
@@ -12,6 +13,7 @@ apf = Federation.find_or_create_by(
 
 # Assign jump types to licenses
 {
+  "Student" => ["fs", "hnp"],
   "Certificate A" => ["hnp", "hp", "fs"],
   "Certificate B" => ["hnp", "hp", "fs", "angle", "freefly"],
   "Certificate C" => ["hnp", "hp", "fs", "angle", "freefly", "cam"],

@@ -9,7 +9,7 @@ ruby "2.7.3"
 gem "rails", "~> 6.1.3", ">= 6.1.3.1"
 
 # Heroku database
-gem 'pg', group: :production
+gem "pg", group: :production
 
 
 # Use Puma as the app server
@@ -17,18 +17,18 @@ gem "puma", "~> 5.0"
 # Use SCSS for stylesheets
 # gem "sass-rails", ">= 6"
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
-gem "webpacker", "~> 5.0"
-# Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
-gem "turbolinks", "~> 5"
+# gem "webpacker", "~> 5.0"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem "jbuilder", "~> 2.7"
+# gem "jbuilder", "~> 2.7"
 # Use Redis adapter to run Action Cable in production
 gem "redis", "~> 4.0"
 # Use Active Model has_secure_password
 gem "bcrypt", "~> 3.1.7"
 
+gem "geokit-rails"
+
 # Set CLOUDINARY_URL and other env variables
-gem 'dotenv-rails', groups: [:development, :test], require: 'dotenv/rails-now'
+gem "dotenv-rails", groups: [:development, :test], require: "dotenv/rails-now"
 
 # File upload
 gem "cloudinary"
@@ -40,6 +40,9 @@ gem "carrierwave-base64"
 gem "graphql"
 gem "graphql_devise"
 
+# Send HTTP requests easily
+gem "httparty"
+
 # Admin backend
 gem "administrate"
 
@@ -48,8 +51,6 @@ gem "rack-cors"
 
 # Store base64 images
 gem "active_storage_base64"
-
-
 
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
@@ -62,23 +63,40 @@ gem "search_cop"
 
 
 group :development, :test do
-  
   # Use sqlite3 as the database for Active Record
   gem "sqlite3", "~> 1.4"
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem "byebug", platforms: [:mri, :mingw, :x64_mingw]
+
+  gem "rspec-rails", "~> 5.0"
+  gem "database_cleaner"
 end
 
 group :development do
   # Annotate with database schema
   gem "annotate"
 
+  # Generate an ER diagram
+  gem "railroady"
+  gem "rails-erd"
+
   # VSCode ruby intellisense
   gem "solargraph"
+
+  # Make it go fasterer!
+  gem "fasterer"
 
   # Linting
   gem "rubocop"
   gem "rubocop-rails_config"
+  gem "rubocop-performance"
+  gem "rubocop-rails"
+  gem "rubocop-rspec"
+  gem "rspec_junit_formatter"
+
+  # Security
+  gem "brakeman"
+  gem "reek"
 
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem "web-console", ">= 4.1.0"

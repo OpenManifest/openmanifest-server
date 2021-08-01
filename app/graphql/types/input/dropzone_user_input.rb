@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   module Input
     class DropzoneUserInput < Types::BaseInputObject

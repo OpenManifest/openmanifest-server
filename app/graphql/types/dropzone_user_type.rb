@@ -5,7 +5,9 @@ module Types
     implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
 
+    field :dropzone, Types::DropzoneType, null: false
     field :user, Types::UserType, null: false
+
     field :unseen_notifications, Int, null: false
     def unseen_notifications
       object.notifications.where(is_seen: false).count
@@ -42,13 +44,19 @@ module Types
     field :updated_at, Int, null: false
 
     field :available_rigs, [Types::RigType], null: true,
-    description: "Get user rigs that have been inspected and marked as OK + dropzone rigs"
-    def available_rigs
-      user_rigs = object.rig_inspections.select(&:is_ok?).map(&:rig).select do |rig|
+    description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
+      argument :is_tandem, Boolean, required: false
+    end
+    def available_rigs(is_tandem: nil)
+      user_rigs = object.rig_inspections.filter_map { |inspection| inspection.rig if inspection.is_ok? }.select do |rig|
         rig.repack_expires_at > DateTime.now
       end
 
-      dropzone_rigs = object.dropzone.rigs.where(is_public: true)
+      if is_tandem
+        return object.dropzone.rigs.where(rig_type: "tandem")
+      else
+        dropzone_rigs = object.dropzone.rigs.where(is_public: true)
+      end
 
       user_rigs.to_a + dropzone_rigs.to_a
     end
@@ -87,7 +95,7 @@ module Types
       object.user.license.present?
     end
 
-    
+
     field :role, Types::UserRoleType, null: true
     def role
       object.user_role
@@ -95,18 +103,7 @@ module Types
 
     field :permissions, [Types::PermissionType], null: true
     def permissions
-      Permission.includes(
-        user_role: :dropzone_users
-      ).where(
-        user_roles: {
-          dropzone_users: {
-            user_id: object.user_id,
-            dropzone_id: object.dropzone_id
-            }
-          }
-        ).pluck(:name)
+      object.all_permissions.pluck(:name)
     end
-
-    
   end
 end

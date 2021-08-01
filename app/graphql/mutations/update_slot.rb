@@ -50,8 +50,8 @@ module Mutations
         is_current_user ? "updateSlot" : "updateUserSlot",
         dropzone_id: Slot.find(id).load.plane.dropzone_id
       )
-        return true
-      else 
+        true
+      else
         return false, {
           errors: if is_current_user
                     ["You cant modify a manifested slot"]

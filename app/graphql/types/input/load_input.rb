@@ -13,6 +13,7 @@ module Types
       argument :plane_id, Int, required: false
       argument :gca_id, Int, required: false
       argument :load_master_id, Int, required: false
+      argument :state, Types::LoadStateType, required: false
     end
   end
 end

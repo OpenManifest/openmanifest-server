@@ -16,6 +16,8 @@
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
 #  rig_inspection_template_id :integer
+#  image                      :string
+#  time_zone                  :string           default("Australia/Brisbane")
 #
 require "test_helper"
 

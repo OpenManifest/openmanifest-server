@@ -4,6 +4,7 @@ module Types
   class RigType < Types::BaseObject
     implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
+    field :name, String, null: true
     field :make, String, null: true
     field :model, String, null: true
     field :serial, String, null: true

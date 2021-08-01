@@ -7,6 +7,8 @@ module Types
       argument :banner, String, required: false
       argument :federation_id, Int, required: true
       argument :is_public, Boolean, required: false
+      argument :lat, Float, required: false
+      argument :lng, Float, required: false
       argument :primary_color, String, required: false
       argument :secondary_color, String, required: false
       argument :is_credit_system_enabled, Boolean, required: false

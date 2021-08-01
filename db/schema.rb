@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_13_044719) do
+ActiveRecord::Schema.define(version: 2021_07_27_092554) do
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -91,6 +91,7 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.boolean "is_credit_system_enabled", default: false
     t.integer "rig_inspection_template_id"
     t.string "image"
+    t.string "time_zone", default: "Australia/Brisbane"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
   end
@@ -116,12 +117,14 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.string "name"
     t.text "definition"
     t.integer "dropzone_id"
-    t.integer "created_by_id", null: false
-    t.integer "updated_by_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "dropzone_users_id"
+    t.integer "created_by_id"
+    t.integer "updated_by_id"
     t.index ["created_by_id"], name: "index_form_templates_on_created_by_id"
     t.index ["dropzone_id"], name: "index_form_templates_on_dropzone_id"
+    t.index ["dropzone_users_id"], name: "index_form_templates_on_dropzone_users_id"
     t.index ["updated_by_id"], name: "index_form_templates_on_updated_by_id"
   end
 
@@ -153,14 +156,16 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.datetime "dispatch_at"
     t.boolean "has_landed"
     t.integer "plane_id", null: false
-    t.integer "load_master_id"
-    t.integer "gca_id"
-    t.integer "pilot_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
     t.integer "max_slots", default: 0
     t.boolean "is_open"
+    t.integer "gca_id"
+    t.integer "load_master_id"
+    t.integer "pilot_id"
+    t.integer "state"
+    t.integer "load_number"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -211,11 +216,9 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   end
 
   create_table "permissions", force: :cascade do |t|
-    t.integer "name"
-    t.integer "user_role_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["user_role_id"], name: "index_permissions_on_user_role_id"
+    t.string "name"
   end
 
   create_table "planes", force: :cascade do |t|
@@ -234,13 +237,13 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
 
   create_table "rig_inspections", force: :cascade do |t|
     t.integer "form_template_id", null: false
-    t.integer "inspected_by_id", null: false
     t.integer "dropzone_user_id", null: false
     t.integer "rig_id", null: false
     t.boolean "is_ok", default: false, null: false
     t.text "definition"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "inspected_by_id"
     t.index ["dropzone_user_id"], name: "index_rig_inspections_on_dropzone_user_id"
     t.index ["form_template_id"], name: "index_rig_inspections_on_form_template_id"
     t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
@@ -261,6 +264,7 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.integer "canopy_size"
     t.boolean "is_public", default: false
     t.integer "rig_type"
+    t.string "name"
     t.index ["dropzone_id"], name: "index_rigs_on_dropzone_id"
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
@@ -275,7 +279,6 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   end
 
   create_table "slots", force: :cascade do |t|
-    t.integer "user_id"
     t.integer "ticket_type_id"
     t.integer "load_id"
     t.integer "rig_id"
@@ -288,6 +291,8 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.integer "transaction_id"
     t.integer "passenger_slot_id"
     t.integer "group_number", default: 0, null: false
+    t.integer "dropzone_user_id"
+    t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["passenger_id"], name: "index_slots_on_passenger_id"
@@ -295,7 +300,6 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["transaction_id"], name: "index_slots_on_transaction_id"
-    t.index ["user_id"], name: "index_slots_on_user_id"
   end
 
   create_table "ticket_type_extras", force: :cascade do |t|
@@ -334,6 +338,24 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.index ["status"], name: "index_transactions_on_status"
   end
 
+  create_table "user_permissions", force: :cascade do |t|
+    t.integer "permission_id", null: false
+    t.integer "dropzone_user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_user_id"], name: "index_user_permissions_on_dropzone_user_id"
+    t.index ["permission_id"], name: "index_user_permissions_on_permission_id"
+  end
+
+  create_table "user_role_permissions", force: :cascade do |t|
+    t.integer "permission_id", null: false
+    t.integer "user_role_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["permission_id"], name: "index_user_role_permissions_on_permission_id"
+    t.index ["user_role_id"], name: "index_user_role_permissions_on_user_role_id"
+  end
+
   create_table "user_roles", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -368,11 +390,27 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
     t.text "tokens"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "push_token"
+    t.string "unconfirmed_email"
+    t.string "time_zone", default: "Australia/Brisbane"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
+  end
+
+  create_table "weather_conditions", force: :cascade do |t|
+    t.text "winds"
+    t.integer "temperature"
+    t.integer "jump_run"
+    t.integer "exit_spot_miles"
+    t.integer "offset_miles"
+    t.integer "offset_direction"
+    t.integer "dropzone_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_id"], name: "index_weather_conditions_on_dropzone_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -382,16 +420,16 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "dropzone_users", "users"
   add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"
   add_foreign_key "extras", "dropzones"
+  add_foreign_key "form_templates", "dropzone_users", column: "created_by_id"
+  add_foreign_key "form_templates", "dropzone_users", column: "updated_by_id"
   add_foreign_key "form_templates", "dropzones"
-  add_foreign_key "form_templates", "users", column: "created_by_id"
-  add_foreign_key "form_templates", "users", column: "updated_by_id"
   add_foreign_key "licensed_jump_types", "jump_types"
   add_foreign_key "licensed_jump_types", "licenses"
   add_foreign_key "licenses", "federations"
+  add_foreign_key "loads", "dropzone_users", column: "gca_id"
+  add_foreign_key "loads", "dropzone_users", column: "load_master_id"
+  add_foreign_key "loads", "dropzone_users", column: "pilot_id"
   add_foreign_key "loads", "planes"
-  add_foreign_key "loads", "users", column: "gca_id"
-  add_foreign_key "loads", "users", column: "load_master_id"
-  add_foreign_key "loads", "users", column: "pilot_id"
   add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
   add_foreign_key "master_logs", "dropzones"
   add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
@@ -399,16 +437,16 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
   add_foreign_key "passengers", "dropzones"
-  add_foreign_key "permissions", "user_roles"
   add_foreign_key "planes", "dropzones"
   add_foreign_key "rig_inspections", "dropzone_users"
+  add_foreign_key "rig_inspections", "dropzone_users", column: "inspected_by_id"
   add_foreign_key "rig_inspections", "form_templates"
   add_foreign_key "rig_inspections", "rigs"
-  add_foreign_key "rig_inspections", "users", column: "inspected_by_id"
   add_foreign_key "rigs", "dropzones"
   add_foreign_key "rigs", "users"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
+  add_foreign_key "slots", "dropzone_users"
   add_foreign_key "slots", "jump_types"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "passengers"
@@ -416,12 +454,16 @@ ActiveRecord::Schema.define(version: 2021_06_13_044719) do
   add_foreign_key "slots", "slots", column: "passenger_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"
-  add_foreign_key "slots", "users"
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "dropzones"
   add_foreign_key "transactions", "dropzone_users"
   add_foreign_key "transactions", "slots"
+  add_foreign_key "user_permissions", "dropzone_users"
+  add_foreign_key "user_permissions", "permissions"
+  add_foreign_key "user_role_permissions", "permissions"
+  add_foreign_key "user_role_permissions", "user_roles"
   add_foreign_key "user_roles", "dropzones"
   add_foreign_key "users", "licenses"
+  add_foreign_key "weather_conditions", "dropzones"
 end

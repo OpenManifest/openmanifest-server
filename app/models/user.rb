@@ -30,13 +30,16 @@
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  push_token             :string
+#  unconfirmed_email      :string
+#  time_zone              :string           default("Australia/Brisbane")
 #
 class User < ApplicationRecord
   include CloudinaryHelper
 
   # Include default devise modules.
   devise :database_authenticatable, :registerable,
-  :recoverable, :rememberable, :trackable, :validatable
+  :recoverable, :rememberable, :trackable, :validatable, :confirmable
   include GraphqlDevise::Concerns::Model
   include DeviseTokenAuth::Concerns::User
 
@@ -46,7 +49,7 @@ class User < ApplicationRecord
   has_many :packs
   has_many :dropzone_users
   has_many :dropzones, through: :dropzone_users
-  has_many :slots
+  has_many :slots, through: :dropzone_users
   has_many :loads, through: :slots
   has_many :user_roles, through: :dropzone_users
 
@@ -55,19 +58,14 @@ class User < ApplicationRecord
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
 
-  
+
 
   def can?(permission_name, dropzone_id:)
-    Permission.includes(
-      user_role: :dropzone_users
-    ).where(
-      user_roles: {
-        dropzone_users: {
-          user_id: id,
-          dropzone_id: dropzone_id
-          }
-        }
-    ).exists?(name: permission_name)
+    if dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)
+      dz_user.can?(permission_name)
+    else
+      false
+    end
   end
 
   def self.create_fake

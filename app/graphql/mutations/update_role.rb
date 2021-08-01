@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateRole < Mutations::BaseMutation
     field :role, Types::UserRoleType, null: true
@@ -12,13 +14,9 @@ module Mutations
       model = UserRole.find(id)
 
       if enabled
-        perm = Permission.find_or_initialize_by(
-          name: permission,
-          user_role_id: id,
-        )
-        perm.save!
+        model.grant! permission
       else
-        model.permissions.where(name: permission).delete_all
+        model.revoke! permission
       end
 
       model.reload

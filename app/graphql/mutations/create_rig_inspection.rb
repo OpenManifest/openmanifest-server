@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class CreateRigInspection < Mutations::BaseMutation
     field :rig_inspection, Types::RigInspectionType, null: true
@@ -10,7 +12,7 @@ module Mutations
     def resolve(attributes:, id: nil)
       dropzone = Dropzone.find(attributes[:dropzone_id])
       rig = Rig.find(attributes[:rig_id])
-      dz_user = dropzone.dropzone_users.find_by(user_id: rig.user.id )
+      dz_user = dropzone.dropzone_users.find_by(user_id: rig.user.id)
 
       model = RigInspection.find_or_initialize_by(
         rig: rig,
@@ -19,7 +21,7 @@ module Mutations
       model.assign_attributes(attributes.to_h.except(:dropzone_id))
 
       model.form_template = dropzone.rig_inspection_template
-      model.inspected_by = context[:current_resource]
+      model.inspected_by = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
 
       model.save!
 
@@ -35,7 +37,7 @@ module Mutations
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         rig_inspection: nil,
@@ -55,7 +57,7 @@ module Mutations
         "actAsRigInspector",
         dropzone_id: attributes[:dropzone_id]
       )
-        return true
+        true
       else
         return false, {
           errors: [

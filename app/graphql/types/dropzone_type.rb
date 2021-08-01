@@ -7,6 +7,8 @@ module Types
     field :name, String, null: true
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
+    field :lat, Float, null: true
+    field :lng, Float, null: true
     field :federation, FederationType, null: false
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
@@ -15,17 +17,14 @@ module Types
     def is_credit_system_enabled
       object.is_credit_system_enabled?
     end
-    
+
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-      dz_user = object.dropzone_users.find_or_initialize_by(
-        user: context[:current_resource]
-      )
-
-      
-      if dz_user.new_record?
-        dz_user.user_role = object.user_roles.first
-        dz_user.save
+      unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
+        dz_user = object.dropzone_users.find_or_create_by(
+          user: context[:current_resource],
+          user_role: object.user_roles.first
+        )
       end
 
       # If the user has a rig, has set up exit weight, and
@@ -33,7 +32,7 @@ module Types
       # if the user is anything less
       if dz_user.user.rigs.present? && dz_user.user.license.present? && !dz_user.user.exit_weight.blank?
         if dz_user.user_role_id == object.user_roles.first.id
-          dz_user.update(user_role: object.user_roles.second)
+          dz_user.update(user_role: object.user_roles.find_by(name: :fun_jumper))
         end
       end
 
@@ -47,12 +46,14 @@ module Types
     end
     def allowed_jump_types(user_id: nil)
       # Get allowed jump types for each user:
-      jump_type_ids = object.dropzone_users.where(user_id: user_id).map do |dz_user|
+      jump_type_ids = object.dropzone_users.where(id: user_id).map do |dz_user|
         dz_user.user.licensed_jump_types.pluck(:jump_type_id)
       end
 
       JumpType.where(id: jump_type_ids.reduce(&:intersection))
     end
+
+    field :current_conditions, Types::WeatherConditionType, null: false
 
     field :dropzone_user, Types::DropzoneUserType, null: true do
       argument :id, Int, required: false
@@ -72,7 +73,7 @@ module Types
       argument :licensed, Boolean, required: false
     end
     def dropzone_users(permissions: nil, search: nil, licensed: nil)
-      query = object.dropzone_users.includes(:user)
+      query = object.dropzone_users.includes(:user, :user_role, user_permissions: :permission)
 
       if licensed
         query = query.where.not(users: { license_id: nil })
@@ -80,19 +81,21 @@ module Types
 
       if permissions
         query = query.where(
-          user_role_id: Permission.includes(
-              user_role: :dropzone_users
-            ).where(
-              user_roles: {
-                dropzone_users: {
-                  dropzone_id: object.id
-                  }
-                }
-              ).where(name: permissions.to_a).pluck("user_roles.id")
-            )
+          user_role_id: UserRolePermission.includes(:permission, :user_role).where(
+            permission: { name: permissions },
+            user_role: { dropzone_id: object.id }
+          ).pluck(:user_role_id)
+        ).or(
+          query.where(
+            user_permissions: {
+              permissions: { name: permissions }
+            }
+          )
+        )
       end
 
-      query = query.search(name: search) if !search.nil?
+      query = query.search(search) if !search.nil?
+
       query || []
     end
 
@@ -120,9 +123,9 @@ module Types
     def rigs
       if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
         object.rigs.order(rig_type: :asc)
-      else 
+      else
         []
-      end 
+      end
     end
 
 
@@ -143,9 +146,18 @@ module Types
       loads.order(created_at: :desc)
     end
 
-    field :roles, [Types::UserRoleType], null: false
-    def roles
-      object.user_roles.order(id: :asc)
+    field :roles, [Types::UserRoleType], null: false do
+      argument :selectable, Boolean, required: false
+    end
+    def roles(selectable: nil)
+      query = object.user_roles
+
+      if selectable
+        dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
+        query = query.where("id < ?", dz_user.user_role_id)
+      end
+
+      query.order(id: :asc)
     end
 
     field :master_log, Types::MasterLogType, null: false,
@@ -161,7 +173,7 @@ module Types
       log
     end
 
-    
+
     field :banner, String, null: true
     def banner
       object.image_url
