@@ -58,7 +58,7 @@ class User < ApplicationRecord
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
 
-  
+
 
   def can?(permission_name, dropzone_id:)
     if dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)

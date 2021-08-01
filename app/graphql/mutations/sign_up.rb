@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class SignUp < GraphqlDevise::Mutations::SignUp
     argument :phone, String, required: true
@@ -10,7 +12,7 @@ module Mutations
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    # Override devises initializer to allow 
+    # Override devises initializer to allow
     # signing up on an existing user if the user
     # was created by staff
     def build_resource(attrs)
@@ -35,7 +37,7 @@ module Mutations
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         authenticatable: nil,

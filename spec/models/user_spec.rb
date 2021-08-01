@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: users
@@ -32,7 +34,7 @@
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
 #
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe User, type: :model do
   before(:each) do

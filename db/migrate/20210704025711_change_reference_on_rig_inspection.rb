@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeReferenceOnRigInspection < ActiveRecord::Migration[6.1]
   def change
     remove_column :rig_inspections, :inspected_by_id, :integer

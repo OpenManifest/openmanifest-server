@@ -1,4 +1,7 @@
 {
+  "ruby.rubocop.configFilePath": "/Users/amnesthesia/Documents/Development/openmanifest-server/.rubocop.yml",
+  "ruby.rubocop.executePath": "/Users/amnesthesia/.rvm/gems/ruby-2.7.3@dz/bin/",
+  "git.autofetch": true,
   "ruby.rubocop.useBundler": true,
-  "ruby.rubocop.configFilePath": "/Users/amnesthesia/Documents/Development/dz/.rubocop.yml"
+  "solargraph.bundlerPath": "/Users/amnesthesia/.rvm/rubies/ruby-2.7.3/bin/bundle"
 }

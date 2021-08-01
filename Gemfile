@@ -9,7 +9,7 @@ ruby "2.7.3"
 gem "rails", "~> 6.1.3", ">= 6.1.3.1"
 
 # Heroku database
-gem 'pg', group: :production
+gem "pg", group: :production
 
 
 # Use Puma as the app server
@@ -28,7 +28,7 @@ gem "bcrypt", "~> 3.1.7"
 gem "geokit-rails"
 
 # Set CLOUDINARY_URL and other env variables
-gem 'dotenv-rails', groups: [:development, :test], require: 'dotenv/rails-now'
+gem "dotenv-rails", groups: [:development, :test], require: "dotenv/rails-now"
 
 # File upload
 gem "cloudinary"
@@ -63,7 +63,6 @@ gem "search_cop"
 
 
 group :development, :test do
-  
   # Use sqlite3 as the database for Active Record
   gem "sqlite3", "~> 1.4"
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
@@ -87,6 +86,13 @@ group :development do
   # Linting
   gem "rubocop"
   gem "rubocop-rails_config"
+  gem "rubocop-performance"
+  gem "rubocop-rails"
+  gem "rubocop-rspec"
+
+  # Security
+  gem "brakeman"
+  gem "reek"
 
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem "web-console", ">= 4.1.0"

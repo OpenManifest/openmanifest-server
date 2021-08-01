@@ -17,10 +17,9 @@ module Types
     def is_credit_system_enabled
       object.is_credit_system_enabled?
     end
-    
+
     field :current_user, Types::DropzoneUserType, null: false
     def current_user
-
       unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
         dz_user = object.dropzone_users.find_or_create_by(
           user: context[:current_resource],
@@ -94,7 +93,7 @@ module Types
           )
         )
       end
-      
+
       query = query.search(search) if !search.nil?
 
       query || []
@@ -124,9 +123,9 @@ module Types
     def rigs
       if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
         object.rigs.order(rig_type: :asc)
-      else 
+      else
         []
-      end 
+      end
     end
 
 
@@ -155,7 +154,7 @@ module Types
 
       if selectable
         dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-        query = query.where('id < ?', dz_user.user_role_id)
+        query = query.where("id < ?", dz_user.user_role_id)
       end
 
       query.order(id: :asc)
@@ -174,7 +173,7 @@ module Types
       log
     end
 
-    
+
     field :banner, String, null: true
     def banner
       object.image_url

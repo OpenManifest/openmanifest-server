@@ -33,12 +33,11 @@ module Mutations
       manifesting_tandems = TicketType.find(attributes[:ticket_type_id]).is_tandem?
 
       slots = attributes[:user_group].map do |user|
-
         model = Slot.find_or_initialize_by(
           dropzone_user_id: user[:id],
           load_id: attributes[:load_id],
         )
-        
+
         model.assign_attributes(
           attributes.to_h.except(
             :passenger_name,
@@ -65,7 +64,7 @@ module Mutations
               exit_weight: user[:passenger_exit_weight],
               dropzone: dropzone
             )
-  
+
             model.passenger_slot = Slot.create(
               load: plane_load,
               passenger: passenger,
@@ -103,7 +102,7 @@ module Mutations
                 slot: nil,
                 errors: ["#{dz_user.user.name} doesn't have enough credits to manifest for this jump"],
                 field_errors: [
-                  { field: "credits", message: "Not enough credits to manifest for this jump"}
+                  { field: "credits", message: "Not enough credits to manifest for this jump" }
                 ],
               }
             end
@@ -111,8 +110,8 @@ module Mutations
         end
         model
       end
-      
-      
+
+
       slots.map(&:save!)
 
 
@@ -164,9 +163,9 @@ module Mutations
           ]
         }
       elsif context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
-        return true
+        true
       elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
-        return true
+        true
       elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
         return false, {
           errors: [

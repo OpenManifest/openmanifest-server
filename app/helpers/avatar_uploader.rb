@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 class AvatarUploader < CarrierWave::Uploader::Base
   include Cloudinary::CarrierWave
 
-  process :convert => 'png'
-  process :tags => ['avatar']
+  process convert: "png"
+  process tags: ["avatar"]
 
   version :standard do
-    process :resize_to_fill => [300, 300, :north]
+    process resize_to_fill: [300, 300, :north]
   end
 
   version :thumbnail do
@@ -14,6 +16,6 @@ class AvatarUploader < CarrierWave::Uploader::Base
 
 
   def store_dir
-    'avatars/'
+    "avatars/"
   end
 end

@@ -37,7 +37,7 @@ module Mutations
       end
 
       model.update!(attrs)
-      
+
       {
         load: model,
         errors: nil,
@@ -70,7 +70,7 @@ module Mutations
         "updateLoad",
         dropzone_id: Load.find(id).plane.dropzone_id
       )
-        return true
+        true
       else
         return false, {
           errors: [

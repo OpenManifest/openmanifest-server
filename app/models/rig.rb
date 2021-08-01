@@ -34,6 +34,6 @@ class Rig < ApplicationRecord
   ]
 
   before_save do
-    rig_type = :sport unless rig_type.present?
+    assign_attributes(rig_type: :sport) unless rig_type.present?
   end
 end

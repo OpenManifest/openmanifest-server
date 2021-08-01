@@ -13,7 +13,7 @@ module Mutations
       model = User.find(id)
       model.assign_attributes(attributes.to_h)
 
-      
+
       model.save!
       if attributes[:image] && attributes[:image].size > 0
         model.image.attach(data: attributes[:image].force_encoding("UTF-8"))
@@ -48,7 +48,7 @@ module Mutations
 
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].id == id
-        return true
+        true
       else
         return false, {
         errors: [

@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module Types
   class WeatherConditionType < Types::BaseObject
     field :id, GraphQL::Types::ID, null: false
     field :winds, [Types::WindType], null: true
     def winds
-      JSON.parse(object.winds || '[]')
+      JSON.parse(object.winds || "[]")
     end
 
     field :temperature, Int, null: true

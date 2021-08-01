@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: notifications
@@ -41,11 +43,11 @@ class Notification < ApplicationRecord
   def send!
     if received_by.user.push_token.present?
       HTTParty.post(
-        'https://exp.host/--/api/v2/push/send',
+        "https://exp.host/--/api/v2/push/send",
         body: {
-          'to' => received_by.user.push_token,
-          'body' => message,
-          'title' => received_by.dropzone.name
+          "to" => received_by.user.push_token,
+          "body" => message,
+          "title" => received_by.dropzone.name
         }
       )
     end

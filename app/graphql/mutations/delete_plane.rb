@@ -48,8 +48,8 @@ module Mutations
         :deletePlane,
         dropzone_id: plane.dropzone_id
       )
-        return true
-      else 
+        true
+      else
         return false, {
           errors: ["You cant delete this aircraft"]
         }

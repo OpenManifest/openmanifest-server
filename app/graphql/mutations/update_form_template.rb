@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateFormTemplate < Mutations::BaseMutation
     field :form_template, Types::FormTemplateType, null: true
@@ -9,7 +11,7 @@ module Mutations
 
     def resolve(attributes:, id: nil)
       model = FormTemplate.find(id)
-      
+
       model.update!(attributes.to_h)
       {
         form_template: model,
@@ -43,7 +45,7 @@ module Mutations
         "updateFormTemplate",
         dropzone_id: attributes[:dropzone_id]
       )
-        return true
+        true
       else
         return false, {
           errors: [

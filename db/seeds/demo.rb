@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "open-uri"
 
 
@@ -55,8 +57,8 @@ if dropzone.new_record?
     min_slots: 10,
     max_slots: 16,
     registration: "DKZ-203",
-  )  
-  
+  )
+
   puts "--Creating ticket type: Height"
   # Create default ticket types
   height = TicketType.create(
@@ -68,7 +70,7 @@ if dropzone.new_record?
     is_tandem: false,
     currency: "AUD"
   )
-  
+
   puts "--Creating ticket type: Hop n Pop"
   TicketType.create(
     dropzone: dropzone,
@@ -91,7 +93,7 @@ if dropzone.new_record?
     is_tandem: true,
     currency: "AUD"
   )
-  
+
   # Create default ticket addons
   puts "--Creating ticket addon: Outside camera"
   outside_cam = Extra.create(
@@ -120,7 +122,7 @@ if dropzone.new_record?
     ticket_type: height,
     extra: coach
   )
-  
+
   TicketTypeExtra.create(
     ticket_type: tandem,
     extra: handy_cam
@@ -138,7 +140,7 @@ if dropzone.dropzone_users.length < 2
     # Create default ticket addons
     role = index == 1 ? "chief_instructor" : "aff_instructor"
     u = User.create_fake
-    
+
     puts "-- User [#{role}]: #{u.name}"
     DropzoneUser.create(
       user: u,
@@ -149,11 +151,11 @@ if dropzone.dropzone_users.length < 2
       )
     )
   end
-  
+
   # Create 4 pilots
   (1..4).to_a.each do |index|
     u = User.create_fake
-    
+
     puts "-- User [pilot]: #{u.name}"
     DropzoneUser.create(
       user: u,
@@ -176,11 +178,11 @@ if dropzone.dropzone_users.length < 2
       )
     )
 
-    
+
 
     # Pick a random license
     dz_user.user.update(
-      license: License.order(Arel.sql('RANDOM()')).first
+      license: License.order(Arel.sql("RANDOM()")).first
     )
 
     puts "-- Created user [#{dz_user.user_role.name}]: #{dz_user.user.name} (License #{dz_user.user.license.name})"
@@ -240,5 +242,5 @@ if dropzone.dropzone_users.length < 2
       )
     end
   end
-  
+
 end

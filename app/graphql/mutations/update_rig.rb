@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateRig < Mutations::BaseMutation
     field :rig, Types::RigType, null: true

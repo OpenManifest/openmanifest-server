@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class CreateTransaction < Mutations::BaseMutation
     field :transaction, Types::TransactionType, null: true

@@ -28,7 +28,7 @@ module Mutations
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         dropzone: nil,
@@ -49,12 +49,12 @@ module Mutations
         dropzone_id: id
       )
         return true
+      end
       return false, {
         errors: [
           "You don't have permissions to edit this dropzone"
           ]
         }
-      end
     end
   end
 end

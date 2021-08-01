@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class CreateWeatherCondition < Mutations::BaseMutation
     field :weather_condition, Types::WeatherConditionType, null: true
@@ -12,12 +14,12 @@ module Mutations
 
       # Ensure only valid winds received
       winds = if attributes[:winds].present?
-                JSON.parse(attributes[:winds] || "[]", symbolize_names: true)
-              else
-                puts "Winds were"
-                puts attributes[:winds]
-                []
-              end
+        JSON.parse(attributes[:winds] || "[]", symbolize_names: true)
+      else
+        puts "Winds were"
+        puts attributes[:winds]
+        []
+      end
 
       puts "-- 1"
       puts winds

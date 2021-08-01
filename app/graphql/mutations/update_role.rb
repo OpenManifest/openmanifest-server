@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateRole < Mutations::BaseMutation
     field :role, Types::UserRoleType, null: true

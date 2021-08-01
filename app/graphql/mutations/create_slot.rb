@@ -19,7 +19,7 @@ module Mutations
       )
       model.assign_attributes(attributes.to_h.except(:passenger_name, :passenger_exit_weight))
 
-      
+
       # Show errors if the dropzone is using credits
       # and the user doesn't have the funds for this slot
       if dropzone.is_credit_system_enabled?
@@ -39,7 +39,7 @@ module Mutations
             slot: nil,
             errors: ["Not enough credits to manifest for this jump"],
             field_errors: [
-              { field: "credits", message: "Not enough credits to manifest for this jump"}
+              { field: "credits", message: "Not enough credits to manifest for this jump" }
             ],
           }
         end
@@ -106,9 +106,9 @@ module Mutations
       else
         required_permission = "createSlot"
       end
-      
+
       if dz_user.can?(required_permission)
-        return true
+        true
       else
         return false, {
           errors: [

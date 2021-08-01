@@ -121,7 +121,7 @@ class Dropzone < ApplicationRecord
         :createRig,
         :updateRig,
         :deleteRig,
-        
+
         :readDropzoneRig,
         :updateDropzoneRig,
         :createDropzoneRig,

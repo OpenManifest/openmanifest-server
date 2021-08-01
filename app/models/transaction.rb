@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: transactions
@@ -56,7 +58,7 @@ class Transaction < ApplicationRecord
       credits: amount
     )
   end
-  
+
   def refund!
     DropzoneUser.update_counters(
       dropzone_user_id,

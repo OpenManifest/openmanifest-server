@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 # Find demo dropzone
 dropzone = Dropzone.find_by(name: "Demo")
 
 # Create a 3 landed loads and 1 open load
 (0..4).to_a.each do |index|
-  random_plane = Plane.where(dropzone: dropzone).order(Arel.sql('RANDOM()')).first
+  random_plane = Plane.where(dropzone: dropzone).order(Arel.sql("RANDOM()")).first
 
   l = Load.create(
     name: "",

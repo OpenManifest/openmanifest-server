@@ -24,7 +24,6 @@ module Types
     field :dropzones, Types::DropzoneType.connection_type, null: false,
     description: "Get all available dropzones"
     def dropzones
-      
       Dropzone.includes(:dropzone_users).where(is_public: true).or(
         Dropzone.includes(:dropzone_users).where(
           dropzone_users: {

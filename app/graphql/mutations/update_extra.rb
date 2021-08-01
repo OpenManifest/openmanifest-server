@@ -60,7 +60,7 @@ module Mutations
         "updateExtra",
         dropzone_id: Extra.find(id).dropzone_id
       )
-        return true
+        true
       else
         return false, {
           errors: [

@@ -19,7 +19,7 @@ class GraphqlController < ApplicationController
     query = params[:query]
     operation_name = params[:operationName]
 
-    
+
     result = DzSchema.execute(
       query,
       variables: variables,
@@ -33,7 +33,6 @@ class GraphqlController < ApplicationController
   end
 
   private
-
     # Handle variables in form data, JSON body, or a blank value
     def prepare_variables(variables_param)
       case variables_param

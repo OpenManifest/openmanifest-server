@@ -48,12 +48,12 @@ module Types
       argument :is_tandem, Boolean, required: false
     end
     def available_rigs(is_tandem: nil)
-      user_rigs = object.rig_inspections.select(&:is_ok?).map(&:rig).select do |rig|
+      user_rigs = object.rig_inspections.filter_map { |inspection| inspection.rig if inspection.is_ok? }.select do |rig|
         rig.repack_expires_at > DateTime.now
       end
 
       if is_tandem
-        return object.dropzone.rigs.where(rig_type: 'tandem')
+        return object.dropzone.rigs.where(rig_type: "tandem")
       else
         dropzone_rigs = object.dropzone.rigs.where(is_public: true)
       end
@@ -95,7 +95,7 @@ module Types
       object.user.license.present?
     end
 
-    
+
     field :role, Types::UserRoleType, null: true
     def role
       object.user_role

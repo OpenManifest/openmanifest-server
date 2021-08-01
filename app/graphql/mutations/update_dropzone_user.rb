@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class UpdateDropzoneUser < Mutations::BaseMutation
     field :dropzone_user, Types::DropzoneUserType, null: true

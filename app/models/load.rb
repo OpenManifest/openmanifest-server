@@ -30,11 +30,11 @@ class Load < ApplicationRecord
 
   has_many :notifications, as: :resource
   has_many :slots, dependent: :destroy
-  before_save do 
+  before_save do
     # Default to open
     assign_attributes(state: :open) if state.nil?
   end
- 
+
   after_save :notify!,
              :change_state!
   before_create :set_load_number
@@ -69,7 +69,7 @@ class Load < ApplicationRecord
     end
 
     # Refund credits when load is cancelled
-    if saved_change_to_state? && state == 'cancelled'
+    if saved_change_to_state? && state == "cancelled"
       slots.each(&:refund_credits!)
     end
   end
@@ -127,9 +127,9 @@ class Load < ApplicationRecord
   end
 
   private
-  def set_load_number
-    Time.use_zone(dropzone.time_zone) do
-      assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
+    def set_load_number
+      Time.use_zone(dropzone.time_zone) do
+        assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
+      end
     end
-  end
 end

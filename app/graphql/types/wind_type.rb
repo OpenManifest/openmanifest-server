@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class WindType < Types::BaseObject
     field :altitude, String, null: true

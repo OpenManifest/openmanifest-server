@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeReferenceOnSlot < ActiveRecord::Migration[6.1]
   def change
     remove_reference :loads, :gca

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ChangeReferenceOnFormTemplate < ActiveRecord::Migration[6.1]
   def change
     remove_column :form_templates, :created_by_id, :integer

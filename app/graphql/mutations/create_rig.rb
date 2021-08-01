@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class CreateRig < Mutations::BaseMutation
     field :rig, Types::RigType, null: true
@@ -8,11 +10,11 @@ module Mutations
 
     def resolve(attributes:)
       model = if attributes[:user_id]
-                User.find(attributes[:user_id]).rigs.new 
-              else
-                Dropzone.find(attributes[:dropzone_id]).rigs.new
-              end
-      
+        User.find(attributes[:user_id]).rigs.new
+      else
+        Dropzone.find(attributes[:dropzone_id]).rigs.new
+      end
+
       attrs = attributes.to_h
 
       if attrs.key?(:repack_expires_at)

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Mutations
   class CreateGhost < Mutations::BaseMutation
     field :user, Types::UserType, null: true

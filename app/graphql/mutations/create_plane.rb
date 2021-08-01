@@ -25,7 +25,7 @@ module Mutations
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages
       }
-    rescue ActiveRecord::RecordNotSaved => error
+    rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         plane: nil,
@@ -45,7 +45,7 @@ module Mutations
         "createPlane",
         dropzone_id: attributes[:dropzone_id]
       )
-        return true
+        true
       else
         return false, {
           errors: [

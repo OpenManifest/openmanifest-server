@@ -12,7 +12,7 @@ module Mutations
       model = Slot.find(id)
 
       model.passenger_slot.destroy if model.has_passenger?
-        
+
       model.destroy
       {
         slot: model,
@@ -55,8 +55,8 @@ module Mutations
       elsif dz_user.can?(
         is_current_user ? :deleteSlot : :deleteUserSlot,
       )
-        return true
-      else 
+        true
+      else
         return false, {
           errors: if is_current_user
                     ["You cant take yourself off the load"]

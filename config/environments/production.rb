@@ -51,15 +51,15 @@ Rails.application.configure do
   # config.action_cable.url = 'wss://example.com/cable'
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
   ActionMailer::Base.smtp_settings = {
-    :port           => ENV['MAILGUN_SMTP_PORT'],
-    :address        => ENV['MAILGUN_SMTP_SERVER'],
-    :user_name      => ENV['MAILGUN_SMTP_LOGIN'],
-    :password       => ENV['MAILGUN_SMTP_PASSWORD'],
-    :domain         => 'openmanifest.org',
-    :authentication => :plain,
+    port: ENV["MAILGUN_SMTP_PORT"],
+    address: ENV["MAILGUN_SMTP_SERVER"],
+    user_name: ENV["MAILGUN_SMTP_LOGIN"],
+    password: ENV["MAILGUN_SMTP_PASSWORD"],
+    domain: "openmanifest.org",
+    authentication: :plain,
   }
   ActionMailer::Base.delivery_method = :smtp
-  config.action_mailer.default_url_options ={:host => 'openmanifest.org', :protocol => 'https'}
+  config.action_mailer.default_url_options = { host: "openmanifest.org", protocol: "https" }
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
 

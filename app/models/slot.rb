@@ -22,7 +22,7 @@
 class Slot < ApplicationRecord
   belongs_to :dropzone_user, optional: true
   delegate :user, to: :dropzone_user, allow_nil: true
-  
+
   belongs_to :passenger, optional: true
   belongs_to :ticket_type
   belongs_to :load
@@ -44,7 +44,7 @@ class Slot < ApplicationRecord
       resource: self
     )
   end
-  
+
   before_destroy do
     Notification.create(
       received_by: dropzone_user,
@@ -66,7 +66,7 @@ class Slot < ApplicationRecord
         "#{ticket_type.name} (#{ticket_type.cost})"
       ] + (extras || []).map { |e| "#{e.name} (#{e.cost})" }
 
-      
+
       update(
         payment: Transaction.create(
           status: :reserved,
@@ -84,7 +84,7 @@ class Slot < ApplicationRecord
     # not be charged credits:
     return unless dropzone_user.present?
     reserve_transaction! unless payment.present?
-    
+
     payment.update(
       status: :paid,
     )
@@ -94,7 +94,7 @@ class Slot < ApplicationRecord
     return unless payment.present?
     payment.destroy
   end
-  
+
 
   def cost
     extra_cost = extras.map(&:cost).reduce(&:+)
@@ -113,6 +113,7 @@ class Slot < ApplicationRecord
 
       weight_in_lbs = weight * 2.20462
       weight_in_lbs /= rig.canopy_size
+      weight_in_lbs
     end
   end
 

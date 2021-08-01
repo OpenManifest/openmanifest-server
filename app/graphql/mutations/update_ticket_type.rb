@@ -59,7 +59,7 @@ module Mutations
         "updateTicketType",
         dropzone_id: TicketType.find(id).dropzone_id
       )
-        return true
+        true
       else
         return false, {
         errors: [
