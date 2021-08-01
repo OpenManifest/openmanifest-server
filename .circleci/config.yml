@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   ruby: circleci/ruby@1.1.0
+  heroku: circleci/heroku@0.0.10
 
 jobs:
   build:
@@ -38,7 +39,6 @@ jobs:
       # Run rspec in parallel
       - ruby/rspec-test
       - ruby/rubocop-check
-
 workflows:
   version: 2
   build_and_test:
@@ -47,3 +47,12 @@ workflows:
       - test:
           requires:
             - build
+      - deploy:
+          requires:
+            - build # only run deploy-via-git job if the build job has completed
+          filters:
+            branches:
+              only: main # only run deploy-via-git job on master branch
+  heroku_deploy:
+    jobs:
+      - heroku/deploy-via-git
