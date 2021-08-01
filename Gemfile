@@ -92,6 +92,7 @@ group :development do
   gem "rubocop-performance"
   gem "rubocop-rails"
   gem "rubocop-rspec"
+  gem "rspec_junit_formatter"
 
   # Security
   gem "brakeman"
