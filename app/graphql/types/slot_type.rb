@@ -23,12 +23,12 @@ module Types
 
     field :passenger_name, String, null: true
     def passenger_name
-      object.passenger_slot.passenger.name if object.passenger_slot.present?
+      object.passenger_slot&.passenger.name
     end
 
     field :passenger_exit_weight, Float, null: true
     def passenger_exit_weight
-      object.passenger_slot.exit_weight if object.passenger_slot.present?
+      object.passenger_slot&.exit_weight
     end
 
     field :extras, [Types::ExtraType], null: true
