@@ -1,0 +1,37 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.1.0
+jobs:
+  build:
+    docker:
+      - image: cimg/ruby:2.7-node
+    steps:
+      - checkout
+      - ruby/install-deps
+  test:
+    parallelism: 3
+    docker:
+      - image: cimg/ruby:2.7-node
+    environment:
+      BUNDLE_JOBS: "3"
+      BUNDLE_RETRY: "3"
+      RAILS_ENV: test
+    steps:
+      - checkout
+      - ruby/install-deps
+      - run:
+          name: Database setup
+          command: bundle exec rails db:schema:load --trace
+      # Run rspec in parallel
+      - ruby/rspec-test
+      - ruby/rubocop-check
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
