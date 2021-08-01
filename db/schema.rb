@@ -12,11 +12,14 @@
 
 ActiveRecord::Schema.define(version: 2021_07_27_092554) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
-    t.integer "record_id", null: false
-    t.integer "blob_id", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
@@ -35,7 +38,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "active_storage_variant_records", force: :cascade do |t|
-    t.integer "blob_id", null: false
+    t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
@@ -66,13 +69,13 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "dropzone_users", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "dropzone_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "dropzone_id", null: false
     t.float "credits"
     t.datetime "expires_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "user_role_id", null: false
+    t.bigint "user_role_id", null: false
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
     t.index ["user_id"], name: "index_dropzone_users_on_user_id"
     t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
@@ -80,7 +83,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
 
   create_table "dropzones", force: :cascade do |t|
     t.string "name"
-    t.integer "federation_id"
+    t.bigint "federation_id"
     t.float "lat"
     t.float "lng"
     t.datetime "created_at", precision: 6, null: false
@@ -89,7 +92,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.string "primary_color"
     t.string "secondary_color"
     t.boolean "is_credit_system_enabled", default: false
-    t.integer "rig_inspection_template_id"
+    t.bigint "rig_inspection_template_id"
     t.string "image"
     t.string "time_zone", default: "Australia/Brisbane"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
@@ -99,7 +102,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   create_table "extras", force: :cascade do |t|
     t.float "cost"
     t.string "name"
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_deleted", default: false
@@ -116,15 +119,13 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   create_table "form_templates", force: :cascade do |t|
     t.string "name"
     t.text "definition"
-    t.integer "dropzone_id"
+    t.bigint "dropzone_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "dropzone_users_id"
-    t.integer "created_by_id"
-    t.integer "updated_by_id"
+    t.bigint "created_by_id"
+    t.bigint "updated_by_id"
     t.index ["created_by_id"], name: "index_form_templates_on_created_by_id"
     t.index ["dropzone_id"], name: "index_form_templates_on_dropzone_id"
-    t.index ["dropzone_users_id"], name: "index_form_templates_on_dropzone_users_id"
     t.index ["updated_by_id"], name: "index_form_templates_on_updated_by_id"
   end
 
@@ -136,8 +137,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "licensed_jump_types", force: :cascade do |t|
-    t.integer "license_id", null: false
-    t.integer "jump_type_id", null: false
+    t.bigint "license_id", null: false
+    t.bigint "jump_type_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["jump_type_id"], name: "index_licensed_jump_types_on_jump_type_id"
@@ -146,7 +147,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
 
   create_table "licenses", force: :cascade do |t|
     t.string "name"
-    t.integer "federation_id", null: false
+    t.bigint "federation_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["federation_id"], name: "index_licenses_on_federation_id"
@@ -155,15 +156,15 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   create_table "loads", force: :cascade do |t|
     t.datetime "dispatch_at"
     t.boolean "has_landed"
-    t.integer "plane_id", null: false
+    t.bigint "plane_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
     t.integer "max_slots", default: 0
     t.boolean "is_open"
-    t.integer "gca_id"
-    t.integer "load_master_id"
-    t.integer "pilot_id"
+    t.bigint "gca_id"
+    t.bigint "load_master_id"
+    t.bigint "pilot_id"
     t.integer "state"
     t.integer "load_number"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
@@ -173,8 +174,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "master_logs", force: :cascade do |t|
-    t.integer "dzso_id"
-    t.integer "dropzone_id", null: false
+    t.bigint "dzso_id"
+    t.bigint "dropzone_id", null: false
     t.text "notes"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -184,10 +185,10 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
 
   create_table "notifications", force: :cascade do |t|
     t.string "message"
-    t.integer "received_by_id", null: false
-    t.integer "sent_by_id"
+    t.bigint "received_by_id", null: false
+    t.bigint "sent_by_id"
     t.string "resource_type"
-    t.integer "resource_id"
+    t.bigint "resource_id"
     t.integer "notification_type"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -198,8 +199,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "packs", force: :cascade do |t|
-    t.integer "rig_id", null: false
-    t.integer "user_id", null: false
+    t.bigint "rig_id", null: false
+    t.bigint "user_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["rig_id"], name: "index_packs_on_rig_id"
@@ -209,7 +210,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   create_table "passengers", force: :cascade do |t|
     t.string "name"
     t.float "exit_weight"
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["dropzone_id"], name: "index_passengers_on_dropzone_id"
@@ -230,20 +231,20 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.string "registration"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.boolean "is_deleted", default: false
     t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
   end
 
   create_table "rig_inspections", force: :cascade do |t|
-    t.integer "form_template_id", null: false
-    t.integer "dropzone_user_id", null: false
-    t.integer "rig_id", null: false
+    t.bigint "form_template_id", null: false
+    t.bigint "dropzone_user_id", null: false
+    t.bigint "rig_id", null: false
     t.boolean "is_ok", default: false, null: false
     t.text "definition"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "inspected_by_id"
+    t.bigint "inspected_by_id"
     t.index ["dropzone_user_id"], name: "index_rig_inspections_on_dropzone_user_id"
     t.index ["form_template_id"], name: "index_rig_inspections_on_form_template_id"
     t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
@@ -257,10 +258,10 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.integer "pack_value"
     t.datetime "repack_expires_at"
     t.datetime "maintained_at"
-    t.integer "user_id"
+    t.bigint "user_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "dropzone_id"
+    t.bigint "dropzone_id"
     t.integer "canopy_size"
     t.boolean "is_public", default: false
     t.integer "rig_type"
@@ -270,8 +271,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "slot_extras", force: :cascade do |t|
-    t.integer "slot_id", null: false
-    t.integer "extra_id", null: false
+    t.bigint "slot_id", null: false
+    t.bigint "extra_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["extra_id"], name: "index_slot_extras_on_extra_id"
@@ -279,19 +280,19 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "slots", force: :cascade do |t|
-    t.integer "ticket_type_id"
-    t.integer "load_id"
-    t.integer "rig_id"
-    t.integer "jump_type_id"
+    t.bigint "ticket_type_id"
+    t.bigint "load_id"
+    t.bigint "rig_id"
+    t.bigint "jump_type_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.float "exit_weight"
-    t.integer "passenger_id"
+    t.bigint "passenger_id"
     t.boolean "is_paid"
-    t.integer "transaction_id"
-    t.integer "passenger_slot_id"
+    t.bigint "transaction_id"
+    t.bigint "passenger_slot_id"
     t.integer "group_number", default: 0, null: false
-    t.integer "dropzone_user_id"
+    t.bigint "dropzone_user_id"
     t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
@@ -303,8 +304,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "ticket_type_extras", force: :cascade do |t|
-    t.integer "ticket_type_id", null: false
-    t.integer "extra_id", null: false
+    t.bigint "ticket_type_id", null: false
+    t.bigint "extra_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["extra_id"], name: "index_ticket_type_extras_on_extra_id"
@@ -315,7 +316,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.float "cost"
     t.string "currency"
     t.string "name"
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.integer "altitude"
     t.boolean "allow_manifesting_self"
     t.datetime "created_at", precision: 6, null: false
@@ -326,8 +327,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.integer "dropzone_user_id", null: false
-    t.integer "slot_id"
+    t.bigint "dropzone_user_id", null: false
+    t.bigint "slot_id"
     t.integer "status"
     t.float "amount"
     t.datetime "created_at", precision: 6, null: false
@@ -339,8 +340,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "user_permissions", force: :cascade do |t|
-    t.integer "permission_id", null: false
-    t.integer "dropzone_user_id", null: false
+    t.bigint "permission_id", null: false
+    t.bigint "dropzone_user_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["dropzone_user_id"], name: "index_user_permissions_on_dropzone_user_id"
@@ -348,8 +349,8 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
   end
 
   create_table "user_role_permissions", force: :cascade do |t|
-    t.integer "permission_id", null: false
-    t.integer "user_role_id", null: false
+    t.bigint "permission_id", null: false
+    t.bigint "user_role_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["permission_id"], name: "index_user_role_permissions_on_permission_id"
@@ -360,7 +361,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.index ["dropzone_id"], name: "index_user_roles_on_dropzone_id"
   end
 
@@ -386,7 +387,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.string "phone"
     t.string "email"
     t.float "exit_weight"
-    t.integer "license_id"
+    t.bigint "license_id"
     t.text "tokens"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -407,7 +408,7 @@ ActiveRecord::Schema.define(version: 2021_07_27_092554) do
     t.integer "exit_spot_miles"
     t.integer "offset_miles"
     t.integer "offset_direction"
-    t.integer "dropzone_id", null: false
+    t.bigint "dropzone_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["dropzone_id"], name: "index_weather_conditions_on_dropzone_id"
