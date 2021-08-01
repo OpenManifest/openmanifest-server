@@ -1,5 +1,10 @@
+![Heroku](https://img.shields.io/badge/heroku-%23430098.svg?style=for-the-badge&logo=heroku&logoColor=white)
+![GraphQL](https://img.shields.io/badge/-GraphQL-E10098?style=for-the-badge&logo=graphql)
+![Rails](https://img.shields.io/badge/rails-%23CC0000.svg?style=for-the-badge&logo=ruby-on-rails&logoColor=white)
+
 # OpenManifest API
-Circle CI [![OpenManifest](https://circleci.com/gh/OpenManifest/openmanifest-server.svg?style=svg)](<LINK>)
+[![CircleCI](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main.svg?style=shield)](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main)
+
 
 This is the backend server for OpenManifest, written with Rails using GraphQL and authenticated with `devise_graphql`. If you want to contribute to the OpenManifest backend, fork this repository and follow the setup instructions below
 
