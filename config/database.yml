@@ -13,8 +13,8 @@ development:
   <<: *default
   adapter: postgresql
   database: openmanifest_dev
-  user: <%= ENV.fetch("PGUSER") %>
-  password: <%= ENV.fetch("PGPASSWORD") %>
+  user: <%= ENV.fetch("PGUSER") { '' } %>
+  password: <%= ENV.fetch("PGPASSWORD") { '' } %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -23,8 +23,8 @@ test:
   <<: *default
   adapter: postgresql
   database: openmanifest_test
-  user: <%= ENV.fetch("PGUSER") %>
-  password: <%= ENV.fetch("PGPASSWORD") %>
+  user: <%= ENV.fetch("PGUSER") { '' } %>
+  password: <%= ENV.fetch("PGPASSWORD") { '' } %>
 
 production:
   <<: *default
