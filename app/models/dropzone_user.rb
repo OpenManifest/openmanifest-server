@@ -32,7 +32,7 @@ class DropzoneUser < ApplicationRecord
   has_many :rig_inspections, dependent: :destroy
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
-  scope :with_acting_permission, -> (permissionName) { includes(:permissions).where(permissions: { name: permissionName} )}
+  scope :with_acting_permission, -> (permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
 
   validates :user_id, uniqueness: { scope: :dropzone_id }
 
