@@ -12,17 +12,15 @@ module Mutations
     def resolve(attributes:, id: nil)
       model = Rig.find(id)
 
-      attrs = attributes.to_h.except(:packing_card)
+      attrs = attributes.to_h
       if attrs[:repack_expires_at]
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
       end
       model.assign_attributes(attrs.to_h)
       model.save!
-      if attributes[:packing_card] && attributes[:packing_card].size > 0
-        model.packing_card.attach(data: attributes[:packing_card].force_encoding("UTF-8"))
-      end
+
       {
-        rig: model,
+        rig: model.reload,
         errors: nil,
         field_errors: nil,
       }

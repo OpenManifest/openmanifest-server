@@ -15,10 +15,6 @@ module Mutations
 
 
       model.save!
-      if attributes[:image] && attributes[:image].size > 0
-        model.image.attach(data: attributes[:image].force_encoding("UTF-8"))
-      end
-
       {
         user: model.reload,
         errors: nil,

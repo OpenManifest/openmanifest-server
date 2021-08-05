@@ -24,10 +24,6 @@ module Mutations
 
       model.save!
 
-      if attributes[:packing_card] && attributes[:packing_card].size > 0
-        model.packing_card.attach(data: attributes[:packing_card].force_encoding("UTF-8"))
-      end
-
       {
         rig: model,
         errors: nil,

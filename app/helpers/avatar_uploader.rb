@@ -14,7 +14,6 @@ class AvatarUploader < CarrierWave::Uploader::Base
     resize_to_fit(150, 150)
   end
 
-
   def store_dir
     "avatars/"
   end

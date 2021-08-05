@@ -9,12 +9,9 @@ module Mutations
     argument :attributes, Types::Input::DropzoneInput, required: true
 
     def resolve(attributes:)
-      model = Dropzone.new(attributes.to_h.except(:banner))
+      model = Dropzone.new(attributes.to_h)
 
       model.save!
-      if attributes[:banner] && attributes[:banner].size > 0
-        model.banner.attach(data: attributes[:banner].force_encoding("UTF-8"))
-      end
 
       ## Make current user owner
       dz_user = DropzoneUser.create(
