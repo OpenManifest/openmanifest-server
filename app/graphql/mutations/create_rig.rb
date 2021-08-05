@@ -15,7 +15,7 @@ module Mutations
         Dropzone.find(attributes[:dropzone_id]).rigs.new
       end
 
-      attrs = attributes.to_h
+      attrs = attributes.to_h.except(:packing_card)
 
       if attrs.key?(:repack_expires_at)
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
@@ -23,6 +23,10 @@ module Mutations
       model.assign_attributes(attrs)
 
       model.save!
+
+      if attributes[:packing_card] && attributes[:packing_card].size > 0
+        model.packing_card.attach(data: attributes[:packing_card].force_encoding("UTF-8"))
+      end
 
       {
         rig: model,

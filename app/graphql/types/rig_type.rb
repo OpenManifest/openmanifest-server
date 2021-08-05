@@ -18,5 +18,9 @@ module Types
     field :updated_at, Int, null: false
     field :dropzone, Types::DropzoneType, null: true
     field :user, Types::UserType, null: true
+    field :packing_card, String, null: true
+    def packing_card
+      object.packing_card_url
+    end
   end
 end

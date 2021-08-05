@@ -20,10 +20,12 @@
 #  rig_type          :integer
 #
 class Rig < ApplicationRecord
+  mount_base64_uploader :packing_card, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
+
   belongs_to :user, optional: true
   belongs_to :dropzone, optional: true
-  has_many :packs
 
+  has_many :packs
   has_many :users, as: :packers, through: :packs
   has_many :rig_inspections
 
