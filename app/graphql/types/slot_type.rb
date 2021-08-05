@@ -23,7 +23,7 @@ module Types
 
     field :passenger_name, String, null: true
     def passenger_name
-      object.passenger_slot&.passenger.name
+      object.passenger_slot&.passenger&.name
     end
 
     field :passenger_exit_weight, Float, null: true
