@@ -21,7 +21,7 @@ module Mutations
       model.assign_attributes(attributes.to_h.except(:dropzone_id))
 
       model.form_template = dropzone.rig_inspection_template
-      model.inspected_by = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
+      model.inspected_by = context[:current_resource].dropzone_users.find_by(dropzone_id: dropzone.id)
 
       model.save!
 
