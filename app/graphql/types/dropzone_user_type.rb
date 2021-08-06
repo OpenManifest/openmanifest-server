@@ -7,6 +7,10 @@ module Types
 
     field :dropzone, Types::DropzoneType, null: false
     field :user, Types::UserType, null: false
+    field :slots, Types::DropzoneUserType.connection_type, null: true
+    def slots
+      object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)
+    end
 
     field :unseen_notifications, Int, null: false
     def unseen_notifications
