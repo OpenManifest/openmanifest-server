@@ -20,7 +20,7 @@ class RigInspection < ApplicationRecord
   belongs_to :dropzone_user
   belongs_to :rig
 
-  scope :at_dropzone, -> (dropzone) { includes(:inspected_by).where(dropzone_users: { dropzone_id: dropzone.id}) }
+  scope :at_dropzone, -> (dropzone) { includes(:inspected_by).where(dropzone_users: { dropzone_id: dropzone.id }) }
   after_create :notify!
   after_save :notify!
 
