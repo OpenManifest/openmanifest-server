@@ -15,6 +15,14 @@ module Mutations
       model.grant! permission
       model.user_permissions.reload
 
+      Notification.create(
+        received_by: dropzone_user,
+        message: "Permission granted: #{permission}",
+        type: :permission_granted,
+        resource: self,
+        sent_by: model.dropzone.dropzone_user.find_by(id: context[:current_resource].id)
+      )
+
       {
         dropzone_user: model.reload,
         errors: nil,
