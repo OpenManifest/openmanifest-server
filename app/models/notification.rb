@@ -27,8 +27,9 @@ class Notification < ApplicationRecord
     :rig_pending_inspection,
     :boarding_call,
     :user_manifested,
-    :funds_added,
+    :credits_updated,
     :rig_inspection_completed,
+    :rig_inspection_requested,
     :membership_updated,
     :boarding_call_canceled,
   ]

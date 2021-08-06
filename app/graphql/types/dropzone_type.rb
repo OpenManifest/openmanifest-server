@@ -34,6 +34,12 @@ module Types
         if dz_user.user_role_id == object.user_roles.first.id
           dz_user.update(user_role: object.user_roles.find_by(name: :fun_jumper))
         end
+
+        # If the user has no rigs inspected at this dropzone,
+        # notify a staff member if no previous notifications
+        unless RigInspection.where(dropzone_user: dz_user).exists?
+          RequestRigInspectionJob.perform_now(rig, dz_user)
+        end
       end
 
       dz_user

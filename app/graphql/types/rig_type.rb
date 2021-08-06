@@ -22,5 +22,12 @@ module Types
     def packing_card
       object.packing_card_url
     end
+
+    field :rig_inspections, Types::RigInspectionType, null: true do
+      argument :dropzone_id, Int, required: true
+    end
+    def rig_inspections(dropzone_id: nil)
+      rig.rig_inspections.at_dropzone(Dropzone.find(dropzone_id)) if dropzone_id
+    end
   end
 end

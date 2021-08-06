@@ -20,6 +20,21 @@ class RigInspection < ApplicationRecord
   belongs_to :dropzone_user
   belongs_to :rig
 
+  scope :at_dropzone, -> (dropzone) { includes(:inspected_by).where(dropzone_users: { dropzone_id: dropzone.id}) }
+  after_create :notify!
+  after_save :notify!
+
+  def notify!
+    if (new_record? && is_ok?) || (is_ok? && !is_ok_was)
+      Notification.create(
+        received_by: dropzone_user,
+        message: "Your equipment has been cleared to jump",
+        type: :rig_inspection_completed,
+        resource: self
+      )
+    end
+  end
+
   def self.default_form
     [{
       label: "Monthly maintenance done?",

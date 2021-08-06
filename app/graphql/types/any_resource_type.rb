@@ -10,11 +10,12 @@ module Types
         {
           Load => Types::LoadType,
           Slot => Types::SlotType,
-          Rig => Types::RigType,
           TicketType => Types::TicketTypeType,
           Pack => Types::PackType,
           Plane => Types::PlaneType,
           DropzoneUser => Types::DropzoneUserType,
+          Rig => Types::RigType,
+          RigInspection => Types::RigInspectionType,
           User => Types::UserType,
           Transaction => Types::TransactionType
         }[object.class]
