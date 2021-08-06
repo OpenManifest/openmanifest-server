@@ -20,7 +20,7 @@ module Mutations
         message: "Permission granted: #{permission}",
         type: :permission_granted,
         resource: self,
-        sent_by: model.dropzone.dropzone_user.find_by(id: context[:current_resource].id)
+        sent_by: model.dropzone.dropzone_users.find_by(id: context[:current_resource].id)
       )
 
       {
