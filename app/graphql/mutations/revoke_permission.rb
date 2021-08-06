@@ -16,7 +16,7 @@ module Mutations
       model.user_permissions.reload
 
       Notification.create(
-        received_by: dropzone_user,
+        received_by: model,
         message: "Permission revoked: #{permission}",
         type: :permission_granted,
         resource: self,
