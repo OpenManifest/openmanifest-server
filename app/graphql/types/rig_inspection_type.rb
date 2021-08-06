@@ -2,6 +2,7 @@
 
 module Types
   class RigInspectionType < Types::BaseObject
+    implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
     field :dropzone_user, Types::DropzoneUserType, null: false
     field :inspected_by, Types::DropzoneUserType, null: false
