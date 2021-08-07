@@ -14,7 +14,6 @@ module Mutations
       attrs = attributes.to_h.except(:banner)
       attrs[:image] = attributes[:banner] if attributes[:banner].present?
       model.update!(attrs)
-      
       {
         dropzone: model,
         errors: nil,
