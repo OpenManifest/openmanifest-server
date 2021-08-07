@@ -32,6 +32,8 @@ class Notification < ApplicationRecord
     :rig_inspection_requested,
     :membership_updated,
     :boarding_call_canceled,
+    :permission_granted,
+    :permission_revoked,
   ]
 
   after_create :send_async!
