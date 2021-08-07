@@ -9,7 +9,7 @@ module Mutations
     argument :attributes, Types::Input::DropzoneInput, required: true
 
     def resolve(attributes:)
-      model = Dropzone.new(attributes.to_h)
+      model = Dropzone.new(attributes.to_h.except(:banner))
 
       model.save!
 

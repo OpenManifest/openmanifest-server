@@ -11,7 +11,10 @@ module Mutations
 
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
-      model.update!(attributes.to_h)
+      attrs = attributes.to_h.except(:banner)
+      attrs[:image] = attributes[:banner] if attributes[:banner].present?
+      model.update!(attrs)
+      
       {
         dropzone: model,
         errors: nil,
