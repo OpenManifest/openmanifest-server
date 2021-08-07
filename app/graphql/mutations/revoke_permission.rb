@@ -18,7 +18,7 @@ module Mutations
       Notification.create(
         received_by: model,
         message: "Permission revoked: #{permission}",
-        type: :permission_granted,
+        notification_type: :permission_granted,
         resource: self,
         sent_by: model.dropzone.dropzone_users.find_by(id: context[:current_resource].id)
       )
