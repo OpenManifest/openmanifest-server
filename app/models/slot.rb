@@ -4,20 +4,20 @@
 #
 # Table name: slots
 #
-#  id                :integer          not null, primary key
-#  ticket_type_id    :integer
-#  load_id           :integer
-#  rig_id            :integer
-#  jump_type_id      :integer
+#  id                :bigint           not null, primary key
+#  ticket_type_id    :bigint
+#  load_id           :bigint
+#  rig_id            :bigint
+#  jump_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  exit_weight       :float
-#  passenger_id      :integer
+#  passenger_id      :bigint
 #  is_paid           :boolean
-#  transaction_id    :integer
-#  passenger_slot_id :integer
+#  transaction_id    :bigint
+#  passenger_slot_id :bigint
 #  group_number      :integer          default(0), not null
-#  dropzone_user_id  :integer
+#  dropzone_user_id  :bigint
 #
 class Slot < ApplicationRecord
   belongs_to :dropzone_user, optional: true
@@ -29,12 +29,17 @@ class Slot < ApplicationRecord
   belongs_to :rig, optional: true
   belongs_to :jump_type
 
+  has_one :order, as: :item, required: false
+  has_many :receipts, through: :order
+  has_many :transactions, through: :receipts
+
   belongs_to :passenger_slot, optional: true, class_name: "Slot"
-  belongs_to :payment, foreign_key: :transaction_id, class_name: "Transaction", optional: true
 
   has_many :slot_extras
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
+
+  counter_culture [:load, :plane, :dropzone], column_name: :slots_count
 
   after_create do
     Notification.create(
@@ -53,48 +58,6 @@ class Slot < ApplicationRecord
       resource: self
     )
   end
-
-
-  def reserve_transaction!
-    # Tandem passengers are not real accounts and will
-    # not be charged credits:
-    return unless user.present?
-
-    # Find Dropzone user:
-    if dropzone_user
-      message = [
-        "#{ticket_type.name} (#{ticket_type.cost})"
-      ] + (extras || []).map { |e| "#{e.name} (#{e.cost})" }
-
-
-      update(
-        payment: Transaction.create(
-          status: :reserved,
-          message: message.join(" + "),
-          # Make negative to charge credits
-          amount: cost * -1,
-          dropzone_user: dropzone_user
-        )
-      ) unless payment.present?
-    end
-  end
-
-  def charge_credits!
-    # Tandem passengers are not real accounts and will
-    # not be charged credits:
-    return unless dropzone_user.present?
-    reserve_transaction! unless payment.present?
-
-    payment.update(
-      status: :paid,
-    )
-  end
-
-  def refund_credits!
-    return unless payment.present?
-    payment.destroy
-  end
-
 
   def cost
     extra_cost = extras.map(&:cost).reduce(&:+)

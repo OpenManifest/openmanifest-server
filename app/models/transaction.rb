@@ -4,30 +4,43 @@
 #
 # Table name: transactions
 #
-#  id               :integer          not null, primary key
-#  dropzone_user_id :integer          not null
-#  slot_id          :integer
+#  id               :bigint           not null, primary key
 #  status           :integer
 #  amount           :float
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  message          :string
+#  sender_type      :string           not null
+#  sender_id        :bigint           not null
+#  receiver_type    :string           not null
+#  receiver_id      :bigint           not null
+#  receipt_id       :bigint           not null
+#  transaction_type :integer
 #
 class Transaction < ApplicationRecord
-  belongs_to :dropzone_user
-  belongs_to :slot, optional: true
+  belongs_to :receipt
+  has_one :order, through: :receipt
+  has_one :item, through: :order
+
+  belongs_to :sender, polymorphic: true
+  belongs_to :receiver, polymorphic: true
+
   has_many :notifications, as: :resource
 
-  after_create :update_credits,
-               :notify!
-  before_destroy :refund!
+  after_create :notify!
 
   enum status: [
-    :paid,
-    :refunded,
+    :reserved,
+    :completed,
+    :cancelled,
+  ]
+
+  enum transaction_type: [
+    :purchase,
+    :sale,
     :deposit,
     :withdrawal,
-    :reserved,
+    :refund
   ]
 
   def notify!
@@ -61,19 +74,5 @@ class Transaction < ApplicationRecord
         resource: self
       )
     end
-  end
-
-  def update_credits
-    DropzoneUser.update_counters(
-      dropzone_user_id,
-      credits: amount
-    )
-  end
-
-  def refund!
-    DropzoneUser.update_counters(
-      dropzone_user_id,
-      credits: amount * -1
-    )
   end
 end

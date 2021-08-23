@@ -2,9 +2,9 @@
 #
 # Table name: licensed_jump_types
 #
-#  id           :integer          not null, primary key
-#  license_id   :integer          not null
-#  jump_type_id :integer          not null
+#  id           :bigint           not null, primary key
+#  license_id   :bigint           not null
+#  jump_type_id :bigint           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #

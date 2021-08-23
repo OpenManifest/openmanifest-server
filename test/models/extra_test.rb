@@ -4,10 +4,10 @@
 #
 # Table name: extras
 #
-#  id          :integer          not null, primary key
+#  id          :bigint           not null, primary key
 #  cost        :float
 #  name        :string
-#  dropzone_id :integer          not null
+#  dropzone_id :bigint           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  is_deleted  :boolean          default(FALSE)

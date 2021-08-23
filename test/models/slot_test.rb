@@ -4,20 +4,20 @@
 #
 # Table name: slots
 #
-#  id                :integer          not null, primary key
-#  ticket_type_id    :integer
-#  load_id           :integer
-#  rig_id            :integer
-#  jump_type_id      :integer
+#  id                :bigint           not null, primary key
+#  ticket_type_id    :bigint
+#  load_id           :bigint
+#  rig_id            :bigint
+#  jump_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  exit_weight       :float
-#  passenger_id      :integer
+#  passenger_id      :bigint
 #  is_paid           :boolean
-#  transaction_id    :integer
-#  passenger_slot_id :integer
+#  transaction_id    :bigint
+#  passenger_slot_id :bigint
 #  group_number      :integer          default(0), not null
-#  dropzone_user_id  :integer
+#  dropzone_user_id  :bigint
 #
 require "test_helper"
 

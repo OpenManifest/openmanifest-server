@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_08_05_113813) do
+ActiveRecord::Schema.define(version: 2021_08_20_040321) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -76,6 +76,7 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "user_role_id", null: false
+    t.integer "jump_count", default: 0, null: false
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
     t.index ["user_id"], name: "index_dropzone_users_on_user_id"
     t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
@@ -95,6 +96,10 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
     t.bigint "rig_inspection_template_id"
     t.string "image"
     t.string "time_zone", default: "Australia/Brisbane"
+    t.integer "users_count", default: 0, null: false
+    t.integer "slots_count", default: 0, null: false
+    t.integer "loads_count", default: 0, null: false
+    t.integer "credits"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
   end
@@ -198,6 +203,26 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
     t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
   end
 
+  create_table "orders", force: :cascade do |t|
+    t.bigint "dropzone_id", null: false
+    t.string "seller_type", null: false
+    t.bigint "seller_id", null: false
+    t.string "buyer_type", null: false
+    t.bigint "buyer_id", null: false
+    t.string "item_type", null: false
+    t.bigint "item_id", null: false
+    t.integer "order_number", default: 1, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "state"
+    t.float "amount"
+    t.string "title"
+    t.index ["buyer_type", "buyer_id"], name: "index_orders_on_buyer"
+    t.index ["dropzone_id"], name: "index_orders_on_dropzone_id"
+    t.index ["item_type", "item_id"], name: "index_orders_on_item"
+    t.index ["seller_type", "seller_id"], name: "index_orders_on_seller"
+  end
+
   create_table "packs", force: :cascade do |t|
     t.bigint "rig_id", null: false
     t.bigint "user_id", null: false
@@ -234,6 +259,14 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
     t.bigint "dropzone_id", null: false
     t.boolean "is_deleted", default: false
     t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
+  end
+
+  create_table "receipts", force: :cascade do |t|
+    t.integer "amount_cents"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "order_id"
+    t.index ["order_id"], name: "index_receipts_on_order_id"
   end
 
   create_table "rig_inspections", force: :cascade do |t|
@@ -328,15 +361,20 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
   end
 
   create_table "transactions", force: :cascade do |t|
-    t.bigint "dropzone_user_id", null: false
-    t.bigint "slot_id"
     t.integer "status"
     t.float "amount"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "message"
-    t.index ["dropzone_user_id"], name: "index_transactions_on_dropzone_user_id"
-    t.index ["slot_id"], name: "index_transactions_on_slot_id"
+    t.string "sender_type", null: false
+    t.bigint "sender_id", null: false
+    t.string "receiver_type", null: false
+    t.bigint "receiver_id", null: false
+    t.bigint "receipt_id", null: false
+    t.integer "transaction_type"
+    t.index ["receipt_id"], name: "index_transactions_on_receipt_id"
+    t.index ["receiver_type", "receiver_id"], name: "index_transactions_on_receiver"
+    t.index ["sender_type", "sender_id"], name: "index_transactions_on_sender"
     t.index ["status"], name: "index_transactions_on_status"
   end
 
@@ -395,6 +433,9 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
     t.string "push_token"
     t.string "unconfirmed_email"
     t.string "time_zone", default: "Australia/Brisbane"
+    t.integer "jump_count", default: 0, null: false
+    t.integer "dropzone_count", default: 0, null: false
+    t.integer "plane_count", default: 0, null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"
@@ -436,6 +477,7 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
   add_foreign_key "master_logs", "dropzones"
   add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
   add_foreign_key "notifications", "dropzone_users", column: "sent_by_id"
+  add_foreign_key "orders", "dropzones"
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
   add_foreign_key "passengers", "dropzones"
@@ -459,8 +501,7 @@ ActiveRecord::Schema.define(version: 2021_08_05_113813) do
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "dropzones"
-  add_foreign_key "transactions", "dropzone_users"
-  add_foreign_key "transactions", "slots"
+  add_foreign_key "transactions", "receipts"
   add_foreign_key "user_permissions", "dropzone_users"
   add_foreign_key "user_permissions", "permissions"
   add_foreign_key "user_role_permissions", "permissions"

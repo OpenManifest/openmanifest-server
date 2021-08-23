@@ -23,7 +23,7 @@ class GraphqlController < ApplicationController
     result = DzSchema.execute(
       query,
       variables: variables,
-      context: graphql_context(:user),
+      context: gql_devise_context(User),
       operation_name: operation_name
     )
     render json: result unless performed?

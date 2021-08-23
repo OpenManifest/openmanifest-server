@@ -4,9 +4,9 @@
 #
 # Table name: dropzones
 #
-#  id                         :integer          not null, primary key
+#  id                         :bigint           not null, primary key
 #  name                       :string
-#  federation_id              :integer
+#  federation_id              :bigint
 #  lat                        :float
 #  lng                        :float
 #  created_at                 :datetime         not null
@@ -15,9 +15,13 @@
 #  primary_color              :string
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
-#  rig_inspection_template_id :integer
+#  rig_inspection_template_id :bigint
 #  image                      :string
 #  time_zone                  :string           default("Australia/Brisbane")
+#  users_count                :integer          default(0), not null
+#  slots_count                :integer          default(0), not null
+#  loads_count                :integer          default(0), not null
+#  credits                    :integer
 #
 class Dropzone < ApplicationRecord
   acts_as_mappable default_units: :kms,
@@ -38,6 +42,9 @@ class Dropzone < ApplicationRecord
   has_many :extras, dependent: :destroy
   has_many :master_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy
+
+  has_many :sales, dependent: :destroy, as: :seller, class_name: 'Order'
+  has_many :purchases, dependent: :destroy, as: :buyer, class_name: 'Order'
 
   belongs_to :federation
   belongs_to :rig_inspection_template,

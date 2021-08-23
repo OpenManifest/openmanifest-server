@@ -3,6 +3,7 @@
 module Types
   class DropzoneUserType < Types::BaseObject
     implements Types::AnyResourceType
+    implements Types::WalletType
     field :id, GraphQL::Types::ID, null: false
 
     field :dropzone, Types::DropzoneType, null: false
@@ -27,23 +28,12 @@ module Types
       end
     end
 
-
-    field :transactions, Types::TransactionType.connection_type, null: true
-    def transactions
-      is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
-
-
-      if can_see_others || is_self
-        object.transactions.order(created_at: :desc)
-      else
-        []
-      end
-    end
-
     field :rig_inspections, [Types::RigInspectionType], null: true
     field :expires_at, Int, null: true
     field :credits, Int, null: true
+    field :purchases, Types::OrderType.connection_type, null: true
+    field :sales, Types::OrderType.connection_type, null: true
+
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
 

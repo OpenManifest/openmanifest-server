@@ -3,6 +3,7 @@
 module Types
   class TicketTypeType < Types::BaseObject
     implements Types::AnyResourceType
+    
     field :id, GraphQL::Types::ID, null: false
     field :currency, String, null: true
     field :dropzone, Types::DropzoneType, null: true

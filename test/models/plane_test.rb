@@ -4,7 +4,7 @@
 #
 # Table name: planes
 #
-#  id                     :integer          not null, primary key
+#  id                     :bigint           not null, primary key
 #  name                   :string
 #  min_slots              :integer
 #  max_slots              :integer
@@ -13,7 +13,7 @@
 #  registration           :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  dropzone_id            :integer          not null
+#  dropzone_id            :bigint           not null
 #  is_deleted             :boolean          default(FALSE)
 #
 require "test_helper"
