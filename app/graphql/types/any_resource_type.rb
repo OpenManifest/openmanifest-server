@@ -3,6 +3,7 @@
 module Types
   module AnyResourceType
     include Types::BaseInterface
+    field :id, ID, null: false
 
     definition_methods do
       # Determine what object type to use for `object`

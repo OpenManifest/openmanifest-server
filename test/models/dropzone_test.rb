@@ -4,9 +4,9 @@
 #
 # Table name: dropzones
 #
-#  id                         :integer          not null, primary key
+#  id                         :bigint           not null, primary key
 #  name                       :string
-#  federation_id              :integer
+#  federation_id              :bigint
 #  lat                        :float
 #  lng                        :float
 #  created_at                 :datetime         not null
@@ -15,9 +15,13 @@
 #  primary_color              :string
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
-#  rig_inspection_template_id :integer
+#  rig_inspection_template_id :bigint
 #  image                      :string
 #  time_zone                  :string           default("Australia/Brisbane")
+#  users_count                :integer          default(0), not null
+#  slots_count                :integer          default(0), not null
+#  loads_count                :integer          default(0), not null
+#  credits                    :integer
 #
 require "test_helper"
 

@@ -4,7 +4,7 @@
 #
 # Table name: users
 #
-#  id                     :integer          not null, primary key
+#  id                     :bigint           not null, primary key
 #  provider               :string           default("email"), not null
 #  uid                    :string           default(""), not null
 #  encrypted_password     :string           default(""), not null
@@ -26,13 +26,16 @@
 #  phone                  :string
 #  email                  :string
 #  exit_weight            :float
-#  license_id             :integer
+#  license_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  push_token             :string
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
+#  jump_count             :integer          default(0), not null
+#  dropzone_count         :integer          default(0), not null
+#  plane_count            :integer          default(0), not null
 #
 class User < ApplicationRecord
   include CloudinaryHelper

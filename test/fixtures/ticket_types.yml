@@ -2,11 +2,11 @@
 #
 # Table name: ticket_types
 #
-#  id                     :integer          not null, primary key
+#  id                     :bigint           not null, primary key
 #  cost                   :float
 #  currency               :string
 #  name                   :string
-#  dropzone_id            :integer          not null
+#  dropzone_id            :bigint           not null
 #  altitude               :integer
 #  allow_manifesting_self :boolean
 #  created_at             :datetime         not null

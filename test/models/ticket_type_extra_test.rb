@@ -4,9 +4,9 @@
 #
 # Table name: ticket_type_extras
 #
-#  id             :integer          not null, primary key
-#  ticket_type_id :integer          not null
-#  extra_id       :integer          not null
+#  id             :bigint           not null, primary key
+#  ticket_type_id :bigint           not null
+#  extra_id       :bigint           not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #

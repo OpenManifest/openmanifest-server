@@ -2,18 +2,18 @@
 #
 # Table name: loads
 #
-#  id             :integer          not null, primary key
+#  id             :bigint           not null, primary key
 #  dispatch_at    :datetime
 #  has_landed     :boolean
-#  plane_id       :integer          not null
+#  plane_id       :bigint           not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  name           :string
 #  max_slots      :integer          default(0)
 #  is_open        :boolean
-#  gca_id         :integer
-#  load_master_id :integer
-#  pilot_id       :integer
+#  gca_id         :bigint
+#  load_master_id :bigint
+#  pilot_id       :bigint
 #  state          :integer
 #  load_number    :integer
 #

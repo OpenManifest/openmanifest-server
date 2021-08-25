@@ -4,14 +4,15 @@
 #
 # Table name: dropzone_users
 #
-#  id           :integer          not null, primary key
-#  user_id      :integer          not null
-#  dropzone_id  :integer          not null
+#  id           :bigint           not null, primary key
+#  user_id      :bigint           not null
+#  dropzone_id  :bigint           not null
 #  credits      :float
 #  expires_at   :datetime
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
-#  user_role_id :integer          not null
+#  user_role_id :bigint           not null
+#  jump_count   :integer          default(0), not null
 #
 class DropzoneUser < ApplicationRecord
   belongs_to :user, optional: true
@@ -21,29 +22,32 @@ class DropzoneUser < ApplicationRecord
   has_many :slots, dependent: :destroy
   has_many :form_templates, foreign_key: :created_by_id, dependent: :destroy
 
-  has_many :loads_as_gca, class_name: "Load", foreign_key: :gca_id, dependent: :nullify
-  has_many :loads_as_pilot, class_name: "Load", foreign_key: :pilot_id, dependent: :nullify
-  has_many :loads_as_load_master, class_name: "Load", foreign_key: :load_master_id, dependent: :nullify
+  has_many :loads_as_gca, class_name: 'Load', foreign_key: :gca_id, dependent: :nullify
+  has_many :loads_as_pilot, class_name: 'Load', foreign_key: :pilot_id, dependent: :nullify
+  has_many :loads_as_load_master, class_name: 'Load', foreign_key: :load_master_id, dependent: :nullify
 
   has_many :user_permissions, dependent: :destroy
   has_many :permissions, through: :user_permissions
 
-  has_many :transactions, dependent: :destroy
+  has_many :sales, dependent: :destroy, as: :seller, class_name: 'Order'
+  has_many :purchases, dependent: :destroy, as: :buyer, class_name: 'Order'
+
   has_many :rig_inspections, dependent: :destroy
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
-  scope :with_acting_permission, -> (permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
+  scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
 
   validates :user_id, uniqueness: { scope: :dropzone_id }
 
+  counter_culture :dropzone, column_name: :users_count
+  delegate :exit_weight, :name, :email, :nickname, :rigs, to: :user
+
   after_initialize do
-    if user_role.nil?
-      assign_attributes(user_role:  dropzone.user_roles.second)
-    end
+    assign_attributes(user_role: dropzone.user_roles.second) if user_role.nil? && !dropzone.nil?
   end
 
   search_scope :search do
-    attributes name: "user.name"
+    attributes name: 'user.name'
   end
 
   def can?(permission)

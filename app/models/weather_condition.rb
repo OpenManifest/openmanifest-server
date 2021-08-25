@@ -4,14 +4,14 @@
 #
 # Table name: weather_conditions
 #
-#  id               :integer          not null, primary key
+#  id               :bigint           not null, primary key
 #  winds            :text
 #  temperature      :integer
 #  jump_run         :integer
 #  exit_spot_miles  :integer
 #  offset_miles     :integer
 #  offset_direction :integer
-#  dropzone_id      :integer          not null
+#  dropzone_id      :bigint           not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #

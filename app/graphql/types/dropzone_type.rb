@@ -3,6 +3,7 @@
 module Types
   class DropzoneType < Types::BaseObject
     implements Types::AnyResourceType
+    implements Types::WalletType
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :created_at, Int, null: false
@@ -52,11 +53,7 @@ module Types
     end
     def allowed_jump_types(user_id: nil)
       # Get allowed jump types for each user:
-      jump_type_ids = object.dropzone_users.where(id: user_id).map do |dz_user|
-        dz_user.user.licensed_jump_types.pluck(:jump_type_id)
-      end
-
-      JumpType.where(id: jump_type_ids.reduce(&:intersection))
+      JumpType.allowed_for(object.dropzone_users.where(id: user_id))
     end
 
     field :current_conditions, Types::WeatherConditionType, null: false

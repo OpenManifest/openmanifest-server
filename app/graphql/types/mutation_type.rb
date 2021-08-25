@@ -4,10 +4,10 @@ module Types
   class MutationType < Types::BaseObject
     field :createWeatherCondition, mutation: Mutations::CreateWeatherCondition
     field :createGhost, mutation: Mutations::CreateGhost
+    field :createOrder, mutation: Mutations::CreateOrder
     field :revokePermission, mutation: Mutations::RevokePermission
     field :grantPermission, mutation: Mutations::GrantPermission
     field :updateNotification, mutation: Mutations::UpdateNotification
-    field :createTransaction, mutation: Mutations::CreateTransaction
     field :updateFormTemplate, mutation: Mutations::UpdateFormTemplate
     field :updateRigInspection, mutation: Mutations::UpdateRigInspection
     field :createRigInspection, mutation: Mutations::CreateRigInspection
@@ -23,6 +23,7 @@ module Types
     field :deleteLoad, mutation: Mutations::DeleteLoad
     field :createLoad, mutation: Mutations::CreateLoad
     field :updateLoad, mutation: Mutations::UpdateLoad
+    field :finalizeLoad, mutation: Mutations::FinalizeLoad
     field :deleteSlot, mutation: Mutations::DeleteSlot
     field :createSlot, mutation: Mutations::CreateSlot
     field :createSlots, mutation: Mutations::CreateSlots

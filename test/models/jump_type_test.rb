@@ -4,7 +4,7 @@
 #
 # Table name: jump_types
 #
-#  id         :integer          not null, primary key
+#  id         :bigint           not null, primary key
 #  name       :string
 #  slug       :string
 #  created_at :datetime         not null

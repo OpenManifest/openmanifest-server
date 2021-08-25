@@ -2,10 +2,10 @@
 #
 # Table name: passengers
 #
-#  id          :integer          not null, primary key
+#  id          :bigint           not null, primary key
 #  name        :string
 #  exit_weight :float
-#  dropzone_id :integer          not null
+#  dropzone_id :bigint           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #

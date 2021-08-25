@@ -4,9 +4,9 @@
 #
 # Table name: dropzones
 #
-#  id                         :integer          not null, primary key
+#  id                         :bigint           not null, primary key
 #  name                       :string
-#  federation_id              :integer
+#  federation_id              :bigint
 #  lat                        :float
 #  lng                        :float
 #  created_at                 :datetime         not null
@@ -15,9 +15,13 @@
 #  primary_color              :string
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
-#  rig_inspection_template_id :integer
+#  rig_inspection_template_id :bigint
 #  image                      :string
 #  time_zone                  :string           default("Australia/Brisbane")
+#  users_count                :integer          default(0), not null
+#  slots_count                :integer          default(0), not null
+#  loads_count                :integer          default(0), not null
+#  credits                    :integer
 #
 class Dropzone < ApplicationRecord
   acts_as_mappable default_units: :kms,
@@ -39,207 +43,208 @@ class Dropzone < ApplicationRecord
   has_many :master_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy
 
+  has_many :sales, dependent: :destroy, as: :seller, class_name: 'Order'
+  has_many :purchases, dependent: :destroy, as: :buyer, class_name: 'Order'
+
   belongs_to :federation
   belongs_to :rig_inspection_template,
-             class_name: "FormTemplate",
+             class_name: 'FormTemplate',
              optional: true,
-             foreign_key: "rig_inspection_template_id"
+             foreign_key: 'rig_inspection_template_id'
 
-  mount_base64_uploader :image, BannerUploader, file_name: -> (u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
+  mount_base64_uploader :image, BannerUploader, file_name: ->(u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
 
   after_create :create_default_roles
 
   before_destroy do
     template = rig_inspection_template
     update(rig_inspection_template: nil)
-    if !template.nil?
-      template.destroy
-    end
+    template.destroy unless template.nil?
   end
 
   def current_conditions
     weather_conditions.find_or_create_by(
-      created_at: DateTime.now.beginning_of_day,
+      created_at: DateTime.now.beginning_of_day
     )
   end
 
   def create_default_roles
     {
       tandem_passenger: [
-        :readLoad,
+        :readLoad
       ],
-      student: [
-        :readLoad,
-        :createSlot,
+      student: %i[
+        readLoad
+        createSlot
       ],
-      pilot: [
-        :readLoad,
-        :createSlot,
-        :actAsPilot,
+      pilot: %i[
+        readLoad
+        createSlot
+        actAsPilot
       ],
-      fun_jumper: [
-        :readLoad,
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
+      fun_jumper: %i[
+        readLoad
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :readUser,
-        :actAsLoadMaster,
-        :actAsGCA
+        readUser
+        actAsLoadMaster
+        actAsGCA
       ],
-      coach: [
-        :readLoad,
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
+      coach: %i[
+        readLoad
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :readUser,
-        :actAsLoadMaster,
-        :actAsGCA
+        readUser
+        actAsLoadMaster
+        actAsGCA
       ],
-      aff_instructor: [
-        :readLoad,
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
+      aff_instructor: %i[
+        readLoad
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
 
-        :readDropzoneRig,
-        :updateDropzoneRig,
-        :createDropzoneRig,
-        :updateDropzoneRig,
+        readDropzoneRig
+        updateDropzoneRig
+        createDropzoneRig
+        updateDropzoneRig
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :readUserTransactions,
-        :updateWeatherConditions,
+        readUserTransactions
+        updateWeatherConditions
 
-        :readUser,
-        :actAsLoadMaster,
-        :actAsGCA,
-        :actAsDZSO,
+        readUser
+        actAsLoadMaster
+        actAsGCA
+        actAsDZSO
       ],
-      tandem_instructor: [
-        :readLoad,
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
-        :readDropzoneRig,
-        :updateDropzoneRig,
-        :createDropzoneRig,
-        :updateDropzoneRig,
+      tandem_instructor: %i[
+        readLoad
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
+        readDropzoneRig
+        updateDropzoneRig
+        createDropzoneRig
+        updateDropzoneRig
 
-        :readUserTransactions,
-        :updateWeatherConditions,
+        readUserTransactions
+        updateWeatherConditions
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :readUser,
-        :actAsLoadMaster,
-        :actAsGCA,
-        :actAsDZSO,
+        readUser
+        actAsLoadMaster
+        actAsGCA
+        actAsDZSO
       ],
-      chief_instructor: [
-        :readLoad,
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
-        :readDropzoneRig,
-        :updateDropzoneRig,
-        :createDropzoneRig,
-        :updateDropzoneRig,
+      chief_instructor: %i[
+        readLoad
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
+        readDropzoneRig
+        updateDropzoneRig
+        createDropzoneRig
+        updateDropzoneRig
 
-        :updateWeatherConditions,
+        updateWeatherConditions
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :readUserTransactions,
-        :grantPermission,
-        :revokePermission,
+        readUserTransactions
+        grantPermission
+        revokePermission
 
-        :readUser,
-        :actAsLoadMaster,
-        :actAsGCA,
-        :actAsDZSO,
+        readUser
+        actAsLoadMaster
+        actAsGCA
+        actAsDZSO
       ],
-      manifest: [
-        :readLoad,
-        :updateLoad,
-        :createLoad,
+      manifest: %i[
+        readLoad
+        updateLoad
+        createLoad
 
-        :updateWeatherConditions,
+        updateWeatherConditions
 
-        :createSlot,
-        :updateSlot,
-        :deleteSlot,
-        :createRig,
-        :updateRig,
-        :deleteRig,
+        createSlot
+        updateSlot
+        deleteSlot
+        createRig
+        updateRig
+        deleteRig
 
-        :readDropzoneRig,
-        :updateDropzoneRig,
-        :createDropzoneRig,
-        :updateDropzoneRig,
+        readDropzoneRig
+        updateDropzoneRig
+        createDropzoneRig
+        updateDropzoneRig
 
-        :createUserSlot,
-        :createUserSlotWithSelf,
-        :deleteUserSlot,
-        :updateUserSlot,
+        createUserSlot
+        createUserSlotWithSelf
+        deleteUserSlot
+        updateUserSlot
 
-        :createPackjob,
-        :updatePackjob,
-        :deletePackjob,
-        :readPackjob,
+        createPackjob
+        updatePackjob
+        deletePackjob
+        readPackjob
 
-        :createFormTemplate,
-        :updateFormTemplate,
-        :deleteFormTemplate,
-        :readFormTemplate,
+        createFormTemplate
+        updateFormTemplate
+        deleteFormTemplate
+        readFormTemplate
 
-        :createUserTransaction,
-        :readUserTransactions,
+        createUserTransaction
+        readUserTransactions
 
-        :grantPermission,
-        :revokePermission,
+        grantPermission
+        revokePermission
 
-        :readUser,
-        :updateUser,
-        :actAsLoadMaster,
-        :actAsGCA,
-        :actAsDZSO,
+        readUser
+        updateUser
+        actAsLoadMaster
+        actAsGCA
+        actAsDZSO
       ],
       admin: Permission.without_acting.pluck(:name),
       owner: Permission.without_acting.pluck(:name)
@@ -247,6 +252,7 @@ class Dropzone < ApplicationRecord
       role = UserRole.find_or_create_by(name: role, dropzone_id: id)
       permissions.each do |permission|
         next if permission.nil?
+
         role.grant! permission
       end
     end

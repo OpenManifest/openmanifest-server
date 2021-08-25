@@ -4,11 +4,11 @@
 #
 # Table name: user_roles
 #
-#  id          :integer          not null, primary key
+#  id          :bigint           not null, primary key
 #  name        :string
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  dropzone_id :integer          not null
+#  dropzone_id :bigint           not null
 #
 class UserRole < ApplicationRecord
   belongs_to :dropzone

@@ -2,15 +2,14 @@
 #
 # Table name: form_templates
 #
-#  id                :integer          not null, primary key
-#  name              :string
-#  definition        :text
-#  dropzone_id       :integer
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  dropzone_users_id :integer
-#  created_by_id     :integer
-#  updated_by_id     :integer
+#  id            :bigint           not null, primary key
+#  name          :string
+#  definition    :text
+#  dropzone_id   :bigint
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  created_by_id :bigint
+#  updated_by_id :bigint
 #
 
 one:
