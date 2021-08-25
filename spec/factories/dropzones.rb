@@ -32,7 +32,7 @@ FactoryBot.define do
     primary_color { Faker::Color.hex_color }
     secondary_color { Faker::Color.hex_color }
     is_credit_system_enabled { true }
-    time_zone { 'Australia/Brisbane' }
+    time_zone { "Australia/Brisbane" }
     federation { Federation.first }
 
     factory :dropzone_with_loads do

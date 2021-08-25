@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Loads::Finalize do
   let!(:dropzone) { create(:dropzone, credits: 50) }
@@ -19,7 +19,7 @@ RSpec.describe Loads::Finalize do
     end
   end
 
-  describe 'Cancelling a load' do
+  describe "Cancelling a load" do
     let!(:outcome) do
       Loads::Cancel.run(
         load_id: plane_load.id
@@ -28,7 +28,7 @@ RSpec.describe Loads::Finalize do
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }
     it { expect(outcome.errors).to be_empty }
-    it 'completes all transactions' do
+    it "completes all transactions" do
       outcome.result.slots.each do |slot|
         expect(slot.order).not_to be nil
         expect(slot.order.receipts.count).to eq 2

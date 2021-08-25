@@ -43,14 +43,14 @@ class Dropzone < ApplicationRecord
   has_many :master_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy
 
-  has_many :sales, dependent: :destroy, as: :seller, class_name: 'Order'
-  has_many :purchases, dependent: :destroy, as: :buyer, class_name: 'Order'
+  has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
+  has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
   belongs_to :federation
   belongs_to :rig_inspection_template,
-             class_name: 'FormTemplate',
+             class_name: "FormTemplate",
              optional: true,
-             foreign_key: 'rig_inspection_template_id'
+             foreign_key: "rig_inspection_template_id"
 
   mount_base64_uploader :image, BannerUploader, file_name: ->(u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'active_interaction'
+require "active_interaction"
 
 class Manifest::CreateSlot < ActiveInteraction::Base
   integer :load_id
@@ -71,7 +71,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def check_credits
     credits = dropzone_user.credits || 0
 
-    errors.add(:credits, 'Not enough credits to manifest for this jump') if total_cost > credits
+    errors.add(:credits, "Not enough credits to manifest for this jump") if total_cost > credits
   end
 
   def check_allowed_jump_type
@@ -91,36 +91,35 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   end
 
   private
+    def plane_load
+      Load.find(load_id)
+    end
 
-  def plane_load
-    Load.find(load_id)
-  end
+    def dropzone
+      plane_load.plane.dropzone
+    end
 
-  def dropzone
-    plane_load.plane.dropzone
-  end
+    def dropzone_user
+      dropzone.dropzone_users.find_by(id: dropzone_user_id)
+    end
 
-  def dropzone_user
-    dropzone.dropzone_users.find_by(id: dropzone_user_id)
-  end
+    def ticket_type
+      dropzone.ticket_types.find_by(id: ticket_type_id)
+    end
 
-  def ticket_type
-    dropzone.ticket_types.find_by(id: ticket_type_id)
-  end
+    def jump_type
+      JumpType.find_by(id: jump_type_id)
+    end
 
-  def jump_type
-    JumpType.find_by(id: jump_type_id)
-  end
+    def total_cost
+      # Find extras
+      extra_cost = Extra.where(
+        dropzone: dropzone,
+        id: extra_ids
+      ).map(&:cost).reduce(&:sum)
 
-  def total_cost
-    # Find extras
-    extra_cost = Extra.where(
-      dropzone: dropzone,
-      id: extra_ids
-    ).map(&:cost).reduce(&:sum)
+      extra_cost ||= 0
 
-    extra_cost ||= 0
-
-    ticket_type.cost + extra_cost
-  end
+      ticket_type.cost + extra_cost
+    end
 end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'active_interaction'
+require "active_interaction"
 
 class Transactions::Refund < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction
@@ -26,7 +26,7 @@ class Transactions::Refund < ActiveInteraction::Base
         sender: transaction.sender,
         receiver: transaction.receiver,
         amount: transaction.amount * -1,
-        message: 'Refunded',
+        message: "Refunded",
         receipt: new_receipt,
         transaction_type: :refund,
         status: :reserved

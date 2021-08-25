@@ -39,13 +39,13 @@
 #
 FactoryBot.define do
   factory :user do
-    name { [Faker::Name.first_name, Faker::Name.last_name].join(' ') }
+    name { [Faker::Name.first_name, Faker::Name.last_name].join(" ") }
     nickname { nil }
     phone { Faker::PhoneNumber.cell_phone }
     email { Faker::Internet.email }
     exit_weight { Faker::Number.between(from: 60, to: 120) }
     license { License.all.sample }
-    provider { 'email' }
+    provider { "email" }
     password { Faker::Internet.password(min_length: 10, max_length: 20) }
     confirmed_at { DateTime.now }
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
+require "rails_helper"
 
 RSpec.describe Transactions::Confirm do
   let!(:dropzone) { create(:dropzone, credits: 50) }
@@ -8,7 +8,7 @@ RSpec.describe Transactions::Confirm do
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
   let!(:receipt) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type).result.receipts.first }
 
-  describe 'Confirming a purchase' do
+  describe "Confirming a purchase" do
     let!(:outcome) { Transactions::Confirm.run(receipt: receipt) }
 
     it { expect(outcome.result).to be_a Receipt }
@@ -16,15 +16,15 @@ RSpec.describe Transactions::Confirm do
     it { expect(outcome.result.transactions.count).to eq 2 }
     it { expect(outcome.result.transactions.where(status: :reserved).count).to eq 0 }
     it { expect(outcome.result.transactions.where(status: :completed).count).to eq 2 }
-    it 'expect transaction amounts to be correct' do
+    it "expect transaction amounts to be correct" do
       outcome.result.transactions.each do |transaction|
         expect([ticket_type.cost, -1 * ticket_type.cost]).to include(transaction.amount)
       end
     end
-    it 'expects sum of transactions to always be 0' do
+    it "expects sum of transactions to always be 0" do
       expect(outcome.result.transactions.sum(:amount)).to eq 0
     end
-    it 'expect credits to be updated correctly' do
+    it "expect credits to be updated correctly" do
       expect(dropzone_user.reload.credits).to eq 200 - ticket_type.cost
       expect(dropzone.reload.credits).to eq 50 + ticket_type.cost
     end

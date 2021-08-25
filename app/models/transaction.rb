@@ -45,28 +45,28 @@ class Transaction < ApplicationRecord
 
   def notify!
     case status
-    when 'deposit'
+    when "deposit"
       Notification.create(
         received_by: dropzone_user,
         message: "#{amount} has been credited to your account",
         type: :credits_updated,
         resource: self
       )
-    when 'refunded'
+    when "refunded"
       Notification.create(
         received_by: dropzone_user,
         message: "#{amount} has been credited to your account",
         type: :credits_updated,
         resource: self
       )
-    when 'paid'
+    when "paid"
       Notification.create(
         received_by: dropzone_user,
         message: "Payment of $#{amount} confirmed",
         type: :credits_updated,
         resource: self
       )
-    when 'withdrawal'
+    when "withdrawal"
       Notification.create(
         received_by: dropzone_user,
         message: "$#{amount} has been taken out of your account",

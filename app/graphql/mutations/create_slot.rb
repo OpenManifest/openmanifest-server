@@ -30,10 +30,10 @@ module Mutations
       dz_user = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
 
       required_permission = if attributes[:dropzone_user_id] != dz_user.id
-                              'createUserSlot'
-                            else
-                              'createSlot'
-                            end
+        "createUserSlot"
+      else
+        "createSlot"
+      end
 
       if dz_user.can?(required_permission)
         true

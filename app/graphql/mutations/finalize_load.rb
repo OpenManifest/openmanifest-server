@@ -9,13 +9,13 @@ module Mutations
     argument :state, Types::LoadStateType, required: true
 
     def resolve(state:, id:)
-      if state == 'landed'
+      if state == "landed"
         mutate(
           Loads::Finalize,
           :load,
           load_id: id
         )
-      elsif state == 'cancelled'
+      elsif state == "cancelled"
         mutate(
           Loads::Cancel,
           :load,
@@ -26,7 +26,7 @@ module Mutations
 
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
-        'updateLoad',
+        "updateLoad",
         dropzone_id: Load.find(id).plane.dropzone_id
       )
         true

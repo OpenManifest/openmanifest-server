@@ -26,7 +26,7 @@ FactoryBot.define do
     end
     plane
     is_open { true }
-    state { 'open' }
+    state { "open" }
     max_slots { plane.max_slots }
     dispatch_at { nil }
 

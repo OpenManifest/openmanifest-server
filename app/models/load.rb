@@ -24,9 +24,9 @@ class Load < ApplicationRecord
   has_one :dropzone, through: :plane
   scope :today, -> { where(created_at: DateTime.now.beginning_of_day..DateTime.now.end_of_day) }
 
-  belongs_to :load_master, class_name: 'DropzoneUser', optional: true, foreign_key: :load_master_id
-  belongs_to :gca, class_name: 'DropzoneUser', optional: true, foreign_key: :gca_id
-  belongs_to :pilot, class_name: 'DropzoneUser', optional: true, foreign_key: :pilot_id
+  belongs_to :load_master, class_name: "DropzoneUser", optional: true, foreign_key: :load_master_id
+  belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
+  belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
   has_many :notifications, as: :resource
   has_many :slots, dependent: :destroy
@@ -121,42 +121,41 @@ class Load < ApplicationRecord
   end
 
   private
-
-  def set_load_number
-    Time.use_zone(dropzone.time_zone) do
-      assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
-    end
-  end
-
-  def update_counters!
-    if state_changed?
-      if state == 'landed'
-        # Update counters
-        ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
-        user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
-        first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
-
-        DropzoneUser.update_counters(ids, jump_count: 1)
-        User.update_counters(first_time_ids, dropzone_count: 1)
-
-        # If this is the first jump at the dropzone, also update
-        # dropzone count
-        User.update_counters(user_ids, jump_count: 1)
-      # Reverse the counters if the load marked as
-      # not landed again
-      elsif state_was == 'landed'
-        # Update counters
-        ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
-        user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
-        first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
-
-        DropzoneUser.update_counters(ids, jump_count: -1)
-        User.update_counters(first_time_ids, dropzone_count: -1)
-
-        # If this is the first jump at the dropzone, also update
-        # dropzone count
-        User.update_counters(user_ids, jump_count: -1)
+    def set_load_number
+      Time.use_zone(dropzone.time_zone) do
+        assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
       end
     end
-  end
+
+    def update_counters!
+      if state_changed?
+        if state == "landed"
+          # Update counters
+          ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
+          user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
+          first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
+
+          DropzoneUser.update_counters(ids, jump_count: 1)
+          User.update_counters(first_time_ids, dropzone_count: 1)
+
+          # If this is the first jump at the dropzone, also update
+          # dropzone count
+          User.update_counters(user_ids, jump_count: 1)
+        # Reverse the counters if the load marked as
+        # not landed again
+        elsif state_was == "landed"
+          # Update counters
+          ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
+          user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
+          first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
+
+          DropzoneUser.update_counters(ids, jump_count: -1)
+          User.update_counters(first_time_ids, dropzone_count: -1)
+
+          # If this is the first jump at the dropzone, also update
+          # dropzone count
+          User.update_counters(user_ids, jump_count: -1)
+        end
+      end
+    end
 end
