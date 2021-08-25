@@ -21,8 +21,8 @@ class Transactions::Refund < ActiveInteraction::Base
     receipt.transactions.where(status: [:completed, :reserved]).each do |transaction|
       # Create reversed transaction
       transaction = Transaction.create(
-        sender: transaction.receiver,
-        receiver: transaction.sender,
+        sender: transaction.sender,
+        receiver: transaction.receiver,
         amount: transaction.amount * -1,
         message: "Refunded",
         receipt: new_receipt,

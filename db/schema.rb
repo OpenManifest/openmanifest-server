@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_08_20_040321) do
+ActiveRecord::Schema.define(version: 2021_08_23_132627) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -209,8 +209,8 @@ ActiveRecord::Schema.define(version: 2021_08_20_040321) do
     t.bigint "seller_id", null: false
     t.string "buyer_type", null: false
     t.bigint "buyer_id", null: false
-    t.string "item_type", null: false
-    t.bigint "item_id", null: false
+    t.string "item_type"
+    t.bigint "item_id"
     t.integer "order_number", default: 1, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false

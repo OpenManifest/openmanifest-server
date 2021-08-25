@@ -14,6 +14,9 @@ module Mutations
       model.passenger_slot.destroy if model.has_passenger?
 
       model.destroy
+      ::Transactions::Refund.run(order: model.order)
+      model.order.update(state: :cancelled)
+
       {
         slot: model,
         field_errors: nil,

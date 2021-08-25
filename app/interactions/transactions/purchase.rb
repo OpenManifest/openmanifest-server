@@ -4,12 +4,12 @@ class Transactions::Purchase < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction
   run_in_transaction!
 
-  record :purchasable, class: 'ApplicationRecord'
+  record :purchasable, class: 'ApplicationRecord', default: nil
   record :buyer, class: 'ApplicationRecord'
   record :seller, class: 'ApplicationRecord'
   record :dropzone
 
-  validates :dropzone, :buyer, :seller, :purchasable, presence: true
+  validates :dropzone, :buyer, :seller, presence: true
 
   def execute
     create_order
@@ -71,7 +71,7 @@ class Transactions::Purchase < ActiveInteraction::Base
     errors.merge!(buyer_transaction.errors) if buyer_transaction.errors.any?
   end
 
-  private
+  protected
     def is_tandem?
       case purchasable
       when Slot

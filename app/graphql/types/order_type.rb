@@ -4,9 +4,10 @@ module Types
   class OrderType < Types::BaseObject
     implements Types::AnyResourceType
     field :id, GraphQL::Types::ID, null: false
+    field :title, String, null: true
     field :receipts, [Types::ReceiptType], null: true
     field :dropzone, Types::DropzoneType, null: false
-    field :item, Types::SellableItemType, null: false
+    field :item, Types::SellableItemType, null: true
     field :buyer, Types::WalletType, null: false
     field :seller, Types::WalletType, null: false
     field :state, Types::OrderStateType, null: false

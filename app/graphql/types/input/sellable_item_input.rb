@@ -10,15 +10,15 @@ module Types
                description: 'ID of the record'
 
       def to_record
-        case object[:type].camelize
+        case arguments[:type].camelize
         when TicketType.name
-          TicketType.find(object[:id])
+          TicketType.find(arguments[:id])
         when Pack.name
-          Pack.find(object[:id])
+          Pack.find(arguments[:id])
         when Extra.name
-          Extra.find(object[:id])
+          Extra.find(arguments[:id])
         when Slot.name
-          Slot.find(object[:id])
+          Slot.find(arguments[:id])
         else
           nil
         end

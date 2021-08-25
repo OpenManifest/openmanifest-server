@@ -18,7 +18,7 @@ class Order < ApplicationRecord
   belongs_to :dropzone
   belongs_to :seller, polymorphic: true
   belongs_to :buyer, polymorphic: true
-  belongs_to :item, polymorphic: true
+  belongs_to :item, polymorphic: true, optional: true
 
   has_many :receipts
   has_many :transactions, through: :receipts
@@ -29,6 +29,7 @@ class Order < ApplicationRecord
     :pending,
     :completed,
     :refunded,
+    :cancelled
   ]
 
   scope :at_dropzone, -> (dropzone) { where(dropzone: dropzone) }

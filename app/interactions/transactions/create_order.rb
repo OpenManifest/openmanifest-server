@@ -5,12 +5,13 @@ class Transactions::CreateOrder < Transactions::Purchase
   run_in_transaction!
 
   integer :amount
-  string :title
+  string :title, default: nil
+  integer :purchasable, default: nil
   record :buyer, class: 'ApplicationRecord'
   record :seller, class: 'ApplicationRecord'
   record :dropzone
 
-  validates :amount, :title, :buyer, :seller, :dropzone, presence: true
+  validates :amount, :buyer, :seller, :dropzone, presence: true
 
   def execute
     create_order
@@ -34,7 +35,7 @@ class Transactions::CreateOrder < Transactions::Purchase
     end
 
     def confirm_order
-      compose(Confirm, receipt: @order.receipts.first)
+      compose(::Transactions::Confirm, receipt: @order.receipts.first)
     end
 
     def total_cost

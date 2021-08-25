@@ -8,7 +8,7 @@ module Mutations
 
     def resolve(attributes:, id: nil)
       mutate(
-        Transaction::CreateOrder,
+        ::Transactions::CreateOrder,
         :order,
         title: attributes[:title],
         amount: attributes[:amount],

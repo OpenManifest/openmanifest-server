@@ -11,7 +11,7 @@ module Types
 
 
       if can_see_others || is_self
-        Order.where(seller: self).or(Order.where(buyer: self)).order(created_at: :desc)
+        Order.where(buyer: object).or(Order.where(seller: object)).where.not(state: :cancelled).order(created_at: :desc)
       else
         []
       end

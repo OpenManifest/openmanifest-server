@@ -3,6 +3,11 @@
 module Types
   class SlotType < Types::BaseObject
     implements Types::AnyResourceType
+    implements Types::SellableItemType
+
+    def title
+      "Slot on Load #{object.load.load_number}"
+    end
     field :id, GraphQL::Types::ID, null: false
     field :created_at, Int, null: false
     field :created_at, Int, null: false
@@ -14,7 +19,7 @@ module Types
 
     field :dropzone_user, Types::DropzoneUserType, null: true
     field :user, Types::UserType, null: true
-    field :cost, Integer, null: true
+    field :cost, Float, null: false
 
     field :ticket_type, Types::TicketTypeType, null: true
     field :load, Types::LoadType, null: false

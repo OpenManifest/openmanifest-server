@@ -10,11 +10,11 @@ module Types
                description: 'ID of the record'
 
       def to_record
-        case object[:type].camelize
+        case arguments[:type].camelize
         when DropzoneUser.name
-          DropzoneUser.find(object[:id])
+          DropzoneUser.find(arguments[:id])
         when Dropzone.name
-          Dropzone.find(object[:id])
+          Dropzone.find(arguments[:id])
         else
           nil
         end
