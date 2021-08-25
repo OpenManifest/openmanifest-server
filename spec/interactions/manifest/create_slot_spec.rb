@@ -85,8 +85,8 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.errors).to be_empty }
       it { expect(outcome.result.passenger_slot).not_to be nil }
       it { expect(outcome.result.order).not_to be nil }
-      it { expect(outcome.result.order.receipts.count).to eq 1 }
-      it { expect(outcome.result.order.transactions.where(status: :reserved).count).to eq 2 }
+      it { expect(outcome.result.order.receipts.count).to eq 2 }
+      it { expect(outcome.result.order.transactions.where(status: :completed).count).to eq 4 }
     end
   end
 end

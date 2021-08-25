@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Loads::Finalize do
-  let!(:dropzone) { create(:dropzone, credits: 50, ) }
+  let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
