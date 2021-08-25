@@ -1,12 +1,14 @@
-require 'active_interaction'
+# frozen_string_literal: true
+
+require "active_interaction"
 
 class Transactions::Purchase < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction
   run_in_transaction!
 
-  record :purchasable, class: 'ApplicationRecord', default: nil
-  record :buyer, class: 'ApplicationRecord'
-  record :seller, class: 'ApplicationRecord'
+  record :purchasable, class: "ApplicationRecord", default: nil
+  record :buyer, class: "ApplicationRecord"
+  record :seller, class: "ApplicationRecord"
   record :dropzone
 
   validates :dropzone, :buyer, :seller, presence: true
@@ -93,7 +95,7 @@ class Transactions::Purchase < ActiveInteraction::Base
         # FIXME: Should be defined on the packjob
         10
       else
-        errors.add(:purchasable, 'Not a valid type')
+        errors.add(:purchasable, "Not a valid type")
       end
     end
 
@@ -131,7 +133,7 @@ class Transactions::Purchase < ActiveInteraction::Base
       when Slot
         ([
           purchasable.ticket_type.name,
-        ] + (purchasable.extras || []).map(&:name)).join(' + ')
+        ] + (purchasable.extras || []).map(&:name)).join(" + ")
       when TicketType
         purchasable.name
       when DropzoneUser

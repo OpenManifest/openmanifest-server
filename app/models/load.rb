@@ -129,8 +129,8 @@ class Load < ApplicationRecord
     end
 
     def update_counters!
-      if state_changed? 
-        if state == 'landed'
+      if state_changed?
+        if state == "landed"
           # Update counters
           ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
           user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
@@ -142,9 +142,9 @@ class Load < ApplicationRecord
           # If this is the first jump at the dropzone, also update
           # dropzone count
           User.update_counters(user_ids, jump_count: 1)
-        # Reverse the counters if the load marked as 
+        # Reverse the counters if the load marked as
         # not landed again
-        elsif state_was == 'landed'
+        elsif state_was == "landed"
           # Update counters
           ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
           user_ids = DropzoneUser.where(id: ids).pluck(:user_id)

@@ -1,4 +1,6 @@
-require 'active_interaction'
+# frozen_string_literal: true
+
+require "active_interaction"
 
 class Loads::Finalize < ActiveInteraction::Base
   integer :load_id

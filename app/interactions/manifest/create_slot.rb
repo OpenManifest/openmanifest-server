@@ -1,4 +1,6 @@
-require 'active_interaction'
+# frozen_string_literal: true
+
+require "active_interaction"
 
 class Manifest::CreateSlot < ActiveInteraction::Base
   integer :load_id
@@ -36,13 +38,13 @@ class Manifest::CreateSlot < ActiveInteraction::Base
       dropzone_user_id: dropzone_user_id,
       ticket_type_id: ticket_type_id,
       jump_type_id: jump_type_id,
-      rig_id: rig_id 
+      rig_id: rig_id
     )
   end
 
   def set_tandem_passenger
     return unless @model.ticket_type.is_tandem? && passenger_name
-  
+
     if @model.passenger_slot.present?
       @model.passenger_slot.passenger.update(
         name: passenger_name,

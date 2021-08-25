@@ -1,4 +1,6 @@
-require 'active_interaction'
+# frozen_string_literal: true
+
+require "active_interaction"
 
 class Transactions::Confirm < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction

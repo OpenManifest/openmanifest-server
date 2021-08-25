@@ -53,11 +53,11 @@ gem "bootsnap", ">= 1.4.4", require: false
 gem "search_cop"
 
 # Separate business logic
-gem 'active_interaction', '~> 4.0.0'
-gem 'active_interaction-extras'
+gem "active_interaction", "~> 4.0.0"
+gem "active_interaction-extras"
 
 # Count things
-gem 'counter_culture'
+gem "counter_culture"
 
 
 group :development, :test do

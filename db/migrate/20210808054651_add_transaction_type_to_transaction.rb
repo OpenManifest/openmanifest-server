@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddTransactionTypeToTransaction < ActiveRecord::Migration[6.1]
   def change
     add_column :transactions, :transaction_type, :integer, index: true

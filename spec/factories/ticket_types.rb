@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: ticket_types
@@ -20,7 +22,7 @@ FactoryBot.define do
     name { ["Height", "Hop n Pop", "Boogie"].sample }
     initialize_with { TicketType.find_or_initialize_by(name: name, dropzone: dropzone) }
     cost { Faker::Number.between(from: 25, to: 60) }
-    currency { 'AUD' }
+    currency { "AUD" }
     altitude do
       case name
       when "Height"

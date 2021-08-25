@@ -1,17 +1,19 @@
-require 'rails_helper'
+# frozen_string_literal: true
+
+require "rails_helper"
 
 module Mutations
   RSpec.describe CreateSlot, type: :request do
-    let!(:dropzone) { create(:dropzone, credits: 50, ) }
+    let!(:dropzone) { create(:dropzone, credits: 50,) }
     let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
     let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
     let!(:plane_load) { create(:load, plane: plane) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
 
-    describe '.resolve' do
-      context 'successfully' do
+    describe ".resolve" do
+      context "successfully" do
         let(:post_request) do
-          post '/graphql',
+          post "/graphql",
                 params: {
                   query: query(
                     ticket_type: ticket_type,
@@ -32,16 +34,16 @@ module Mutations
         it { expect { post_request }.to change { Dropzone.find(dropzone.id).credits }.by ticket_type.cost }
         it { expect { post_request }.to change { Dropzone.find(dropzone.id).sales.count }.by 1  }
         it { expect { post_request }.to change { DropzoneUser.find(dropzone_user.id).purchases.count }.by 1  }
-        it 'expects no errors' do
+        it "expects no errors" do
           post_request
-          expect(json['data']['createSlot']['errors']).to be nil 
+          expect(json["data"]["createSlot"]["errors"]).to be nil
         end
       end
 
-      context 'successfully with tandem' do
+      context "successfully with tandem" do
         let!(:ticket_type) { create(:ticket_type, is_tandem: true, dropzone: dropzone) }
         let(:post_request) do
-          post '/graphql',
+          post "/graphql",
                 params: {
                   query: query(
                     ticket_type: ticket_type,
@@ -61,14 +63,14 @@ module Mutations
         it { expect { post_request }.not_to change { DropzoneUser.find(dropzone_user.id).credits } }
         it { expect { post_request }.not_to change { Dropzone.find(dropzone.id).credits } }
         it { expect { post_request }.to change { Order.where(seller: dropzone).count }.by 1 }
-        it { expect(post_request['data']['createSlot']['errors']).to be nil }
-        it { expect(post_request['data']['createSlot']['fieldErrors']).to be nil }
+        it { expect(post_request["data"]["createSlot"]["errors"]).to be nil }
+        it { expect(post_request["data"]["createSlot"]["fieldErrors"]).to be nil }
       end
 
-      context 'with errors' do
+      context "with errors" do
         before do
           dropzone_user.update(credits: 0)
-          post '/graphql',
+          post "/graphql",
                 params: {
                   query: query(
                     ticket_type: ticket_type,
@@ -84,9 +86,9 @@ module Mutations
           JSON.parse(response.body)
         }
 
-        it { expect(json['data']['createSlot']['errors']).to be_empty }
-        it { expect(json['data']['createSlot']['fieldErrors'].count).to eq 1 }
-        it { expect(json['data']['createSlot']['fieldErrors'][0]['field']).to eq 'credits' }
+        it { expect(json["data"]["createSlot"]["errors"]).to be_empty }
+        it { expect(json["data"]["createSlot"]["fieldErrors"].count).to eq 1 }
+        it { expect(json["data"]["createSlot"]["fieldErrors"][0]["field"]).to eq "credits" }
       end
     end
 

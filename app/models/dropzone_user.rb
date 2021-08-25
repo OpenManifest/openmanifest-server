@@ -29,8 +29,8 @@ class DropzoneUser < ApplicationRecord
   has_many :user_permissions, dependent: :destroy
   has_many :permissions, through: :user_permissions
 
-  has_many :sales, dependent: :destroy, as: :seller, class_name: 'Order'
-  has_many :purchases, dependent: :destroy, as: :buyer, class_name: 'Order'
+  has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
+  has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
 
   has_many :rig_inspections, dependent: :destroy

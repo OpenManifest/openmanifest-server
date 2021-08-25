@@ -1,14 +1,16 @@
-require 'rails_helper'
+# frozen_string_literal: true
+
+require "rails_helper"
 
 RSpec.describe Manifest::CreateSlot do
-  let!(:dropzone) { create(:dropzone, credits: 50, ) }
+  let!(:dropzone) { create(:dropzone, credits: 50,) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
   let!(:plane) { create(:plane, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
 
   describe "Manifesting on a load" do
-    context 'when the user has credits' do
+    context "when the user has credits" do
       let!(:outcome) do
         Manifest::CreateSlot.run(
           ticket_type_id: ticket_type.id,
@@ -27,7 +29,7 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.result.order.transactions.where(status: :reserved).count).to eq 2 }
     end
 
-    context 'when the user doesnt have enough credits' do
+    context "when the user doesnt have enough credits" do
       before do
         dropzone_user.update(credits: ticket_type.cost - 10)
       end
@@ -47,7 +49,7 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.errors.messages[:credits]).not_to be nil }
     end
 
-    context 'when the user isnt allowed to manifest with the requested jump type' do
+    context "when the user isnt allowed to manifest with the requested jump type" do
       let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([dropzone_user]).pluck(:id)).sample }
       let!(:outcome) do
         Manifest::CreateSlot.run(
@@ -65,7 +67,7 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.errors.messages[:jump_type_id]).not_to be nil }
     end
 
-    context 'with a tandem passenger' do
+    context "with a tandem passenger" do
       let!(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
       let!(:outcome) do
         Manifest::CreateSlot.run(

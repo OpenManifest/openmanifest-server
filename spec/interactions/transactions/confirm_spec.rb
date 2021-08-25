@@ -1,4 +1,6 @@
-require 'rails_helper'
+# frozen_string_literal: true
+
+require "rails_helper"
 
 RSpec.describe Transactions::Confirm do
   let!(:dropzone) { create(:dropzone, credits: 50) }

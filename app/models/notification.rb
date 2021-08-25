@@ -33,7 +33,7 @@ class Notification < ApplicationRecord
     :membership_updated,
     :boarding_call_canceled,
     :permission_granted,
-    :permission_revoked ,
+    :permission_revoked,
   ]
 
   after_create :send_async!

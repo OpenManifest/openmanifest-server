@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Schema Information
 #
 # Table name: slots
@@ -27,7 +29,7 @@ FactoryBot.define do
       available_existing = dropzone.dropzone_users.where.not(
         id: load.slots.pick(:dropzone_user_id)
       )
-      create(:dropzone_user, dropzone: dropzone)
+      available_existing || create(:dropzone_user, dropzone: dropzone)
     end
     ticket_type { create(:ticket_type, dropzone: load.plane.dropzone) }
     is_paid { false }

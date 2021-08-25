@@ -9,13 +9,13 @@ module Mutations
     argument :state, Types::LoadStateType, required: true
 
     def resolve(state:, id:)
-      if state == 'landed'
+      if state == "landed"
         mutate(
           Loads::Finalize,
           :load,
           load_id: id
         )
-      elsif state == 'cancelled'
+      elsif state == "cancelled"
         mutate(
           Loads::Cancel,
           :load,

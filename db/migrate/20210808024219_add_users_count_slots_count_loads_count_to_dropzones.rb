@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddUsersCountSlotsCountLoadsCountToDropzones < ActiveRecord::Migration[6.1]
   def self.up
     add_column :dropzones, :users_count, :integer, null: false, default: 0

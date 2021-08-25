@@ -1,4 +1,6 @@
-require 'active_interaction'
+# frozen_string_literal: true
+
+require "active_interaction"
 
 class Transactions::CreateOrder < Transactions::Purchase
   include ActiveInteraction::Extras::Transaction
@@ -7,8 +9,8 @@ class Transactions::CreateOrder < Transactions::Purchase
   integer :amount
   string :title, default: nil
   integer :purchasable, default: nil
-  record :buyer, class: 'ApplicationRecord'
-  record :seller, class: 'ApplicationRecord'
+  record :buyer, class: "ApplicationRecord"
+  record :seller, class: "ApplicationRecord"
   record :dropzone
 
   validates :amount, :buyer, :seller, :dropzone, presence: true
