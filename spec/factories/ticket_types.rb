@@ -19,19 +19,19 @@
 FactoryBot.define do
   factory :ticket_type do
     dropzone
-    name { ["Height", "Hop n Pop", "Boogie"].sample }
+    name { ['Height', 'Hop n Pop', 'Boogie'].sample }
     initialize_with { TicketType.find_or_initialize_by(name: name, dropzone: dropzone) }
     cost { Faker::Number.between(from: 25, to: 60) }
-    currency { "AUD" }
+    currency { 'AUD' }
     altitude do
       case name
-      when "Height"
-      when "Boogie"
-        14000
-      when "Hop n Pop"
+      when 'Height'
+      when 'Boogie'
+        14_000
+      when 'Hop n Pop'
         4000
       else
-        14000
+        14_000
       end
     end
     allow_manifesting_self { true }

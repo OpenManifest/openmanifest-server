@@ -2,7 +2,7 @@
 
 module Types
   class TransactionTypeType < Types::BaseEnum
-    Transaction.transaction_types.keys.each do |type|
+    Transaction.transaction_types.each_key do |type|
       value type
     end
   end

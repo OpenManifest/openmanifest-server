@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_interaction"
+require 'active_interaction'
 
 class Manifest::CreateSlot < ActiveInteraction::Base
   integer :load_id
@@ -23,6 +23,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
     check_allowed_jump_type
     check_credits if dropzone.is_credit_system_enabled?
     return if errors.any?
+
     create_order if dropzone.is_credit_system_enabled?
     errors.merge!(@model.errors) unless @model.save
     @model
@@ -31,7 +32,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def build_slot
     @model = Slot.find_or_initialize_by(
       dropzone_user: dropzone_user,
-      load_id: load_id,
+      load_id: load_id
     )
 
     @model.assign_attributes(
@@ -48,7 +49,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
     if @model.passenger_slot.present?
       @model.passenger_slot.passenger.update(
         name: passenger_name,
-        exit_weight: passenger_exit_weight,
+        exit_weight: passenger_exit_weight
       )
     else
       passenger = Passenger.find_or_create_by(
@@ -62,7 +63,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
         passenger: passenger,
         exit_weight: passenger_exit_weight,
         ticket_type: @model.ticket_type,
-        jump_type: @model.jump_type,
+        jump_type: @model.jump_type
       )
     end
   end
@@ -70,9 +71,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def check_credits
     credits = dropzone_user.credits || 0
 
-    if total_cost > credits
-      errors.add(:credits, "Not enough credits to manifest for this jump")
-    end
+    errors.add(:credits, 'Not enough credits to manifest for this jump') if total_cost > credits
   end
 
   def check_allowed_jump_type
@@ -91,37 +90,37 @@ class Manifest::CreateSlot < ActiveInteraction::Base
     )
   end
 
-
   private
-    def plane_load
-      Load.find(load_id)
-    end
 
-    def dropzone
-      plane_load.plane.dropzone
-    end
+  def plane_load
+    Load.find(load_id)
+  end
 
-    def dropzone_user
-      dropzone.dropzone_users.find_by(id: dropzone_user_id)
-    end
+  def dropzone
+    plane_load.plane.dropzone
+  end
 
-    def ticket_type
-      dropzone.ticket_types.find_by(id: ticket_type_id)
-    end
+  def dropzone_user
+    dropzone.dropzone_users.find_by(id: dropzone_user_id)
+  end
 
-    def jump_type
-      JumpType.find_by(id: jump_type_id)
-    end
+  def ticket_type
+    dropzone.ticket_types.find_by(id: ticket_type_id)
+  end
 
-    def total_cost
-      # Find extras
-      extra_cost = Extra.where(
-        dropzone: dropzone,
-        id: extra_ids,
-      ).map(&:cost).reduce(&:sum)
+  def jump_type
+    JumpType.find_by(id: jump_type_id)
+  end
 
-      extra_cost ||= 0
+  def total_cost
+    # Find extras
+    extra_cost = Extra.where(
+      dropzone: dropzone,
+      id: extra_ids
+    ).map(&:cost).reduce(&:sum)
 
-      ticket_type.cost + extra_cost
-    end
+    extra_cost ||= 0
+
+    ticket_type.cost + extra_cost
+  end
 end

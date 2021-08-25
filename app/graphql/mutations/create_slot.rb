@@ -21,7 +21,7 @@ module Mutations
         load_id: attributes[:load_id],
         extra_ids: attributes[:extra_ids],
         passenger_name: attributes[:passenger_name],
-        passenger_exit_weight: attributes[:passenger_exit_weight],
+        passenger_exit_weight: attributes[:passenger_exit_weight]
       )
     end
 
@@ -29,20 +29,20 @@ module Mutations
       dropzone = Load.find(attributes[:load_id]).plane.dropzone
       dz_user = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
 
-      if attributes[:dropzone_user_id] != dz_user.id
-        required_permission = "createUserSlot"
-      else
-        required_permission = "createSlot"
-      end
+      required_permission = if attributes[:dropzone_user_id] != dz_user.id
+                              'createUserSlot'
+                            else
+                              'createSlot'
+                            end
 
       if dz_user.can?(required_permission)
         true
       else
-        return false, {
+        [false, {
           errors: [
             "You don't have permissions to manifest other users (missing #{required_permission})"
-            ]
-          }
+          ]
+        }]
       end
     end
   end

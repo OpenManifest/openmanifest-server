@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_interaction"
+require 'active_interaction'
 
 class Transactions::CreateOrder < Transactions::Purchase
   include ActiveInteraction::Extras::Transaction
@@ -9,8 +9,8 @@ class Transactions::CreateOrder < Transactions::Purchase
   integer :amount
   string :title, default: nil
   integer :purchasable, default: nil
-  record :buyer, class: "ApplicationRecord"
-  record :seller, class: "ApplicationRecord"
+  record :buyer, class: 'ApplicationRecord'
+  record :seller, class: 'ApplicationRecord'
   record :dropzone
 
   validates :amount, :buyer, :seller, :dropzone, presence: true
@@ -25,41 +25,42 @@ class Transactions::CreateOrder < Transactions::Purchase
   end
 
   private
-    def create_order
-      @order = Order.create(
-        title: title,
-        dropzone: dropzone,
-        seller: seller,
-        buyer: buyer,
-        amount: total_cost,
-        state: :pending,
-      )
-    end
 
-    def confirm_order
-      compose(::Transactions::Confirm, receipt: @order.receipts.first)
-    end
+  def create_order
+    @order = Order.create(
+      title: title,
+      dropzone: dropzone,
+      seller: seller,
+      buyer: buyer,
+      amount: total_cost,
+      state: :pending
+    )
+  end
 
-    def total_cost
-      amount
-    end
+  def confirm_order
+    compose(::Transactions::Confirm, receipt: @order.receipts.first)
+  end
 
-    def order_title
-      case purchasable
-      when Slot
-        "Slot on Load #{purchasable.load.load_number}"
-      when TicketType
-        "#{purchasable.name} ticket"
-      when DropzoneUser
-        "Funds added to account"
-      when Pack
-        "packjob"
-      else
-        errors.add(:purchasable, "Not a valid type")
-      end
-    end
+  def total_cost
+    amount
+  end
 
-    def item_name
-      "#{amount < 0 ? "Withdrawal" : "Deposit"}"
+  def order_title
+    case purchasable
+    when Slot
+      "Slot on Load #{purchasable.load.load_number}"
+    when TicketType
+      "#{purchasable.name} ticket"
+    when DropzoneUser
+      'Funds added to account'
+    when Pack
+      'packjob'
+    else
+      errors.add(:purchasable, 'Not a valid type')
     end
+  end
+
+  def item_name
+    (amount < 0 ? 'Withdrawal' : 'Deposit').to_s
+  end
 end

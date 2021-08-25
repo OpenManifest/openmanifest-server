@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_interaction"
+require 'active_interaction'
 
 class Transactions::Confirm < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction
@@ -11,6 +11,7 @@ class Transactions::Confirm < ActiveInteraction::Base
 
   def execute
     return unless receipt.transactions.where(status: :reserved).exists?
+
     receipt.transactions.each do |transaction|
       transaction.update(status: :completed)
     end

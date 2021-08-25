@@ -5,9 +5,9 @@ module Types
     class SellableItemInput < Types::BaseInputObject
       argument :type, Types::SellableItemTypes,
                required: true,
-               description: "Any sales peer, e.g DropzoneUser or Dropzone"
+               description: 'Any sales peer, e.g DropzoneUser or Dropzone'
       argument :id, ID, required: true,
-               description: "ID of the record"
+                        description: 'ID of the record'
 
       def to_record
         case arguments[:type].camelize

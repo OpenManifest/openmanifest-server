@@ -7,8 +7,7 @@ module Types
     field :orders, Types::OrderType.connection_type, null: true
     def orders
       is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
-
+      can_see_others = context[:current_resource].can?('readUserTransactions', dropzone_id: object.dropzone_id)
 
       if can_see_others || is_self
         Order.where(buyer: object).or(Order.where(seller: object)).where.not(state: :cancelled).order(created_at: :desc)
@@ -20,8 +19,7 @@ module Types
     field :purchases, Types::OrderType.connection_type, null: true
     def purchases
       is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
-
+      can_see_others = context[:current_resource].can?('readUserTransactions', dropzone_id: object.dropzone_id)
 
       if can_see_others || is_self
         object.purchases.order(created_at: :desc)
@@ -33,8 +31,7 @@ module Types
     field :sales, Types::OrderType.connection_type, null: true
     def sales
       is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
-
+      can_see_others = context[:current_resource].can?('readUserTransactions', dropzone_id: object.dropzone_id)
 
       if can_see_others || is_self
         object.purchases.order(created_at: :desc)

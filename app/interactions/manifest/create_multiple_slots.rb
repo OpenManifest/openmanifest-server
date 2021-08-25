@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_interaction"
+require 'active_interaction'
 
 class Manifest::CreateMultipleSlots < ActiveInteraction::Base
   integer :load_id
@@ -56,7 +56,7 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
       if user[:extra_ids]
         cost += Extra.where(
           dropzone: dropzone,
-          id: user[:extra_ids],
+          id: user[:extra_ids]
         ).map(&:cost).reduce(&:sum)
       end
 
@@ -70,36 +70,38 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
   end
 
   def check_allowed_jump_type
-    errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps") unless jump_type.allowed_for?(dropzone_users)
+    unless jump_type.allowed_for?(dropzone_users)
+      errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps")
+    end
   end
 
-
   private
-    def dropzone_users
-      dropzone.dropzone_users.where(id: users.pluck(:dropzone_user_id))
-    end
 
-    def next_group_number
-      current_highest_group_number + 1
-    end
+  def dropzone_users
+    dropzone.dropzone_users.where(id: users.pluck(:dropzone_user_id))
+  end
 
-    def current_highest_group_number
-      plane_load.slots.maximum(:group_number) || 0
-    end
+  def next_group_number
+    current_highest_group_number + 1
+  end
 
-    def plane_load
-      Load.find(load_id)
-    end
+  def current_highest_group_number
+    plane_load.slots.maximum(:group_number) || 0
+  end
 
-    def dropzone
-      plane_load.plane.dropzone
-    end
+  def plane_load
+    Load.find(load_id)
+  end
 
-    def ticket_type
-      dropzone.ticket_types.find_by(id: ticket_type_id)
-    end
+  def dropzone
+    plane_load.plane.dropzone
+  end
 
-    def jump_type
-      JumpType.find_by(id: jump_type_id)
-    end
+  def ticket_type
+    dropzone.ticket_types.find_by(id: ticket_type_id)
+  end
+
+  def jump_type
+    JumpType.find_by(id: jump_type_id)
+  end
 end

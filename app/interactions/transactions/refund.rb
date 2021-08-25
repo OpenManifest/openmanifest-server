@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_interaction"
+require 'active_interaction'
 
 class Transactions::Refund < ActiveInteraction::Base
   include ActiveInteraction::Extras::Transaction
@@ -20,16 +20,16 @@ class Transactions::Refund < ActiveInteraction::Base
 
     errors.merge!(new_receipt.errors) unless new_receipt.valid?
 
-    receipt.transactions.where(status: [:completed, :reserved]).each do |transaction|
+    receipt.transactions.where(status: %i[completed reserved]).each do |transaction|
       # Create reversed transaction
       transaction = Transaction.create(
         sender: transaction.sender,
         receiver: transaction.receiver,
         amount: transaction.amount * -1,
-        message: "Refunded",
+        message: 'Refunded',
         receipt: new_receipt,
         transaction_type: :refund,
-        status: :reserved,
+        status: :reserved
       )
       errors.merge!(transaction.errors) if transaction.errors.any?
     end

@@ -9,7 +9,6 @@ module Types
     def mutate(interaction, field_name, opts = {})
       outcome = interaction.run(**opts)
 
-
       if outcome.valid?
         {
           field_name => outcome.result,

@@ -33,13 +33,13 @@ class Slot < ApplicationRecord
   has_many :receipts, through: :order
   has_many :transactions, through: :receipts
 
-  belongs_to :passenger_slot, optional: true, class_name: "Slot"
+  belongs_to :passenger_slot, optional: true, class_name: 'Slot'
 
   has_many :slot_extras
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
 
-  counter_culture [:load, :plane, :dropzone], column_name: :slots_count
+  counter_culture %i[load plane dropzone], column_name: :slots_count
 
   after_create do
     Notification.create(

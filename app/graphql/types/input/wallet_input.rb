@@ -5,9 +5,9 @@ module Types
     class WalletInput < Types::BaseInputObject
       argument :type, Types::WalletableTypes,
                required: true,
-               description: "Any model with an account, e.g DropzoneUser or Dropzone"
+               description: 'Any model with an account, e.g DropzoneUser or Dropzone'
       argument :id, ID, required: true,
-               description: "ID of the record"
+                        description: 'ID of the record'
 
       def to_record
         case arguments[:type].camelize

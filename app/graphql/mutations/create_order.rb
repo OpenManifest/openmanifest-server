@@ -25,17 +25,18 @@ module Mutations
       amount = attributes[:amount]
       is_peer_to_peer = seller.is_a?(DropzoneUser) && buyer.is_a?(DropzoneUser)
 
-      return false, { errors: ["Amount must be positive"] } unless amount > 0
+      return false, { errors: ['Amount must be positive'] } unless amount > 0
 
       # Users are allowed to send money to other users by default
       # If the user is the buyer, and the amount is positive
       return true if current_user == buyer && is_peer_to_peer
       return true if current_user.can?(:createUserTransaction)
-      return false, {
+
+      [false, {
         errors: [
           "You don't have permissions to create ticket addons"
-          ]
-        }
+        ]
+      }]
     end
   end
 end

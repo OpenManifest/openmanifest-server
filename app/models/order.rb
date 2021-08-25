@@ -27,14 +27,14 @@ class Order < ApplicationRecord
 
   before_create :set_order_number
 
-  enum state: [
-    :pending,
-    :completed,
-    :refunded,
-    :cancelled
+  enum state: %i[
+    pending
+    completed
+    refunded
+    cancelled
   ]
 
-  scope :at_dropzone, -> (dropzone) { where(dropzone: dropzone) }
+  scope :at_dropzone, ->(dropzone) { where(dropzone: dropzone) }
 
   def set_order_number
     current_max = Order.at_dropzone(dropzone).maximum(:order_number) || 0

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "rails_helper"
+require 'rails_helper'
 
 RSpec.describe Loads::Finalize do
   let!(:dropzone) { create(:dropzone, credits: 50) }
@@ -14,12 +14,12 @@ RSpec.describe Loads::Finalize do
         dropzone_user_id: dz_user.id,
         jump_type_id: JumpType.allowed_for([dz_user]).sample.id,
         load_id: plane_load.id,
-        exit_weight: dz_user.exit_weight,
+        exit_weight: dz_user.exit_weight
       ).result
     end
   end
 
-  describe "Cancelling a load" do
+  describe 'Cancelling a load' do
     let!(:outcome) do
       Loads::Cancel.run(
         load_id: plane_load.id
@@ -28,12 +28,12 @@ RSpec.describe Loads::Finalize do
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }
     it { expect(outcome.errors).to be_empty }
-    it "completes all transactions" do
+    it 'completes all transactions' do
       outcome.result.slots.each do |slot|
         expect(slot.order).not_to be nil
         expect(slot.order.receipts.count).to eq 2
         expect(slot.order.transactions.count).to eq 4
-        expect(slot.dropzone_user.credits).to eq (ticket_type.cost * 2)
+        expect(slot.dropzone_user.credits).to eq(ticket_type.cost * 2)
         expect(slot.order.transactions.where(status: :completed).count).to eq 4
         expect(slot.order.transactions.where(transaction_type: :refund).count).to eq 2
       end
