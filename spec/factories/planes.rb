@@ -20,7 +20,7 @@ FactoryBot.define do
   factory :plane do
     dropzone { nil }
     name { Faker::Color.color_name }
-    registration { Faker::String.random(length: 3..12) }
+    registration { Faker::Name.first_name }
     is_deleted { false }
     max_slots { Faker::Number.between(from: 4, to: 20) }
 
