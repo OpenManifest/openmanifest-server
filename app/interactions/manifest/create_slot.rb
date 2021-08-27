@@ -71,7 +71,7 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def check_credits
     credits = dropzone_user.credits || 0
 
-    errors.add(:credits, "Not enough credits to manifest for this jump") if total_cost > credits
+    errors.add(:base, "Not enough credits to manifest for this jump") if total_cost > credits
   end
 
   def check_allowed_jump_type
