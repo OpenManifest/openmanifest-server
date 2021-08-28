@@ -21,7 +21,7 @@ class GraphqlController < ApplicationController
         {
           query: param[:query],
           operation_name: param[:operationName],
-          variables: prepare_variables(params[:variables]),
+          variables: prepare_variables(param[:variables]),
           context: gql_devise_context(User),
         }
       end
