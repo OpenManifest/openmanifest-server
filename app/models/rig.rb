@@ -44,6 +44,6 @@ class Rig < ApplicationRecord
   end
 
   def inspected_at?(dropzone)
-    rig_inspections.exists?(dropzone: dropzone)
+    rig_inspections.joins(:inspected_by).exists?(inspected_by: { dropzone: dropzone })
   end
 end
