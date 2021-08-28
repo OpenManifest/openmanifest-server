@@ -86,9 +86,9 @@ module Mutations
           JSON.parse(response.body)
         }
 
-        it { expect(json["data"]["createSlot"]["errors"]).to be_empty }
-        it { expect(json["data"]["createSlot"]["fieldErrors"].count).to eq 1 }
-        it { expect(json["data"]["createSlot"]["fieldErrors"][0]["field"]).to eq "credits" }
+        it { expect(json["data"]["createSlot"]["errors"]).not_to be_empty }
+        it { expect(json["data"]["createSlot"]["fieldErrors"]).to be_empty }
+        it { expect(json["data"]["createSlot"]["errors"].first).to match(/credits/) }
       end
     end
 
