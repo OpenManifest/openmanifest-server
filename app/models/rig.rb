@@ -42,4 +42,8 @@ class Rig < ApplicationRecord
   before_save do
     assign_attributes(rig_type: :sport) unless rig_type.present?
   end
+
+  def inspected_at?(dropzone)
+    rig_inspections.joins(:inspected_by).exists?(inspected_by: { dropzone: dropzone })
+  end
 end

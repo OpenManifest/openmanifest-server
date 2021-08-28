@@ -13,20 +13,29 @@ class GraphqlController < ApplicationController
   # This allows for outside API access while preventing CSRF attacks,
   # but you'll have to authenticate your user separately
   # protect_from_forgery with: :null_session
-
   def execute
-    variables = prepare_variables(params[:variables])
-    query = params[:query]
-    operation_name = params[:operationName]
+    # Apollo sends the queries in an array when batching is enabled. The data ends up in the _json field of the params variable.
+    # see the Apollo Documentation about query batching: https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/
+    result = if params[:_json]
+      queries = params[:_json].map do |param|
+        {
+          query: param[:query],
+          operation_name: param[:operationName],
+          variables: prepare_variables(param[:variables]),
+          context: gql_devise_context(User),
+        }
+      end
+      DzSchema.multiplex(queries)
+    else
+      DzSchema.execute(
+        params[:query],
+        operation_name: params[:operationName],
+        variables: prepare_variables(params[:variables]),
+        context: gql_devise_context(User),
+      )
+    end
 
-
-    result = DzSchema.execute(
-      query,
-      variables: variables,
-      context: gql_devise_context(User),
-      operation_name: operation_name
-    )
-    render json: result unless performed?
+    render json: result, root: false unless performed?
   rescue => e
     raise e unless Rails.env.development?
     handle_error_in_development e
