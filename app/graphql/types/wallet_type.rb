@@ -9,10 +9,10 @@ module Types
     end
     def orders(start_date: nil)
       is_self = if object.is_a?(DropzoneUser)
-                  context[:current_resource].id == object.user.id
-                else
-                  context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id)
-                end
+        context[:current_resource].id == object.user.id
+      else
+        context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id)
+      end
 
 
       can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.try(:dropzone_id) || object.id)
