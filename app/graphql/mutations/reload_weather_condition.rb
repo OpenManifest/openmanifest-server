@@ -7,9 +7,10 @@ module Mutations
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :id, Int, required: false
+    argument :dropzone_id, Int, required: false
 
-    def resolve(attributes:, id: nil)
-      dz = Dropzone.find(attributes[:dropzone_id])
+    def resolve(dropzone_id: nil, id: nil)
+      dz = Dropzone.find(dropzone_id)
       model = dz.weather_conditions.find(id)
 
       if dz.lat && dz.lng
@@ -45,8 +46,8 @@ module Mutations
       }
     end
 
-    def authorized?(id:, attributes: nil)
-      if !context[:current_resource].can? :updateWeatherConditions, dropzone_id: attributes[:dropzone_id]
+    def authorized?(id:, dropzone_id: nil)
+      if !context[:current_resource].can? :updateWeatherConditions, dropzone_id: dropzone_id
         return false, {
           errors: [
             "You can't update weather conditions"

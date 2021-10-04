@@ -45,7 +45,7 @@ class WeatherCondition < ApplicationRecord
 
     # Calculate freefall drift
     freefall_winds = JSON.parse(winds).filter_map { |wind| wind if wind['altitude'].to_i > 4000 }
-    
+
     avg_fall_direction = freefall_winds.map { |wind| wind['direction'].to_i }.sum / freefall_winds.count
     # Average wind speed from 4000ft
     avg_fall_speed_knots = freefall_winds.map { |wind| wind['speed'].to_i }.sum / freefall_winds.count
@@ -59,8 +59,8 @@ class WeatherCondition < ApplicationRecord
 
     avg_dir = (avg_fall_direction + avg_direction) / 2
     avg_drift = (avg_fall_drift_distance_miles + avg_drift_distance_miles) /2
-    
-    
+
+
     assign_attributes(jump_run: avg_dir, exit_spot_miles: avg_drift)
   rescue
     nil
