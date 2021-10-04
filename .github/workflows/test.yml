@@ -4,8 +4,8 @@ env:
   BUNDLE_JOBS: "3"
   BUNDLE_RETRY: "3"
   PGHOST: 127.0.0.1
-  PGUSER: circleci
-  PGPASSWORD: ""
+  PGUSER: github
+  PGPASSWORD: github
   RAILS_ENV: test
   RUBY_VERSION: 2.7.3
 concurrency:
@@ -54,10 +54,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      redis:
-        image: redis:alpine
-        ports: ["6379:6379"]
-        options: --entrypoint redis-server
     steps:
       - name: Setup Python for JUnit Parsing
         uses: actions/setup-python@v2
