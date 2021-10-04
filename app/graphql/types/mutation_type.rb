@@ -3,6 +3,7 @@
 module Types
   class MutationType < Types::BaseObject
     field :createWeatherCondition, mutation: Mutations::CreateWeatherCondition
+    field :reloadWeatherCondition, mutation: Mutations::ReloadWeatherCondition
     field :createGhost, mutation: Mutations::CreateGhost
     field :createOrder, mutation: Mutations::CreateOrder
     field :revokePermission, mutation: Mutations::RevokePermission
