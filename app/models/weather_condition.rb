@@ -62,7 +62,7 @@ class WeatherCondition < ApplicationRecord
     
     
     assign_attributes(jump_run: avg_dir, exit_spot_miles: avg_drift)
-  rescue =>
+  rescue
     nil
   end
 
