@@ -41,6 +41,7 @@ class DropzoneUser < ApplicationRecord
 
   counter_culture :dropzone, column_name: :users_count
   delegate :exit_weight, :name, :email, :nickname, :rigs, to: :user
+  before_save :sync_federation
 
   after_initialize do
     assign_attributes(user_role: dropzone.user_roles.second) if user_role.nil? && !dropzone.nil?
@@ -85,5 +86,48 @@ class DropzoneUser < ApplicationRecord
     ).or(
       Permission.where(id: role_permissions.pluck(:id))
     )
+  end
+
+  def sync_federation
+    return unless dropzone && dropzone.federation
+    if dropzone.federation.slug == 'apf'
+      sync_apf
+    end
+  end
+
+  def sync_apf
+    return unless user
+    return unless user.apf_number
+    *_, last_name = user.name.split(/\s+/)
+    return unless last_name
+    
+    url = "https://www.apf.com.au/apf/api/student"
+    params = {
+      SurName: last_name,
+      APFNum: user.apf_number
+    }
+
+    response = JSON.parse(
+      URI.open(
+        [url, params.to_query].join('?')
+      ).read
+    )
+
+    if response.count == 1
+      user_info, = response
+
+      # Find license that have not expired
+      valid_licenses = user_info['Qualifications'].filter_map do |license_or_crest|
+        License.find_by(name: license_or_crest['Qualification']) if License.exists?(name: license_or_crest['Qualification'])
+      end
+
+      # Find the highest ranking license
+      if license = License.find_by(id: valid_licenses.map(&:id).last)
+        user.update(license: license)
+      end
+    end
+  rescue => e
+    puts e.message
+    nil
   end
 end
