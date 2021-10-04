@@ -53,14 +53,15 @@ class WeatherCondition < ApplicationRecord
     avg_fall_speed_miles = avg_fall_speed_knots * 1.15078
 
     # Calculate drift for 3.5min
-    avg_fall_drift_per_minute = avg_speed_miles / 60
+    avg_fall_drift_per_minute = avg_fall_speed_miles / 60
 
-    avg_fall_drift_distance_miles = (avg_drift_per_minute * 3.5).round(2)
+    avg_fall_drift_distance_miles = (avg_fall_drift_per_minute * 3.5).round(2)
 
     avg_dir = (avg_fall_direction + avg_direction) / 2
     avg_drift = (avg_fall_drift_distance_miles + avg_drift_distance_miles) /2
     
-    assign_attributes(jump_run: avg_dir)
+    
+    assign_attributes(jump_run: avg_dir, exit_spot_miles: avg_drift)
   rescue =>
     nil
   end
