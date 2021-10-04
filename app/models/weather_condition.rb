@@ -19,6 +19,35 @@ class WeatherCondition < ApplicationRecord
   belongs_to :dropzone
   before_create :set_defaults
 
+  def from_coordinates(lat, lng)
+    response = JSON.parse(
+      URI.open(
+        "https://markschulze.net/winds/winds.php?lat=#{lat}&lng=#{lng}&hourOffset=1&referrer=openmanifestorg"
+      ).read
+    )
+
+    winds = [0, 1000, 2000, 5000, 7000, 8000, 10000, 12000, 14000].map(&:to_s).reverse.map do |alt|
+      {
+        altitude: alt,
+        speed: response["speed"][alt],
+        direction: response["direction"][alt],
+        temperature: response["temp"][alt]
+      }
+    end
+
+    assign_attributes(
+      winds: winds.to_json,
+      temperature: if winds.count
+                     winds.last['temperature'] || 0
+                   else
+                     0
+                   end
+    )
+  rescue => e
+    puts e.message
+    nil
+  end
+
   private
     def set_defaults
       assign_attributes(
@@ -32,5 +61,9 @@ class WeatherCondition < ApplicationRecord
         temperature: 0,
         offset_miles: 0,
       )
+
+      if dropzone.lat.present? && dropzone.lng.present?
+        from_coordinates(dropzone.lat, dropzone.lng)
+      end
     end
 end

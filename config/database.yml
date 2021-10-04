@@ -30,3 +30,8 @@ production:
   <<: *default
   adapter: postgresql
   database: dz_production
+
+staging:
+  <<: *default
+  adapter: postgresql
+  database: dz_production

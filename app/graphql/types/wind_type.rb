@@ -5,5 +5,6 @@ module Types
     field :altitude, String, null: true
     field :speed, String, null: true
     field :direction, String, null: true
+    field :temperature, String, null: true
   end
 end
