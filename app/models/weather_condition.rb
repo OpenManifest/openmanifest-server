@@ -38,7 +38,7 @@ class WeatherCondition < ApplicationRecord
     assign_attributes(
       winds: winds.to_json,
       temperature: if winds.count
-                     winds.last['temperature'] || 0
+                     winds.last["temperature"] || 0
                    else
                      0
                    end
