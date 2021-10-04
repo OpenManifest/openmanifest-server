@@ -69,7 +69,7 @@ class WeatherCondition < ApplicationRecord
   def from_coordinates(lat, lng)
     response = JSON.parse(
       URI.open(
-        "https://markschulze.net/winds/winds.php?lat=#{lat}&lng=#{lng}&hourOffset=1&referrer=openmanifestorg"
+        "https://markschulze.net/winds/winds.php?lat=#{lat}&lon=#{lng}&hourOffset=0&referrer=openmanifestorg"
       ).read
     )
 
