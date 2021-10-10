@@ -73,8 +73,7 @@ class WeatherCondition < ApplicationRecord
       ).read
     )
 
-    winds = [0, 1000, 2000, 5000, 7000, 8000, 1000
-      0, 12000, 14000].map(&:to_s).reverse.map do |alt|
+    winds = [0, 1000, 2000, 5000, 7000, 8000, 10000, 12000, 14000].map(&:to_s).reverse.map do |alt|
       {
         altitude: alt,
         speed: response["speed"][alt],
