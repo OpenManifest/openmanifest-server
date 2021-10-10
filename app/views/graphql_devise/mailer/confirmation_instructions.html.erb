@@ -21,7 +21,7 @@
           </tr>
           <tr>
             <td>
-              <a href="<%= [URI.parse(ENV['FRONTEND_URL']).to_s, URI.encode_www_form(token: @token)].join('?')  %>"
+              <a href="<%= [URI.join(ENV['FRONTEND_URL'], 'confirm').to_s, URI.encode_www_form(token: @token)].join('?')  %>"
                 style="padding: 10px; font-size: 16px; background-color: #FF1414; color: white; text-decoration: none; padding-left: 16px; padding-right: 16px; border-radius: 4px; border: none;">Complete
                 registration</button>
             </td>
