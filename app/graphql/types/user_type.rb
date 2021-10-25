@@ -9,6 +9,7 @@ module Types
     field :name, String, null: true
     field :push_token, String, null: true
     field :exit_weight, String, null: true
+    field :nickname, String, null: true
     field :email, String, null: true
     field :phone, String, null: true
     field :apf_number, String, null: true

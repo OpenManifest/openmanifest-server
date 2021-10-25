@@ -13,8 +13,9 @@ module Mutations
       model = User.find(id)
       model.assign_attributes(attributes.to_h)
 
-
       model.save!
+      model.dropzone_users.each do |dz_user|
+      end
       {
         user: model.reload,
         errors: nil,

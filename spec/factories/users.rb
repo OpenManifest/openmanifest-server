@@ -53,4 +53,15 @@ FactoryBot.define do
       user.confirm
     end
   end
+
+  factory :user_with_license, parent: :user do
+    transient do
+      federation { Federation.first }
+      license { Federation.first.licenses.sample }
+    end
+
+    after(:create) do |user, evaluator|
+      create(:user_federation, federation: evaluator.federation, license: evaluator.license, user: user)
+    end
+  end
 end

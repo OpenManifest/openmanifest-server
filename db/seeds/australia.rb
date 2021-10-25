@@ -17,9 +17,9 @@ apf = Federation.find_or_create_by(
   "Certificate A" => ["hnp", "hp", "fs"],
   "Certificate B" => ["hnp", "hp", "fs", "angle", "freefly"],
   "Certificate C" => ["hnp", "hp", "fs", "angle", "freefly", "cam"],
-  "Certificate D" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
-  "Certificate E" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
-  "Certificate F" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "wingsuit"],
+  "Certificate D" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "ws"],
+  "Certificate E" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "ws"],
+  "Certificate F" => ["hnp", "hp", "fs", "angle", "freefly", "cam", "ws"],
 }.each do |(license_name, types)|
   license = License.find_or_create_by(
     name: license_name,

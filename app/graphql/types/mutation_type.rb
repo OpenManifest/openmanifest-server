@@ -18,6 +18,7 @@ module Types
     field :updateExtra, mutation: Mutations::UpdateExtra
     field :createExtra, mutation: Mutations::CreateExtra
     field :updateUser, mutation: Mutations::UpdateUser
+    field :joinFederation, mutation: Mutations::JoinFederation
     field :deleteTicketType, mutation: Mutations::DeleteTicketType
     field :createTicketType, mutation: Mutations::CreateTicketType
     field :updateTicketType, mutation: Mutations::UpdateTicketType
