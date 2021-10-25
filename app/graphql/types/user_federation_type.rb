@@ -6,7 +6,7 @@ module Types
     field :id, GraphQL::Types::ID, null: false
     field :federation, Types::FederationType, null: false
     field :license, Types::LicenseType, null: true
-    field :uid, Integer, null: true,
+    field :uid, String, null: true,
     description: 'User Federation ID, e.g APF number'
     field :qualifications, [Types::UserQualificationType], null: true
     def qualifications

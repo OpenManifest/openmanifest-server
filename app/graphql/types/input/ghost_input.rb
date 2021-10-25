@@ -10,6 +10,7 @@ module Types
       argument :dropzone_id, Integer, required: true
       argument :role_id, Integer, required: true
       argument :license_id, Integer, required: false
+      argument :federation_number, String, required: false
     end
   end
 end

@@ -11,6 +11,7 @@ module Mutations
         ::Federations::AssignUser,
         :user,
         federation: Federation.find(attributes[:federation_id]),
+        license_id: attributes[:license_id],
         uid: attributes[:uid],
         user: context[:current_resource]
       )
