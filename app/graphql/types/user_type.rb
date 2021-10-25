@@ -19,6 +19,7 @@ module Types
     field :jump_types, [Types::JumpTypeType], null: true
     field :license, Types::LicenseType, null: true
     field :dropzone_users, [Types::DropzoneUserType], null: true
+    field :user_federations, [Types::UserFederationType], null: true
 
     field :image, String, null: true
     def image
