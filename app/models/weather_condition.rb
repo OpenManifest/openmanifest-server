@@ -25,16 +25,16 @@ class WeatherCondition < ApplicationRecord
     # a. A canopy descends at approximately 1,000 feet per minute.
     # b. Divide the opening altitude by 1,000 feet to determine time of descent, e.g., 3,000 feet = three
     #    minutes of descent.
-    # c. Estimate in miles per minute the amount of drift during descent, as in Table E.1: 
+    # c. Estimate in miles per minute the amount of drift during descent, as in Table E.1:
 
     # Estimate rough opening height 3500 = 3.5min canopy
-    
-    # Average wind direction from 4000ft
-    canopy_winds = JSON.parse(winds).filter_map { |wind| wind if wind['altitude'].to_i < 5000 }
 
-    avg_direction = canopy_winds.map { |wind| wind['direction'].to_i }.sum / canopy_winds.count
+    # Average wind direction from 4000ft
+    canopy_winds = JSON.parse(winds).filter_map { |wind| wind if wind["altitude"].to_i < 5000 }
+
+    avg_direction = canopy_winds.map { |wind| wind["direction"].to_i }.sum / canopy_winds.count
     # Average wind speed from 4000ft
-    avg_speed_knots = canopy_winds.map { |wind| wind['speed'].to_i }.sum / canopy_winds.count
+    avg_speed_knots = canopy_winds.map { |wind| wind["speed"].to_i }.sum / canopy_winds.count
 
     avg_speed_miles = avg_speed_knots * 1.15078
 
@@ -44,11 +44,11 @@ class WeatherCondition < ApplicationRecord
     avg_drift_distance_miles = (avg_drift_per_minute * 3.5).round(2)
 
     # Calculate freefall drift
-    freefall_winds = JSON.parse(winds).filter_map { |wind| wind if wind['altitude'].to_i > 4000 }
+    freefall_winds = JSON.parse(winds).filter_map { |wind| wind if wind["altitude"].to_i > 4000 }
 
-    avg_fall_direction = freefall_winds.map { |wind| wind['direction'].to_i }.sum / freefall_winds.count
+    avg_fall_direction = freefall_winds.map { |wind| wind["direction"].to_i }.sum / freefall_winds.count
     # Average wind speed from 4000ft
-    avg_fall_speed_knots = freefall_winds.map { |wind| wind['speed'].to_i }.sum / freefall_winds.count
+    avg_fall_speed_knots = freefall_winds.map { |wind| wind["speed"].to_i }.sum / freefall_winds.count
 
     avg_fall_speed_miles = avg_fall_speed_knots * 1.15078
 
@@ -58,7 +58,7 @@ class WeatherCondition < ApplicationRecord
     avg_fall_drift_distance_miles = (avg_fall_drift_per_minute * 3.5).round(2)
 
     avg_dir = (avg_fall_direction + avg_direction) / 2
-    avg_drift = (avg_fall_drift_distance_miles + avg_drift_distance_miles) /2
+    avg_drift = (avg_fall_drift_distance_miles + avg_drift_distance_miles) / 2
 
 
     assign_attributes(jump_run: avg_dir, exit_spot_miles: avg_drift)

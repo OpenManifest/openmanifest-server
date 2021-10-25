@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateUserFederationQualifications < ActiveRecord::Migration[6.1]
   def change
     create_table :user_federation_qualifications do |t|

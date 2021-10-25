@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class UserFederation < ApplicationRecord
   belongs_to :user
   belongs_to :federation
@@ -6,7 +8,7 @@ class UserFederation < ApplicationRecord
   has_many :qualifications, through: :user_federation_qualifications
 
   def sync_federation
-    if federation.slug == 'apf'
+    if federation.slug == "apf"
       sync_apf
     end
   end
@@ -25,7 +27,7 @@ class UserFederation < ApplicationRecord
 
     response = JSON.parse(
       URI.open(
-        [url, params.to_query].join('?')
+        [url, params.to_query].join("?")
       ).read
     )
 
@@ -33,12 +35,12 @@ class UserFederation < ApplicationRecord
       user_info, = response
 
       # Find license that have not expired
-      valid_licenses = user_info['Qualifications'].filter_map do |license_or_crest|
-        if License.exists?(name: license_or_crest['Qualification'])
-          License.find_by(name: license_or_crest['Qualification'])
+      valid_licenses = user_info["Qualifications"].filter_map do |license_or_crest|
+        if License.exists?(name: license_or_crest["Qualification"])
+          License.find_by(name: license_or_crest["Qualification"])
         else
           user_federation_qualifications.find_or_create_by(
-            qualification: Qualification.find_or_create_by(name: license_or_crest['Qualification'], federation: Federation.find_by(slug: :apf))
+            qualification: Qualification.find_or_create_by(name: license_or_crest["Qualification"], federation: Federation.find_by(slug: :apf))
           )
           nil
         end

@@ -90,5 +90,4 @@ class DropzoneUser < ApplicationRecord
       Permission.where(id: role_permissions.pluck(:id))
     )
   end
-
 end

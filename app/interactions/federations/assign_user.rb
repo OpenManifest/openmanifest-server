@@ -40,7 +40,7 @@ class Federations::AssignUser < ActiveInteraction::Base
 
   def synchronize_qualifications
     case federation.slug
-    when 'apf'
+    when "apf"
       compose(
         Federations::ApfSync,
         user_federation: @user_federation,

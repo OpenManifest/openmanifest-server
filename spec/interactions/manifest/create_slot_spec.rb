@@ -50,7 +50,7 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "when the user isnt allowed to manifest with the requested jump type" do
-      let!(:dropzone_user) { create(:dropzone_user_with_license, dropzone: dropzone, credits: 200, federation: Federation.find_by(slug: :apf), license: Federation.find_by(slug: :apf).licenses.find_by(name: 'Certificate A')) }
+      let!(:dropzone_user) { create(:dropzone_user_with_license, dropzone: dropzone, credits: 200, federation: Federation.find_by(slug: :apf), license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A")) }
       let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([dropzone_user]).pluck(:id)).sample }
       let!(:outcome) do
         Manifest::CreateSlot.run(

@@ -23,17 +23,17 @@ RSpec.describe JumpType, type: :model do
   let!(:dropzone) { create(:dropzone) }
   let!(:user1) { create(:user) }
   let!(:certificate_e_user) { create(:dropzone_user, dropzone: dropzone, user: user1) }
-  let!(:certificate_e_federation){ create(:user_federation, user: user1, federation: federation, license: federation.licenses.find_by(name: 'Certificate E')) }
+  let!(:certificate_e_federation) { create(:user_federation, user: user1, federation: federation, license: federation.licenses.find_by(name: "Certificate E")) }
 
   let!(:user2) { create(:user) }
   let!(:certificate_a_user) { create(:dropzone_user, dropzone: dropzone, user: user2) }
-  let!(:certificate_a_federation){ create(:user_federation, user: user2, federation: federation, license: federation.licenses.find_by(name: 'Certificate A')) }
+  let!(:certificate_a_federation) { create(:user_federation, user: user2, federation: federation, license: federation.licenses.find_by(name: "Certificate A")) }
 
   let!(:user3) { create(:user) }
   let!(:certificate_c_user) { create(:dropzone_user, dropzone: dropzone, user: user3) }
-  let!(:certificate_c_federation){ create(:user_federation, user: user3, federation: federation, license: federation.licenses.find_by(name: 'Certificate C')) }
+  let!(:certificate_c_federation) { create(:user_federation, user: user3, federation: federation, license: federation.licenses.find_by(name: "Certificate C")) }
 
-  it 'E license user is allowed for any jump' do
+  it "E license user is allowed for any jump" do
     expect(
       JumpType.allowed_for(
         certificate_e_user
@@ -41,39 +41,39 @@ RSpec.describe JumpType, type: :model do
     ).to eq JumpType.all.pluck(:slug).sort
   end
 
-  it 'A license only allowed for flat' do
+  it "A license only allowed for flat" do
     expect(
       JumpType.allowed_for(
         certificate_a_user
       ).pluck(:slug).sort
-    ).to eq ['fs', 'hnp', 'hp'].sort
+    ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it 'A license and E license user only allowed for A licensed jump' do
+  it "A license and E license user only allowed for A licensed jump" do
     expect(
       JumpType.allowed_for([
         certificate_e_user,
         certificate_a_user
       ]).pluck(:slug).sort
-    ).to eq ['fs', 'hnp', 'hp'].sort
+    ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it 'A license, C license and E license user only allowed for A licensed jump' do
+  it "A license, C license and E license user only allowed for A licensed jump" do
     expect(
       JumpType.allowed_for([
         certificate_e_user,
         certificate_c_user,
         certificate_a_user
       ]).pluck(:slug).sort
-    ).to eq ['fs', 'hnp', 'hp'].sort
+    ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it 'C license and E license users allowed for C licensed jumps' do
+  it "C license and E license users allowed for C licensed jumps" do
     expect(
       JumpType.allowed_for([
         certificate_e_user,
         certificate_c_user
       ]).pluck(:slug).sort
-    ).to eq ['fs', 'hp', 'hnp', 'angle', 'freefly', 'cam'].sort
+    ).to eq ["fs", "hp", "hnp", "angle", "freefly", "cam"].sort
   end
 end

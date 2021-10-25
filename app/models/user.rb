@@ -95,6 +95,4 @@ class User < ApplicationRecord
     user.save(validate: false)
     user
   end
-
-  
 end

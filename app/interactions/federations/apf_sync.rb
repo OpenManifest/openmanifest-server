@@ -30,10 +30,10 @@ class Federations::ApfSync < ActiveInteraction::Base
     user_info, = @json
 
     # Find license that have not expired
-    @qualifications = user_info['Qualifications'].filter_map do |license_or_crest|
-      next if license_or_crest['Qualification'] =~ /Certificate/i
+    @qualifications = user_info["Qualifications"].filter_map do |license_or_crest|
+      next if /Certificate/i.match?(license_or_crest["Qualification"])
       Qualification.find_or_create_by(
-        name: license_or_crest['Qualification'],
+        name: license_or_crest["Qualification"],
         federation: user_federation.federation,
       )
     end
@@ -42,19 +42,19 @@ class Federations::ApfSync < ActiveInteraction::Base
   def assign_qualifications
     user_info, = @json
 
-    @qualifications = user_info['Qualifications'].filter_map do |license_or_crest|
-      next if license_or_crest['Qualification'] =~ /Certificate/i
+    @qualifications = user_info["Qualifications"].filter_map do |license_or_crest|
+      next if /Certificate/i.match?(license_or_crest["Qualification"])
 
       UserFederationQualification.find_or_create_by({
         qualification: Qualification.find_by(
-          name: license_or_crest['Qualification'],
+          name: license_or_crest["Qualification"],
           federation: user_federation.federation,
         ),
         user_federation_id: user_federation.id
       }.merge(
-        uid: license_or_crest['SerialNumber'],
-        expires_at: if license_or_crest['ExpiryDate']
-                      DateTime.parse(license_or_crest['ExpiryDate'])
+        uid: license_or_crest["SerialNumber"],
+        expires_at: if license_or_crest["ExpiryDate"]
+                      DateTime.parse(license_or_crest["ExpiryDate"])
                     else
                       nil
                     end
@@ -66,8 +66,8 @@ class Federations::ApfSync < ActiveInteraction::Base
     user_info, = @json
 
     # Find license that have not expired
-    @licenses = user_info['Qualifications'].filter_map do |license_or_crest|
-      { license_or_crest['Qualification'] => license_or_crest } if license_or_crest['Qualification'] =~ /Certificate/i
+    @licenses = user_info["Qualifications"].filter_map do |license_or_crest|
+      { license_or_crest["Qualification"] => license_or_crest } if /Certificate/i.match?(license_or_crest["Qualification"])
     end.reduce(:merge)
   end
 
@@ -79,7 +79,7 @@ class Federations::ApfSync < ActiveInteraction::Base
 
       user_federation.assign_attributes(
         license: license,
-        license_number: @licenses[license.name]['SerialNumber']
+        license_number: @licenses[license.name]["SerialNumber"]
       )
       errors.merge!(user_federation.errors) unless user_federation.save
     end
@@ -87,23 +87,23 @@ class Federations::ApfSync < ActiveInteraction::Base
 
 
   private
-  def api_url
-    "https://www.apf.com.au/apf/api/student"
-  end
+    def api_url
+      "https://www.apf.com.au/apf/api/student"
+    end
 
-  def last_name
-    *_, last_name = user_federation.user.name.split(/\s+/)
-    last_name
-  end
+    def last_name
+      *_, last_name = user_federation.user.name.split(/\s+/)
+      last_name
+    end
 
-  def query_params
-    {
-      SurName: last_name,
-      APFNum: user_federation.uid
-    }.to_query
-  end
+    def query_params
+      {
+        SurName: last_name,
+        APFNum: user_federation.uid
+      }.to_query
+    end
 
-  def url
-    [api_url, query_params].join('?')
-  end
+    def url
+      [api_url, query_params].join("?")
+    end
 end
