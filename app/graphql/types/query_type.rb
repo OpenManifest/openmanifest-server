@@ -27,7 +27,7 @@ module Types
       argument :is_public, Boolean, required: false
     end
     def dropzones(requested_publication: nil, is_public: nil)
-      if is_public || context[:current_resource].moderation_role < User.moderation_roles['moderator']
+      if is_public || context[:current_resource].moderation_role < User.moderation_roles["moderator"]
         query = Dropzone.includes(:dropzone_users).where(is_public: true).or(
           Dropzone.includes(:dropzone_users).where(
             dropzone_users: {
