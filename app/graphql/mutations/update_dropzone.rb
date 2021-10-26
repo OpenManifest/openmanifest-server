@@ -45,7 +45,7 @@ module Mutations
       dropzone = Dropzone.find(id)
 
       if attributes[:is_public] && dropzone.is_public != attributes[:is_public]
-        if context[:current_resource].moderation_role < User.moderation_roles['moderator']
+        if User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"]
           return false, [
             'You cant modify the publication state of this dropzone'
           ]
