@@ -3,7 +3,7 @@
 module Mutations
   class JoinFederation < Mutations::BaseMutation
     include Types::InteractionMutationInterface
-    field :user, Types::UserType, null: true
+    field :user_federation, Types::UserFederationType, null: true
     argument :attributes, Types::Input::UserFederationInput, required: true
 
     def resolve(attributes:)
