@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_24_100955) do
+ActiveRecord::Schema.define(version: 2021_10_26_102005) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(version: 2021_10_24_100955) do
     t.integer "slots_count", default: 0, null: false
     t.integer "loads_count", default: 0, null: false
     t.integer "credits"
+    t.boolean "request_publication", default: false
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
   end
@@ -390,8 +391,6 @@ ActiveRecord::Schema.define(version: 2021_10_24_100955) do
   create_table "user_federation_qualifications", force: :cascade do |t|
     t.bigint "user_federation_id", null: false
     t.bigint "qualification_id", null: false
-    t.datetime "expires_at"
-    t.string "uid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["qualification_id"], name: "index_user_federation_qualifications_on_qualification_id"
@@ -401,9 +400,9 @@ ActiveRecord::Schema.define(version: 2021_10_24_100955) do
   create_table "user_federations", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "federation_id", null: false
-    t.bigint "license_id"
-    t.string "uid"
-    t.string "license_number"
+    t.bigint "license_id", null: false
+    t.string "uid", null: false
+    t.string "license_number", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["federation_id"], name: "index_user_federations_on_federation_id"
@@ -470,6 +469,7 @@ ActiveRecord::Schema.define(version: 2021_10_24_100955) do
     t.integer "dropzone_count", default: 0, null: false
     t.integer "plane_count", default: 0, null: false
     t.string "apf_number"
+    t.integer "moderation_role", default: 0
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["license_id"], name: "index_users_on_license_id"

@@ -7,6 +7,7 @@ module Types
 
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
+    field :moderation_role, Types::ModerationRoleType, null: true
     field :push_token, String, null: true
     field :exit_weight, String, null: true
     field :nickname, String, null: true
