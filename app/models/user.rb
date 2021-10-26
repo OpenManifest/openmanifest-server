@@ -46,6 +46,17 @@ class User < ApplicationRecord
   include GraphqlDevise::Concerns::Model
   include DeviseTokenAuth::Concerns::User
 
+  # Simple role structure for global permissions
+  # Most users will have 'user', and only users with
+  # permissions to manage on an organizational level
+  # have anything else
+  enum moderation_role: [
+    :user,
+    :support,
+    :moderator,
+    :administrator
+  ]
+
   mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
 
   has_many :rigs

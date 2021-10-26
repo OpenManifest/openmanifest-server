@@ -6,6 +6,7 @@ module Types
     implements Types::WalletType
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
+    field :request_publication, Boolean, null: false
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
     field :lat, Float, null: true
