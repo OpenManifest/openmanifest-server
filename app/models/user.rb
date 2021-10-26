@@ -57,6 +57,12 @@ class User < ApplicationRecord
   has_many :user_roles, through: :dropzone_users
 
   belongs_to :license, optional: true
+
+  has_many :user_federations
+  has_many :licenses, through: :user_federations
+  has_many :user_federation_qualifications, through: :user_federations
+  has_many :qualifications, through: :user_federation_qualifications
+
   has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 

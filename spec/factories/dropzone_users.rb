@@ -23,4 +23,15 @@ FactoryBot.define do
       dropzone.user_roles.third
     }
   end
+
+  factory :dropzone_user_with_license, parent: :dropzone_user do
+    transient do
+      federation { Federation.first }
+      license { Federation.first.licenses.sample }
+    end
+
+    after(:create) do |dz_user, evaluator|
+      create(:user_federation, federation: evaluator.federation, license: evaluator.license, user: dz_user.user)
+    end
+  end
 end

@@ -9,12 +9,12 @@ RSpec.describe Loads::Finalize do
   let!(:plane_load) { create(:load, plane: plane) }
   let!(:slots) do
     dropzone_users = [
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2)
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2),
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2),
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2),
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2),
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2),
+      create(:dropzone_user_with_license, dropzone: dropzone, credits: ticket_type.cost * 2)
     ]
     dropzone_users.filter_map do |dz_user|
       dz_user.update!(credits: ticket_type.cost * 2)

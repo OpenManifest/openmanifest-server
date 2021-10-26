@@ -8,6 +8,8 @@ module Types
 
     field :dropzone, Types::DropzoneType, null: false
     field :user, Types::UserType, null: false
+    field :jump_types, [Types::JumpTypeType], null: true
+    field :license, Types::LicenseType, null: true
     field :slots, Types::SlotType.connection_type, null: true
     def slots
       object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)

@@ -15,8 +15,8 @@ class JumpType < ApplicationRecord
   has_many :licenses, through: :licensed_jump_types
 
   def self.allowed_for(dropzone_users)
-    jump_type_ids = dropzone_users.map do |dz_user|
-      dz_user.user.licensed_jump_types.pluck(:jump_type_id)
+    jump_type_ids = [dropzone_users].flatten.map do |dz_user|
+      dz_user.licensed_jump_types.pluck(:jump_type_id)
     end
 
     JumpType.where(id: jump_type_ids.reduce(&:intersection))

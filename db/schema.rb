@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_04_035545) do
+ActiveRecord::Schema.define(version: 2021_10_24_100955) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -261,6 +261,15 @@ ActiveRecord::Schema.define(version: 2021_10_04_035545) do
     t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
   end
 
+  create_table "qualifications", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.bigint "federation_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["federation_id"], name: "index_qualifications_on_federation_id"
+  end
+
   create_table "receipts", force: :cascade do |t|
     t.integer "amount_cents"
     t.datetime "created_at", precision: 6, null: false
@@ -378,6 +387,30 @@ ActiveRecord::Schema.define(version: 2021_10_04_035545) do
     t.index ["status"], name: "index_transactions_on_status"
   end
 
+  create_table "user_federation_qualifications", force: :cascade do |t|
+    t.bigint "user_federation_id", null: false
+    t.bigint "qualification_id", null: false
+    t.datetime "expires_at"
+    t.string "uid"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["qualification_id"], name: "index_user_federation_qualifications_on_qualification_id"
+    t.index ["user_federation_id"], name: "index_user_federation_qualifications_on_user_federation_id"
+  end
+
+  create_table "user_federations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "federation_id", null: false
+    t.bigint "license_id"
+    t.string "uid"
+    t.string "license_number"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["federation_id"], name: "index_user_federations_on_federation_id"
+    t.index ["license_id"], name: "index_user_federations_on_license_id"
+    t.index ["user_id"], name: "index_user_federations_on_user_id"
+  end
+
   create_table "user_permissions", force: :cascade do |t|
     t.bigint "permission_id", null: false
     t.bigint "dropzone_user_id", null: false
@@ -483,6 +516,7 @@ ActiveRecord::Schema.define(version: 2021_10_04_035545) do
   add_foreign_key "packs", "users"
   add_foreign_key "passengers", "dropzones"
   add_foreign_key "planes", "dropzones"
+  add_foreign_key "qualifications", "federations"
   add_foreign_key "rig_inspections", "dropzone_users"
   add_foreign_key "rig_inspections", "dropzone_users", column: "inspected_by_id"
   add_foreign_key "rig_inspections", "form_templates"
@@ -503,6 +537,11 @@ ActiveRecord::Schema.define(version: 2021_10_04_035545) do
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "dropzones"
   add_foreign_key "transactions", "receipts"
+  add_foreign_key "user_federation_qualifications", "qualifications"
+  add_foreign_key "user_federation_qualifications", "user_federations"
+  add_foreign_key "user_federations", "federations"
+  add_foreign_key "user_federations", "licenses"
+  add_foreign_key "user_federations", "users"
   add_foreign_key "user_permissions", "dropzone_users"
   add_foreign_key "user_permissions", "permissions"
   add_foreign_key "user_role_permissions", "permissions"

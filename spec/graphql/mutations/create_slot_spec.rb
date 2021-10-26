@@ -8,7 +8,7 @@ module Mutations
     let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
     let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
     let!(:plane_load) { create(:load, plane: plane) }
-    let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+    let!(:dropzone_user) { create(:dropzone_user_with_license, dropzone: dropzone, credits: 200) }
 
     describe ".resolve" do
       context "successfully" do
