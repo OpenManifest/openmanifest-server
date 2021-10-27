@@ -13,7 +13,20 @@ module Mutations
       model = Dropzone.find(id)
       attrs = attributes.to_h.except(:banner)
       attrs[:image] = attributes[:banner] if attributes[:banner].present?
+      if attrs[:request_publication] && !model.is_public
+        # Send a notification to administrators
+        User.where(moderation_role: 'administrator').each do |user|
+          Notification.create(
+            received_by: user,
+            message: "Dropzone #{model.name} has requested publication",
+            notification_type: :publication_requested,
+            resource: model,
+            sent_by: model.dropzone_users.find_by(user_id: context[:current_resource].id)
+          )
+        end
+      end
       model.update!(attrs)
+
       {
         dropzone: model,
         errors: nil,

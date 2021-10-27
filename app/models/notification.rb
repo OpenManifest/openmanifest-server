@@ -34,6 +34,7 @@ class Notification < ApplicationRecord
     :boarding_call_canceled,
     :permission_granted,
     :permission_revoked,
+    :publication_requested
   ]
 
   after_create :send_async!
