@@ -41,6 +41,7 @@ module Types
       end
 
       query.where!(request_publication: requested_publication) if requested_publication
+      query
     end
 
     field :dropzone, Types::DropzoneType, null: false,
