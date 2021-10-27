@@ -46,9 +46,11 @@ module Mutations
 
       if attributes[:is_public] && dropzone.is_public != attributes[:is_public]
         if User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"]
-          return false, [
-            'You cant modify the publication state of this dropzone'
-          ]
+          return false, {
+            errors: [
+              'You cant modify the publication state of this dropzone'
+            ]
+          }
         end
       end
 
