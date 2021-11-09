@@ -35,6 +35,8 @@ class Dropzone < ApplicationRecord
 
   has_many :planes, dependent: :destroy
   has_many :loads, through: :planes
+  has_many :loads_today, -> (r){ where(created_at: DateTime.now.in_time_zone(r.timezone).beginning_of_day..DateTime.now.in_time_zone(r.timezone).end_of_day) }, through: :planes, source: :loads
+
   has_many :load_masters, through: :loads
   has_many :ticket_types, dependent: :destroy
   has_many :user_roles, dependent: :destroy
@@ -66,6 +68,10 @@ class Dropzone < ApplicationRecord
     weather_conditions.find_or_create_by(
       created_at: DateTime.now.beginning_of_day
     )
+  end
+
+  def timezone
+    time_zone || 'Australia/Brisbane'
   end
 
   def create_default_roles

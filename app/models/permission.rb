@@ -30,11 +30,13 @@ class Permission < ApplicationRecord
       :readLoad,
 
       :createSlot,
+      :createDoubleSlot,
       :updateSlot,
       :deleteSlot,
 
 
       :createUserSlot,
+      :createUserDoubleSlot,
       :createUserSlotWithSelf,
       :updateUserSlot,
       :deleteUserSlot,

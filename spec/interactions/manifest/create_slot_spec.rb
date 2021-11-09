@@ -68,6 +68,64 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.errors.messages[:jump_type_id]).not_to be nil }
     end
 
+    context "when the user is double manifested" do
+      before do
+        Manifest::CreateSlot.run(
+          ticket_type_id: ticket_type.id,
+          dropzone_user_id: dropzone_user.id,
+          jump_type_id: JumpType.allowed_for([dropzone_user]).first.id,
+          load_id: plane_load.id,
+          exit_weight: dropzone_user.exit_weight
+        )
+      end
+
+      let!(:second_load) { create(:load, plane: plane) }
+
+      let!(:outcome) do
+        Manifest::CreateSlot.run(
+          ticket_type_id: ticket_type.id,
+          dropzone_user_id: dropzone_user.id,
+          jump_type_id: JumpType.allowed_for([dropzone_user]).first.id,
+          load_id: second_load.id,
+          exit_weight: dropzone_user.exit_weight
+        )
+      end
+
+      it { expect(outcome.result).not_to be_a Slot }
+      it { expect(outcome.valid?).to be false }
+      it { expect(outcome.errors).not_to be_empty }
+      it { expect(outcome.errors.full_messages.first).to match /double-manifest/ }
+    end
+
+    context "when the user is double manifested but allowed to" do
+      before do
+        Manifest::CreateSlot.run(
+          ticket_type_id: ticket_type.id,
+          dropzone_user_id: dropzone_user.id,
+          jump_type_id: JumpType.allowed_for([dropzone_user]).first.id,
+          load_id: plane_load.id,
+          exit_weight: dropzone_user.exit_weight
+        )
+        dropzone_user.grant! :createDoubleSlot
+      end
+
+      let!(:second_load) { create(:load, plane: plane) }
+
+      let!(:outcome) do
+        Manifest::CreateSlot.run(
+          ticket_type_id: ticket_type.id,
+          dropzone_user_id: dropzone_user.id,
+          jump_type_id: JumpType.allowed_for([dropzone_user]).first.id,
+          load_id: second_load.id,
+          exit_weight: dropzone_user.exit_weight
+        )
+      end
+
+      it { expect(outcome.result).to be_a Slot }
+      it { expect(outcome.valid?).to be true }
+      it { expect(outcome.errors).to be_empty }
+    end
+
     context "with a tandem passenger" do
       let!(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
       let!(:outcome) do

@@ -60,8 +60,9 @@ class WeatherCondition < ApplicationRecord
     avg_dir = (avg_fall_direction + avg_direction) / 2
     avg_drift = (avg_fall_drift_distance_miles + avg_drift_distance_miles) / 2
 
+    rounded_avg_dir = ((avg_dir / 5.0).round(0) * 5.0).to_i
 
-    assign_attributes(jump_run: avg_dir, exit_spot_miles: avg_drift)
+    assign_attributes(jump_run: rounded_avg_dir, exit_spot_miles: avg_drift)
   rescue
     nil
   end
@@ -85,7 +86,7 @@ class WeatherCondition < ApplicationRecord
     assign_attributes(
       winds: winds.to_json,
       temperature: if winds.count
-                     winds.last["temperature"] || 0
+                     winds.last[:temperature] || 0
                    else
                      0
                    end
