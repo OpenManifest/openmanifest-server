@@ -20,10 +20,12 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def execute
     build_slot
     set_tandem_passenger
+    check_double_manifesting
     check_allowed_jump_type
     check_credits if dropzone.is_credit_system_enabled?
     return if errors.any?
 
+    errors.merge!(@model.errors) unless @model.save
     create_order if dropzone.is_credit_system_enabled?
     errors.merge!(@model.errors) unless @model.save
     @model
@@ -77,6 +79,16 @@ class Manifest::CreateSlot < ActiveInteraction::Base
   def check_allowed_jump_type
     unless jump_type.allowed_for?(dropzone_user)
       errors.add(:jump_type_id, "User cannot be manifested for #{jump_type.name} jumps")
+    end
+  end
+
+  def check_double_manifesting
+    # Check if the user is manifest on any loads that have
+    # not yet been dispatched
+    if Slot.exists?(load: dropzone.loads_today.active, dropzone_user: dropzone_user)
+      if !dropzone_user.reload.can?(:createDoubleSlot)
+        errors.add(:base, "You're not allowed to double-manifest")
+      end
     end
   end
 

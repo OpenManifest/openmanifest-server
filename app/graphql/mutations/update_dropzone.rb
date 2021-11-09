@@ -15,7 +15,7 @@ module Mutations
       attrs[:image] = attributes[:banner] if attributes[:banner].present?
       if attrs[:request_publication] && !model.is_public
         # Send a notification to administrators
-        User.where(moderation_role: 'administrator').each do |user|
+        User.where(moderation_role: "administrator").each do |user|
           Notification.create(
             received_by: user,
             message: "Dropzone #{model.name} has requested publication",
@@ -61,7 +61,7 @@ module Mutations
         if User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"]
           return false, {
             errors: [
-              'You cant modify the publication state of this dropzone'
+              "You cant modify the publication state of this dropzone"
             ]
           }
         end
