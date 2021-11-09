@@ -36,8 +36,8 @@ module Mutations
           "createSlot"
         end
 
-        return true if dz_user.can?(required_permission)  
-        return [false, {
+        return true if dz_user.can?(required_permission)
+        [false, {
           errors: [
             "You don't have permissions to manifest other users (missing #{required_permission})"
           ]
@@ -49,9 +49,9 @@ module Mutations
           "createDoubleSlot"
         end
 
-        
+
         return true if dz_user.can?(required_permission)
-        return [false, {
+        [false, {
           errors: [
             "You don't have permissions to double-manifest (missing #{required_permission})"
           ]
