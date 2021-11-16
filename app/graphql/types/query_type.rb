@@ -60,7 +60,7 @@ module Types
       result = GoogleGeocoder.geocode(search)
 
       if result.success
-        { lat: loc.lat, lng: result.lng, formatted_string: result.full_address }
+        { lat: result.lat, lng: result.lng, formatted_string: result.full_address }
       else
         nil
       end
