@@ -5,6 +5,7 @@ module Types
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
+    include Geokit::Geocoders
 
     field :image, String, null: true,
     description: "Load base64 images as graphql" do
@@ -49,6 +50,20 @@ module Types
     end
     def dropzone(id:)
       Dropzone.includes(loads: :slots).find(id)
+    end
+
+    field :geocode, Types::GeocodedLocationType, null: true,
+    description: 'Find location by searching' do
+      argument :search, String, required: true
+    end
+    def geocode(search: '')
+      result = GoogleGeocoder.geocode(search)
+
+      if result.success
+        { lat: loc.lat, lng: result.lng, formatted_string: result.full_address }
+      else
+        nil
+      end
     end
 
     field :loads, Types::LoadType.connection_type, null: false,
