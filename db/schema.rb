@@ -391,6 +391,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
   create_table "user_federation_qualifications", force: :cascade do |t|
     t.bigint "user_federation_id", null: false
     t.bigint "qualification_id", null: false
+    t.datetime "expires_at"
+    t.string "uid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["qualification_id"], name: "index_user_federation_qualifications_on_qualification_id"
@@ -400,9 +402,9 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
   create_table "user_federations", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "federation_id", null: false
-    t.bigint "license_id", null: false
-    t.string "uid", null: false
-    t.string "license_number", null: false
+    t.bigint "license_id"
+    t.string "uid"
+    t.string "license_number"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["federation_id"], name: "index_user_federations_on_federation_id"
