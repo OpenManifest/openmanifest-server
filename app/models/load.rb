@@ -20,6 +20,8 @@
 #  load_number    :integer
 #
 class Load < ApplicationRecord
+  include StateMachines::LoadState
+
   belongs_to :plane
   has_one :dropzone, through: :plane
   scope :active, -> { where(dispatch_at: nil) }
@@ -33,10 +35,6 @@ class Load < ApplicationRecord
 
   counter_culture :dropzone
 
-  before_save do
-    # Default to open
-    assign_attributes(state: :open) if state.nil?
-  end
 
   after_save :notify!,
              :change_state!,
@@ -58,53 +56,30 @@ class Load < ApplicationRecord
   def change_state!
     # When the plane is marked as landed, charge credits
     if saved_change_to_has_landed? && has_landed?
-      update(state: :landed)
+      mark_as_landed
     # Change state to boarding call and notify everyone
     elsif saved_change_to_dispatch_at? && dispatch_at
-      update(state: :boarding_call)
+      dispatch
 
     # Change state back to open if dispatch_at is reset
     elsif saved_change_to_dispatch_at? && dispatch_at.nil?
-      update(state: :open)
+      reopen
     end
   end
 
   def notify!
-    if saved_change_to_dispatch_at?
-      if dispatch_at_was.nil? && !dispatch_at.nil?
-        slots.each do |slot|
-          next unless slot.dropzone_user.present?
+    return unless saved_change_to_dispatch_at? 
+    return unless dispatch_at_was.nil? 
+    return if dispatch_at.nil?
+    slots.each do |slot|
+      next unless slot.dropzone_user.present?
 
-          Notification.create(
-            message: "Load ##{load_number} take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime('%H:%M')}",
-            resource: self,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call
-          )
-        end
-      elsif dispatch_at.nil?
-        slots.each do |slot|
-          next unless slot.dropzone_user.present?
-
-          Notification.create(
-            message: "Load ##{load_number} call canceled",
-            resource: self,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call_canceled
-          )
-        end
-      else
-        slots.each do |slot|
-          next unless slot.dropzone_user.present?
-
-          Notification.create(
-            message: "Load ##{load_number} call changed to take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime('%H:%M')}",
-            resource: self,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call
-          )
-        end
-      end
+      Notification.create(
+        message: "Load ##{load_number} call changed to take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime('%H:%M')}",
+        resource: self,
+        received_by: slot.dropzone_user,
+        notification_type: :boarding_call
+      )
     end
   end
 

@@ -59,6 +59,10 @@ gem "counter_culture"
 
 gem "sentry-ruby"
 gem "sentry-rails"
+gem 'state_machines-activerecord'
+
+# Manage state transitions
+gem 'state_machines'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
