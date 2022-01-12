@@ -14,7 +14,18 @@ module Mutations
       model.assign_attributes(attributes.to_h)
 
       model.save!
-      model.dropzone_users.each do |dz_user|
+
+      # If license id changed, then update all DropzoneUsers
+      # with the same federation as that license to have the
+      # new license:
+      if attributes[:license_id] && new_license = License.find(attributes[:license_id])
+        Federations::AssignUser.run(
+          user: model,
+          license_id: new_license.id,
+          federation: new_license.federation,
+        )
+
+        # Also update all dropzone_users
       end
       {
         user: model.reload,

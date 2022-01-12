@@ -34,7 +34,7 @@ class DropzoneUser < ApplicationRecord
 
   has_many :rig_inspections, dependent: :destroy
 
-  has_one :license, -> (record) { where(federation_id: record.dropzone.federation_id) }, through: :user, source: :licenses
+  has_one :license, -> (record) { where(federation_id: record.dropzone.federation_id) }, through: :user
   has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
