@@ -22,13 +22,15 @@ module Mutations
       )
 
       attrs = attributes.to_h.except(:role_id, :dropzone_id)
-      model.assign_attributes(attrs.merge(
-        password: SecureRandom.urlsafe_base64(9)
-      ))
+      model.assign_attributes(
+        attrs.except(:federation_number).merge(
+          password: SecureRandom.urlsafe_base64(9)
+        )
+      )
 
       model.save!
 
-      if attributes[:license_id] && (federation = Federation.find_by(id: attributes[:license_id]))
+      if attributes[:license_id] && (federation = Federation.includes(:licenses).find_by(licenses: { id: attributes[:license_id] }))
         Federations::AssignUser.run(
           user: model,
           uid: attributes[:federation_number],
