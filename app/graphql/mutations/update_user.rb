@@ -57,6 +57,7 @@ module Mutations
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].id == id
         true
+      elsif 
       else
         return false, {
         errors: [
