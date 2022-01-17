@@ -57,7 +57,8 @@ module Mutations
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].id == id
         true
-      elsif 
+      elsif context[:current_resource].can? :updateUser
+        true
       else
         return false, {
         errors: [
