@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_26_102005) do
+ActiveRecord::Schema.define(version: 2022_01_18_090841) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -77,6 +77,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "user_role_id", null: false
     t.integer "jump_count", default: 0, null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_dropzone_users_on_discarded_at"
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
     t.index ["user_id"], name: "index_dropzone_users_on_user_id"
     t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
@@ -101,6 +103,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.integer "loads_count", default: 0, null: false
     t.integer "credits"
     t.boolean "request_publication", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
   end
@@ -112,6 +116,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_deleted", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_extras_on_discarded_at"
     t.index ["dropzone_id"], name: "index_extras_on_dropzone_id"
   end
 
@@ -173,6 +179,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.bigint "pilot_id"
     t.integer "state"
     t.integer "load_number"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_loads_on_discarded_at"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -259,6 +267,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "dropzone_id", null: false
     t.boolean "is_deleted", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_planes_on_discarded_at"
     t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
   end
 
@@ -310,6 +320,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.integer "rig_type"
     t.string "name"
     t.text "packing_card"
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_rigs_on_discarded_at"
     t.index ["dropzone_id"], name: "index_rigs_on_dropzone_id"
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
@@ -367,6 +379,8 @@ ActiveRecord::Schema.define(version: 2021_10_26_102005) do
     t.datetime "updated_at", precision: 6, null: false
     t.boolean "is_tandem", default: false
     t.boolean "is_deleted", default: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
     t.index ["dropzone_id"], name: "index_ticket_types_on_dropzone_id"
   end
 

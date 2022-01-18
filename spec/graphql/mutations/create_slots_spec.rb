@@ -28,7 +28,6 @@ module Mutations
                  )
                },
                headers: dropzone_user.user.create_new_auth_token
-          puts response.body
           JSON.parse(response.body)
         end
 
@@ -66,7 +65,6 @@ module Mutations
                  )
                },
                headers: dropzone_user.user.create_new_auth_token
-          puts response.body
           JSON.parse(response.body)
         end
 

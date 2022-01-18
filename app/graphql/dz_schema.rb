@@ -6,7 +6,7 @@ class DzSchema < GraphQL::Schema
     mutation:         Types::MutationType,
     public_introspection: true,
     resource_loaders: [
-      GraphqlDevise::ResourceLoader.new("User", operations: {
+      GraphqlDevise::ResourceLoader.new(User, operations: {
         sign_up: Mutations::SignUp
       }),
     ]

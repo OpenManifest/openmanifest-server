@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 module StateMachines::LoadState
   extend ActiveSupport::Concern
-  
+
   included do
     state_machine :state, initial: :open do
-
       after_transition any => :mark_as_landed do
       end
 

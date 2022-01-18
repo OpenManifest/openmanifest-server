@@ -148,6 +148,8 @@ GEM
       devise (> 3.5.2, < 5)
       rails (>= 4.2.0, < 6.2)
     diff-lcs (1.4.4)
+    discard (1.2.1)
+      activerecord (>= 4.2, < 8)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dotenv (2.7.6)
@@ -529,6 +531,7 @@ DEPENDENCIES
   cloudinary
   counter_culture
   database_cleaner
+  discard (~> 1.2)
   dotenv-rails
   factory_bot_rails
   faker
