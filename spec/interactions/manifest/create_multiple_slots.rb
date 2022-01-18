@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe Manifest::CreateMultipleSlots do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:dropzone_users) { create_list(:dropzone_user_with_license, 4, dropzone: dropzone, credits: 200) }
+  let!(:dropzone_users) { create_list(:dropzone_user, 4, dropzone: dropzone, credits: 200) }
   let!(:jump_type) { JumpType.allowed_for(dropzone_users).sample }
   let!(:user_group) do
     dropzone_users.map do |dz_user|

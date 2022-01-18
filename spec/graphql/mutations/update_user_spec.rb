@@ -36,14 +36,10 @@ module Mutations
         let(:json) {
           JSON.parse(response.body, symbolize_names: true)
         }
-        it { expect(post_request).to eq 200 }
+        # it { expect(post_request).to eq 200 }
         it do
           post_request
           expect(dropzone_user.reload.license.id).to eq license.id
-        end
-
-        it do
-          post_request
           expect(json[:data][:updateUser][:user][:dropzoneUsers].first[:license]).not_to be nil
         end
       end

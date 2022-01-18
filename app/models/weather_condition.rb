@@ -69,9 +69,9 @@ class WeatherCondition < ApplicationRecord
 
   def from_coordinates(lat, lng)
     response = JSON.parse(
-      URI.open(
+      HTTParty.get(
         "https://markschulze.net/winds/winds.php?lat=#{lat}&lon=#{lng}&hourOffset=0&referrer=openmanifestorg"
-      ).read
+      ).body
     )
 
     winds = [0, 1000, 2000, 5000, 7000, 8000, 10000, 12000, 14000].map(&:to_s).reverse.map do |alt|

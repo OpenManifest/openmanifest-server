@@ -6,6 +6,6 @@ RSpec.shared_context "federation_sync", shared_context: :metadata do
   end
   before do
     stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
-    to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
+    to_return(body: nil, headers: { "Content-Type" => "application/json" })
   end
 end

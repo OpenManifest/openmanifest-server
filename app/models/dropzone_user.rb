@@ -33,9 +33,11 @@ class DropzoneUser < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
+
   has_many :rig_inspections, dependent: :destroy
 
-  has_one :license, -> (record) { where(federation_id: record.dropzone.federation_id) }, through: :user, source: :licenses
+  # Automatically updated by UserFederation:
+  belongs_to :license, optional: true
   has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 

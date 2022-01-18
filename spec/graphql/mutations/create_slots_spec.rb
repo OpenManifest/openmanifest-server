@@ -8,7 +8,7 @@ module Mutations
     let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
     let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
     let!(:plane_load) { create(:load, plane: plane) }
-    let!(:dropzone_users) { create_list(:dropzone_user_with_license, 3, dropzone: dropzone, credits: 200) }
+    let!(:dropzone_users) { create_list(:dropzone_user, 3, dropzone: dropzone, credits: 200) }
     let!(:jump_type) { JumpType.allowed_for(dropzone_users).sample }
     let!(:dropzone_user) do
       u = dropzone_users.first

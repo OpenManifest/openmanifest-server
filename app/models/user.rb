@@ -103,7 +103,7 @@ class User < ApplicationRecord
       exit_weight: ((Random.rand * 100) % 50) + 50,
     )
 
-    user.image = "data:image/jpeg;base64,#{Base64.encode64(open(random_user[:picture][:medium]).read)}"
+    user.image = "data:image/jpeg;base64,#{Base64.encode64(File.open(random_user[:picture][:medium]).read)}"
     user.save(validate: false)
     user
   end

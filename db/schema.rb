@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_01_18_090841) do
+ActiveRecord::Schema.define(version: 2022_01_18_122109) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -78,8 +78,10 @@ ActiveRecord::Schema.define(version: 2022_01_18_090841) do
     t.bigint "user_role_id", null: false
     t.integer "jump_count", default: 0, null: false
     t.datetime "discarded_at"
+    t.bigint "license_id"
     t.index ["discarded_at"], name: "index_dropzone_users_on_discarded_at"
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
+    t.index ["license_id"], name: "index_dropzone_users_on_license_id"
     t.index ["user_id"], name: "index_dropzone_users_on_user_id"
     t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
   end
@@ -509,6 +511,7 @@ ActiveRecord::Schema.define(version: 2022_01_18_090841) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "dropzone_users", "dropzones"
+  add_foreign_key "dropzone_users", "licenses"
   add_foreign_key "dropzone_users", "user_roles"
   add_foreign_key "dropzone_users", "users"
   add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"

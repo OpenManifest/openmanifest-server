@@ -18,9 +18,9 @@ class Federations::ApfSync < ActiveInteraction::Base
 
   def query_apf_api
     @json = JSON.parse(
-      URI.open(
+      HTTParty.get(
         url
-      ).read
+      ).body
     )
   rescue
     @json = nil

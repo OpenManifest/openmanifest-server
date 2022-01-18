@@ -20,6 +20,9 @@ gem "bcrypt", "~> 3.1.7"
 # Coordinate based location
 gem "geokit-rails"
 
+# HTTP Client
+gem "httparty"
+
 # Set CLOUDINARY_URL and other env variables
 gem "dotenv-rails", groups: %i[development test], require: "dotenv/rails-now"
 

@@ -3,7 +3,11 @@
 ![Rails](https://img.shields.io/badge/rails-%23CC0000.svg?style=for-the-badge&logo=ruby-on-rails&logoColor=white)
 
 # OpenManifest API
-[![CircleCI](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main.svg?style=shield)](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main)
+![CircleCI](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main.svg?style=shield)
+![Linting](https://github.com/openmanifest/openmanifest-server/actions/workflows/test.yml/badge.svg)
+![Release](https://github.com/openmanifest/openmanifest-server/actions/workflows/release.yml/badge.svg)
+![Production](https://github.com/openmanifest/openmanifest-server/actions/workflows/release-production.yml/badge.svg)
+
 
 
 This is the backend server for OpenManifest, written with Rails using GraphQL and authenticated with `devise_graphql`. If you want to contribute to the OpenManifest backend, fork this repository and follow the setup instructions below
