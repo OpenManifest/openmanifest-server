@@ -4,7 +4,7 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe UpdateUser, type: :request do
-    include_context('federation_sync')
+    include_context("federation_sync")
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 50) }
     before do
