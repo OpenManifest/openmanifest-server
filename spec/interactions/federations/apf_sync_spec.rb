@@ -30,6 +30,7 @@ RSpec.describe Federations::ApfSync do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
       to_return(body: nil, headers: { "Content-Type" => "application/json" })
       dropzone_user.user.user_federations.destroy_all
+      dropzone_user.update(license: nil)
       Federations::ApfSync.run(user_federation: user_federation)
     end
 
