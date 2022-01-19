@@ -20,6 +20,7 @@
 #  load_number    :integer
 #
 class Load < ApplicationRecord
+  include Discard::Model
   include StateMachines::LoadState
 
   belongs_to :plane
@@ -68,8 +69,8 @@ class Load < ApplicationRecord
   end
 
   def notify!
-    return unless saved_change_to_dispatch_at? 
-    return unless dispatch_at_was.nil? 
+    return unless saved_change_to_dispatch_at?
+    return unless dispatch_at_was.nil?
     return if dispatch_at.nil?
     slots.each do |slot|
       next unless slot.dropzone_user.present?

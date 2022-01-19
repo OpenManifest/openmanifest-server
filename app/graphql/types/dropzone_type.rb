@@ -112,7 +112,7 @@ module Types
       argument :is_public, Boolean, required: false
     end
     def ticket_types(is_public: nil)
-      query = object.ticket_types.where(is_deleted: false)
+      query = object.ticket_types
       query = query.where(allow_manifesting_self: is_public) unless is_public.nil?
       query.order(name: :asc)
     end
@@ -135,7 +135,7 @@ module Types
 
     field :planes, [Types::PlaneType], null: false
     def planes
-      object.planes.where(is_deleted: false)
+      object.planes
     end
 
     field :loads, Types::LoadType.connection_type, null: false do

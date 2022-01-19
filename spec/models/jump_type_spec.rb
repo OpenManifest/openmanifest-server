@@ -22,16 +22,13 @@ RSpec.describe JumpType, type: :model do
   let!(:federation) { Federation.find_by(slug: :apf) }
   let!(:dropzone) { create(:dropzone) }
   let!(:user1) { create(:user) }
-  let!(:certificate_e_user) { create(:dropzone_user, dropzone: dropzone, user: user1) }
-  let!(:certificate_e_federation) { create(:user_federation, user: user1, federation: federation, license: federation.licenses.find_by(name: "Certificate E")) }
+  let!(:certificate_e_user) { create(:dropzone_user, dropzone: dropzone, user: user1, license: federation.licenses.find_by(name: "Certificate E")) }
 
   let!(:user2) { create(:user) }
-  let!(:certificate_a_user) { create(:dropzone_user, dropzone: dropzone, user: user2) }
-  let!(:certificate_a_federation) { create(:user_federation, user: user2, federation: federation, license: federation.licenses.find_by(name: "Certificate A")) }
+  let!(:certificate_a_user) { create(:dropzone_user, dropzone: dropzone, user: user2, license: federation.licenses.find_by(name: "Certificate A")) }
 
   let!(:user3) { create(:user) }
-  let!(:certificate_c_user) { create(:dropzone_user, dropzone: dropzone, user: user3) }
-  let!(:certificate_c_federation) { create(:user_federation, user: user3, federation: federation, license: federation.licenses.find_by(name: "Certificate C")) }
+  let!(:certificate_c_user) { create(:dropzone_user, dropzone: dropzone, user: user3, license: federation.licenses.find_by(name: "Certificate C")) }
 
   it "E license user is allowed for any jump" do
     expect(

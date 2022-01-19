@@ -6,3 +6,9 @@ inherit_gem:
 
 AllCops:
   TargetRubyVersion: 2.7.3
+Security:
+  Enabled: true
+Rails/OutputSafety:
+  Enabled: true
+Style/MutableConstant:
+  Enabled: true

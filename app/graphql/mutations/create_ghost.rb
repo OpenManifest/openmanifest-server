@@ -30,20 +30,20 @@ module Mutations
 
       model.save!
 
+      if attributes[:dropzone_id].present?
+        DropzoneUser.create(
+          dropzone_id: attributes[:dropzone_id],
+          user_role_id: attributes[:role_id],
+          user_id: model.id
+        )
+      end
+
       if attributes[:license_id] && (federation = Federation.includes(:licenses).find_by(licenses: { id: attributes[:license_id] }))
         Federations::AssignUser.run(
           user: model,
           uid: attributes[:federation_number],
           license_id: attributes[:license_id],
           federation: federation,
-        )
-      end
-
-      if attributes[:dropzone_id].present?
-        DropzoneUser.create(
-          dropzone_id: attributes[:dropzone_id],
-          user_role_id: attributes[:role_id],
-          user_id: model.id
         )
       end
 

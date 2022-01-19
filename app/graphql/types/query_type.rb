@@ -37,7 +37,7 @@ module Types
           )
         )
       else
-        query = Dropzone.all
+        query = Dropzone.kept
       end
 
       query.where!(request_publication: requested_publication) if requested_publication
@@ -53,10 +53,10 @@ module Types
     end
 
     field :geocode, Types::GeocodedLocationType, null: true,
-    description: 'Find location by searching' do
+    description: "Find location by searching" do
       argument :search, String, required: true
     end
-    def geocode(search: '')
+    def geocode(search: "")
       result = GoogleGeocoder.geocode(search)
 
       if result.success
@@ -92,7 +92,7 @@ module Types
       argument :dropzone_id, Int, required: true
     end
     def planes(dropzone_id:)
-      Plane.where(dropzone_id: dropzone_id, is_deleted: false).order(name: :asc)
+      Plane.kept.where(dropzone_id: dropzone_id).order(name: :asc)
     end
 
     field :ticket_types, [Types::TicketTypeType], null: false,
@@ -101,7 +101,7 @@ module Types
       argument :allow_manifesting_self, Boolean, required: false
     end
     def ticket_types(dropzone_id: nil, allow_manifesting_self: nil)
-      query = TicketType.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id, is_deleted: false)
+      query = TicketType.kept.includes(ticket_type_extras: :extra).where(dropzone_id: dropzone_id)
 
       if allow_manifesting_self
         query = query.where(allow_manifesting_self: allow_manifesting_self)
@@ -115,7 +115,7 @@ module Types
       argument :dropzone_id, Int, required: true
     end
     def extras(dropzone_id:)
-      Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: dropzone_id, is_deleted: false).order(name: :asc)
+      Extra.kept.includes(ticket_type_extras: :ticket_type).where(dropzone_id: dropzone_id).order(name: :asc)
     end
 
     field :jump_types, [Types::JumpTypeType], null: false,

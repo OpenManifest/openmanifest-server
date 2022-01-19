@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe Manifest::CreateSlot do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:dropzone_user) { create(:dropzone_user_with_license, dropzone: dropzone, credits: 200) }
+  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
   let!(:plane) { create(:plane, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
 
@@ -50,7 +50,7 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "when the user isnt allowed to manifest with the requested jump type" do
-      let!(:dropzone_user) { create(:dropzone_user_with_license, dropzone: dropzone, credits: 200, federation: Federation.find_by(slug: :apf), license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A")) }
+      let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200, federation: Federation.find_by(slug: :apf), license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A")) }
       let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([dropzone_user]).pluck(:id)).sample }
       let!(:outcome) do
         Manifest::CreateSlot.run(

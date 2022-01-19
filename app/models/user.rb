@@ -43,6 +43,7 @@ class User < ApplicationRecord
   # Include default devise modules.
   devise :database_authenticatable, :registerable,
   :recoverable, :rememberable, :trackable, :validatable, :confirmable
+  include Discard::Model
   include GraphqlDevise::Concerns::Model
   include DeviseTokenAuth::Concerns::User
 
@@ -59,12 +60,12 @@ class User < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
 
-  has_many :rigs
+  has_many :rigs, -> { kept }
   has_many :packs
-  has_many :dropzone_users
-  has_many :dropzones, through: :dropzone_users
+  has_many :dropzone_users, -> { kept }
+  has_many :dropzones, -> { kept }, through: :dropzone_users
   has_many :slots, through: :dropzone_users
-  has_many :loads, through: :slots
+  has_many :loads, -> { kept }, through: :slots
   has_many :user_roles, through: :dropzone_users
 
   belongs_to :license, optional: true
@@ -102,7 +103,7 @@ class User < ApplicationRecord
       exit_weight: ((Random.rand * 100) % 50) + 50,
     )
 
-    user.image = "data:image/jpeg;base64,#{Base64.encode64(open(random_user[:picture][:medium]).read)}"
+    user.image = "data:image/jpeg;base64,#{Base64.encode64(File.open(random_user[:picture][:medium]).read)}"
     user.save(validate: false)
     user
   end

@@ -8,7 +8,6 @@ class Federations::ApfSync < ActiveInteraction::Base
   record :user_federation
 
   def execute
-    return if Rails.env.test?
     query_apf_api
     return nil if !@json || @json.count != 1
     extract_license
@@ -19,9 +18,9 @@ class Federations::ApfSync < ActiveInteraction::Base
 
   def query_apf_api
     @json = JSON.parse(
-      URI.open(
+      HTTParty.get(
         url
-      ).read
+      ).body
     )
   rescue
     @json = nil

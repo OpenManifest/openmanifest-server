@@ -4,6 +4,7 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe CreateGhost, type: :request do
+    include_context("federation_sync")
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 50) }
     before do
@@ -14,11 +15,11 @@ module Mutations
       context "successfully" do
         let(:query_str) {
           query(
-            name: 'rspec',
-            phone: '123123123',
-            email: 'some@rspec.com',
+            name: "rspec",
+            phone: "123123123",
+            email: "some@rspec.com",
             role_id: dropzone.user_roles.to_a.sample.id,
-            federation_number: '321321',
+            federation_number: "321321",
             license_id: dropzone.federation.licenses.to_a.sample.id,
             exit_weight: 50,
             dropzone_id: dropzone.id

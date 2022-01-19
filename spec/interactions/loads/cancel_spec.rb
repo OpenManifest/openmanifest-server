@@ -8,7 +8,7 @@ RSpec.describe Loads::Finalize do
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
   let!(:slots) do
-    create_list(:dropzone_user_with_license, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|
+    create_list(:dropzone_user, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|
       Manifest::CreateSlot.run(
         ticket_type_id: ticket_type.id,
         dropzone_user_id: dz_user.id,

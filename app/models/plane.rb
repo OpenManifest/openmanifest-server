@@ -17,6 +17,7 @@
 #  is_deleted             :boolean          default(FALSE)
 #
 class Plane < ApplicationRecord
+  include Discard::Model
   has_many :loads, dependent: :destroy
   has_many :pilots, through: :loads
   belongs_to :dropzone

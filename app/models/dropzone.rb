@@ -24,24 +24,25 @@
 #  credits                    :integer
 #
 class Dropzone < ApplicationRecord
+  include Discard::Model
   acts_as_mappable default_units: :kms,
                    default_formula: :sphere,
                    distance_field_name: :distance,
                    lat_column_name: :lat,
                    lng_column_name: :lng
-  has_many :dropzone_users, dependent: :destroy
+  has_many :dropzone_users, -> { kept }, dependent: :destroy
   has_many :users, through: :dropzone_users
   has_many :weather_conditions, dependent: :destroy
 
-  has_many :planes, dependent: :destroy
-  has_many :loads, through: :planes
-  has_many :loads_today, -> (r) { where(created_at: DateTime.now.in_time_zone(r.timezone).beginning_of_day..DateTime.now.in_time_zone(r.timezone).end_of_day) }, through: :planes, source: :loads
+  has_many :planes, -> { kept }, dependent: :destroy
+  has_many :loads, -> { kept }, through: :planes
+  has_many :loads_today, -> (r) { kept.where(created_at: DateTime.now.in_time_zone(r.timezone).beginning_of_day..DateTime.now.in_time_zone(r.timezone).end_of_day) }, through: :planes, source: :loads
 
   has_many :load_masters, through: :loads
-  has_many :ticket_types, dependent: :destroy
+  has_many :ticket_types, -> { kept }, dependent: :destroy
   has_many :user_roles, dependent: :destroy
-  has_many :rigs, dependent: :destroy
-  has_many :extras, dependent: :destroy
+  has_many :rigs, -> { kept }, dependent: :destroy
+  has_many :extras, -> { kept }, dependent: :destroy
   has_many :master_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy
 

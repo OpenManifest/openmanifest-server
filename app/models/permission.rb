@@ -21,6 +21,7 @@ class Permission < ApplicationRecord
     [
       :updateDropzone,
       :deleteDropzone,
+      :undeleteDropzone,
 
       :updateWeatherConditions,
 
@@ -40,33 +41,40 @@ class Permission < ApplicationRecord
       :createUserSlotWithSelf,
       :updateUserSlot,
       :deleteUserSlot,
+      :undeleteUserSlot,
 
       :createStudentSlot,
       :updateStudentSlot,
       :deleteStudentSlot,
+      :undeleteStudentSlot,
 
       :createTicketType,
       :updateTicketType,
       :deleteTicketType,
+      :undeleteTicketType,
 
       :createExtra,
       :updateExtra,
       :deleteExtra,
       :readExtra,
+      :undeleteExtra,
 
       :createPlane,
       :updatePlane,
       :deletePlane,
+      :undeletePlane,
 
       :createRig,
       :updateRig,
       :deleteRig,
       :readRig,
+      :undeleteRig,
 
       :createDropzoneRig,
       :updateDropzoneRig,
       :deleteDropzoneRig,
       :readDropzoneRig,
+      :undeleteDropzoneRig,
 
       :readPermissions,
       :updatePermissions,
@@ -85,6 +93,7 @@ class Permission < ApplicationRecord
       :updateUser,
       :deleteUser,
       :createUser,
+      :undeleteUser,
 
       :actAsPilot,
       :actAsLoadMaster,

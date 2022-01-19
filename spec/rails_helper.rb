@@ -5,6 +5,7 @@ require "spec_helper"
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "#{Rails.root}/spec/support/factory_bot.rb"
+require "#{Rails.root}/spec/support/contexts/mock_apf_call.rb"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
@@ -37,6 +38,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
+  config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
   config.filter_run focus: true
