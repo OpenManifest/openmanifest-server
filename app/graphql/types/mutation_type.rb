@@ -38,7 +38,6 @@ module Types
     field :deleteDropzone, mutation: Mutations::DeleteDropzone
     field :createDropzone, mutation: Mutations::CreateDropzone
     field :updateDropzone, mutation: Mutations::UpdateDropzone
-    field :deleteDropzone, mutation: Mutations::UpdateDropzone
     field :updateRole, mutation: Mutations::UpdateRole
   end
 end

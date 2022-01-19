@@ -19,6 +19,13 @@ module Mutations
         field_errors: nil,
         errors: nil
       }
+    rescue Discard::RecordNotDiscarded
+      # Failed save, return the errors to the client
+      {
+        dropzone: nil,
+        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
+        errors: ["Failed to archive this user"]
+      }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
@@ -41,17 +48,18 @@ module Mutations
       }
     end
 
-    def authorized?(id: nil, attributes: nil)
-      user_dropzone_ids = User.find(id).dropzone_users.pluck(:dropzone_id)
-      if context[:current_resource].id == id
+    def authorized?(id: nil)
+      dz_user = DropzoneUser.find(id)
+      if context[:current_resource].id == dz_user.user.id
         true
       # We can't check for dropzones since User isn't directly
       # linked to any dropzone, but if this user only belongs to
       # one dropzone, and you have access to :updateUser at that dropzone,
       # then you can update the users profile. As soon as the user
       # joins other dropzones, you can no longer edit their profile
-      elsif user_dropzone_ids.count == 1 && context[:current_resource].can?(:deleteUser, dropzone_id: user_dropzone_ids.first)
+      elsif context[:current_resource].can?(:deleteUser, dropzone_id: dz_user.dropzone_id)
         true
+      else
         return false, {
           errors: ["You cant delete this aircraft"]
         }

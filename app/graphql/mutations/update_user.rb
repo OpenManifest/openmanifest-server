@@ -65,6 +65,12 @@ module Mutations
       # joins other dropzones, you can no longer edit their profile
       elsif user_dropzone_ids.count == 1 && context[:current_resource].can?(:updateUser, dropzone_id: user_dropzone_ids.first)
         true
+      elsif user_dropzone_ids.count > 1 && context[:current_resource].can?(:updateUser, dropzone_id: user_dropzone_ids.first)
+        return false, {
+          errors: [
+            "Update failed. User is a member of multiple dropzones"
+            ]
+          }
       else
         return false, {
         errors: [
