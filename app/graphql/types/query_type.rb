@@ -120,11 +120,11 @@ module Types
 
     field :jump_types, [Types::JumpTypeType], null: false,
     description: "Get all jump types", authenticate: false do
-      argument :allowed_for_user_id, Int, required: false
+      argument :dropzone_user_ids, Int, required: false
     end
-    def jump_types(allowed_for_user_id: nil)
-      if allowed_for_user_id
-        User.find(allowed_for_user_id).jump_types.order(name: :asc)
+    def jump_types(dropzone_user_ids: nil)
+      if dropzone_user_ids
+        JumpType.allowed_for(DropzoneUser.where(id: dropzone_user_ids))
       else
         JumpType.order(name: :asc)
       end
