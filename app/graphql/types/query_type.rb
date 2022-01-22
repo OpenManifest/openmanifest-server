@@ -120,7 +120,7 @@ module Types
 
     field :jump_types, [Types::JumpTypeType], null: false,
     description: "Get all jump types", authenticate: false do
-      argument :dropzone_user_ids, Int, required: false
+      argument :dropzone_user_ids, [Int], required: false
     end
     def jump_types(dropzone_user_ids: nil)
       if dropzone_user_ids
