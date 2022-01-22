@@ -75,11 +75,6 @@ class User < ApplicationRecord
   has_many :user_federation_qualifications, through: :user_federations
   has_many :qualifications, through: :user_federation_qualifications
 
-  has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
-  has_many :jump_types, through: :licensed_jump_types, source: :jump_type
-
-
-
 
   def can?(permission_name, dropzone_id:)
     if dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)
