@@ -35,6 +35,7 @@ class DropzoneUser < ApplicationRecord
 
 
   has_many :rig_inspections, dependent: :destroy
+  has_many :approved_rigs, through: :rig_inspections, source: :rig
 
   # Automatically updated by UserFederation:
   belongs_to :license, optional: true
@@ -55,6 +56,30 @@ class DropzoneUser < ApplicationRecord
 
   search_scope :search do
     attributes name: "user.name"
+  end
+
+  # Get all inspected and approved rigs,
+  # plus all dropzone student rigs.
+  # If a load_id is provided, filter out
+  # any rigs that are currently in use
+  # on that load
+  #
+  # @param [Integer] load_id
+  # @return [Array<Rig>]
+  def available_rigs(load_id: nil)
+    query = Rig.where(id: approved_rigs.pluck(:id) + dropzone.student_rigs.pluck(:id))
+    query = query.where.not(
+      id: Slot.where(
+        load_id: load_id
+      ).where.not(
+        # We do this to allow the user to
+        # see the rig on his/her own slot,
+        # e.g don't filter it out if its taken
+        # by the current user
+        dropzone_user_id: id
+      ).pluck(:rig_id)
+    ) if load_id
+    query.where("repack_expires_at > ?", DateTime.now).distinct
   end
 
   def can?(permission)

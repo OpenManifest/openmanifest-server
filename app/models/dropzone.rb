@@ -42,6 +42,9 @@ class Dropzone < ApplicationRecord
   has_many :ticket_types, -> { kept }, dependent: :destroy
   has_many :user_roles, dependent: :destroy
   has_many :rigs, -> { kept }, dependent: :destroy
+  has_many :student_rigs, -> { kept.where(is_public: true).where.not(rig_type: :tandem) }, class_name: "Rig"
+  has_many :tandem_rigs, -> { kept.where(rig_type: :tandem) }, class_name: "Rig"
+
   has_many :extras, -> { kept }, dependent: :destroy
   has_many :master_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy

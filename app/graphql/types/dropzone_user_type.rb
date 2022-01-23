@@ -42,19 +42,13 @@ module Types
     field :available_rigs, [Types::RigType], null: true,
     description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
       argument :is_tandem, Boolean, required: false
+      argument :load_id, Integer, required: false,
+               description: "Filter out rigs already occupied for a load"
     end
-    def available_rigs(is_tandem: nil)
-      user_rigs = object.rig_inspections.filter_map { |inspection| inspection.rig if inspection.is_ok? }.select do |rig|
-        rig.repack_expires_at > DateTime.now
-      end
+    def available_rigs(load_id: nil, is_tandem: nil)
+      return object.dropzone.tandem_rigs if is_tandem
 
-      if is_tandem
-        return object.dropzone.rigs.where(rig_type: "tandem")
-      else
-        dropzone_rigs = object.dropzone.rigs.where(is_public: true)
-      end
-
-      user_rigs.to_a + dropzone_rigs.to_a
+      dropzone_user.available_rigs(load_id: load_id)
     end
 
     field :has_rig_inspection, Boolean, null: false
