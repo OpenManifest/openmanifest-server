@@ -6,7 +6,7 @@ RSpec.describe RigInspection, type: :model do
   let!(:federation) { Federation.find_by(slug: :apf) }
   let!(:dropzone) { create(:dropzone) }
   let!(:dropzone_users) { create_list(:dropzone_user, 5, dropzone: dropzone) }
-  let!(:dropzone_rigs) { create_list(:rig, 5, dropzone: dropzone) }
+  let!(:dropzone_rigs) { create_list(:rig, 5, dropzone: dropzone, is_public: true) }
 
   before do
     inspector = create(:dropzone_user, dropzone: dropzone)
