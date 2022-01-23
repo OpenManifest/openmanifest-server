@@ -48,7 +48,7 @@ module Types
     def available_rigs(load_id: nil, is_tandem: nil)
       return object.dropzone.tandem_rigs if is_tandem
 
-      dropzone_user.available_rigs(load_id: load_id)
+      object.available_rigs(load_id: load_id)
     end
 
     field :has_rig_inspection, Boolean, null: false
