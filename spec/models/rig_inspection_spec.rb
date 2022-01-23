@@ -26,19 +26,18 @@ RSpec.describe RigInspection, type: :model do
         )
       end
     end
-
   end
 
-  describe 'DropzoneUser.approved_rigs' do
-    it 'returns 2 approved rigs' do
+  describe "DropzoneUser.approved_rigs" do
+    it "returns 2 approved rigs" do
       dropzone_users.each do |dzu|
         expect(dzu.approved_rigs.count).to eq 2
       end
     end
   end
 
-  describe 'DropzoneUser.available_rigs' do
-    it 'returns 2 approved rigs + 5 dropzone rigs' do
+  describe "DropzoneUser.available_rigs" do
+    it "returns 2 approved rigs + 5 dropzone rigs" do
       dropzone_users.each do |dzu|
         expect(dzu.dropzone.rigs.count).to eq 5
         expect(dzu.available_rigs.count).to eq 7

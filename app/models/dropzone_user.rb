@@ -79,7 +79,7 @@ class DropzoneUser < ApplicationRecord
         dropzone_user_id: id
       ).pluck(:rig_id)
     ) if load_id
-    query.where('repack_expires_at > ?', DateTime.now).distinct
+    query.where("repack_expires_at > ?", DateTime.now).distinct
   end
 
   def can?(permission)

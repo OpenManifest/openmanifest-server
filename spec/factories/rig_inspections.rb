@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :rig_inspection do
     rig { nil }
@@ -5,6 +7,6 @@ FactoryBot.define do
     dropzone_user { nil }
     form_template { create(:form_template, dropzone: dropzone_user.dropzone) }
     is_ok { true }
-    definition { '' }
+    definition { "" }
   end
 end

@@ -143,7 +143,7 @@ module Types
       argument :dropzone_user_id, Integer, required: false
       argument :is_tandem, Boolean, required: false
       argument :load_id, Integer, required: false,
-               description: 'Filter out rigs already occupied for a load'
+               description: "Filter out rigs already occupied for a load"
     end
     def available_rigs(dropzone_user_id: nil, is_tandem: nil, load_id: nil)
       dz_user = DropzoneUser.find(dropzone_user_id)
