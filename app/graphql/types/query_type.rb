@@ -140,7 +140,7 @@ module Types
 
     field :available_rigs, [Types::RigType], null: true,
     description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
-      argument :dropzone_user_id, Integer, required: false
+      argument :dropzone_user_id, Integer, required: true
       argument :is_tandem, Boolean, required: false
       argument :load_id, Integer, required: false,
                description: "Filter out rigs already occupied for a load"
