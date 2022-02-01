@@ -9,11 +9,7 @@ class DzSchema < GraphQL::Schema
       GraphqlDevise::ResourceLoader.new(User, operations: {
         sign_up: Mutations::SignUp
       }),
-    ],
-    additional_mutations: {
-      # generates mutation { adminUserSignUp }
-      login_with_facebook: Mutations::LoginWithFacebook
-    },
+    ]
   )
   mutation(Types::MutationType)
   query(Types::QueryType)
