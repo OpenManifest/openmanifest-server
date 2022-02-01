@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AuthenticationProvider < ApplicationRecord
   class AuthenticationFailed < StandardError
   end
@@ -11,27 +13,27 @@ class AuthenticationProvider < ApplicationRecord
   def self.facebook(token:)
     transaction do
       response = HTTParty.get(
-        'https://graph.facebook.com/me?access_token=%s&fields=name,email,picture' % token,
+        "https://graph.facebook.com/me?access_token=%s&fields=name,email,picture" % token,
       )
 
       user_attributes = {
-        name: response.parsed_response['name'],
-        email: response.parsed_response['email'],
+        name: response.parsed_response["name"],
+        email: response.parsed_response["email"],
       }
 
-      if response.parsed_response['picture'] && response.parsed_response['picture']['data'] && response.parsed_response['picture']['data']['url']
-        image_response = HTTParty.get(response.parsed_response['picture']['data']['url'])
+      if response.parsed_response["picture"] && response.parsed_response["picture"]["data"] && response.parsed_response["picture"]["data"]["url"]
+        image_response = HTTParty.get(response.parsed_response["picture"]["data"]["url"])
         user_attributes[:image] = "data:image/png;base64,%s" % Base64.strict_encode64(image_response.parsed_response) if image_response&.parsed_response
       end
 
       provider = find_or_initialize_by(
         provider: :facebook,
-        uid: response.parsed_response['id'],
+        uid: response.parsed_response["id"],
       )
 
       if provider.new_record?
         provider.user = User.find_or_create_by(
-          email: response.parsed_response['email']
+          email: response.parsed_response["email"]
         )
         provider.user.save(validate: false)
         provider.user.save

@@ -26,12 +26,12 @@ module Mutations
         errors: nil,
         field_errors: nil,
       )
-    rescue AuthenticationProvider::AuthenticationFailed => error
+    rescue AuthenticationProvider::AuthenticationFailed
       {
         authenticatable: nil,
         credentials: nil,
         field_errors: nil,
-        errors: ['Facebook authentication failed']
+        errors: ["Facebook authentication failed"]
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
