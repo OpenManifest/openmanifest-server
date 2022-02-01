@@ -32,7 +32,7 @@ module Types
       # If the user has a rig, has set up exit weight, and
       # has a license, the user should be set to fun jumper
       # if the user is anything less
-      if dz_user.user.rigs.present? && dz_user.user.license.present? && !dz_user.user.exit_weight.blank?
+      if dz_user.user.rigs.present? && dz_user.license.present? && !dz_user.user.exit_weight.blank?
         if dz_user.user_role_id == object.user_roles.first.id
           dz_user.update(user_role: object.user_roles.find_by(name: :fun_jumper))
         end
