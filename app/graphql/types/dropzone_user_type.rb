@@ -82,7 +82,7 @@ module Types
 
     field :has_license, Boolean, null: false
     def has_license
-      object.user.license.present?
+      object.license.present?
     end
 
 

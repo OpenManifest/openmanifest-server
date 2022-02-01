@@ -74,8 +74,6 @@ class Federations::ApfSync < ActiveInteraction::Base
   def assign_license
     # Find the highest ranking license
     if license = License.where(name: @licenses.keys).order(id: :desc).first
-      # Backwards compatibility:
-      user_federation.user.update(license: license)
 
       user_federation.assign_attributes(
         license: license,

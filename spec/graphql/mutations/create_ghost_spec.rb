@@ -73,10 +73,6 @@ module Mutations
               id
               name
               phone
-              license {
-                id
-                name
-              }
               dropzoneUsers {
                 id
                 license {
