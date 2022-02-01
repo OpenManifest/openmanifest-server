@@ -3,6 +3,7 @@
 module Mutations
   class LoginWithFacebook < GraphqlDevise::Mutations::SignUp
     argument :token, String, required: true
+    argument :push_token, String, required: false
 
     field :authenticatable, Types::UserType, null: true
     field :errors, [String], null: true
@@ -13,6 +14,7 @@ module Mutations
     # was created by staff
     def build_resource(attrs)
       provider = AuthenticationProvider.facebook(token: attrs[:token])
+      provider.user.update(push_token: attrs[:push_token]) if attrs[:push_token]
       provider.user
     rescue
       raise AuthenticationProvider::AuthenticationFailed
