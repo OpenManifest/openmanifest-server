@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Mutations
-  class SignUpWithFacebook < GraphqlDevise::Mutations::SignUp
-    argument :attributes, Types::Input::FacebookRegistrationInput, required: true
+  class LoginWithFacebook < GraphqlDevise::Mutations::SignUp
+    argument :token, String, required: true
 
     field :authenticatable, Types::UserType, null: true
     field :errors, [String], null: true
@@ -12,7 +12,7 @@ module Mutations
     # signing up on an existing user if the user
     # was created by staff
     def build_resource(attrs)
-      provider = AuthenticationProvider.facebook(token: attrs[:attributes][:token])
+      provider = AuthenticationProvider.facebook(token: attrs[:token])
       provider.user
     rescue
       raise AuthenticationProvider::AuthenticationFailed
