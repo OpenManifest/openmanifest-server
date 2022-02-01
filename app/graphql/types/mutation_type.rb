@@ -5,6 +5,7 @@ module Types
     field :createWeatherCondition, mutation: Mutations::CreateWeatherCondition
     field :reloadWeatherCondition, mutation: Mutations::ReloadWeatherCondition
     field :createGhost, mutation: Mutations::CreateGhost
+    field :loginWithFacebook, mutation: Mutations::SignUpWithFacebook
     field :createOrder, mutation: Mutations::CreateOrder
     field :revokePermission, mutation: Mutations::RevokePermission
     field :grantPermission, mutation: Mutations::GrantPermission
