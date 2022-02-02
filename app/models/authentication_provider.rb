@@ -33,11 +33,12 @@ class AuthenticationProvider < ApplicationRecord
 
       if provider.new_record?
         provider.user = User.find_or_create_by(
-          email: response.parsed_response["email"]
+          email: response.parsed_response["email"],
+          provider: :facebook,
+          uid: response.parsed_response["id"],
         )
         provider.user.password = SecureRandom.urlsafe_base64(9)
         provider.user.save(validate: false)
-        provider.user.save
         provider.user.confirm
         provider.save!
       end

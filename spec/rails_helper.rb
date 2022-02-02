@@ -6,6 +6,8 @@ ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "#{Rails.root}/spec/support/factory_bot.rb"
 require "#{Rails.root}/spec/support/contexts/mock_apf_call.rb"
+require "#{Rails.root}/spec/support/shared_examples/graphql.rb"
+require "#{Rails.root}/spec/support/graphql/client.rb"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"

@@ -78,6 +78,8 @@ group :development, :test do
   gem "guard"
   gem "guard-rspec"
   gem "pry"
+  gem "awesome_print"
+  gem "rspec-json_expectations"
 
   gem "database_cleaner"
   gem "rspec-rails", "~> 5.0"

@@ -2,7 +2,7 @@
 
 module Types
   class MutationType < Types::BaseObject
-    field :loginWithFacebook, mutation: Mutations::LoginWithFacebook, authenticate: false
+    field :loginWithFacebook, mutation: Mutations::Users::Login::Facebook, authenticate: false
     field :createWeatherCondition, mutation: Mutations::CreateWeatherCondition
     field :reloadWeatherCondition, mutation: Mutations::ReloadWeatherCondition
     field :createGhost, mutation: Mutations::CreateGhost
