@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rspec/json_expectations"
 module Specs
   module Graphql
@@ -19,8 +21,8 @@ module Specs
         self.operation_name = (query_hash[:mutation] || query_hash[:query]).keys.first
         if query_hash.key?(:mutation)
           query_hash[:mutation][operation_name][:fieldErrors] = {
-            message: '',
-            field: ''
+            message: "",
+            field: ""
           }
           query_hash[:mutation][operation_name][:errors] = nil
         end
@@ -44,7 +46,7 @@ module Specs
             controller: @controller
           }
         )
-        warn 'Executing query:'
+        warn "Executing query:"
         warn query_string
         self
       end
@@ -56,7 +58,7 @@ module Specs
       def create_input_arguments(item, depth = 0)
         if item.is_a?(Hash)
           result = item.reduce(nil) do |str, (key, value)|
-            [str, "#{key}: #{create_input_arguments(value, depth + 1)}"].reject(&:nil?).join(', ')
+            [str, "#{key}: #{create_input_arguments(value, depth + 1)}"].reject(&:nil?).join(", ")
           end
           if depth != 0
             "{ %s }" % result
@@ -80,34 +82,34 @@ module Specs
           value = value.array if value.is_a?(UnorderedArrayMatcher)
           if value.is_a?(Hash)
             if value.key?(:args)
-              input_args = %Q((#{create_input_arguments(value[:args])}))
+              input_args = "(#{create_input_arguments(value[:args])})"
             end
-            input_args ||= ''
+            input_args ||= ""
             key = "%s %s" % [key.to_s, "#{operation_name.to_s.camelize(:upper)}"] if depth == 0
 
-            %Q(
+            "
               #{key.to_s.camelize(:lower)}#{input_args} {
                   #{from_hash(value.except(:args), depth + 1)}
               }
-            )
+            "
           elsif value.is_a?(Array)
             if value.size > 0 && value.all? { |item| item.is_a?(Hash) }
-              %Q(
+              "
                 #{key} {
                   #{from_hash(value.reduce(:merge).except(:args), depth + 1)}
                 }
-              )
+              "
             else
-              %Q(
+              "
                 #{key.to_s.camelize(:lower)}
-              )
+              "
             end
           else
             k = key unless key.is_a?(Hash)
-            k ||= key.keys.uniq.map { |s| s.to_s.camelize(:lower) }.join(',')
-            %Q(
+            k ||= key.keys.uniq.map { |s| s.to_s.camelize(:lower) }.join(",")
+            "
               #{k}
-            )
+            "
           end
         end.join
       end

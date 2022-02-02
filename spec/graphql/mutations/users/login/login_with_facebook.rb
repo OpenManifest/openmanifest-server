@@ -1,4 +1,6 @@
-require 'rails_helper'
+# frozen_string_literal: true
+
+require "rails_helper"
 
 RSpec.describe Mutations::Users::Login::Facebook do
   before do
@@ -8,12 +10,12 @@ RSpec.describe Mutations::Users::Login::Facebook do
       headers: { "Content-Type" => "application/json" },
       body: {
         "id": "427773",
-        "email": 'user@rspec.com',
-        "name": 'Rspec User',
+        "email": "user@rspec.com",
+        "name": "Rspec User",
       }.to_json
     )
   end
-  it_behaves_like 'graphql', {
+  it_behaves_like "graphql", {
     actor: nil,
     permissions: [],
     expect: {
@@ -21,16 +23,16 @@ RSpec.describe Mutations::Users::Login::Facebook do
         loginWithFacebook: {
           args: {
             token: "12345",
-            confirm_url: 'https://openmanifest.org/'
+            confirm_url: "https://openmanifest.org/"
           },
           authenticatable: {
             id: /\d/,
-            email: 'user@rspec.com',
-            name: 'Rspec User',
+            email: "user@rspec.com",
+            name: "Rspec User",
           },
           credentials: {
             accessToken: /[a-zA-Z0-9\-_]+/,
-            tokenType: 'Bearer',
+            tokenType: "Bearer",
             client: /\w+/,
             expiry: /\d+/,
             uid: "427773"
