@@ -2,14 +2,17 @@
 
 class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
   argument :token, String, required: true
-  argument :authorization_code, String, required: true
+  argument :user_identity, String, required: true
   argument :push_token, String, required: false
 
   # Override devises initializer to allow
   # signing up on an existing user if the user
   # was created by staff
   def build_resource(attrs)
-    ::Login::Apple.run!(token: attrs[:token], authorization_code: attrs[:authorization_code])
+    ::Login::Apple.run!(
+      token: attrs[:token],
+      user_identity: attrs[:user_identity]
+    )
   rescue
     raise Login::Facebook::AuthenticationFailed
   end
