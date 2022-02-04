@@ -45,10 +45,11 @@ class Login::Apple < ActiveInteraction::Base
     apple_certificate = JSON.parse(
       apple_response.body,
     )
+    key = apple_certificate["keys"].find { |key| key["kid"] == kid }
 
-    jwk = JWT::JWK.import(
-      apple_certificate["keys"].find { |key| key["kid"] == kid }
-    )
+    puts "Got key:"
+    puts key
+    jwk = JWT::JWK.import(key)
 
     token_data, = JWT.decode(
       jwt,
@@ -56,6 +57,8 @@ class Login::Apple < ActiveInteraction::Base
       true,
       algorithm: alg
     ).first
+
+    puts token_data.to_json
 
     if token_data.has_key?("sub") && token_data.has_key?("email") && user_identity == token_data["sub"]
       puts "Name: " + token_data["name"] + " is validated."
