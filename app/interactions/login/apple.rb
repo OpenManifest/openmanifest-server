@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "active_interaction"
 
 class Login::Apple < ActiveInteraction::Base
