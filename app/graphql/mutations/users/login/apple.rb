@@ -13,7 +13,8 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       token: attrs[:token],
       user_identity: attrs[:user_identity]
     )
-  rescue
+  rescue => e
+    $stderr.puts e.message
     raise Login::Facebook::AuthenticationFailed
   end
 
