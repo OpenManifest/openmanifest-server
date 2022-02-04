@@ -8,11 +8,9 @@ class Mutations::Users::Login::Facebook < Mutations::Users::Register::Base
   # signing up on an existing user if the user
   # was created by staff
   def build_resource(attrs)
-    provider = AuthenticationProvider.facebook(token: attrs[:token])
-    provider.user.update(push_token: attrs[:push_token]) if attrs[:push_token]
-    provider.user
+    ::Login::Facebook.run!(token: attrs[:token])
   rescue
-    raise AuthenticationProvider::AuthenticationFailed
+    raise Login::Facebook::AuthenticationFailed
   end
 
   def resolve(**attrs)
@@ -23,7 +21,7 @@ class Mutations::Users::Login::Facebook < Mutations::Users::Register::Base
       errors: nil,
       field_errors: nil,
     )
-  rescue AuthenticationProvider::AuthenticationFailed
+  rescue Login::Facebook::AuthenticationFailed
     {
       authenticatable: nil,
       credentials: nil,
