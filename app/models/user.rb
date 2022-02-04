@@ -60,7 +60,6 @@ class User < ApplicationRecord
 
   mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
 
-  has_many :authentication_providers, dependent: :destroy
   has_many :rigs, -> { kept }
   has_many :packs
   has_many :dropzone_users, -> { kept }

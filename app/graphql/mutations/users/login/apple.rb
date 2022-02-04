@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
-class Mutations::Users::Login::Facebook < Mutations::Users::Register::Base
+class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
   argument :token, String, required: true
+  argument :authorization_code, String, required: true
   argument :push_token, String, required: false
 
   # Override devises initializer to allow
   # signing up on an existing user if the user
   # was created by staff
   def build_resource(attrs)
-    ::Login::Facebook.run!(token: attrs[:token])
+    ::Login::Apple.run!(token: attrs[:token], authorization_code: attrs[:authorization_code])
   rescue
     raise Login::Facebook::AuthenticationFailed
   end
@@ -21,12 +22,12 @@ class Mutations::Users::Login::Facebook < Mutations::Users::Register::Base
       errors: nil,
       field_errors: nil,
     )
-  rescue Login::Facebook::AuthenticationFailed
+  rescue Login::Apple::AuthenticationFailed
     {
       authenticatable: nil,
       credentials: nil,
       field_errors: nil,
-      errors: ["Facebook authentication failed"]
+      errors: ["Apple authentication failed"]
     }
   rescue ActiveRecord::RecordInvalid => invalid
     # Failed save, return the errors to the client
