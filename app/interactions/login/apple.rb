@@ -61,7 +61,6 @@ class Login::Apple < ActiveInteraction::Base
     puts token_data.to_json
 
     if token_data.has_key?("sub") && token_data.has_key?("email") && user_identity == token_data["sub"]
-      puts "Name: " + token_data["name"] + " is validated."
 
       user = User.find_or_initialize_by(
         provider: :apple,
@@ -71,7 +70,7 @@ class Login::Apple < ActiveInteraction::Base
       if user.new_record?
         user.assign_attributes(
           email: token_data["email"],
-          name: token_data["name"],
+          name: token_data["name"] || '',
           provider: :apple,
           uid: token_data["sub"],
         )
