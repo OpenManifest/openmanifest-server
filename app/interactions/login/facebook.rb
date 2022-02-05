@@ -30,6 +30,10 @@ class Login::Facebook < ActiveInteraction::Base
       uid: response.parsed_response["id"],
     )
 
+    if existing = User.find_by(email: response.parsed_response["email"])
+      errors.add(:base, "You need to login with #{existing.provider}") if existing.provider != user.provider
+    end
+
     # Email is unique, so logging in with
 
     if user.new_record?
@@ -43,7 +47,8 @@ class Login::Facebook < ActiveInteraction::Base
       user.confirm
       user.save!
     end
-    user.update!(user_attributes)
+    user.assign_attributes(user_attributes)
+    errors.merge!(user.errors) unless user.save
     user
   rescue
     raise AuthenticationFailed

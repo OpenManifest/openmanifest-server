@@ -67,17 +67,21 @@ class Login::Apple < ActiveInteraction::Base
         uid: token_data["sub"],
       )
 
+      if existing = User.find_by(email: token_data["email"])
+        errors.add(:base, "You need to login with #{existing.provider}") if existing.provider != user.provider
+      end
+
       if user.new_record?
         user.assign_attributes(
           email: token_data["email"],
-          name: token_data["name"] || '',
+          name: token_data["name"] || "",
           provider: :apple,
           uid: token_data["sub"],
         )
         user.password = SecureRandom.urlsafe_base64(9) unless user.password.present?
         user.save(validate: false)
         user.confirm
-        user.save
+        errors.merge!(user.errors) unless user.save
       end
       user
     else
