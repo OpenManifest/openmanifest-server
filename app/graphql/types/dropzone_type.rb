@@ -27,6 +27,7 @@ module Types
           user: context[:current_resource],
           user_role: object.user_roles.first
         )
+        dz_user.expires_at = DateTime.now + 1.day if dz_user.new_record?
       end
 
       # If the user has a rig, has set up exit weight, and
