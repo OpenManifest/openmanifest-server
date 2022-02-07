@@ -41,7 +41,8 @@ class Manifest::CreateSlot < ActiveInteraction::Base
       dropzone_user_id: dropzone_user_id,
       ticket_type_id: ticket_type_id,
       jump_type_id: jump_type_id,
-      rig_id: rig_id
+      rig_id: rig_id,
+      exit_weight: exit_weight
     )
   end
 

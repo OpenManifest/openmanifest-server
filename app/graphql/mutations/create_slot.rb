@@ -13,15 +13,17 @@ module Mutations
       mutate(
         Manifest::CreateSlot,
         :slot,
-        ticket_type_id: attributes[:ticket_type_id],
-        dropzone_user_id: attributes[:dropzone_user_id],
-        jump_type_id: attributes[:jump_type_id],
-        exit_weight: attributes[:exit_weight],
-        rig_id: attributes[:rig_id],
-        load_id: attributes[:load_id],
-        extra_ids: attributes[:extra_ids],
-        passenger_name: attributes[:passenger_name],
-        passenger_exit_weight: attributes[:passenger_exit_weight]
+        **attributes.to_h.slice(
+          :ticket_type_id,
+          :dropzone_user_id,
+          :jump_type_id,
+          :exit_weight,
+          :rig_id,
+          :load_id,
+          :extra_ids,
+          :passenger_name,
+          :passenger_exit_weight,
+        )
       )
     end
 

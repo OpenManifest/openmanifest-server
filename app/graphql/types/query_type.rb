@@ -138,13 +138,13 @@ module Types
       License.where(federation_id: federation_id).order(name: :asc)
     end
 
-    field :available_rigs, [Types::RigType], null: true,
-    description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
-      argument :dropzone_user_id, Integer, required: true
-      argument :is_tandem, Boolean, required: false
-      argument :load_id, Integer, required: false,
-               description: "Filter out rigs already occupied for a load"
-    end
+    field     :available_rigs,  [Types::RigType], null: true,
+              description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
+    argument  :dropzone_user_id, Integer, required: true
+    argument  :is_tandem,        Boolean, required: false
+    argument  :load_id,          Integer, required: false,
+              description: "Filter out rigs already occupied for a load"
+  end
     def available_rigs(dropzone_user_id: nil, is_tandem: nil, load_id: nil)
       dz_user = DropzoneUser.find(dropzone_user_id)
       return dz_user.dropzone.tandem_rigs if is_tandem
