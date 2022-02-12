@@ -149,7 +149,7 @@ module Types
       dz_user = DropzoneUser.find(dropzone_user_id)
       return dz_user.dropzone.tandem_rigs if is_tandem
 
-      dropzone_user.available_rigs(load_id: load_id)
+      dz_user.available_rigs(load_id: load_id)
     end
   end
 end
