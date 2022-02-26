@@ -24,7 +24,9 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
   def execute
     check_available_slots
     check_allowed_jump_type
-    check_double_manifesting
+    # Note: Disabled, instead checked in Manifest::CreateSlot, to allow
+    # updating slots
+    # check_double_manifesting
     check_credits if dropzone.is_credit_system_enabled?
     return if errors.any?
 
@@ -81,7 +83,7 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
     # not yet been dispatched
     Slot.where(load: dropzone.loads_today.active, dropzone_user: dropzone_users).each do |existing_slot|
       if !existing_slot.dropzone_user.can?(:createDoubleSlot)
-        errors.add(:base, "#{dropzone_user.user.name} can not be double-manifested")
+        errors.add(:base, "#{existing_slot.dropzone_user.user.name} can not be double-manifested")
       end
     end
   end
