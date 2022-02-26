@@ -20,9 +20,6 @@ gem "bcrypt", "~> 3.1.7"
 # Coordinate based location
 gem "geokit-rails"
 
-# HTTP Client
-gem "httparty"
-
 # Set CLOUDINARY_URL and other env variables
 gem "dotenv-rails", groups: %i[development test], require: "dotenv/rails-now"
 
@@ -35,8 +32,8 @@ gem "carrierwave-base64"
 gem "cloudinary"
 
 # GraphQL queries
-gem "graphql"
-gem "graphql_devise"
+gem "graphql", "~> 1.12.21"
+gem "graphql_devise", "~> 0.17.1"
 
 # Send HTTP requests easily
 gem "httparty"
@@ -98,6 +95,7 @@ group :development do
 
   # VSCode ruby intellisense
   gem "solargraph"
+  gem "yard", "0.9.24"
 
   # Make it go fasterer!
   gem "fasterer"

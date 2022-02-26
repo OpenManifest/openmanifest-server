@@ -19,7 +19,7 @@ module Mutations
                    ticket_type: ticket_type,
                    plane_load: plane_load,
                    dropzone_user: dropzone_user,
-                   exit_weight: dropzone_user.user.exit_weight
+                   exit_weight: dropzone_user.exit_weight || 105
                  )
                },
                headers: dropzone_user.user.create_new_auth_token
@@ -37,6 +37,10 @@ module Mutations
         it "expects no errors" do
           post_request
           expect(json["data"]["createSlot"]["errors"]).to be nil
+        end
+        fit "expects no errors" do
+          post_request
+          expect(json["data"]["createSlot"]["slot"]["exitWeight"]).to eq dropzone_user.exit_weight
         end
       end
 
@@ -115,6 +119,7 @@ module Mutations
             }
             slot {
               id
+              exitWeight
               dropzoneUser {
                 id
                 user {
