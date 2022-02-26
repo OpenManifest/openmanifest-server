@@ -12,7 +12,7 @@ module Types
     field :weight, Integer, null: false
     def weight
       pilot_weight = object.pilot.try(:user).try(:exit_weight) || 0
-      pilot_weight + object.slots.map(&:exit_weight).reject(&:blank?).reduce(:+)
+      pilot_weight + (object.slots.map(&:exit_weight).reject(&:blank?).reduce(:+) || 0)
     end
 
     field :created_at, Int, null: false
