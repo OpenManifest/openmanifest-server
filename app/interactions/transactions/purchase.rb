@@ -99,20 +99,6 @@ class Transactions::Purchase < ActiveInteraction::Base
       end
     end
 
-    def total_cost
-      case purchasable
-      when Slot
-        purchasable.cost
-      when TicketType
-        purchasable.cost
-      when Pack
-        # FIXME: Should be defined on the packjob
-        10
-      else
-        errors.add(:purchasable, "Not a valid type")
-      end
-    end
-
     def order_title
       case purchasable
       when Slot

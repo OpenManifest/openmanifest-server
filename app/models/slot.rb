@@ -66,18 +66,21 @@ class Slot < ApplicationRecord
   end
 
   def ready?
-    (passenger.present? || user.present?) && ticket_type.present? && load.present? && jump_type.present?
+    return false unless ticket_type.present?
+    return false unless load.present?
+    return false unless jump_type.present?
+    (passenger.present? || user.present?)
   end
 
   def wing_loading
-    if rig && rig.canopy_size && exit_weight
-      weight = exit_weight
-      weight += (passenger_slot.exit_weight || 0) if has_passenger?
+    return unless rig.try(:canopy_size)
+    return unless exit_weight
+    weight = exit_weight
+    weight += (passenger_slot.exit_weight || 0) if has_passenger?
 
-      weight_in_lbs = weight * 2.20462
-      weight_in_lbs /= rig.canopy_size
-      weight_in_lbs
-    end
+    weight_in_lbs = weight * 2.20462
+    weight_in_lbs /= rig.canopy_size
+    weight_in_lbs
   end
 
   def has_passenger?

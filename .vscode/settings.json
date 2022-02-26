@@ -1,13 +1,15 @@
 {
   "ruby.rubocop.configFilePath": "/Users/amnesthesia/Documents/Development/openmanifest-server/.rubocop.yml",
   "git.autofetch": true,
-  "solargraph.bundlerPath": "/Users/amnesthesia/.rvm/gems/ruby-2.7.3@dz/bin/bundle",
+  "solargraph.bundlerPath": "/Users/amnesthesia/.rvm/rubies/ruby-2.7.3/bin/bundle",
   "ruby.pathToBundler": "/Users/amnesthesia/.rvm/rubies/ruby-2.7.3@dz/bin/bundle",
   "ruby.useBundler": true,
   "ruby.useLanguageServer": true,
-  "solargraph.useBundler": true,
   "ruby.lint": {
     "rubocop": true,
     "reek": true
-  }
+  },
+  "solargraph.logLevel": "debug",
+  "solargraph.useBundler": true,
+  "solargraph.autoformat": true
 }

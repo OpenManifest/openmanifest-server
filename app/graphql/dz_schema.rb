@@ -2,8 +2,8 @@
 
 class DzSchema < GraphQL::Schema
   use GraphqlDevise::SchemaPlugin.new(
-    query:            Types::QueryType,
-    mutation:         Types::MutationType,
+    query:                Types::QueryType,
+    mutation:             Types::MutationType,
     public_introspection: true,
     resource_loaders: [
       GraphqlDevise::ResourceLoader.new(User, operations: {
