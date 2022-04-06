@@ -21,7 +21,7 @@ module Mutations
             phone: "123123123",
             email: "some@rspec.com",
             federation_number: "321321",
-            license_id: license.id,
+            license_id: license.reload.id,
             exit_weight: 50,
           )
         }
@@ -36,11 +36,11 @@ module Mutations
         let(:json) {
           JSON.parse(response.body, symbolize_names: true)
         }
-        # it { expect(post_request).to eq 200 }
+        it { expect(post_request).to eq 200 }
         it do
           post_request
-          expect(dropzone_user.reload.license.id).to eq license.id
-          expect(json[:data][:updateUser][:user][:dropzoneUsers].first[:license]).not_to be nil
+          expect(dropzone_user.reload.license.id).to eq license.reload.id
+          expect(json[:data][:updateUser][:user][:dropzoneUsers].find { |d| d[:id].to_i == dropzone_user.id }[:license][:id].to_i).to eq license.reload.id
         end
       end
     end
@@ -69,10 +69,6 @@ module Mutations
               id
               name
               phone
-              license {
-                id
-                name
-              }
               dropzoneUsers {
                 id
                 license {

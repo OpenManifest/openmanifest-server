@@ -31,31 +31,37 @@ module Mutations
       dropzone = Load.find(attributes[:load_id]).plane.dropzone
       dz_user = context[:current_resource].dropzone_users.find_by(dropzone: dropzone)
 
+      action = if Slot.exists?(dropzone_user_id: attributes[:dropzone_user_id], load_id: attributes[:load_id])
+        "update"
+      else
+        "create"
+      end
+
       if dropzone.loads_today.active.where(dropzone_user: dz_user)
-        required_permission = if attributes[:dropzone_user_id] != dz_user.id
-          "createUserSlot"
+        resource = if attributes[:dropzone_user_id] != dz_user.id
+          "UserSlot"
         else
-          "createSlot"
+          "Slot"
         end
 
-        return true if dz_user.can?(required_permission)
+        return true if dz_user.can?("#{action}#{resource}")
         [false, {
           errors: [
-            "You don't have permissions to manifest other users (missing #{required_permission})"
+            "You don't have permissions to manifest other users (missing #{"#{action}#{resource}"})"
           ]
         }]
       else
-        required_permission = if attributes[:dropzone_user_id] != dz_user.id
-          "createUserDoubleSlot"
+        resource = if attributes[:dropzone_user_id] != dz_user.id
+          "UserDoubleSlot"
         else
-          "createDoubleSlot"
+          "DoubleSlot"
         end
 
 
-        return true if dz_user.can?(required_permission)
+        return true if dz_user.can?("#{action}#{resource}")
         [false, {
           errors: [
-            "You don't have permissions to double-manifest (missing #{required_permission})"
+            "You don't have permissions to double-manifest (missing #{"#{action}#{resource}"})"
           ]
         }]
       end

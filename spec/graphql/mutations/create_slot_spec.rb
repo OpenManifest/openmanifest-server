@@ -38,7 +38,7 @@ module Mutations
           post_request
           expect(json["data"]["createSlot"]["errors"]).to be nil
         end
-        fit "expects no errors" do
+        it "expects no errors" do
           post_request
           expect(json["data"]["createSlot"]["slot"]["exitWeight"]).to eq dropzone_user.exit_weight
         end
