@@ -1,6 +1,7 @@
-class Event < ApplicationRecord
+class Activity::Event < ApplicationRecord
+  self.table_name = "events"
   belongs_to :resource, polymorphic: true, optional: true
-  belongs_to :dropzone_user, optional: true
+  belongs_to :created_by, foreign_key: :dropzone_user_id, optional: true, class_name: "DropzoneUser"
   belongs_to :dropzone
 
   enum level: [
@@ -11,7 +12,8 @@ class Event < ApplicationRecord
 
   enum access_level: [
     :user,
-    :admin
+    :admin,
+    :system
   ]
 
   enum action: [

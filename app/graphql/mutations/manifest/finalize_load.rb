@@ -11,15 +11,21 @@ module Mutations::Manifest
     def resolve(state:, id:)
       if state == "landed"
         mutate(
-          Loads::Finalize,
+          Manifest::FinalizeLoad,
           :load,
-          load_id: id
+          load: load_by_id(id),
+          access_context: access_context_for(
+            load_by_id(id).dropzone
+          )
         )
       elsif state == "cancelled"
         mutate(
-          Loads::Cancel,
+          Manifest::CancelLoad,
           :load,
-          load_id: id
+          load: load_by_id(id),
+          access_context: access_context_for(
+            load_by_id(id).dropzone
+          )
         )
       end
     end
@@ -27,7 +33,7 @@ module Mutations::Manifest
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
         "updateLoad",
-        dropzone_id: Load.find(id).plane.dropzone_id
+        dropzone_id: load_by_id(id).plane.dropzone_id
       )
         true
       else
@@ -38,5 +44,10 @@ module Mutations::Manifest
         }]
       end
     end
+
+    private
+      def load_by_id(id)
+        @load_by_id ||= Load.find(id)
+      end
   end
 end

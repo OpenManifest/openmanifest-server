@@ -6,10 +6,14 @@ RSpec.describe Transactions::Confirm do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
-  let!(:receipt) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type).result.receipts.first }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
+  let!(:receipt) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type, access_context: access_context).result.receipts.first }
 
   describe "Confirming a purchase" do
-    let!(:outcome) { Transactions::Confirm.run(receipt: receipt) }
+    let!(:outcome) { Transactions::Confirm.run(receipt: receipt, access_context: access_context) }
 
     it { expect(outcome.result).to be_a Receipt }
     it { expect(outcome.result.valid?).to be true }

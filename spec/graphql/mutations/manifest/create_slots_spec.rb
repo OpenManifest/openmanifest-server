@@ -110,9 +110,9 @@ module Mutations
           createSlots(
             input: {
               attributes: {
-                ticketTypeId: #{ticket_type.id}
-                jumpTypeId: #{jump_type.id}
-                loadId: #{plane_load.id}
+                ticketType: #{ticket_type.id}
+                jumpType: #{jump_type.id}
+                load: #{plane_load.id}
                 userGroup: [
                   #{user_group.map do |u|
                     "{

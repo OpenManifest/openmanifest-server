@@ -130,6 +130,7 @@ ActiveRecord::Schema.define(version: 2022_04_06_095726) do
     t.bigint "dropzone_user_id"
     t.bigint "dropzone_id"
     t.text "message"
+    t.text "details", default: ""
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["access_level"], name: "index_events_on_access_level"

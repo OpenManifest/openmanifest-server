@@ -25,13 +25,13 @@ module Mutations::Setup::RigInspections
 
       model.save!
 
-      Event.create(
+      ::Activity::Event.create(
         level: :info,
         dropzone_id: dz_user.dropzone_id,
         action: :created,
         resource: model,
         message: "#{context[:current_resource].name} inspected #{rig.user.name}'s rig",
-        dropzone_user: dz_user
+        dropzone_user: dz_user,
       )
 
       {

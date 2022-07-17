@@ -11,20 +11,23 @@ module Mutations::Manifest
       mutate(
         Manifest::CreateMultipleSlots,
         :load,
-        ticket_type_id: attributes[:ticket_type_id],
-        jump_type_id: attributes[:jump_type_id],
-        load_id: attributes[:load_id],
-        users: attributes[:user_group].map { |h| h.to_h.except(:id).merge(dropzone_user_id: h[:id]) }
+        access_context: access_context_for(
+          attributes[:load].dropzone
+        ),
+        ticket_type: attributes[:ticket_type],
+        jump_type: attributes[:jump_type],
+        load: attributes[:load],
+        users: attributes[:user_group].map { |h| h.to_h.except(:id).merge(dropzone_user: DropzoneUser.find_by(id: h[:id])) }
       )
     end
 
     def authorized?(attributes: nil)
-      dropzone = Load.find(attributes[:load_id]).plane.dropzone
+      dropzone = attributes[:load].plane.dropzone
       contains_current_user = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] == context[:current_resource].id }
       contains_others = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] != context[:current_resource].id }
 
       # Check if we're manifesting tandems
-      manifesting_tandems = TicketType.find(attributes[:ticket_type_id]).is_tandem?
+      manifesting_tandems = attributes[:ticket_type].is_tandem?
 
       # Check if the user has permissions to manifest others
       can_manifest_others = context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)

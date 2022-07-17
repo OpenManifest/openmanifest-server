@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Loads::Finalize do
+RSpec.describe Manifest::FinalizeLoad do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
@@ -19,10 +19,11 @@ RSpec.describe Loads::Finalize do
     dropzone_users.filter_map do |dz_user|
       dz_user.update!(credits: ticket_type.cost * 2)
       o = Manifest::CreateSlot.run(
-        ticket_type_id: ticket_type.id,
-        dropzone_user_id: dz_user.id,
-        jump_type_id: JumpType.allowed_for([dz_user]).sample.id,
-        load_id: plane_load.id,
+        access_context: access_context,
+        ticket_type: ticket_type,
+        dropzone_user: dz_user,
+        jump_type: JumpType.allowed_for([dz_user]).sample,
+        load: plane_load,
         exit_weight: dz_user.exit_weight
       )
 
@@ -33,7 +34,12 @@ RSpec.describe Loads::Finalize do
       end
     end
   end
-  let!(:outcome) { Loads::Finalize.run(load_id: plane_load.id) }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    u.grant! :updateLoad
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
+  let!(:outcome) { Manifest::FinalizeLoad.run(load: plane_load, access_context: access_context) }
 
   describe "Marking a load as landed" do
     it {

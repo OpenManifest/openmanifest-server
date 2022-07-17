@@ -6,9 +6,13 @@ RSpec.describe Transactions::Purchase do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
 
   describe "Creating a purchase" do
-    let!(:outcome) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type) }
+    let!(:outcome) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type, access_context: access_context) }
 
     it { expect(outcome.result).to be_a Order }
     it { expect(outcome.result.errors).to be_empty }

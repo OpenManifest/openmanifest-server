@@ -14,7 +14,8 @@ module Mutations::Payments
         amount: attributes[:amount],
         seller: attributes[:seller].to_record,
         buyer: attributes[:buyer].to_record,
-        dropzone: Dropzone.find(attributes[:dropzone_id])
+        dropzone: Dropzone.find(attributes[:dropzone_id]),
+        access_context: access_context_for(attributes[:dropzone_id]),
       )
     end
 

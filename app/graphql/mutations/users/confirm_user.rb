@@ -11,11 +11,12 @@ module Mutations::Users
     def resolve(token:)
       user = User.confirm_by_token(token)
 
-      Event.create(
+      ::Activity::Event.create(
         level: :debug,
         message: "User confirmed: #{user.email}",
         resource: user,
-        action: :confirmed
+        action: :confirmed,
+        access_level: :system,
       )
 
       {

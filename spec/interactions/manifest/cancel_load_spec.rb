@@ -2,18 +2,26 @@
 
 require "rails_helper"
 
-RSpec.describe Loads::Finalize do
+RSpec.describe Manifest::FinalizeLoad do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    u.grant! :deleteLoad
+    u.grant! :createSlot
+    u.grant! :createUserSlot
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
   let!(:slots) do
     create_list(:dropzone_user, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|
       Manifest::CreateSlot.run(
-        ticket_type_id: ticket_type.id,
-        dropzone_user_id: dz_user.id,
-        jump_type_id: JumpType.allowed_for([dz_user]).sample.id,
-        load_id: plane_load.id,
+        access_context: access_context,
+        ticket_type: ticket_type,
+        dropzone_user: dz_user,
+        jump_type: JumpType.allowed_for([dz_user]).sample,
+        load: plane_load,
         exit_weight: dz_user.exit_weight
       ).result
     end
@@ -21,8 +29,9 @@ RSpec.describe Loads::Finalize do
 
   describe "Cancelling a load" do
     let!(:outcome) do
-      Loads::Cancel.run(
-        load_id: plane_load.id
+      Manifest::CancelLoad.run(
+        access_context: access_context,
+        load: plane_load
       )
     end
     it { expect(outcome.result).to be_a Load }

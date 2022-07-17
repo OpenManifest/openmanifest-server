@@ -8,6 +8,7 @@ class CreateEvents < ActiveRecord::Migration[6.1]
       t.references :dropzone_user, null: true, foreign_key: true
       t.references :dropzone, null: true, foreign_key: true
       t.text :message
+      t.text :details, default: ""
 
       t.timestamps
     end

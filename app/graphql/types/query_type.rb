@@ -151,15 +151,16 @@ module Types
 
       dz_user.available_rigs(load_id: load_id)
     end
-    field :events, Types::Events::EventType.connection_type, null: true do
+    field :activity, Types::Events::EventType.connection_type, null: true do
       argument :dropzone_id, Int, required: true
-      argument :level, Types::Events::EventLevelType, required: false
+      argument :levels,  [Types::Events::EventLevelType], required: false
+      argument :actions, [Types::Events::EventActionType], required: false
       argument :dropzone_user_id, Int, required: false
     end
-    def events(dropzone_id: nil, dropzone_user_id: nil, level: nil)
-      query = Event.where(dropzone_id: dropzone_id)
-      query = Event.where(level: level) if level
-      query = Event.where.not(level: :debug) unless level
+    def activity(dropzone_id: nil, dropzone_user_id: nil, level: nil)
+      query = ::Activity::Event.where(dropzone_id: dropzone_id)
+      query = query.where(level: level)                       if level
+      query = query.where.not(level: :debug)                  unless level
       query = query.where(dropzone_user_id: dropzone_user_id) if dropzone_user_id
       query.order(created_at: :desc)
     end

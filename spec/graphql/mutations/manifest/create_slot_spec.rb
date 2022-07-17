@@ -69,6 +69,7 @@ module Mutations
         it { expect { post_request }.to change { Order.where(seller: dropzone).count }.by 1 }
         it { expect(post_request["data"]["createSlot"]["errors"]).to be nil }
         it { expect(post_request["data"]["createSlot"]["fieldErrors"]).to be nil }
+        it { expect { post_request }.to change { ::Activity::Event.count } }
       end
 
       context "with errors" do
@@ -102,10 +103,10 @@ module Mutations
           createSlot(
             input: {
               attributes: {
-                dropzoneUserId: #{dropzone_user.id}
-                ticketTypeId: #{ticket_type.id}
-                jumpTypeId: #{JumpType.allowed_for([dropzone_user]).sample.id}
-                loadId: #{plane_load.id}
+                dropzoneUser: #{dropzone_user.id}
+                ticketType: #{ticket_type.id}
+                jumpType: #{JumpType.allowed_for([dropzone_user]).sample.id}
+                load: #{plane_load.id}
                 exitWeight: #{exit_weight}
                 passengerExitWeight: #{passenger_exit_weight || 'null'}
                 passengerName: #{passenger_name || 'null'}

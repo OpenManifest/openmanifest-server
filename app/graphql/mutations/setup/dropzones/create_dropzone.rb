@@ -20,13 +20,13 @@ module Mutations::Setup::Dropzones
         user_role: UserRole.find_by(dropzone_id: model.id, name: "owner")
       )
 
-      Event.create(
+      ::Activity::Event.create(
         level: :info,
         message: "A new Dropzone #{model.name} was created by #{context[:current_resource].name}",
-        resource: user,
+        resource: model,
         action: :created,
-        dropzone_user: dz_user,
-        dropzone: model,
+        created_by: dz_user,
+        dropzone: access_context.dropzone,
       )
 
       model.rig_inspection_template = FormTemplate.create(

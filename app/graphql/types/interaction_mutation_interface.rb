@@ -10,7 +10,6 @@ module Types
       outcome = interaction.run(**opts)
 
       if outcome.valid?
-        on_success(opts[:on_success], outcome.result) if opts.key?(:on_success)
         {
           field_name => outcome.result,
           error: nil,
@@ -23,14 +22,12 @@ module Types
           errors: outcome.errors.full_messages_for(:base)
         }
       end
-    end
-
-    def on_success(symbol_or_proc, outcome)
-      if symbol_or_proc.is_a?(Symbol)
-        send(symbol_or_proc, outcome) if defined?(symbol_or_proc)
-      elsif symbol_or_proc.is_a?(Proc)
-        symbol_or_proc.call(outcome)
-      end
+    rescue ::ApplicationInteraction::Errors::PermissionDenied => e
+      {
+        field_name => nil,
+        field_errors: nil,
+        errors: [e.message]
+      }
     end
   end
 end

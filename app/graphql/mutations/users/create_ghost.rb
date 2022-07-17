@@ -47,13 +47,13 @@ module Mutations::Users
         )
       end
 
-      Event.create(
+      ::Activity::Event.create(
         level: :info,
         message: "#{context[:current_resource].name} created a new user: '#{model.name}' (#{model.email})",
         resource: model,
         action: :created,
         dropzone_id: attributes[:dropzone_id],
-        dropzone_user: DropzoneUser.find_by(
+        created_by: DropzoneUser.find_by(
           dropzone_id: attributes[:dropzone_id],
           user_id: context[:current_resource].id
         )
