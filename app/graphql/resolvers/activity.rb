@@ -22,7 +22,7 @@ class Resolvers::Activity < Resolvers::Base
     lookahead = lookahead.selection(:edges).selection(:node)
     query = ::Activity::Event
     query = query.includes(:created_by) if lookahead.selects?(:created_by)
-    query = query.where(dropzone_id: dropzone_id)           if dropzone_id
+    query = query.where(dropzone: dropzone)                 if dropzone
     query = query.where(level: level)                       if level
     query = query.where.not(level: :debug)                  unless level
     query = query.where(created_by: created_by)             if created_by
