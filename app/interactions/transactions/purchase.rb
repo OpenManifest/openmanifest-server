@@ -9,7 +9,7 @@ class Transactions::Purchase < ApplicationInteraction
         :create_transactions,
         :update_credits,
         :refund_if_tandem,
-        :order
+        :save
 
   # Create events
   success do
@@ -49,6 +49,11 @@ class Transactions::Purchase < ApplicationInteraction
       amount: total_cost,
       state: :pending
     )
+  end
+
+  def save
+    errors.merge!(@order.errors) unless @order.save
+    @order
   end
 
   def refund_if_tandem
