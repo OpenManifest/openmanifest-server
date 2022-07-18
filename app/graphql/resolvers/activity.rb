@@ -5,7 +5,7 @@ class Resolvers::Activity < Resolvers::Base
   description "Get all Activity Events for a dropzone (or all dropzones)"
 
 
-  argument :dropzone, [Int], required: true,
+  argument :dropzone, [Int], required: false,
            description: "Filter by Dropzone",
            prepare: -> (value, ctx) { Dropzone.where(value) }
   argument :levels,  [Types::Events::EventLevelType], required: false

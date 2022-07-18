@@ -18,7 +18,6 @@ module Types
     field :group_number, Integer, null: false
 
     field :dropzone_user, Types::DropzoneUserType, null: true
-    field :user, Types::UserType, null: true
     field :cost, Float, null: false
 
     field :ticket_type, Types::TicketTypeType, null: true
