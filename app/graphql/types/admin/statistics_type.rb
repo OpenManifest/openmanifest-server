@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Types::Admin::StatisticsType < Types::BaseObject
   field :total_user_count, Integer, null: false
   field :active_user_count, Integer, null: false
