@@ -7,23 +7,7 @@ module Types
     field :id, GraphQL::Types::ID, null: false
     field :statistics, Types::Admin::StatisticsType, null: false
     def statistics
-      object.loads.where.not(dispatch_at: nil).order("date_trunc('day', dispatched_at) DESC, upvotes DESC").limit(5).pluck("date_trunc('day', published_at)", :upvotes)
-
-      {
-        total_user_count: object.users_count,
-        active_user_count: object.dropzone_users.kept.count,
-        inactive_user_count: object.dropzone_users.discarded.count,
-        gca_count: object.dropzone_users.with_acting_permission(:actAsGCA).count,
-        dzso_count: object.dropzone_users.with_acting_permission(:actAsDZSO).count,
-        pilot_count: object.dropzone_users.with_acting_permission(:actAsPilot).count,
-        rig_inspector_count: object.dropzone_users.with_acting_permission(:actAsRigInspector).count,
-        load_count_by_date: load_count_by_date,
-
-        loads_count: object.loads.count,
-        cancelled_loads_count: object.loads.cancelled.count,
-        finalized_loads_count: object.loads.landed.count,
-        revenue_cents_count: object.sales.where(state: :completed).sum(:amount)
-      }
+      object
     end
     field :name, String, null: true
     field :request_publication, Boolean, null: false
