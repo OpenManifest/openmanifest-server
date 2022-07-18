@@ -40,6 +40,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
+  config.example_status_persistence_file_path = "tmp/rspec_examples.txt"
   config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"

@@ -18,14 +18,21 @@ RSpec.describe Manifest::CreateMultipleSlots do
   end
   let!(:plane) { create(:plane, dropzone: dropzone) }
   let!(:plane_load) { create(:load, plane: plane) }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    u.grant! :createUserSlot
+    u.grant! :createSlot
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
 
   describe "Manifesting on a load" do
     context "when the user has credits" do
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
-          ticket_type_id: ticket_type.id,
-          jump_type_id: jump_type.id,
-          load_id: plane_load.id,
+          access_context: access_context,
+          ticket_type: ticket_type,
+          jump_type: jump_type,
+          load: plane_load,
           users: user_group
         )
       end
@@ -42,9 +49,10 @@ RSpec.describe Manifest::CreateMultipleSlots do
       end
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
-          ticket_type_id: ticket_type.id,
-          jump_type_id: jump_type.id,
-          load_id: plane_load.id,
+          access_context: access_context,
+          ticket_type: ticket_type,
+          jump_type: jump_type,
+          load: plane_load,
           users: user_group
         )
       end
@@ -59,9 +67,10 @@ RSpec.describe Manifest::CreateMultipleSlots do
       let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([dropzone_users.first]).pluck(:id)).sample }
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
-          ticket_type_id: ticket_type.id,
-          jump_type_id: forbidden_jump_type.id,
-          load_id: plane_load.id,
+          access_context: access_context,
+          ticket_type: ticket_type,
+          jump_type: forbidden_jump_type,
+          load: plane_load,
           users: user_group
         )
       end
@@ -76,9 +85,10 @@ RSpec.describe Manifest::CreateMultipleSlots do
       let!(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
-          ticket_type_id: tandem_ticket.id,
-          jump_type_id: jump_type.id,
-          load_id: plane_load.id,
+          access_context: access_context,
+          ticket_type_id: tandem_ticket,
+          jump_type_id: jump_type,
+          load_id: plane_load,
           users: user_group.take(2).map do |group|
             group.merge(
               passenger_exit_weight: 50,

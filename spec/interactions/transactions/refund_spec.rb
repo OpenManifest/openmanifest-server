@@ -6,10 +6,14 @@ RSpec.describe Transactions::Refund do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
-  let!(:order) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type) }
+  let!(:access_context) do
+    u = create(:dropzone_user, dropzone: dropzone)
+    ::ApplicationInteraction::AccessContext.new(u)
+  end
+  let!(:order) { Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type, access_context: access_context) }
 
   describe "Refunding a purchase" do
-    let!(:outcome) { Transactions::Refund.run(order: order.result) }
+    let!(:outcome) { Transactions::Refund.run(order: order.result, access_context: access_context) }
     it { expect(outcome.result).to be_a Order }
     it { expect(outcome.result.valid?).to be true }
     it { expect(outcome.result.receipts.count).to eq 2 }

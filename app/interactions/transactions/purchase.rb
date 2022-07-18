@@ -1,36 +1,69 @@
 # frozen_string_literal: true
 
-require "active_interaction"
-
-class Transactions::Purchase < ActiveInteraction::Base
-  include ActiveInteraction::Extras::Transaction
-  run_in_transaction!
-
+class Transactions::Purchase < ApplicationInteraction
   record :purchasable, class: "ApplicationRecord", default: nil
   record :buyer, class: "ApplicationRecord"
   record :seller, class: "ApplicationRecord"
-  record :dropzone
 
-  validates :dropzone, :buyer, :seller, presence: true
+  validates :buyer, :seller, presence: true
 
-  def execute
-    create_order
-    create_transactions
-    update_credits
-    compose(Transactions::Refund, order: @order) if is_tandem?
+  steps :create_order,
+        :create_transactions,
+        :update_credits,
+        :refund_if_tandem,
+        :save
 
-    @order
+  # Create events
+  success do
+    compose(
+      ::Activity::CreateEvent,
+      access_level: :system,
+      access_context: access_context,
+      resource: @order,
+      action: :created,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{name_of(:buyer, buyer)} purchased #{item_name}"
+    )
+  end
+
+  error do
+    compose(
+      ::Activity::CreateEvent,
+      access_level: :system,
+      level: :error,
+      access_context: access_context,
+      action: :confirmed,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{name_of(:buyer, buyer)} failed to purchase #{item_name}",
+      details: errors.full_messages.join(", ")
+    )
   end
 
   def create_order
     @order = Order.create(
       title: order_title,
-      dropzone: dropzone,
+      dropzone: access_context.dropzone,
       item: purchasable,
       seller: seller,
       buyer: buyer,
       amount: total_cost,
       state: :pending
+    )
+  end
+
+  def save
+    errors.merge!(@order.errors) unless @order.save
+    @order
+  end
+
+  def refund_if_tandem
+    return unless is_tandem?
+    compose(
+      Transactions::Refund,
+      order: @order,
+      access_context: access_context
     )
   end
 

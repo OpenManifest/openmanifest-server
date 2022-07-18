@@ -8,11 +8,15 @@ module Types
       argument :max_slots, Int, required: false
       argument :is_open, Boolean, required: false
       argument :has_landed, Boolean, required: false
-      argument :pilot_id, Int, required: false
+      argument :pilot, Int, required: false,
+               prepare: -> (value, ctx) { DropzoneUser.find(value) }
       argument :dispatch_at, Int, required: false
-      argument :plane_id, Int, required: false
-      argument :gca_id, Int, required: false
-      argument :load_master_id, Int, required: false
+      argument :plane, Int, required: false,
+               prepare: -> (value, ctx) { Plane.find(value) }
+      argument :gca, Int, required: false,
+               prepare: -> (value, ctx) { DropzoneUser.find(value) }
+      argument :load_master, Int, required: false,
+               prepare: -> (value, ctx) { DropzoneUser.find(value) }
       argument :state, Types::LoadStateType, required: false
     end
   end

@@ -23,7 +23,11 @@ module Types
 
     field :image, String, null: true
     def image
+      return nil unless object.image
+      return nil unless object.image_url
       object.image_url
+    rescue
+      nil
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_02_01_105426) do
+ActiveRecord::Schema.define(version: 2022_04_06_095726) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -119,6 +119,27 @@ ActiveRecord::Schema.define(version: 2022_02_01_105426) do
     t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.string "resource_type", null: false
+    t.bigint "resource_id", null: false
+    t.integer "action"
+    t.integer "level"
+    t.integer "access_level"
+    t.bigint "dropzone_user_id"
+    t.bigint "dropzone_id"
+    t.text "message"
+    t.text "details", default: ""
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["access_level"], name: "index_events_on_access_level"
+    t.index ["action"], name: "index_event_actions"
+    t.index ["action"], name: "index_events_on_action"
+    t.index ["dropzone_id"], name: "index_events_on_dropzone_id"
+    t.index ["dropzone_user_id"], name: "index_events_on_dropzone_user_id"
+    t.index ["level"], name: "index_events_on_level"
+    t.index ["resource_type", "resource_id"], name: "index_events_on_resource"
   end
 
   create_table "extras", force: :cascade do |t|
@@ -526,6 +547,8 @@ ActiveRecord::Schema.define(version: 2022_02_01_105426) do
   add_foreign_key "dropzone_users", "user_roles"
   add_foreign_key "dropzone_users", "users"
   add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"
+  add_foreign_key "events", "dropzone_users"
+  add_foreign_key "events", "dropzones"
   add_foreign_key "extras", "dropzones"
   add_foreign_key "form_templates", "dropzone_users", column: "created_by_id"
   add_foreign_key "form_templates", "dropzone_users", column: "updated_by_id"

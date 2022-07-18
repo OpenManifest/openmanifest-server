@@ -3,13 +3,19 @@
 module Types
   module Input
     class SlotInput < Types::BaseInputObject
-      argument :dropzone_user_id, Int, required: false
-      argument :ticket_type_id, Int, required: false
-      argument :jump_type_id, Int, required: false
-      argument :load_id, Int, required: false
-      argument :rig_id, Int, required: false
+      argument :dropzone_user, Int, required: false,
+               prepare: -> (value, ctx) { DropzoneUser.find(value) }
+      argument :ticket_type, Int, required: false,
+               prepare: -> (value, ctx) { TicketType.find(value) }
+      argument :jump_type, Int, required: false,
+               prepare: -> (value, ctx) { JumpType.find(value) }
+      argument :load, Int, required: false,
+               prepare: -> (value, ctx) { Load.find(value) }
+      argument :rig, Int, required: false,
+               prepare: -> (value, ctx) { Rig.find(value) }
       argument :exit_weight, Float, required: false
-      argument :extra_ids, [Int], required: false
+      argument :extras, [Int], required: false,
+               prepare: -> (value, ctx) { Extra.where(id: value) }
 
       argument :user_group, [Types::Input::SlotUser], required: false
 

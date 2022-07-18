@@ -43,6 +43,10 @@ class Transaction < ApplicationRecord
     refund
   ]
 
+  scope :completed, -> { where(status: :completed) }
+  scope :reserved,  -> { where(status: :reserved) }
+  scope :cancelled, -> { where(status: :cancelled) }
+
   def notify!
     case status
     when "deposit"

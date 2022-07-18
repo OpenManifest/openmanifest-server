@@ -22,6 +22,9 @@ module Types
 
     field :max_slots, Int, null: false
     field :is_open, Boolean, null: false
+    def is_open
+      object.state == "open"
+    end
     field :slots, [Types::SlotType], null: true
     def slots
       # This exludes tandem passengers as they are part

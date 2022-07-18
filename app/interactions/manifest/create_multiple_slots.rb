@@ -2,45 +2,43 @@
 
 require "active_interaction"
 
-class Manifest::CreateMultipleSlots < ActiveInteraction::Base
-  integer :load_id
-  integer :ticket_type_id
-  integer :jump_type_id
+class Manifest::CreateMultipleSlots < ApplicationInteraction
+  record :load
+  record :ticket_type
+  record :jump_type
   array :users do
     hash do
-      integer :dropzone_user_id
+      record :dropzone_user
       float :exit_weight
-      integer :rig_id, default: nil
+      record :rig, default: nil
       string :passenger_name, default: nil
       float :passenger_exit_weight, default: nil
-      array :extra_ids, default: nil do
-        integer
+      array :extras, default: nil do
+        object class: Extra
       end
     end
   end
 
-  validates :users, :ticket_type_id, :jump_type_id, :users, presence: true
+  validates :ticket_type, :jump_type, :users, presence: true
 
-  def execute
-    check_available_slots
-    check_allowed_jump_type
-    # Note: Disabled, instead checked in Manifest::CreateSlot, to allow
-    # updating slots
-    # check_double_manifesting
-    check_credits if dropzone.is_credit_system_enabled?
-    return if errors.any?
+  steps :check_available_slots,
+        :check_allowed_jump_type,
+        :check_credits,
+        :create_slots,
+        # Return
+        :plane_load
 
+  def create_slots
     users.each do |user|
       compose(
         ::Manifest::CreateSlot,
-        ticket_type_id: ticket_type_id,
-        jump_type_id: jump_type_id,
-        load_id: load_id,
+        access_context: access_context,
+        ticket_type: ticket_type,
+        jump_type: jump_type,
+        load: load,
         **user
       )
     end
-
-    plane_load.reload
   end
 
   def check_available_slots
@@ -54,6 +52,7 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
   end
 
   def check_credits
+    return unless dropzone.is_credit_system_enabled?
     users.each do |user|
       cost = ticket_type.cost
       if user[:extra_ids]
@@ -63,11 +62,9 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
         ).map(&:cost).reduce(&:sum)
       end
 
-      dz_user = dropzone_users.find_by(id: user[:dropzone_user_id])
-
-      if cost > dz_user.credits
-        errors.add(:base, "#{dz_user.user.name} doesn't have enough credits to manifest for this jump")
-        errors.add(:credits, "Not enough credits to manifest #{dz_user.user.name}")
+      if cost > user[:dropzone_user].credits
+        errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
+        errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
       end
     end
   end
@@ -90,7 +87,7 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
 
   private
     def dropzone_users
-      dropzone.dropzone_users.where(id: users.pluck(:dropzone_user_id))
+      users.pluck(:dropzone_user)
     end
 
     def next_group_number
@@ -102,18 +99,10 @@ class Manifest::CreateMultipleSlots < ActiveInteraction::Base
     end
 
     def plane_load
-      Load.find(load_id)
+      load
     end
 
     def dropzone
       plane_load.plane.dropzone
-    end
-
-    def ticket_type
-      dropzone.ticket_types.find_by(id: ticket_type_id)
-    end
-
-    def jump_type
-      JumpType.find_by(id: jump_type_id)
     end
 end

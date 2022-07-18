@@ -7,5 +7,6 @@ module Types
     field :slug, String, null: true
     field :created_at, Int, null: false
     field :updated_at, Int, null: false
+    field :licenses, [Types::LicenseType], null: true
   end
 end
