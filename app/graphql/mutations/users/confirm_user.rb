@@ -16,7 +16,7 @@ module Mutations::Users
         message: "User confirmed: #{user.email}",
         resource: user,
         action: :confirmed,
-        access_level: :system,
+        access_level: :admin,
       )
 
       {

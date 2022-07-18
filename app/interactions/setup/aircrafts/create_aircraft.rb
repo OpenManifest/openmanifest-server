@@ -31,6 +31,7 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
       access_context: access_context,
       level: :error,
       action: :created,
+      access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} failed to create aircraft #{name} (#{registration})"

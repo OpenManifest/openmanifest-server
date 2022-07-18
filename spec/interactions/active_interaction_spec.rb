@@ -10,7 +10,7 @@ RSpec.describe ActiveInteraction do
             :two,
             :three
 
-      before_steps do warn "BLOCKRUN"; self.sum = 1 end
+      before_steps do self.sum = 1 end
       def one
         self.sum += 1
       end

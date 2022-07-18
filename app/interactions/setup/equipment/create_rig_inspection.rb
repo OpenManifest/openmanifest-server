@@ -14,6 +14,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
+      access_level: :user,
       resource: @inspection,
       action: :created,
       dropzone: access_context.dropzone,
@@ -28,6 +29,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
       ::Activity::CreateEvent,
       access_context: access_context,
       level: :error,
+      access_level: :admin,
       action: :created,
       resource: rig,
       dropzone: access_context.dropzone,

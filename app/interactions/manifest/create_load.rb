@@ -22,6 +22,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       access_context: access_context,
       resource: @load,
       action: :created,
+      access_level: :user,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} created load ##{@load.load_number}"

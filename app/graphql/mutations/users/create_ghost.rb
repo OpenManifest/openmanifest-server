@@ -52,6 +52,7 @@ module Mutations::Users
         message: "#{context[:current_resource].name} created a new user: '#{model.name}' (#{model.email})",
         resource: model,
         action: :created,
+        access_level: :admin,
         dropzone_id: attributes[:dropzone_id],
         created_by: DropzoneUser.find_by(
           dropzone_id: attributes[:dropzone_id],

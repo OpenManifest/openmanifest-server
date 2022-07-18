@@ -38,6 +38,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       access_context: access_context,
       resource: model,
       action: :created,
+      access_level: :user,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} manifested #{dropzone_user.user.name} on load ##{load.load_number}"
@@ -52,6 +53,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       level: :error,
       resource: model,
       action: :created,
+      access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}"

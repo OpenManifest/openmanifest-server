@@ -13,6 +13,7 @@ class Manifest::DeleteLoad < ApplicationInteraction
       ::Activity::CreateEvent,
       level: :error,
       access_context: access_context,
+      access_level: :user,
       resource: load,
       action: :deleted,
       dropzone: access_context.dropzone,

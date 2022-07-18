@@ -19,6 +19,7 @@ class Manifest::FinalizeLoad < ApplicationInteraction
       access_context: access_context,
       resource: load,
       action: :confirmed,
+      access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} finalized load ##{load.load_number}"

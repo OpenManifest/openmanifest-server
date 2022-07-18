@@ -16,6 +16,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
       access_context: access_context,
       resource: slot,
       action: :deleted,
+      access_level: :user,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: if is_self?

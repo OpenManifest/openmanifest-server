@@ -22,6 +22,7 @@ module Mutations::Setup::Dropzones
 
       ::Activity::Event.create(
         level: :info,
+        access_level: :admin,
         message: "A new Dropzone #{model.name} was created by #{context[:current_resource].name}",
         resource: model,
         action: :created,

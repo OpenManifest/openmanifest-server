@@ -19,6 +19,7 @@ module Mutations::Setup::Tickets
         level: :info,
         message: "A new Ticket add-on  #{model.name} was created by #{context[:current_resource].name}",
         resource: model,
+        access_level: :admin,
         action: :created,
         dropzone_id: attributes[:dropzone_id],
         created_by: DropzoneUser.find_by(

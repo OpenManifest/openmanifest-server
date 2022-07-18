@@ -17,6 +17,7 @@ class Manifest::CancelLoad < ApplicationInteraction
       ::Activity::CreateEvent,
       access_context: access_context,
       resource: load,
+      access_level: :user,
       action: :deleted,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
