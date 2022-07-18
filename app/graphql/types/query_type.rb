@@ -6,7 +6,7 @@ module Types
     include GraphQL::Types::Relay::HasNodesField
     include Geokit::Geocoders
 
-    field :image,           resolvers: Resolvers::Image
+    field :image,           resolver: Resolvers::Image
     field :federations,     extras: [:lookahead],   resolver: Resolvers::Federations
     field :dropzones,       extras: [:lookahead],   resolver: Resolvers::Dropzones
     field :dropzone,        extras: [:lookahead],   resolver: Resolvers::Dropzone
@@ -14,7 +14,7 @@ module Types
     field :load,            extras: [:lookahead],   resolver: Resolvers::Load
     field :planes,          extras: [:lookahead],   resolver: Resolvers::Aircrafts
     field :ticket_types,    extras: [:lookahead],   resolver: Resolvers::TicketTypes
-    field :extras,          extras: [:lookahead],   resolvers: Resolvers::TicketAddons
+    field :extras,          extras: [:lookahead],   resolver: Resolvers::TicketAddons
     field :jump_types,      extras: [:lookahead],   resolver: Resolvers::JumpTypes
     field :licenses,        extras: [:lookahead],   resolver: Resolvers::Licenses
     field :available_rigs,  extras: [:lookahead],   resolver: Resolvers::AvailableRigs

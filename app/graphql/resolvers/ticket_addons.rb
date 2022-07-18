@@ -2,7 +2,7 @@
 
 class Resolvers::TicketAddons < Resolvers::Base
   description "Get all ticket type extras"
-  type [Types::ExtraType]
+  type [Types::ExtraType], null: false
   argument :dropzone, Int, required: true,
            prepare: -> (value, ctx) { Dropzone.find(value) }
 

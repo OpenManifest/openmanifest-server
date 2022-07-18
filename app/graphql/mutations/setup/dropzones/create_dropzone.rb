@@ -26,7 +26,7 @@ module Mutations::Setup::Dropzones
         resource: model,
         action: :created,
         created_by: dz_user,
-        dropzone: access_context.dropzone,
+        dropzone: model,
       )
 
       model.rig_inspection_template = FormTemplate.create(

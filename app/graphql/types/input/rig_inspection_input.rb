@@ -3,8 +3,10 @@
 module Types
   module Input
     class RigInspectionInput < Types::BaseInputObject
-      argument :dropzone_id, Int, required: false
-      argument :rig_id, Int, required: false
+      argument :dropzone, Int, required: false,
+               prepare: -> (value, ctx) { Dropzone.find(value) }
+      argument :rig, Int, required: false,
+               prepare: -> (value, ctx) { Rig.find(value) }
       argument :definition, String, required: false
       argument :is_ok, Boolean, required: false
     end

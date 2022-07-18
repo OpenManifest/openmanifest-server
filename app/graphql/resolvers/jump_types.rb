@@ -2,7 +2,7 @@
 
 class Resolvers::JumpTypes < Resolvers::Base
   description "Get all jump types"
-  type [Types::JumpTypeType]
+  type [Types::JumpTypeType], null: false
   argument :dropzone_users, [Int], required: false,
            prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
 

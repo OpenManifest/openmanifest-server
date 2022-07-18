@@ -2,7 +2,7 @@
 
 class Resolvers::Load < Resolvers::Base
   description "Get load by id"
-  type Types::LoadType
+  type Types::LoadType, null: true
   argument :id, Int, required: true
 
   def resolve(

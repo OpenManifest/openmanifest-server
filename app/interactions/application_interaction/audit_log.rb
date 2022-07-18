@@ -4,12 +4,9 @@ module ApplicationInteraction::AuditLog
   extend ActiveSupport::Concern
 
   included do
-    after do
-      if errors.any?
-        error
-      else
-        success
-      end
+    after_steps do
+      success if valid?
+      error unless valid?
     end
 
     def success

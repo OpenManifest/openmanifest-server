@@ -9,7 +9,7 @@ module Mutations::Manifest
     argument :id, Int, required: true
 
     def resolve(id:)
-      mutation(
+      mutate(
         ::Manifest::DeleteLoad,
         :load,
         access_context: access_context_for(load_by_id(id).dropzone),

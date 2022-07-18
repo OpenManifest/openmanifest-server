@@ -18,7 +18,7 @@ module Types
       else
         {
           field_name => nil,
-          field_errors: outcome.errors.to_hash.except(:base).map { |field, message| { field: field, message: message } },
+          field_errors: outcome.errors.to_hash.except(:base).map { |field, message| { field: field, message: [message].flatten.reject(&:blank?).first } },
           errors: outcome.errors.full_messages_for(:base)
         }
       end

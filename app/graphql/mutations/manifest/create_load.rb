@@ -9,11 +9,13 @@ module Mutations::Manifest
     argument :attributes, Types::Input::LoadInput, required: true
 
     def resolve(attributes:)
-      mutation(
+      mutate(
         ::Manifest::CreateLoad,
+        :load,
         access_context: access_context_for(attributes[:plane].dropzone),
         **attributes.to_h.slice(
           :name,
+          :plane,
           :pilot,
           :gca,
           :load_master,

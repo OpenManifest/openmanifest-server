@@ -2,7 +2,6 @@
 
 module Mutations::Manifest
   class CreateSlot < Mutations::BaseMutation
-    include Types::InteractionMutationInterface
     field :slot, Types::SlotType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true

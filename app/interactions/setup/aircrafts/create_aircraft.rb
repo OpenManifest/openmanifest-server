@@ -6,7 +6,10 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
   string :registration
   integer :hours, default: nil
   integer :min_slots, default: 0
-  integer :max_slots, default: 0
+  integer :max_slots, default: 4
+
+  steps :build_aircraft,
+        :save
 
   # Create events
   success do
@@ -45,5 +48,6 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
 
   def save
     errors.merge(@aircraft.errors) unless @aircraft.save
+    @aircraft
   end
 end

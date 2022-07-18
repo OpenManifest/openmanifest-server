@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Loads < Resolvers::Base
-  type Types::LoadType.connection_type
+  type Types::LoadType.connection_type, null: false
   description "Get all loads"
 
   argument :dropzone, Int, required: true,

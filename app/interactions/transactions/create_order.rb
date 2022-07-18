@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Transactions::CreateOrder < ApplicationInteraction
+class Transactions::CreateOrder < Transactions::Purchase
   integer :amount
   string :title, default: nil
   integer :purchasable, default: nil
@@ -15,7 +15,7 @@ class Transactions::CreateOrder < ApplicationInteraction
         :update_credits,
         :confirm_order,
         # Return
-        :order
+        :@order
 
   # Create events
   success do
@@ -23,11 +23,11 @@ class Transactions::CreateOrder < ApplicationInteraction
       ::Activity::CreateEvent,
       access_level: :system,
       access_context: access_context,
-      resource: order,
+      resource: @order,
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "Order ##{order.id} created with a total value of #{amount}"
+      message: "Order ##{@order.id} created with a total value of #{amount}"
     )
   end
 
@@ -37,7 +37,6 @@ class Transactions::CreateOrder < ApplicationInteraction
       access_level: :system,
       level: :error,
       access_context: access_context,
-      resource: receipt,
       action: :confirmed,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
@@ -45,47 +44,46 @@ class Transactions::CreateOrder < ApplicationInteraction
       details: errors.full_messages.join(", ")
     )
   end
+  def create_order
+    @order = Order.new(
+      title: title,
+      dropzone: dropzone,
+      seller: seller,
+      buyer: buyer,
+      amount: total_cost,
+      state: :pending
+    )
+    errors.merge!(@order.errors) unless @order.save
+  end
 
-  private
-    def create_order
-      @order = Order.create(
-        title: title,
-        dropzone: dropzone,
-        seller: seller,
-        buyer: buyer,
-        amount: total_cost,
-        state: :pending
-      )
-    end
+  def confirm_order
+    compose(
+      ::Transactions::Confirm,
+      receipt: @order.receipts.first,
+      access_context: access_context
+    )
+  end
 
-    def confirm_order
-      compose(
-        ::Transactions::Confirm,
-        receipt: @order.receipts.first,
-        access_context: access_context
-      )
-    end
+  def total_cost
+    amount
+  end
 
-    def total_cost
-      amount
+  def order_title
+    case purchasable
+    when Slot
+      "Slot on Load #{purchasable.load.load_number}"
+    when TicketType
+      "#{purchasable.name} ticket"
+    when DropzoneUser
+      "Funds added to account"
+    when Pack
+      "packjob"
+    else
+      errors.add(:purchasable, "Not a valid type")
     end
+  end
 
-    def order_title
-      case purchasable
-      when Slot
-        "Slot on Load #{purchasable.load.load_number}"
-      when TicketType
-        "#{purchasable.name} ticket"
-      when DropzoneUser
-        "Funds added to account"
-      when Pack
-        "packjob"
-      else
-        errors.add(:purchasable, "Not a valid type")
-      end
-    end
-
-    def item_name
-      (amount < 0 ? "Withdrawal" : "Deposit").to_s
-    end
+  def item_name
+    (amount < 0 ? "Withdrawal" : "Deposit").to_s
+  end
 end

@@ -9,7 +9,7 @@ module Mutations::Setup::Aircrafts
     argument :attributes, Types::Input::PlaneInput, required: true
 
     def resolve(attributes:)
-      mutation(
+      mutate(
         ::Setup::Aircrafts::CreateAircraft,
         :plane,
         access_context: access_context_for(attributes[:dropzone_id]),

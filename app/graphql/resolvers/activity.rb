@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Activity < Resolvers::Base
-  type Types::Events::EventType.connection_type
+  type Types::Events::EventType.connection_type, null: false
   description "Get all Activity Events for a dropzone (or all dropzones)"
 
   argument :dropzone, Int, required: true,

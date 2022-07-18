@@ -9,7 +9,7 @@ module Mutations::Manifest
     argument :id, Int, required: true
 
     def resolve(id:)
-      mutation(
+      mutate(
         ::Manifest::DeleteSlot,
         :slot,
         slot: slot_by_id(id),

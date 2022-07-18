@@ -20,6 +20,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   allow :createSlot
 
   steps :build_slot,
+        :check_slots,
         :set_tandem_passenger,
         :check_double_manifesting,
         :check_allowed_jump_type,
@@ -100,6 +101,10 @@ class Manifest::CreateSlot < ApplicationInteraction
     end
   end
 
+  def check_slots
+    errors.add(:base, "No slots available on this load") if load.available_slots < 1
+  end
+
   def check_credits
     credits = dropzone_user.credits || 0
 
@@ -107,19 +112,16 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   def check_allowed_jump_type
-    unless jump_type.allowed_for?(dropzone_user)
-      errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
-    end
+    return if jump_type.allowed_for?(dropzone_user)
+    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
   end
 
   def check_double_manifesting
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    if Slot.exists?(load: access_context.dropzone.loads_today.active, dropzone_user: dropzone_user)
-      if !dropzone_user.reload.can?(:createDoubleSlot)
-        errors.add(:base, "You're not allowed to double-manifest")
-      end
-    end
+    return unless Slot.exists?(load: access_context.dropzone.loads_today.active, dropzone_user: dropzone_user)
+    return if access_context.can?(:createDoubleSlot)
+    errors.add(:base, "You're not allowed to double-manifest")
   end
 
   def create_order

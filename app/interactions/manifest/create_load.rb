@@ -24,7 +24,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} created load ##{load.load_number}"
+      message: "#{access_context.subject.user.name} created load ##{@load.load_number}"
     )
   end
 
@@ -42,13 +42,14 @@ class Manifest::CreateLoad < ApplicationInteraction
   end
 
   def build_load
-    @load = access_context.loads.new(
+    @load = access_context.dropzone.loads.new(
       name:         name,
       gca:          gca,
       pilot:        pilot,
       load_master:  load_master,
       plane:        plane,
       state:        state,
+      max_slots:    max_slots || plane.max_slots
     )
   end
 

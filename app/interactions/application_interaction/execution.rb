@@ -4,20 +4,20 @@ module ApplicationInteraction::Execution
   extend ActiveSupport::Concern
 
   class_methods do
-    def before(symbol = nil, &block)
+    def before_steps(symbol = nil, &block)
       @before_hooks = [] unless defined?(@before_hooks)
       @before_hooks << symbol unless symbol.nil?
       @before_hooks << block if block_given?
-      hooks = @before_hooks
-      define_method("before_hooks", -> { hooks || [] })
+      before_hooks = @before_hooks
+      define_method("before_hooks", -> { before_hooks || [] })
     end
 
-    def after(symbol = nil, &block)
+    def after_steps(symbol = nil, &block)
       @after_hooks = [] unless defined?(@after_hooks)
       @after_hooks << symbol unless symbol.nil?
       @after_hooks << block if block_given?
-      hooks = @after_hooks
-      define_method("after_hooks", -> { hooks || [] })
+      after_hooks = @after_hooks
+      define_method("after_hooks", -> { after_hooks || [] })
     end
 
     # Execute these steps in order and fail if any error occurs:
@@ -44,6 +44,7 @@ module ApplicationInteraction::Execution
       authorize!
       return nil if errors.any?
       before_hooks.each do |method_or_block|
+        puts "RUNNING HOOK #{method_or_block.inspect}"
         if method_or_block.is_a?(Symbol)
           send(method_or_block)
         else
@@ -60,6 +61,7 @@ module ApplicationInteraction::Execution
 
       # Run after hooks
       after_hooks.each do |method_or_block|
+        puts "RUNNING HOOK #{method_or_block.inspect}"
         if method_or_block.is_a?(Symbol)
           send(method_or_block)
         else
