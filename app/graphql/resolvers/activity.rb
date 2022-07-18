@@ -9,9 +9,9 @@ class Resolvers::Activity < Resolvers::Base
            prepare: -> (value, ctx) { Dropzone.find(value) }
   argument :levels,  [Types::Events::EventLevelType], required: false
   argument :actions, [Types::Events::EventActionType], required: false
-  argument :created_by, Int, required: false,
+  argument :created_by, [Int], required: false,
            description: "Filter by who created the event",
-           prepare: -> (value, ctx) { DropzoneUser.find(value) }
+           prepare: -> (value, ctx) { DropzoneUser.where(value) }
   def resolve(
     dropzone_id: nil,
     created_by: nil,
@@ -25,7 +25,7 @@ class Resolvers::Activity < Resolvers::Base
     query = query.where(dropzone_id: dropzone_id)           if dropzone_id
     query = query.where(level: level)                       if level
     query = query.where.not(level: :debug)                  unless level
-    query = query.where(dropzone_user_id: dropzone_user_id) if dropzone_user_id
+    query = query.where(created_by: created_by)             if created_by
     query.order(created_at: :desc)
   end
 end
