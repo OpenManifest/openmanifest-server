@@ -5,6 +5,23 @@ module Types
     implements Types::AnyResourceType
     implements Types::WalletType
     field :id, GraphQL::Types::ID, null: false
+    field :statistics, Types::Admin::StatisticsType, null: false
+    def statistics
+      {
+        total_user_count: object.users_count,
+        active_user_count: object.dropzone_users.kept.count,
+        inactive_user_count: object.dropzone_users.discarded.count,
+        gca_count: object.dropzone_users.with_acting_permission(:actAsGCA).count,
+        dzso_count: object.dropzone_users.with_acting_permission(:actAsDZSO).count,
+        pilot_count: object.dropzone_users.with_acting_permission(:actAsPilot).count,
+        rig_inspector_count: object.dropzone_users.with_acting_permission(:actAsRigInspector).count,
+
+        loads_count: object.loads.count,
+        cancelled_loads_count: object.loads.cancelled.count,
+        finalized_loads_count: object.loads.landed.count,
+        revenue_cents_count: object.sales.where(state: :completed).sum(:amount)
+      }
+    end
     field :name, String, null: true
     field :request_publication, Boolean, null: false
     field :created_at, Int, null: false
