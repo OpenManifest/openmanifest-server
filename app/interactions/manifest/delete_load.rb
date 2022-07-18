@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Manifest::DeleteLoad < ApplicationInteraction
   record :load
 

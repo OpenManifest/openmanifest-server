@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Types::Events::EventType < Types::BaseObject
   field :id, GraphQL::Types::ID, null: false
   field :action, Types::Events::EventActionType, null: true

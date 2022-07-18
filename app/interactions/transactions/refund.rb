@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Transactions::Refund < ApplicationInteraction
   record :order
   validates :order, presence: true

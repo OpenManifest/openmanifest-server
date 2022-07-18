@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApplicationInteraction::AuditLog
   extend ActiveSupport::Concern
 

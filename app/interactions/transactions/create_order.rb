@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Transactions::CreateOrder < ApplicationInteraction
   integer :amount
   string :title, default: nil

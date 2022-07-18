@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Activity::CreateEvent < ApplicationInteraction
   symbol :level, default: :info
   symbol :action

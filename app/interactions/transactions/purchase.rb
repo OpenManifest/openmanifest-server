@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Transactions::Purchase < ApplicationInteraction
   record :purchasable, class: "ApplicationRecord", default: nil
   record :buyer, class: "ApplicationRecord"

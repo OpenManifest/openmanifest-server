@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Activity::Event < ApplicationRecord
   self.table_name = "events"
   belongs_to :resource, polymorphic: true, optional: true
@@ -26,6 +28,6 @@ class Activity::Event < ApplicationRecord
 
   # Default to info if no level is set
   before_validation do
-    level ||= :info
+    assign_attributes(level: level || :info)
   end
 end

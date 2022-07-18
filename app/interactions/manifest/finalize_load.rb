@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Manifest::FinalizeLoad < ApplicationInteraction
   integer :load
   validates :load, presence: true

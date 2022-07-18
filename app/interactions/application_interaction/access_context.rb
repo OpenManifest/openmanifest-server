@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ApplicationInteraction::AccessContext
   attr_accessor :dz_user
 
