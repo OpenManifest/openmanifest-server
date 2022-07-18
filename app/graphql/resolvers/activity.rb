@@ -25,7 +25,7 @@ class Resolvers::Activity < Resolvers::Base
     query = ::Activity::Event
     query = query.includes(:created_by) if lookahead.selects?(:created_by)
     query = query.where(dropzone: dropzone)                 if dropzone
-    query = query.where(level: level)                       if level
+    query = query.where(level: levels)                       if levels
     query = query.where.not(level: :debug)                  unless level
     query = query.where(created_by: created_by)             if created_by
     query.order(created_at: :desc)
