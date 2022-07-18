@@ -4,9 +4,9 @@ class Resolvers::Activity < Resolvers::Base
   type Types::Events::EventType.connection_type, null: false
   description "Get all Activity Events for a dropzone (or all dropzones)"
 
-  argument :dropzone, Int, required: true,
+  argument :dropzone, [Int], required: true,
            description: "Filter by Dropzone",
-           prepare: -> (value, ctx) { Dropzone.find(value) }
+           prepare: -> (value, ctx) { Dropzone.where(value) }
   argument :levels,  [Types::Events::EventLevelType], required: false
   argument :actions, [Types::Events::EventActionType], required: false
   argument :created_by, [Int], required: false,
