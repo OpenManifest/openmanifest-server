@@ -44,7 +44,6 @@ module ApplicationInteraction::Execution
       authorize!
       return nil if errors.any?
       before_hooks.each do |method_or_block|
-        puts "RUNNING HOOK #{method_or_block.inspect}"
         if method_or_block.is_a?(Symbol)
           send(method_or_block)
         else
@@ -61,7 +60,6 @@ module ApplicationInteraction::Execution
 
       # Run after hooks
       after_hooks.each do |method_or_block|
-        puts "RUNNING HOOK #{method_or_block.inspect}"
         if method_or_block.is_a?(Symbol)
           send(method_or_block)
         else

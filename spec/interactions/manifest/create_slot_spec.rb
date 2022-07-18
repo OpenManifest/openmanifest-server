@@ -63,10 +63,10 @@ RSpec.describe Manifest::CreateSlot do
       let!(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
-          ticket_type_id: ticket_type.id,
-          dropzone_user_id: dropzone_user.id,
-          jump_type_id: forbidden_jump_type.id,
-          load_id: plane_load.id,
+          ticket_type: ticket_type,
+          dropzone_user: dropzone_user,
+          jump_type: forbidden_jump_type,
+          load: plane_load,
           exit_weight: dropzone_user.exit_weight
         )
       end
@@ -74,7 +74,7 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.result).to be nil }
       it { expect(outcome.valid?).to be false }
       it { expect(outcome.errors).not_to be_empty }
-      it { expect(outcome.errors.messages[:jump_type_id]).not_to be nil }
+      it { expect(outcome.errors.messages[:jump_type]).not_to be nil }
     end
 
     context "when the user is double manifested" do
@@ -118,25 +118,24 @@ RSpec.describe Manifest::CreateSlot do
           load: plane_load,
           exit_weight: dropzone_user.exit_weight
         )
-        dropzone_user.grant! :createDoubleSlot
+        access_context.subject.grant! :createDoubleSlot
       end
 
       let!(:second_load) { create(:load, plane: plane) }
 
-      let!(:outcome) do
-        Manifest::CreateSlot.run(
+      subject do
+        Manifest::CreateSlot.run!(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user_id: dropzone_user,
+          dropzone_user: dropzone_user,
           jump_type: JumpType.allowed_for([dropzone_user]).first,
           load: second_load,
           exit_weight: dropzone_user.exit_weight
         )
       end
 
-      it { expect(outcome.result).to be_a Slot }
-      it { expect(outcome.valid?).to be true }
-      it { expect(outcome.errors).to be_empty }
+      it { is_expected.to be_a Slot }
+      it { expect { subject }.not_to raise_error }
     end
 
     context "with a tandem passenger" do
