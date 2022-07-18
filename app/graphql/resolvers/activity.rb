@@ -7,12 +7,12 @@ class Resolvers::Activity < Resolvers::Base
 
   argument :dropzone, [Int], required: false,
            description: "Filter by Dropzone",
-           prepare: -> (value, ctx) { Dropzone.where(value) }
+           prepare: -> (value, ctx) { Dropzone.where(id: value) }
   argument :levels,  [Types::Events::EventLevelType], required: false
   argument :actions, [Types::Events::EventActionType], required: false
   argument :created_by, [Int], required: false,
            description: "Filter by who created the event",
-           prepare: -> (value, ctx) { DropzoneUser.where(value) }
+           prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
   def resolve(
     dropzone: nil,
     created_by: nil,
