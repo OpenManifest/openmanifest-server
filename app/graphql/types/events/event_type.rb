@@ -5,6 +5,6 @@ class Types::Events::EventType < Types::BaseObject
   field :action, Types::Events::EventActionType, null: true
   field :message, String, null: true
   field :resource, Types::AnyResourceType, null: true
-  field :dropzone_user, Types::DropzoneUserType, null: true
+  field :createD_by, Types::DropzoneUserType, null: true
   field :level, Types::Events::EventLevelType, null: true
 end
