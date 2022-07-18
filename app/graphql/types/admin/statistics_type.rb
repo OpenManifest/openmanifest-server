@@ -44,7 +44,7 @@ class Types::Admin::StatisticsType < Types::BaseObject
     object.sales.where(state: :completed).sum(:amount)
   end
 
-  field :load_count_by_day, Types::Admin::StatisticsByDateType, null: true,
+  field :load_count_by_day, [Types::Admin::StatisticsByDateType], null: true,
         description: "Get the number of loads dispatched per day"
   def load_count_by_day
     object.loads.landed.group("date_trunc('day', loads.dispatch_at)").count.map do |date, count|
