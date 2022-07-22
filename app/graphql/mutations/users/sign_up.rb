@@ -18,6 +18,7 @@ module Mutations::Users
     def build_resource(attrs)
       resource = User.find_or_initialize_by(unconfirmed_email: attrs[:email])
       resource.assign_attributes(attrs)
+      resource.skip_confirmation! unless Rails.env.production?
       resource
     end
 

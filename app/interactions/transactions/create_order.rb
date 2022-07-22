@@ -22,6 +22,7 @@ class Transactions::CreateOrder < Transactions::Purchase
     compose(
       ::Activity::CreateEvent,
       access_level: :system,
+      level: :debug,
       access_context: access_context,
       resource: @order,
       action: :created,

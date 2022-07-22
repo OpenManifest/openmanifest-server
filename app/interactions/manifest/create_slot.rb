@@ -9,8 +9,10 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :ticket_type
   record :jump_type
   record :rig, default: nil
+  integer :group_number, default: nil
   float :exit_weight
   string :passenger_name, default: nil
+  date_time :created_at, default: DateTime.now
   float :passenger_exit_weight, default: nil
   array :extra_ids, default: nil do
     integer
@@ -39,6 +41,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       resource: model,
       action: :created,
       access_level: :user,
+      created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} manifested #{dropzone_user.user.name} on load ##{load.load_number}"
@@ -52,11 +55,13 @@ class Manifest::CreateSlot < ApplicationInteraction
       access_context: access_context,
       level: :error,
       resource: model,
+      created_at: created_at,
       action: :created,
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}"
+      message: "#{access_context.subject.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}",
+      details: errors.full_messages.join(", ")
     )
   end
 
@@ -70,8 +75,10 @@ class Manifest::CreateSlot < ApplicationInteraction
     )
 
     @model.assign_attributes(
+      created_at: created_at,
       dropzone_user: dropzone_user,
       ticket_type: ticket_type,
+      group_number: group_number,
       jump_type: jump_type,
       rig: rig,
       exit_weight: exit_weight
@@ -108,6 +115,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   def check_credits
+    return unless dropzone_user.dropzone.is_credit_system_enabled?
     credits = dropzone_user.credits || 0
 
     errors.add(:base, "Not enough credits to manifest for this jump") if total_cost > credits

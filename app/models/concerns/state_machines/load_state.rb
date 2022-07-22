@@ -13,8 +13,8 @@ module StateMachines::LoadState
           next unless slot.dropzone_user.present?
 
           Notification.create(
-            message: "Load ##{load_number} call canceled",
-            resource: self,
+            message: "Load ##{record.load_number} call canceled",
+            resource: record,
             received_by: slot.dropzone_user,
             notification_type: :boarding_call_canceled
           )
@@ -26,8 +26,8 @@ module StateMachines::LoadState
           next unless slot.dropzone_user.present?
 
           Notification.create(
-            message: "Load ##{load_number} take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime('%H:%M')}",
-            resource: self,
+            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.plane.dropzone.time_zone).strftime('%H:%M')}",
+            resource: record,
             received_by: slot.dropzone_user,
             notification_type: :boarding_call
           )

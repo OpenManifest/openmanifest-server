@@ -11,5 +11,8 @@
   },
   "solargraph.logLevel": "debug",
   "solargraph.useBundler": true,
-  "solargraph.autoformat": true
+  "solargraph.autoformat": true,
+  "marquee.widgets.npm-stats.packageNames": [
+    "dz"
+  ]
 }

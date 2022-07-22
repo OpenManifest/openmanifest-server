@@ -2,18 +2,49 @@
 
 require "active_interaction"
 
-class Federations::ApfSync < ActiveInteraction::Base
-  include ActiveInteraction::Extras::Transaction
-  run_in_transaction!
+class Federations::ApfSync < ApplicationInteraction
   record :user_federation
 
-  def execute
-    query_apf_api
-    return nil if !@json || @json.count != 1
-    extract_license
-    assign_license
-    extract_qualifications
-    assign_qualifications
+  steps :query_apf_api,
+        :extract_license,
+        :assign_license,
+        :extract_qualifications,
+        :assign_qualifications,
+        :save!
+
+  success do
+    compose(
+      ::Activity::CreateEvent,
+      access_context: access_context,
+      level: :debug,
+      resource: user_federation,
+      action: :assigned,
+      access_level: :admin,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{user_federation.user.name} successfully synced license #{user_federation&.license&.name} ##{user_federation.uid} with APF",
+      details: "APF response: #{@json&.to_json}"
+    )
+  end
+
+  error do
+    compose(
+      ::Activity::CreateEvent,
+      access_context: access_context,
+      level: :error,
+      resource: user_federation,
+      action: :assigned,
+      access_level: :admin,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF",
+      details: errors.full_messages.join(", ")
+    )
+  end
+
+  def save!
+    errors.merge!(user_federation.errors) unless user_federation.save
+    user_federation
   end
 
   def query_apf_api
@@ -22,8 +53,12 @@ class Federations::ApfSync < ActiveInteraction::Base
         url
       ).body
     )
+    if @json.count != 1
+      errors.add(:base, "Failed to parse #{@json.count} (!= 1) results from APF API when querying #{url}")
+    end
   rescue
     @json = nil
+    errors.add(:base, "Failed to parse response from APF API (#{url})")
   end
 
   def extract_qualifications

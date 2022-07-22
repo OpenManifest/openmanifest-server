@@ -28,6 +28,9 @@ class Activity::Event < ApplicationRecord
 
   # Default to info if no level is set
   before_validation do
-    assign_attributes(level: level || :info)
+    assign_attributes(
+      level: level || :info,
+      access_level: access_level || :user
+    )
   end
 end

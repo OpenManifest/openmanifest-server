@@ -6,6 +6,8 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :load
   record :ticket_type
   record :jump_type
+  integer :group_number, default: nil
+  date_time :created_at, default: DateTime.now
   array :users do
     hash do
       record :dropzone_user
@@ -24,22 +26,26 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   steps :check_available_slots,
         :check_allowed_jump_type,
         :check_credits,
-        :create_slots,
-        # Return
-        :plane_load
+        :create_slots
 
   def create_slots
-    users.each do |user|
+    users.map do |user|
       compose(
         ::Manifest::CreateSlot,
+        group_number: group_number || next_group_number,
         access_context: access_context,
+        created_at: created_at,
         ticket_type: ticket_type,
         jump_type: jump_type,
         load: load,
         **user
       )
     end
+    load.reload
   end
+
+
+
 
   def check_available_slots
     # Check how many users we're manifesting, and return
@@ -62,7 +68,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
         ).map(&:cost).reduce(&:sum)
       end
 
-      if cost > user[:dropzone_user].credits
+      if cost > (user[:dropzone_user].credits || 0)
         errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
         errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
       end
@@ -70,9 +76,8 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   end
 
   def check_allowed_jump_type
-    unless jump_type.allowed_for?(dropzone_users)
-      errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps")
-    end
+    return if jump_type.allowed_for?(dropzone_users)
+    errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps")
   end
 
   def check_double_manifesting
@@ -99,7 +104,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     end
 
     def plane_load
-      load
+      load.reload
     end
 
     def dropzone

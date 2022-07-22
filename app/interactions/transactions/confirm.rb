@@ -13,6 +13,7 @@ class Transactions::Confirm < ApplicationInteraction
   success do
     compose(
       ::Activity::CreateEvent,
+      level: :debug,
       access_level: :system,
       access_context: access_context,
       resource: receipt,

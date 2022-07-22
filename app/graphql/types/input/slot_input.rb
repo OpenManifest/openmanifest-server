@@ -17,6 +17,7 @@ module Types
       argument :extras, [Int], required: false,
                prepare: -> (value, ctx) { Extra.where(id: value) }
 
+      argument :group_number, Int, required: false
       argument :user_group, [Types::Input::SlotUser], required: false
 
       argument :passenger_name, String, required: false

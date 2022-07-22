@@ -154,7 +154,7 @@ class Transactions::Purchase < ApplicationInteraction
           purchasable.ticket_type.name
         ] + (purchasable.extras || []).map(&:name)).join(" + ")
       when TicketType
-        purchasable.name
+        "a #{purchasable.name} ticket"
       when DropzoneUser
         "an account update"
       when Pack
