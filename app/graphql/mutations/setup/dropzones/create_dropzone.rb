@@ -9,6 +9,21 @@ module Mutations::Setup::Dropzones
     argument :attributes, Types::Input::DropzoneInput, required: true
 
     def resolve(attributes:)
+      mutate(
+        ::Setup::Dropzones::CreateDropzone,
+        owner: context[:current_resource],
+        **attributes.to_h.slice(
+          :name,
+          :lat,
+          :lng,
+          :federation,
+          :request_publication,
+          :is_public,
+          :primary_color,
+          :secondary_color,
+          :is_credit_system_enabled
+        )
+      )
       model = Dropzone.new(attributes.to_h.except(:banner))
 
       model.save!

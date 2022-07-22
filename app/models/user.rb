@@ -84,22 +84,32 @@ class User < ApplicationRecord
     end
   end
 
-  def self.create_fake
-    random_user, = JSON.parse(
-      open("https://randomuser.me/api/").read,
+  def self.create_fake(count: 1)
+    random_user_url = URI("https://randomuser.me/api/?results=#{count}")
+    random_users = JSON.parse(
+      random_user_url.open.read,
       symbolize_names: true
     )[:results]
 
-    user = User.create(
-      name: "#{random_user[:name][:first]} #{random_user[:name][:last]}",
-      email: random_user[:email],
-      phone: random_user[:phone],
-      password: random_user[:login][:password],
-      exit_weight: ((Random.rand * 100) % 50) + 50,
-    )
+    users = random_users.map do |random_user|
+      user = User.new(
+        name: "#{random_user[:name][:first]} #{random_user[:name][:last]}",
+        email: random_user[:email],
+        phone: random_user[:phone],
+        password: random_user[:login][:password],
+        exit_weight: ((Random.rand * 100) % 50) + 50,
+      )
 
-    user.image = "data:image/jpeg;base64,#{Base64.encode64(File.open(random_user[:picture][:medium]).read)}"
-    user.save(validate: false)
-    user
+      random_user_image_url = URI(random_user[:picture][:medium])
+      user.image = "data:image/jpeg;base64,#{Base64.encode64(random_user_image_url.open.read)}"
+      user.save(validate: false)
+      user
+    end
+
+    if users.count == 1
+      users.first
+    else
+      users
+    end
   end
 end

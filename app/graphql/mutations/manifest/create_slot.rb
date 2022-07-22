@@ -22,6 +22,7 @@ module Mutations::Manifest
           :exit_weight,
           :rig,
           :load,
+          :group_number,
           :extras,
           :passenger_name,
           :passenger_exit_weight,

@@ -5,7 +5,8 @@ module Types
     class DropzoneInput < Types::BaseInputObject
       argument :name, String, required: true
       argument :banner, String, required: false
-      argument :federation_id, Int, required: true
+      argument :federation, Int, required: true,
+               prepare: -> (value, ctx) { Federation.find(value) }
       argument :request_publication, Boolean, required: false
       argument :is_public, Boolean, required: false
       argument :lat, Float, required: false

@@ -15,6 +15,7 @@ class Transactions::Refund < ApplicationInteraction
    compose(
      ::Activity::CreateEvent,
      access_level: :system,
+     level: :debug,
      access_context: access_context,
      resource: order,
      action: :updated,

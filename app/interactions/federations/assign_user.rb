@@ -1,26 +1,39 @@
 # frozen_string_literal: true
 
-require "active_interaction"
-
-class Federations::AssignUser < ActiveInteraction::Base
+class Federations::AssignUser < ApplicationInteraction
   record :federation
+  record :license, default: nil
   record :user
   string :uid, default: nil
-  integer :license_id, default: nil
   validates :federation, :user, presence: true
 
-  def execute
-    assign_user_to_federation
-    assign_user_federation_uid unless uid.nil?
-    manually_assign_license if !license_id.nil?
-    synchronize_qualifications
+  steps :assign_user_to_federation,
+        :assign_user_federation_uid,
+        :manually_assign_license,
+        :save!
+
+  success do
+    compose(
+      ::Activity::CreateEvent,
+      access_context: access_context,
+      resource: access_context.dropzone,
+      action: :assigned,
+      access_level: :admin,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{user.name} joined federation #{federation.name} with License #{license.name} (#{uid || 'No license number'})",
+    )
+  end
+
+  def save!
     errors.merge!(@user_federation.errors) unless @user_federation.save
     @user_federation
   end
 
   def manually_assign_license
+    return unless license
     @user_federation.assign_attributes(
-      license: License.find_by(id: license_id)
+      license: license
     )
   end
 
@@ -32,6 +45,7 @@ class Federations::AssignUser < ActiveInteraction::Base
   end
 
   def assign_user_federation_uid
+    return if uid.nil?
     @user_federation.assign_attributes(
       uid: uid
     )
@@ -44,6 +58,7 @@ class Federations::AssignUser < ActiveInteraction::Base
       compose(
         Federations::ApfSync,
         user_federation: @user_federation,
+        access_context: access_context
       )
     end
   end

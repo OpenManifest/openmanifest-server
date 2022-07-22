@@ -105,7 +105,14 @@ class Permission < ApplicationRecord
       :readUserTransactions,
 
       :grantPermission,
-      :revokePermission
+      :revokePermission,
+
+      :viewSystemActivity,
+      :viewUserActivity,
+      :viewAdminActivity,
+
+      :viewRevenue,
+      :viewStatistics,
     ]
   end
 end

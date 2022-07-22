@@ -31,6 +31,7 @@ class Dropzone < ApplicationRecord
                    lat_column_name: :lat,
                    lng_column_name: :lng
   has_many :dropzone_users, -> { kept }, dependent: :destroy
+
   has_many :users, through: :dropzone_users
   has_many :weather_conditions, dependent: :destroy
 
@@ -111,6 +112,9 @@ class Dropzone < ApplicationRecord
         readUser
         actAsLoadMaster
         actAsGCA
+
+        :viewUserActivity
+        :viewStatistics
       ],
       coach: %i[
         readLoad
@@ -129,6 +133,9 @@ class Dropzone < ApplicationRecord
         readUser
         actAsLoadMaster
         actAsGCA
+
+        :viewUserActivity
+        :viewStatistics
       ],
       aff_instructor: %i[
         readLoad
@@ -156,6 +163,12 @@ class Dropzone < ApplicationRecord
         actAsLoadMaster
         actAsGCA
         actAsDZSO
+
+        :viewUserActivity
+        :viewSystemActivity
+        :viewAdminActivity
+        :viewRevenue
+        :viewStatistics
       ],
       tandem_instructor: %i[
         readLoad
@@ -182,6 +195,12 @@ class Dropzone < ApplicationRecord
         actAsLoadMaster
         actAsGCA
         actAsDZSO
+
+        :viewUserActivity
+        :viewStatistics
+        :viewSystemActivity
+        :viewAdminActivity
+        :viewRevenue
       ],
       chief_instructor: %i[
         readLoad
@@ -211,6 +230,12 @@ class Dropzone < ApplicationRecord
         actAsLoadMaster
         actAsGCA
         actAsDZSO
+
+        :viewUserActivity
+        :viewStatistics
+        :viewSystemActivity
+        :viewAdminActivity
+        :viewRevenue
       ],
       manifest: %i[
         readLoad
@@ -257,6 +282,12 @@ class Dropzone < ApplicationRecord
         actAsLoadMaster
         actAsGCA
         actAsDZSO
+
+        :viewUserActivity
+        :viewStatistics
+        :viewSystemActivity
+        :viewAdminActivity
+        :viewRevenue
       ],
       admin: Permission.without_acting.pluck(:name),
       owner: Permission.without_acting.pluck(:name)

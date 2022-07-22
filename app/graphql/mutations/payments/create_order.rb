@@ -35,7 +35,7 @@ module Mutations::Payments
 
       [false, {
         errors: [
-          "You don't have permissions to create ticket addons"
+          "You don't have permissions to create this order"
         ]
       }]
     end

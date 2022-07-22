@@ -10,6 +10,7 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :load_master,   class: DropzoneUser, default: nil
   object  :plane,         class: Plane
   string  :state,         default: "open"
+  date_time :created_at,  default: DateTime.now
 
 
   steps :build_load,
@@ -23,6 +24,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       resource: @load,
       action: :created,
       access_level: :user,
+      created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} created load ##{@load.load_number}"
@@ -36,6 +38,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       access_context: access_context,
       level: :error,
       action: :created,
+      created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: "#{access_context.subject.user.name} failed to create a new load"
@@ -50,7 +53,8 @@ class Manifest::CreateLoad < ApplicationInteraction
       load_master:  load_master,
       plane:        plane,
       state:        state,
-      max_slots:    max_slots || plane.max_slots
+      max_slots:    max_slots || plane.max_slots,
+      created_at: created_at
     )
   end
 

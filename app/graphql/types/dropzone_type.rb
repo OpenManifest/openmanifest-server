@@ -143,13 +143,14 @@ module Types
     end
 
     field :loads, Types::LoadType.connection_type, null: false do
-      argument :earliest_timestamp, Int, required: false
+      argument :earliest_timestamp, GraphQL::Types::ISO8601DateTime, required: false,
+               prepare: -> (value, ctx) { value.to_datetime }
     end
     def loads(earliest_timestamp: nil)
       loads = object.loads
       loads = loads.where(
         "loads.created_at > ?",
-        Time.at(earliest_timestamp)
+        earliest_timestamp
       ) unless earliest_timestamp.nil?
       loads.order(created_at: :desc)
     end

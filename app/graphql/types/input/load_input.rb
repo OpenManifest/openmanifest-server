@@ -6,11 +6,10 @@ module Types
       argument :dispatch_at, Int, required: false
       argument :name, String, required: false
       argument :max_slots, Int, required: false
-      argument :is_open, Boolean, required: false
-      argument :has_landed, Boolean, required: false
       argument :pilot, Int, required: false,
                prepare: -> (value, ctx) { DropzoneUser.find(value) }
-      argument :dispatch_at, Int, required: false
+      argument :dispatch_at, GraphQL::Types::ISO8601DateTime, required: false,
+               prepare: -> (value, ctx) { value.to_datetime }
       argument :plane, Int, required: false,
                prepare: -> (value, ctx) { Plane.find(value) }
       argument :gca, Int, required: false,

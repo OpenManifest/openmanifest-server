@@ -10,8 +10,8 @@ module Mutations::Users
       mutate(
         ::Federations::AssignUser,
         :user,
-        federation: Federation.find(attributes[:federation_id]),
-        license_id: attributes[:license_id],
+        federation: attributes[:federation],
+        license: attributes[:license],
         uid: attributes[:uid],
         user: context[:current_resource]
       )
