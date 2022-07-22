@@ -34,7 +34,7 @@ class Resolvers::Activity < Resolvers::Base
     query = query.where(access_level: access_levels)        if access_levels
     query = query.where.not(level: :debug)                  unless levels
     query = query.where(created_by: created_by)             if created_by
-    query = query.where(created_at: time_range.start_time..time_range.end_time) if time_range             if created_by
+    query = query.where(created_at: time_range.start_time..time_range.end_time) if time_range
     query.order(created_at: :desc)
   end
 end
