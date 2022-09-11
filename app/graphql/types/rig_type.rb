@@ -14,8 +14,8 @@ module Types
     field :repack_expires_at, Int, null: true
     field :maintained_at, Int, null: true
     field :is_public, Boolean, null: false
-    field :created_at, Int, null: false
-    field :updated_at, Int, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :dropzone, Types::DropzoneType, null: true
     field :owner, Types::UserType, null: true, method: :user
     field :packing_card, String, null: true

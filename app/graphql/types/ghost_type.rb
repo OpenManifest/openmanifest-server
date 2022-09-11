@@ -11,7 +11,7 @@ module Types
     field :dropzone_users, [Types::DropzoneUserType], null: true
     field :jump_types, [Types::JumpTypeType], null: true
     field :license, Types::LicenseType, null: true
-    field :created_at, Integer, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at,  Integer, null: false
   end
 end

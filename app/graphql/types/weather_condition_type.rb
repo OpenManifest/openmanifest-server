@@ -13,7 +13,7 @@ module Types
     field :exit_spot_miles, Int, null: true
     field :offset_miles, Int, null: true
     field :offset_direction, Int, null: true
-    field :created_at, Int, null: false
-    field :updated_at, Int, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
   end
 end
