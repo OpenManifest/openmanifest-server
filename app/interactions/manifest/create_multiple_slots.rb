@@ -32,7 +32,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     users.map do |user|
       compose(
         ::Manifest::CreateSlot,
-        group_number: group_number || next_group_number,
+        group_number: group_number || plane_load.next_group_number,
         access_context: access_context,
         created_at: created_at,
         ticket_type: ticket_type,
@@ -93,14 +93,6 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   private
     def dropzone_users
       users.pluck(:dropzone_user)
-    end
-
-    def next_group_number
-      current_highest_group_number + 1
-    end
-
-    def current_highest_group_number
-      plane_load.slots.maximum(:group_number) || 0
     end
 
     def plane_load

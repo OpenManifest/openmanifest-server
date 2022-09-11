@@ -54,15 +54,39 @@ class Federations::ApfSync < ApplicationInteraction
       ).body
     )
     if @json.count != 1
-      errors.add(:base, "Failed to parse #{@json.count} (!= 1) results from APF API when querying #{url}")
+      # Fail silently here in case this is composed from another interaction
+      compose(
+        ::Activity::CreateEvent,
+        access_context: access_context,
+        level: :error,
+        resource: user_federation,
+        action: :assigned,
+        access_level: :admin,
+        dropzone: access_context.dropzone,
+        created_by: access_context.subject,
+        message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF: Failed to parse #{@json.count} (!= 1) results from APF API when querying #{url}",
+        details: errors.full_messages.join(", ")
+      )
     end
   rescue
     @json = nil
-    errors.add(:base, "Failed to parse response from APF API (#{url})")
+    compose(
+      ::Activity::CreateEvent,
+      access_context: access_context,
+      level: :error,
+      resource: user_federation,
+      action: :assigned,
+      access_level: :admin,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF: Failed to parse response from APF API (#{url})",
+      details: errors.full_messages.join(", ")
+    )
   end
 
   def extract_qualifications
     user_info, = @json
+    return unless user_info
 
     # Find license that have not expired
     @qualifications = user_info["Qualifications"].filter_map do |license_or_crest|
@@ -72,10 +96,13 @@ class Federations::ApfSync < ApplicationInteraction
         federation: user_federation.federation,
       )
     end
+  rescue
+    nil
   end
 
   def assign_qualifications
     user_info, = @json
+    return unless user_info
 
     @qualifications = user_info["Qualifications"].filter_map do |license_or_crest|
       next if /Certificate/i.match?(license_or_crest["Qualification"])
@@ -95,21 +122,26 @@ class Federations::ApfSync < ApplicationInteraction
                     end
       ))
     end
+  rescue
+    nil
   end
 
   def extract_license
     user_info, = @json
+    return unless user_info
 
     # Find license that have not expired
     @licenses = user_info["Qualifications"].filter_map do |license_or_crest|
       { license_or_crest["Qualification"] => license_or_crest } if /Certificate/i.match?(license_or_crest["Qualification"])
     end.reduce(:merge)
+  rescue
+    nil
   end
 
   def assign_license
+    return unless @licenses
     # Find the highest ranking license
-    if license = License.where(name: @licenses.keys).order(id: :desc).first
-
+    if license = user_federation.federation.licenses.where(name: @licenses.keys).order(id: :desc).first
       user_federation.assign_attributes(
         license: license,
         license_number: @licenses[license.name]["SerialNumber"]

@@ -7,6 +7,21 @@ module Types
     field :field_errors, [Types::FieldErrorType], null: true
 
     def mutate(interaction, field_name, on_success: nil, **opts)
+      # If we need an access context, but don't have one, try to infer it
+      # To infer it we need the user and a dropzone or a dropzone ID
+      if interaction.filters.keys.include?(:access_context) && !opts.keys.include?(:access_context)
+        if dropzone_or_dropzone_id = opts[:dropzone] || opts[:dropzone_id]
+          if dropzone_or_dropzone_id.is_a?(ApplicationRecord)
+            opts[:access_context] = access_context_for(
+                dropzone_or_dropzone_id
+              )
+          elsif dropzone_or_dropzone_id.is_a?(Integer)
+            opts[:access_context] = access_context_for(
+                dropzone_or_dropzone_id
+              )
+          end
+        end
+      end
       outcome = interaction.run(**opts)
 
       if outcome.valid?

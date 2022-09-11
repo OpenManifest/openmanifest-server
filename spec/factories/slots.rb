@@ -31,6 +31,7 @@ FactoryBot.define do
       )
       available_existing || create(:dropzone_user, dropzone: dropzone)
     end
+    group_number { 0 }
     ticket_type { create(:ticket_type, dropzone: load.plane.dropzone) }
     is_paid { false }
     exit_weight { dropzone_user.user.exit_weight }

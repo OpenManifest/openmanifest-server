@@ -57,9 +57,9 @@ module Mutations
                 email: "#{email}",
                 phone: "#{phone}",
                 exitWeight: #{exit_weight},
-                dropzoneId: #{dropzone_id},
-                roleId: #{role_id},
-                licenseId: #{license_id},
+                dropzone: #{dropzone_id},
+                role: #{role_id},
+                license: #{license_id},
                 federationNumber: "#{federation_number}"
               }
             }
