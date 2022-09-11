@@ -17,7 +17,10 @@ RSpec.describe Federations::AssignUser do
       Federations::AssignUser.run(
         user: user,
         federation: Federation.find_by(slug: :apf),
-        uid: "21922484"
+        uid: "21922484",
+        access_context: ApplicationInteraction::AccessContext.new(
+          dropzone_user
+        )
       )
     end
 

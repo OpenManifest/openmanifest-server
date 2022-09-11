@@ -7,7 +7,13 @@ module Mutations
     include_context("federation_sync")
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 50) }
+
+    let!(:apf_response) do
+      []
+    end
     before do
+      stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
+      to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
       dropzone_user.grant! :createUser
     end
 
@@ -40,7 +46,7 @@ module Mutations
         it do
           post_request
           expect(dropzone_user.reload.license.id).to eq license.reload.id
-          expect(json[:data][:updateUser][:user][:dropzoneUsers].find { |d| d[:id].to_i == dropzone_user.id }[:license][:id].to_i).to eq license.reload.id
+          expect(json[:data][:updateUser][:dropzoneUser][:user][:dropzoneUsers].find { |d| d[:id].to_i == dropzone_user.id }[:license][:id].to_i).to eq license.reload.id
         end
       end
     end
@@ -50,13 +56,13 @@ module Mutations
         mutation {
           updateUser(
             input: {
-              id: #{id},
+              dropzoneUser: #{dropzone_user.id},
               attributes: {
                 name: "#{name}",
                 email: "#{email}",
                 phone: "#{phone}",
                 exitWeight: #{exit_weight},
-                licenseId: #{license_id},
+                license: #{license_id},
               }
             }
           ) {
@@ -65,15 +71,18 @@ module Mutations
               field
               message
             }
-            user {
+            dropzoneUser {
               id
-              name
-              phone
-              dropzoneUsers {
+              user {
                 id
-                license {
+                name
+                phone
+                dropzoneUsers {
                   id
-                  name
+                  license {
+                    id
+                    name
+                  }
                 }
               }
             }

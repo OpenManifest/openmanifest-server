@@ -10,18 +10,33 @@ class Federations::AssignUser < ApplicationInteraction
   steps :assign_user_to_federation,
         :assign_user_federation_uid,
         :manually_assign_license,
+        :synchronize_qualifications,
         :save!
 
   success do
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: access_context.dropzone,
+      resource: user,
       action: :assigned,
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{user.name} joined federation #{federation.name} with License #{license.name} (#{uid || 'No license number'})",
+      message: "#{user&.name || 'Unknown User'} joined federation #{federation&.name || 'Unknown Federation'} with License #{license&.name} (#{uid || 'No license number'})",
+    )
+  end
+
+  error do
+    compose(
+      ::Activity::CreateEvent,
+      access_context: access_context,
+      resource: access_context.dropzone,
+      action: :assigned,
+      level: :error,
+      access_level: :admin,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "#{user&.name || 'Unknown User'} failed to join federation #{federation&.name || 'Unknown Federation'} with License #{license&.name} (#{uid || 'No license number'})",
     )
   end
 

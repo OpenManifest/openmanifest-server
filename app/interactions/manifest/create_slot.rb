@@ -78,7 +78,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_at: created_at,
       dropzone_user: dropzone_user,
       ticket_type: ticket_type,
-      group_number: group_number,
+      group_number: group_number || load.next_group_number,
       jump_type: jump_type,
       rig: rig,
       exit_weight: exit_weight

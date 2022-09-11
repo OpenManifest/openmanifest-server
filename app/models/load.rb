@@ -96,6 +96,15 @@ class Load < ApplicationRecord
     (max_slots || plane.max_slots) - available_slots
   end
 
+  def next_group_number
+    current_highest_group_number + 1
+  end
+
+  def current_highest_group_number
+    return 0 unless persisted?
+    slots.maximum(:group_number) || 0
+  end
+
   private
     def set_load_number
       Time.use_zone(dropzone.time_zone) do
