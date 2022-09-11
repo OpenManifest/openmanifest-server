@@ -12,17 +12,13 @@ module Types
       if interaction.filters.keys.include?(:access_context) && !opts.keys.include?(:access_context)
         if dropzone_or_dropzone_id = opts[:dropzone] || opts[:dropzone_id]
           if dropzone_or_dropzone_id.is_a?(ApplicationRecord)
-            opts.merge!(
-              access_context: access_context_for(
-                dropzone_or_dropzone_id
-              ),
-            )
-          elsif dropzone_or_dropzone_id.is_a?(Integer)
-            opts.merge!(
-              access_context: access_context_for(
+            opts[:access_context] = access_context_for(
                 dropzone_or_dropzone_id
               )
-            )
+          elsif dropzone_or_dropzone_id.is_a?(Integer)
+            opts[:access_context] = access_context_for(
+                dropzone_or_dropzone_id
+              )
           end
         end
       end
