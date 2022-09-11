@@ -15,8 +15,8 @@ module Types
       pilot_weight + (object.slots.map(&:exit_weight).reject(&:blank?).reduce(:+) || 0)
     end
 
-    field :created_at, Int, null: false
-    field :updated_at, Int, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :available_slots, Int, null: false
     field :occupied_slots, Int, null: false
 

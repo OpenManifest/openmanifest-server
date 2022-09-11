@@ -10,7 +10,7 @@ module Types
     field :definition, String, null: false
     field :is_ok, Boolean, null: false
     field :rig, Types::RigType, null: true
-    field :created_at, Int, null: false
-    field :updated_at, Int, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
   end
 end

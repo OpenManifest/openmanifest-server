@@ -36,8 +36,8 @@ module Types
     field :purchases, Types::OrderType.connection_type, null: true
     field :sales, Types::OrderType.connection_type, null: true
 
-    field :created_at, Int, null: false
-    field :updated_at, Int, null: false
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
     field :available_rigs, [Types::RigType], null: true,
     description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
