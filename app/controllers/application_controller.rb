@@ -11,11 +11,10 @@ class ApplicationController < ActionController::Base
   def set_appsignal_tags
     return if Rails.env.test?
     if current_user
-      tags.merge!(
+      Appsignal.tag_request({
         user_id: current_user&.id,
         name: current_user&.name,
-      )
-      Appsignal.tag_request(tags)
+      })
     end
   end
 end
