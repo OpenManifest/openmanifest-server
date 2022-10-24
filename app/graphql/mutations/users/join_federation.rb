@@ -13,7 +13,11 @@ module Mutations::Users
         federation: attributes[:federation],
         license: attributes[:license],
         uid: attributes[:uid],
-        user: context[:current_resource]
+        user: context[:current_resource],
+        access_context: access_context_for(
+          # FIXME: Pass dropzone as variable for logging to be accurate
+          current_resource.dropzonen_users.order(id: :desc).first.dropzone_id
+        )
       )
     end
   end
