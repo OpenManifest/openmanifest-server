@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
 
   def set_appsignal_tags
     return if Rails.env.test?
-    if current_connection
+    if current_resource
       tags.merge!(
         user_id: current_resource&.id,
         name: current_resource&.name,
