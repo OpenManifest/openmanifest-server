@@ -7,7 +7,7 @@ env:
   PGUSER: github
   PGPASSWORD: github
   RAILS_ENV: test
-  RUBY_VERSION: 2.7.3
+  RUBY_VERSION: 2.7.6
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
