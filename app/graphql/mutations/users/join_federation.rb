@@ -16,7 +16,7 @@ module Mutations::Users
         user: context[:current_resource],
         access_context: access_context_for(
           # FIXME: Pass dropzone as variable for logging to be accurate
-          current_resource.dropzonen_users.order(id: :desc).first.dropzone_id
+          context[:current_resource].dropzone_users.order(id: :desc).first.dropzone_id
         )
       )
     end
