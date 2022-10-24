@@ -55,6 +55,10 @@ class DropzoneUser < ApplicationRecord
     assign_attributes(user_role: dropzone.user_roles.second) if user_role.nil? && !dropzone.nil?
   end
 
+  after_create do
+    Appsignal.set_gauge("dropzone.users.count", dropzone.dropzone_users.count, dropzone: dropzone.name)
+  end
+
   search_scope :search do
     attributes name: "user.name"
   end

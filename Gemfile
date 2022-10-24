@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.3"
+ruby "2.7.6"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem "rails", "~> 6.1.3", ">= 6.1.3.1"
@@ -38,9 +38,6 @@ gem "graphql_devise", "~> 0.17.1"
 # Send HTTP requests easily
 gem "httparty"
 
-# Admin backend
-gem "administrate"
-
 # CORS headers
 gem "rack-cors"
 
@@ -60,11 +57,11 @@ gem "active_interaction-extras"
 # Count things
 gem "counter_culture"
 
-gem "sentry-ruby"
-gem "sentry-rails"
-gem "state_machines-activerecord"
+# Debugging
+gem "appsignal"
 
 # Manage state transitions
+gem "state_machines-activerecord"
 gem "state_machines"
 
 # Apple login
