@@ -14,7 +14,7 @@ concurrency:
 jobs:
   rubocop-test:
     name: Rubocop
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         name: Checkout source code
@@ -28,7 +28,7 @@ jobs:
   rspec-test:
     name: RSpec
     needs: rubocop-test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       # Fail everything if one test fails
       fail-fast: true
@@ -56,10 +56,10 @@ jobs:
           --health-retries 5
     steps:
       - name: Setup Python for JUnit Parsing
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.8
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         name: Checkout source code
       - name: Make bin/ci executable
         run: chmod +x ./bin/parallell-rspec
@@ -71,7 +71,7 @@ jobs:
       - name: Set up bundler
         run: gem install bundler
       - name: Restore gem cache
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
@@ -98,7 +98,7 @@ jobs:
         run: |
           ./bin/parallell-rspec
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: always()
         with:
           files: tmp/*.xml
