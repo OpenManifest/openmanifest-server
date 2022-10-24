@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Extensions::Resolver::AppSignal
   extend ActiveSupport::Concern
 
@@ -27,16 +29,16 @@ module Extensions::Resolver::AppSignal
 
       Appsignal.set_action(context.query.operation_name)
       Appsignal.instrument(
-        'graphql.resolver',
+        "graphql.resolver",
         self.class.name,
         [
-          'Variables: ',
-          JSON.pretty_generate(Appsignal::Utils::HashSanitizer.sanitize(context.query.variables.to_h || {}, ['password'])),
-          'Query: ',
+          "Variables: ",
+          JSON.pretty_generate(Appsignal::Utils::HashSanitizer.sanitize(context.query.variables.to_h || {}, ["password"])),
+          "Query: ",
           context.query.query_string,
         ].join("\n")
       ) do
-        Appsignal.set_namespace('graphql')
+        Appsignal.set_namespace("graphql")
         return resolve(**args)
       end
     end
