@@ -11,6 +11,7 @@ class DzSchema < GraphQL::Schema
       }),
     ]
   )
+  use(GraphQL::Tracing::AppsignalTracing)
   mutation(Types::MutationType)
   query(Types::QueryType)
 

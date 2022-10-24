@@ -63,7 +63,7 @@ class Dropzone < ApplicationRecord
 
   mount_base64_uploader :image, BannerUploader, file_name: ->(u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
 
-  after_create :create_default_roles
+  after_create :create_default_roles, :set_appsignal_gauge
 
   before_destroy do
     template = rig_inspection_template
@@ -299,5 +299,9 @@ class Dropzone < ApplicationRecord
         role.grant! permission
       end
     end
+  end
+
+  def set_appsignal_gauge
+    Appsignal.set_gauge("dropzones.count", User.count)
   end
 end

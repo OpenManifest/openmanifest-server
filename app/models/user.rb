@@ -58,6 +58,10 @@ class User < ApplicationRecord
     :administrator
   ]
 
+  after_create do
+    Appsignal.set_gauge("users.count", User.count)
+  end
+
   mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
 
   has_many :rigs, -> { kept }

@@ -7,5 +7,6 @@ class ApplicationInteraction < ActiveInteraction::Base
   include ApplicationInteraction::Access
   include ApplicationInteraction::Execution
   include ApplicationInteraction::AuditLog
+  include ApplicationInteraction::Analytics::AppSignal
   run_in_transaction!
 end
