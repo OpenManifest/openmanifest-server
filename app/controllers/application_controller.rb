@@ -18,5 +18,4 @@ class ApplicationController < ActionController::Base
     end
     Appsignal.tag_request(tags)
   end
-
 end

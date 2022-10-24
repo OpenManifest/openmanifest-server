@@ -58,7 +58,7 @@ gem "active_interaction-extras"
 gem "counter_culture"
 
 # Debugging
-gem 'appsignal'
+gem "appsignal"
 
 # Manage state transitions
 gem "state_machines-activerecord"

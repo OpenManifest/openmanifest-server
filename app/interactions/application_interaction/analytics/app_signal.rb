@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ApplicationInteraction::Analytics::AppSignal
   extend ::ActiveSupport::Concern
 
@@ -8,16 +10,14 @@ module ApplicationInteraction::Analytics::AppSignal
     #
     # @param [ApplicationInteraction] _interaction
     # @param [Proc] block The block to execute (the interaction)
-    def benchmark
+    def benchmark(&block)
       # Measure the whole transaction with AppSignal
-      Appsignal.instrument('benchmark.active_interaction', self.class.name) do
+      Appsignal.instrument("benchmark.active_interaction", self.class.name) do
         # Measure the time it took for the interaction to run
-        interaction_time = Benchmark.measure do
-          yield
-        end
+        interaction_time = Benchmark.measure(&block)
 
         # Track how this interaction performed over time
-        Appsignal.add_distribution_value('benchmark.active_interaction.resolve_time', interaction_time.real.in_milliseconds, name: self.class.name)
+        Appsignal.add_distribution_value("benchmark.active_interaction.resolve_time", interaction_time.real.in_milliseconds, name: self.class.name)
       end
     end
 
@@ -27,7 +27,7 @@ module ApplicationInteraction::Analytics::AppSignal
     # @return [Boolean]
     def skip_appsignal?
       return true if Rails.env.test?
-      ENV['APPSIGNAL_DISABLE_INTERACTION_METRICS']
+      ENV["APPSIGNAL_DISABLE_INTERACTION_METRICS"]
     end
   end
 end
