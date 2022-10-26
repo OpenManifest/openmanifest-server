@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Demo::Generators::Loads < ApplicationInteraction
-  date_time :start_date, default: DateTime.now - 3.months
+  date_time :start_date, default: -> { 3.months.ago.to_datetime }
 
   steps :create_loads
   success do

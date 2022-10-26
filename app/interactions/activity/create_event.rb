@@ -8,7 +8,7 @@ class Activity::CreateEvent < ApplicationInteraction
   symbol :access_level, default: :user
   record :dropzone
   object :resource, class: ApplicationRecord, default: nil
-  date_time :created_at,  default: DateTime.now
+  date_time :created_at,  default: -> { DateTime.now }
 
   validates_inclusion_of :action, in: ::Activity::Event.actions.keys.map(&:to_sym)
   validates_inclusion_of :level, in: ::Activity::Event.levels.keys.map(&:to_sym)

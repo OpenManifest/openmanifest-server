@@ -10,7 +10,7 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :load_master,   class: DropzoneUser, default: nil
   object  :plane,         class: Plane
   string  :state,         default: "open"
-  date_time :created_at,  default: DateTime.now
+  date_time :created_at,  default: -> { DateTime.current }
 
 
   steps :build_load,

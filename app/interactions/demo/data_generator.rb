@@ -2,7 +2,7 @@
 
 class Demo::DataGenerator < ApplicationInteraction
   record :dropzone, default: nil
-  date_time :start_date, default: DateTime.now - 3.months
+  date_time :start_date, default: -> { 3.months.ago.to_datetime }
 
   import_filters Demo::Generators::Users
 
