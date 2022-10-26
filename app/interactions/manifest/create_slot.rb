@@ -12,7 +12,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   integer :group_number, default: nil
   float :exit_weight
   string :passenger_name, default: nil
-  date_time :created_at, default: DateTime.now
+  date_time :created_at, default: -> { DateTime.current }
   float :passenger_exit_weight, default: nil
   array :extra_ids, default: nil do
     integer

@@ -7,7 +7,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :ticket_type
   record :jump_type
   integer :group_number, default: nil
-  date_time :created_at, default: DateTime.now
+  date_time :created_at, default: -> { DateTime.current }
   array :users do
     hash do
       record :dropzone_user
