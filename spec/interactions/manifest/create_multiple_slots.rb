@@ -10,9 +10,9 @@ RSpec.describe Manifest::CreateMultipleSlots do
   let!(:user_group) do
     dropzone_users.map do |dz_user|
       {
-        rig_id: dz_user.user.rigs&.first&.id,
+        rig: dz_user.user.rigs&.first,
         exit_weight: dz_user.exit_weight,
-        dropzone_user_id: dz_user.id
+        dropzone_user: dz_user
       }
     end
   end
@@ -86,9 +86,9 @@ RSpec.describe Manifest::CreateMultipleSlots do
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,
-          ticket_type_id: tandem_ticket,
-          jump_type_id: jump_type,
-          load_id: plane_load,
+          ticket_type: tandem_ticket,
+          jump_type: jump_type,
+          load: plane_load,
           users: user_group.take(2).map do |group|
             group.merge(
               passenger_exit_weight: 50,

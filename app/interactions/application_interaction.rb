@@ -3,7 +3,7 @@
 require "active_interaction"
 
 class ApplicationInteraction < ActiveInteraction::Base
-  include ActiveInteraction::Extras::Transaction
+  include ActiveInteraction::Extras::All
   include ApplicationInteraction::Access
   include ApplicationInteraction::Execution
   include ApplicationInteraction::AuditLog

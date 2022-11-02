@@ -45,6 +45,7 @@ module Types
     field :finalize_load,               mutation: Mutations::Manifest::FinalizeLoad
     field :delete_slot,                 mutation: Mutations::Manifest::DeleteSlot
     field :create_slot,                 mutation: Mutations::Manifest::CreateSlot
+    field :move_slot,                   mutation: Mutations::Manifest::MoveSlot
     field :create_slots,                mutation: Mutations::Manifest::CreateSlots
     field :update_slot,                 mutation: Mutations::Manifest::UpdateSlot
 

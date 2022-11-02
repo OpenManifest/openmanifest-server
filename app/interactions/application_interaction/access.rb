@@ -12,7 +12,7 @@ module ApplicationInteraction::Access
     # message if the user doesn't have the required permissions
     def authorize!
       permissions.each do |slug, message|
-        raise PermissionDenied, message unless access_context.can?(slug)
+        raise ::ApplicationInteraction::Errors::PermissionDenied, message unless access_context.can?(slug)
       end
     end
 

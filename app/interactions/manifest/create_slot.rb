@@ -22,12 +22,8 @@ class Manifest::CreateSlot < ApplicationInteraction
   allow :createSlot
 
   steps :build_slot,
-        :check_slots,
         :set_tandem_passenger,
-        :check_double_manifesting,
-        :check_allowed_jump_type,
-        :check_credits,
-        :save,
+        :validate,
         :create_order,
         :save,
         # Return value
@@ -65,6 +61,10 @@ class Manifest::CreateSlot < ApplicationInteraction
     )
   end
 
+  def validate
+    errors.merge!(@model.errors) unless @model.valid?
+  end
+
   def save
     errors.merge!(@model.errors) unless @model.save
   end
@@ -81,6 +81,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       group_number: group_number || load.next_group_number,
       jump_type: jump_type,
       rig: rig,
+      created_by: access_context.subject,
       exit_weight: exit_weight
     )
   end
@@ -110,30 +111,6 @@ class Manifest::CreateSlot < ApplicationInteraction
     end
   end
 
-  def check_slots
-    errors.add(:base, "No slots available on this load") if load.available_slots < 1
-  end
-
-  def check_credits
-    return unless dropzone_user.dropzone.is_credit_system_enabled?
-    credits = dropzone_user.credits || 0
-
-    errors.add(:base, "Not enough credits to manifest for this jump") if total_cost > credits
-  end
-
-  def check_allowed_jump_type
-    return if jump_type.allowed_for?(dropzone_user)
-    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
-  end
-
-  def check_double_manifesting
-    # Check if the user is manifest on any loads that have
-    # not yet been dispatched
-    return unless Slot.exists?(load: access_context.dropzone.loads_today.active, dropzone_user: dropzone_user)
-    return if access_context.can?(:createDoubleSlot)
-    errors.add(:base, "You're not allowed to double-manifest")
-  end
-
   def create_order
     compose(
       Transactions::Purchase,
@@ -145,18 +122,6 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   private
-    def total_cost
-      # Find extras
-      extra_cost = Extra.where(
-        dropzone: dropzone_user.dropzone,
-        id: extra_ids
-      ).map(&:cost).reduce(&:sum)
-
-      extra_cost ||= 0
-
-      ticket_type.cost + extra_cost
-    end
-
     def authorize
       dropzone = load.plane.dropzone
       action = if load.slots.exists?(dropzone_user: dropzone_user)
