@@ -4,7 +4,7 @@ class Resolvers::TicketAddons < Resolvers::Base
   description "Get all ticket type extras"
   type [Types::ExtraType], null: false
   argument :dropzone, Int, required: true,
-           prepare: -> (value, ctx) { Dropzone.find(value) }
+           prepare: -> (value, ctx) { Dropzone.find_by(id: value) }
 
   def resolve(dropzone: nil, lookahead: nil)
     query = dropzone.extras

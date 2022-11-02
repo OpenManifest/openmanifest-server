@@ -5,7 +5,7 @@ class Resolvers::Loads < Resolvers::Base
   description "Get all loads"
 
   argument :dropzone, Int, required: true,
-           prepare: -> (value, ctx) { Dropzone.find(value) }
+           prepare: -> (value, ctx) { Dropzone.find_by(id: value) }
   argument :earliest_timestamp, GraphQL::Types::ISO8601DateTime, required: false,
            prepare: -> (value, ctx) { value.to_datetime }
   def resolve(dropzone: nil, earliest_timestamp: nil, lookahead: nil)

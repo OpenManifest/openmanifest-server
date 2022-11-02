@@ -5,7 +5,7 @@ class Resolvers::AvailableRigs < Resolvers::Base
   type [Types::RigType], null: true
   argument  :dropzone_user,    Integer, required: true,
             description: "Dropzone User to get rigs for",
-            prepare: -> (value, ctx) { DropzoneUser.find(value) }
+            prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
   argument  :is_tandem,        Boolean, required: false
   argument  :load_id,          Integer, required: false,
             description: "Filter out rigs already occupied for a load"
