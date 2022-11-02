@@ -13,7 +13,7 @@ module Mutations::Manifest
     argument :target_load, Integer, required: true,
              prepare: -> (value, ctx) { Load.find_by(id: value) }
 
-    def resolve(target_load:, source_slot:, target_slot:)
+    def resolve(target_load: nil, source_slot: nil, target_slot: nil)
       mutate(
         Manifest::MoveSlot,
         :loads,
