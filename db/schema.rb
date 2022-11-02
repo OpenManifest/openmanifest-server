@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_04_06_095726) do
+ActiveRecord::Schema.define(version: 2022_11_02_123459) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -382,6 +382,8 @@ ActiveRecord::Schema.define(version: 2022_04_06_095726) do
     t.bigint "passenger_slot_id"
     t.integer "group_number", default: 0, null: false
     t.bigint "dropzone_user_id"
+    t.bigint "created_by_id"
+    t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
     t.index ["load_id"], name: "index_slots_on_load_id"
@@ -579,6 +581,7 @@ ActiveRecord::Schema.define(version: 2022_04_06_095726) do
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "dropzone_users"
+  add_foreign_key "slots", "dropzone_users", column: "created_by_id"
   add_foreign_key "slots", "jump_types"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "passengers"

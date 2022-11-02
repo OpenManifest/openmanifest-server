@@ -20,14 +20,16 @@
 #  dropzone_user_id  :bigint
 #
 class Slot < ApplicationRecord
-  belongs_to :dropzone_user, optional: true
   delegate :user, to: :dropzone_user, allow_nil: true
 
+  belongs_to :dropzone_user, optional: true
+  belongs_to :created_by, class_name: 'DropzoneUser', optional: true
   belongs_to :passenger, optional: true
   belongs_to :ticket_type
   belongs_to :load
   belongs_to :rig, optional: true
   belongs_to :jump_type
+  has_one :dropzone, through: :load
 
   has_one :order, as: :item, required: false
   has_many :receipts, through: :order
@@ -40,6 +42,11 @@ class Slot < ApplicationRecord
   has_many :notifications, as: :resource
 
   counter_culture %i[load plane dropzone], column_name: :slots_count
+
+  validate :available?,
+           :double_manifest?,
+           :allowed_jump_type?
+  validate :affordable?, on: :create
 
   after_create do
     Notification.create(
@@ -85,5 +92,43 @@ class Slot < ApplicationRecord
 
   def has_passenger?
     passenger_slot.present?
+  end
+
+  def is_passenger?
+    passenger.present?
+  end
+
+  private
+  def required_slots
+    return 2 if has_passenger?
+    1
+  end
+
+  def available?
+    errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
+  end
+
+  def double_manifest?
+    # Check if the user is manifest on any loads that have
+    # not yet been dispatched
+    return unless Slot.where.not(id: id).exists?(
+      load: dropzone.loads_today.active,
+      dropzone_user: dropzone_user
+    )
+    return if created_by.can?(:createDoubleSlot)
+    errors.add(:base, "Double-manifesting is not allowed")
+  end
+
+  def affordable?
+    return true if is_passenger?
+    return unless dropzone.is_credit_system_enabled?
+    credits = dropzone_user.credits || 0
+    errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
+  end
+
+  def allowed_jump_type?
+    return true if is_passenger? && ticket_type.is_tandem?
+    return if jump_type.allowed_for?(dropzone_user)
+    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
   end
 end

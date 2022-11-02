@@ -105,7 +105,7 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.result).not_to be_a Slot }
       it { expect(outcome.valid?).to be false }
       it { expect(outcome.errors).not_to be_empty }
-      it { expect(outcome.errors.full_messages.first).to match(/double-manifest/) }
+      it { expect(outcome.errors.full_messages.first).to match(/double-manifest/i) }
     end
 
     context "when the user is double manifested but allowed to" do
