@@ -10,9 +10,9 @@ RSpec.describe Manifest::CreateMultipleSlots do
   let!(:user_group) do
     dropzone_users.map do |dz_user|
       {
-        rig_id: dz_user.user.rigs&.first&.id,
+        rig: dz_user.user.rigs&.first,
         exit_weight: dz_user.exit_weight,
-        dropzone_user_id: dz_user.id
+        dropzone_user: dz_user
       }
     end
   end

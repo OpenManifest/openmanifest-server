@@ -109,6 +109,7 @@ class Slot < ApplicationRecord
     end
 
     def double_manifest?
+      return if is_passenger?
       # Check if the user is manifest on any loads that have
       # not yet been dispatched
       return unless Slot.where.not(id: id).exists?(
