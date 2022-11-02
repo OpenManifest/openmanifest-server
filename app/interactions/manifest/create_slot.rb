@@ -122,7 +122,6 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   private
-
     def authorize
       dropzone = load.plane.dropzone
       action = if load.slots.exists?(dropzone_user: dropzone_user)
