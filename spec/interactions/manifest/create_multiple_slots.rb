@@ -86,9 +86,9 @@ RSpec.describe Manifest::CreateMultipleSlots do
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,
-          ticket_type_id: tandem_ticket,
-          jump_type_id: jump_type,
-          load_id: plane_load,
+          ticket_type: tandem_ticket,
+          jump_type: jump_type,
+          load: plane_load,
           users: user_group.take(2).map do |group|
             group.merge(
               passenger_exit_weight: 50,
