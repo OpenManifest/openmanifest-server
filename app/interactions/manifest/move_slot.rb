@@ -97,7 +97,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affected_loads
-    [source_slot.load, destination_load]
+    [source_slot.load.reload, destination_load.reload]
   end
 
   private
