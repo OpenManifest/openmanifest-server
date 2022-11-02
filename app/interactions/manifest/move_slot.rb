@@ -8,9 +8,6 @@ class Manifest::MoveSlot < ApplicationInteraction
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil
 
-  # Execution
-  allow :updateSlot
-
   steps :affordable?,
         :move_slot,
         :validate,
@@ -24,13 +21,13 @@ class Manifest::MoveSlot < ApplicationInteraction
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: model,
+      resource: source_slot,
       action: :created,
       access_level: :user,
-      created_at: created_at,
+      created_at: DateTime.current,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} moved #{dropzone_user.user.name} from load ##{slot.load.load_number} to load ##{destination_load.load_number}"
+      message: "#{access_context.subject.user.name} moved #{source_slot.dropzone_user.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
     )
   end
 
@@ -40,13 +37,13 @@ class Manifest::MoveSlot < ApplicationInteraction
       ::Activity::CreateEvent,
       access_context: access_context,
       level: :error,
-      resource: model,
-      created_at: created_at,
+      resource: source_slot,
+      created_at: DateTime.current,
       action: :created,
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to move #{dropzone_user.user.name} from load ##{load.load_number}",
+      message: "#{access_context.subject.user.name} failed to move #{source_slot.dropzone_user.user.name} from load ##{load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -68,33 +65,33 @@ class Manifest::MoveSlot < ApplicationInteraction
     # Check if the user has enough credits
     # to manifest for this jump (taking into consideration the cost)
     # of the previous slot
-    errors.add(:base, "Not enough credits to manifest for this jump") if slot.cost > user_funds
+    errors.add(:base, "Not enough credits to manifest for this jump") if source_slot.cost > user_funds
   end
 
   def validate
-    errors.merge!(@model.errors) unless @model.valid?
+    errors.merge!(source_slot.errors) unless source_slot.valid?
   end
 
   def save
-    errors.merge!(@model.errors) unless @model.save
+    errors.merge!(source_slot.errors) unless source_slot.save
   end
 
   def update_order
-    return unless slot.order
+    return unless source_slot.order
 
     # Refund the original order
     compose(
       Transactions::Refund,
-      order: slot.order,
+      order: source_slot.order,
       access_context: access_context
     )
 
     # Create a new order
     compose(
       Transactions::Purchase,
-      buyer: dropzone_user,
+      buyer: source_slot.dropzone_user,
       seller: access_context.dropzone,
-      purchasable: model,
+      purchasable: source_slot,
       access_context: access_context
     )
   end
@@ -113,6 +110,6 @@ class Manifest::MoveSlot < ApplicationInteraction
       # Users are allowed to move their own slot
       return true if access_context.subject == source_slot.dropzone_user && access_context.subject.can?(:updateOwnSlot)
       return true if access_context.subject.can?(:updateUserSlot)
-      raise PermissionDenied, "You don't have permissions to move other users"
+      raise ::ApplicationInteraction::Errors::PermissionDenied, "You don't have permissions to move other users"
     end
 end
