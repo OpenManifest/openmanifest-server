@@ -27,13 +27,13 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
-        it { is_expected.to include_json(data: { loads: { edges: [{ node: { id: load2.id.to_s } }]} }) }
-        it { is_expected.not_to include_json(data:{ loads: { edges: [{ node: { id: load1.id.to_s } }]} }) }
-        it { is_expected.not_to include_json(data: { loads: { edges: [{ node: { id: load3.id.to_s } }]} }) }
+        it { is_expected.to include_json(data: { loads: { edges: [{ node: { id: load2.id.to_s } }] } }) }
+        it { is_expected.not_to include_json(data: { loads: { edges: [{ node: { id: load1.id.to_s } }] } }) }
+        it { is_expected.not_to include_json(data: { loads: { edges: [{ node: { id: load3.id.to_s } }] } }) }
       end
     end
 
-    def query(dropzone:, date: )
+    def query(dropzone:, date:)
       <<~GQL
         query {
           loads(

@@ -8,7 +8,7 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
            prepare: -> (value, ctx) { Dropzone.find_by(id: value) }
   argument :date, GraphQL::Types::ISO8601Date, required: false,
            prepare: -> (value, ctx) { value.to_date },
-           description: 'Search for loads for a specific day'
+           description: "Search for loads for a specific day"
   def resolve(dropzone: nil, earliest_timestamp: nil, lookahead: nil, date: nil)
     return nil unless dropzone
     lookahead = lookahead.selection(:edges).selection(:node)

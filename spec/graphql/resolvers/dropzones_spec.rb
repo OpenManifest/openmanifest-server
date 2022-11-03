@@ -7,9 +7,9 @@ module Mutations
     let!(:moderator) { create(:user, moderation_role: :moderator) }
     let!(:fun_jumper) { create(:user, moderation_role: :user) }
     let!(:owner) { create(:user, moderation_role: :user) }
-    let!(:public_dropzone) { create(:dropzone, credits: 50, state: 'public') }
-    let!(:private_dropzone) { create(:dropzone, credits: 50, state: 'private') }
-    let!(:owners_dropzone) { create(:dropzone, credits: 50, state: 'private') }
+    let!(:public_dropzone) { create(:dropzone, credits: 50, state: "public") }
+    let!(:private_dropzone) { create(:dropzone, credits: 50, state: "private") }
+    let!(:owners_dropzone) { create(:dropzone, credits: 50, state: "private") }
 
     let!(:moderator_dropzone_users) do
       [public_dropzone, private_dropzone, owners_dropzone].each do |dropzone|
@@ -38,7 +38,7 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
-        it 'shows owned and public dropzones' do
+        it "shows owned and public dropzones" do
           is_expected.to include_json(
             data: {
               dropzones: {
@@ -48,12 +48,12 @@ module Mutations
               }
             }
           )
-          is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] }})
+          is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] } })
         end
       end
 
       context "even when specifying state" do
-        let!(:query_str) { query(state: ['private', 'public', 'archived']) }
+        let!(:query_str) { query(state: ["private", "public", "archived"]) }
         subject do
           post "/graphql",
                params: { query: query_str },
@@ -61,7 +61,7 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
-        it 'shows owned and public dropzones' do
+        it "shows owned and public dropzones" do
           is_expected.to include_json(
             data: {
               dropzones: {
@@ -71,13 +71,13 @@ module Mutations
               }
             }
           )
-          is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] }})
+          is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] } })
         end
       end
     end
 
     def query(state: nil)
-      enum_states = 'null'
+      enum_states = "null"
       enum_states = "[#{state.join(',')}]" if state.present?
       <<~GQL
         query {

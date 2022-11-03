@@ -5,7 +5,6 @@ module StateMachines::DropzoneState
 
   included do
     state_machine :state, initial: :private do
-
       event :request_publication do
         transition private: :in_review
       end
