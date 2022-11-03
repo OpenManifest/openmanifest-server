@@ -3,7 +3,6 @@
 module Types
   module Input
     class LoadInput < Types::BaseInputObject
-      argument :dispatch_at, Int, required: false
       argument :name, String, required: false
       argument :max_slots, Int, required: false
       argument :pilot, Int, required: false,
