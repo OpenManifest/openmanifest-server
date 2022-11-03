@@ -103,10 +103,10 @@ module Mutations
           createSlot(
             input: {
               attributes: {
-                dropzoneUser: #{dropzone_user.id}
-                ticketType: #{ticket_type.id}
+                dropzoneUser: "#{dropzone_user.id}"
+                ticketType: "#{ticket_type.id}"
                 jumpType: #{JumpType.allowed_for([dropzone_user]).sample.id}
-                load: #{plane_load.id}
+                load: "#{plane_load.id}"
                 exitWeight: #{exit_weight}
                 passengerExitWeight: #{passenger_exit_weight || 'null'}
                 passengerName: #{passenger_name || 'null'}

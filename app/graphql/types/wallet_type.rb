@@ -53,8 +53,8 @@ module Types
       # Determine what object type to use for `object`
       def resolve_type(object, context)
         {
-          DropzoneUser => Types::DropzoneUserType,
-          Dropzone => Types::DropzoneType
+          ::DropzoneUser => Types::DropzoneUserType,
+          ::Dropzone => Types::DropzoneType
         }[object.class]
       end
     end
