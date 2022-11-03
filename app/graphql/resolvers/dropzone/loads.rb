@@ -5,7 +5,7 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
   description "Get all loads"
 
   argument :dropzone, GraphQL::Types::ID, required: true,
-           prepare: -> (value, ctx) { Dropzone.find_by(id: value) }
+           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   argument :date, GraphQL::Types::ISO8601Date, required: false,
            prepare: -> (value, ctx) { value.to_date },
            description: "Search for loads for a specific day"
