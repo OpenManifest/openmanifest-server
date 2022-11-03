@@ -10,7 +10,7 @@ module Types
     end
     field :id, GraphQL::Types::ID, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :exit_weight, Integer, null: false
     def exit_weight
       object.exit_weight.to_i
