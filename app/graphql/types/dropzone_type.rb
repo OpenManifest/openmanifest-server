@@ -10,6 +10,7 @@ module Types
       object
     end
     field :name, String, null: true
+    field :state, Types::Dropzone::State, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :lat, Float, null: true
