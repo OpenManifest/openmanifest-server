@@ -6,14 +6,14 @@ class Resolvers::Dropzone::Activity < Resolvers::Base
   description "Get all Activity Events for a dropzone (or all dropzones)"
 
 
-  argument :dropzone, GraphQL::Types::ID, required: false,
+  argument :dropzone, [GraphQL::Types::ID], required: false,
            description: "Filter by Dropzone",
            prepare: -> (value, ctx) { Dropzone.where(id: value) }
   argument :levels,  [Types::Events::EventLevelType], required: false
   argument :access_levels,  [Types::Events::EventAccessLevelType], required: false
   argument :actions, [Types::Events::EventActionType], required: false
   argument :time_range, Types::Input::TimeRangeInput, required: false
-  argument :created_by, GraphQL::Types::ID, required: false,
+  argument :created_by, [GraphQL::Types::ID], required: false,
            description: "Filter by who created the event",
            prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
   def resolve(
