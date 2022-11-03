@@ -10,7 +10,6 @@ module Types
       object
     end
     field :name, String, null: true
-    field :request_publication, Boolean, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :lat, Float, null: true
@@ -105,11 +104,6 @@ module Types
       query = query.search(search) if !search.nil?
 
       query || []
-    end
-
-    field :is_public, Boolean, null: false
-    def is_public
-      !!object.is_public
     end
 
     field :ticket_types, [Types::TicketTypeType], null: false do

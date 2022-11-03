@@ -29,5 +29,5 @@ class Admin < ActiveRecord::Base
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-  include GraphqlDevise::Concerns::Model
+  include GraphqlDevise::Model
 end

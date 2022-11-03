@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Resolvers::JumpTypes < Resolvers::Base
+class Resolvers::Meta::JumpTypes < Resolvers::Base
   description "Get all jump types"
   type [Types::JumpTypeType], null: false
   argument :dropzone_users, [Int], required: false,

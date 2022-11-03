@@ -45,6 +45,7 @@ class DropzoneUser < ApplicationRecord
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
   scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
   scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i[tandem_passenger student pilot fun_jumper] }) }
+  scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
 
   validates :user_id, uniqueness: { scope: :dropzone_id }
 

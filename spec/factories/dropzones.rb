@@ -28,7 +28,7 @@ FactoryBot.define do
     name { "Skydive #{Faker::Address.city}" }
     lat { Faker::Address.latitude }
     lng { Faker::Address.longitude }
-    is_public { true }
+    state { "public" }
     primary_color { Faker::Color.hex_color }
     secondary_color { Faker::Color.hex_color }
     is_credit_system_enabled { true }

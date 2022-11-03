@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Resolvers::Licenses < Resolvers::Base
+class Resolvers::Meta::Licenses < Resolvers::Base
   description "Get all licenses for a federation"
   type [Types::LicenseType], null: false
   argument :federation_id, Int, required: false

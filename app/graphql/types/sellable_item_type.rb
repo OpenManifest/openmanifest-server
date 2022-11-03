@@ -9,9 +9,9 @@ module Types
     definition_methods do
       def resolve_type(object, context)
         {
-          TicketType => Types::TicketTypeType,
-          Extra => Types::ExtraType,
-          Slot => Types::SlotType
+          ::TicketType => Types::TicketTypeType,
+          ::Extra => Types::ExtraType,
+          ::Slot => Types::SlotType
         }[object.class]
       end
     end

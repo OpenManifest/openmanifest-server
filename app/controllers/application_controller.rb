@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ApplicationController < ActionController::Base
-  include GraphqlDevise::Concerns::SetUserByToken
+  include GraphqlDevise::SetUserByToken
   before_action :set_appsignal_tags
 
   def index
