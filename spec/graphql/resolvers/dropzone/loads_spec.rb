@@ -3,7 +3,7 @@
 require "rails_helper"
 
 module Mutations
-  RSpec.describe Resolvers::Loads, type: :request do
+  RSpec.describe Resolvers::Dropzone::Loads, type: :request do
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone) }
     let!(:plane) { create(:plane, dropzone: dropzone) }
