@@ -44,7 +44,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
   :recoverable, :rememberable, :trackable, :validatable, :confirmable
   include Discard::Model
-  include GraphqlDevise::Concerns::Model
+  include GraphqlDevise::Model
   include DeviseTokenAuth::Concerns::User
 
   # Simple role structure for global permissions
@@ -86,6 +86,11 @@ class User < ApplicationRecord
     else
       false
     end
+  end
+
+  # Compare moderation levels to get user access level
+  def is_moderator?
+    User.moderation_roles[moderation_role] >= User.moderation_roles["moderator"]
   end
 
   def self.create_fake(count: 1)

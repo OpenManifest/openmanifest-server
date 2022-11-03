@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Resolvers::AvailableRigs < Resolvers::Base
+class Resolvers::Dropzone::AvailableRigs < Resolvers::Base
   description "Get user rigs that have been inspected and marked as OK + dropzone rigs"
   type [Types::RigType], null: true
   argument  :dropzone_user,    Integer, required: true,

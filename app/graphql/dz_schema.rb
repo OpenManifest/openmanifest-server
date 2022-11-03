@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class DzSchema < GraphQL::Schema
+  default_page_size 50
   use GraphqlDevise::SchemaPlugin.new(
     query:                Types::QueryType,
     mutation:             Types::MutationType,
     public_introspection: true,
     resource_loaders: [
       GraphqlDevise::ResourceLoader.new(User, operations: {
-        sign_up: Mutations::Users::SignUp
+        register: Mutations::Users::SignUp
       }),
     ]
   )

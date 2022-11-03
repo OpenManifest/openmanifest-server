@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class GraphqlController < ApplicationController
-  include GraphqlDevise::Concerns::SetUserByToken
+  include GraphqlDevise::SetUserByToken
   protect_from_forgery with: :null_session, except: [:index, :execute]
 
   def index

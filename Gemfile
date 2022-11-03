@@ -32,8 +32,8 @@ gem "carrierwave-base64"
 gem "cloudinary"
 
 # GraphQL queries
-gem "graphql", "~> 1.12.21"
-gem "graphql_devise", "~> 0.17.1"
+gem "graphql"
+gem "graphql_devise"
 
 # Send HTTP requests easily
 gem "httparty"

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-class Resolvers::Load < Resolvers::Base
+class Resolvers::Dropzone::Load < Resolvers::Base
   description "Get load by id"
   type Types::LoadType, null: true
-  argument :id, Int, required: true
+  argument :id, GraphQL::Types::ID, required: true
 
   def resolve(
     id: nil,
@@ -16,6 +16,6 @@ class Resolvers::Load < Resolvers::Base
     query = query.includes(:pilot)                     if lookahead.selects?(:pilot)
     query = query.includes(:plane)                     if lookahead.selects?(:plane)
 
-    query.find(id)
+    query.find_by(id: id)
   end
 end

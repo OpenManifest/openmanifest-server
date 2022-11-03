@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_02_123459) do
+ActiveRecord::Schema.define(version: 2022_11_03_103346) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -116,9 +116,11 @@ ActiveRecord::Schema.define(version: 2022_11_02_123459) do
     t.integer "credits"
     t.boolean "request_publication", default: false
     t.datetime "discarded_at"
+    t.string "state", default: "private"
     t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
+    t.index ["state"], name: "index_dropzones_on_state"
   end
 
   create_table "events", force: :cascade do |t|

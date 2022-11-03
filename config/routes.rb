@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-include GraphqlDevise::MailerHelper
-
 Rails.application.routes.draw do
   # Not needed with schema plugin
   # mount_graphql_devise_for 'User', at: 'graphql_auth'

@@ -2,6 +2,7 @@
 
 module Types
   class MutationType < Types::BaseObject
+    field_class GraphqlDevise::Types::BaseField
     # Access
     field :revoke_permission,           mutation: Mutations::Access::RevokePermission
     field :grant_permission,            mutation: Mutations::Access::GrantPermission

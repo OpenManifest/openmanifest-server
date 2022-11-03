@@ -2,12 +2,15 @@
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require "spec_helper"
+require "rspec/json_expectations"
+
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "#{Rails.root}/spec/support/factory_bot.rb"
 require "#{Rails.root}/spec/support/contexts/mock_apf_call.rb"
 require "#{Rails.root}/spec/support/shared_examples/graphql.rb"
 require "#{Rails.root}/spec/support/graphql/client.rb"
+
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
@@ -40,6 +43,7 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
+  config.include RSpec::JsonExpectations::Matchers
   config.example_status_persistence_file_path = "tmp/rspec_examples.txt"
   config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Resolvers::Federations < Resolvers::Base
+class Resolvers::Meta::Federations < Resolvers::Base
   type [Types::FederationType], null: false
   description "Get all available federations"
 

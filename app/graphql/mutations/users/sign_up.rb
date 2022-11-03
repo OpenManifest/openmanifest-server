@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Mutations::Users
-  class SignUp < GraphqlDevise::Mutations::SignUp
+  class SignUp < GraphqlDevise::Mutations::Register
     argument :phone, String, required: true
     argument :exit_weight, Float, required: true
     argument :name, String, required: true
