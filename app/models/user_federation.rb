@@ -11,7 +11,11 @@ class UserFederation < ApplicationRecord
   validates_uniqueness_of :user_id, scope: :federation_id
 
   after_save do
-    next unless saved_change_to_license_id?
+    next if dropzone_users.includes(:dropzone).where(
+      dropzone: { federation_id: federation_id }
+    ).where.not(
+      license_id: license_id
+    ).empty?
     dropzone_users.includes(:dropzone).where(
       dropzone: {
         federation_id: federation.id
