@@ -75,38 +75,6 @@ module Types
       end
     end
 
-    field :dropzone_users, Types::DropzoneUserType.connection_type, null: false do
-      argument :permissions, [Types::PermissionType], required: false
-      argument :search, String, required: false
-      argument :licensed, Boolean, required: false
-    end
-    def dropzone_users(permissions: nil, search: nil, licensed: nil)
-      query = object.dropzone_users.includes(:user, :user_role, user_permissions: :permission)
-
-      if licensed
-        query = query.where.not(users: { license_id: nil })
-      end
-
-      if permissions
-        query = query.where(
-          user_role_id: UserRolePermission.includes(:permission, :user_role).where(
-            permission: { name: permissions },
-            user_role: { dropzone_id: object.id }
-          ).pluck(:user_role_id)
-        ).or(
-          query.where(
-            user_permissions: {
-              permissions: { name: permissions }
-            }
-          )
-        )
-      end
-
-      query = query.search(search) if !search.nil?
-
-      query || []
-    end
-
     field :ticket_types, [Types::TicketTypeType], null: false do
       argument :is_public, Boolean, required: false
     end
@@ -135,19 +103,6 @@ module Types
     field :planes, [Types::PlaneType], null: false
     def planes
       object.planes
-    end
-
-    field :loads, Types::LoadType.connection_type, null: false do
-      argument :earliest_timestamp, GraphQL::Types::ISO8601DateTime, required: false,
-               prepare: -> (value, ctx) { value.to_datetime }
-    end
-    def loads(earliest_timestamp: nil)
-      loads = object.loads
-      loads = loads.where(
-        "loads.created_at > ?",
-        earliest_timestamp
-      ) unless earliest_timestamp.nil?
-      loads.order(created_at: :desc)
     end
 
     field :roles, [Types::UserRoleType], null: false do

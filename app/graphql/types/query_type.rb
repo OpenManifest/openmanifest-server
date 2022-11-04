@@ -11,6 +11,8 @@ module Types
     field :jump_types,      extras: [:lookahead],   resolver: Resolvers::Meta::JumpTypes
     field :licenses,        extras: [:lookahead],   resolver: Resolvers::Meta::Licenses
     field :current_user,    extras: [:lookahead],   resolver: Resolvers::Access::CurrentUser
+    field :dropzone_user,   extras: [:lookahead],   resolver: Resolvers::Users::DropzoneUser
+    field :dropzone_users,  extras: [:lookahead],   resolver: Resolvers::Users::DropzoneUsers
 
     field :dropzones,       extras: [:lookahead],   resolver: Resolvers::Dropzones
     field :dropzone,        extras: [:lookahead],   resolver: Resolvers::Dropzone

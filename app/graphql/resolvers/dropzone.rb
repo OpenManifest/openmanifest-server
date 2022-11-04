@@ -7,7 +7,6 @@ class Resolvers::Dropzone < Resolvers::Base
   def resolve(id:, lookahead: nil)
     query = scope
     query = query.includes(:user_roles)     if lookahead.selects?(:user_roles) || lookahead.selects?(:roles)
-    query = query.includes(:dropzone_users) if lookahead.selects?(:dropzone_users)
     query = query.includes(:ticket_types)   if lookahead.selects?(:ticket_types)
     query = query.includes(:extras)         if lookahead.selects?(:extras)
     query = query.includes(:rigs)           if lookahead.selects?(:rigs)
@@ -17,9 +16,9 @@ class Resolvers::Dropzone < Resolvers::Base
   end
 
   def scope
-    query = Dropzone.kept
+    query = Dropzone.kept.includes(:dropzone_users)
     query.where(state: :public).or(
-      query.includes(:dropzone_users).where(dropzone_users: context[:current_resource].dropzone_users.owner)
+      query.where(dropzone_users: context[:current_resource].dropzone_users.owner)
     )
   end
 end
