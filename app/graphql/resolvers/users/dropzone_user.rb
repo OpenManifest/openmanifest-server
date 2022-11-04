@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Users::DropzoneUser < Resolvers::Base
-  type Types::DropzoneUserType.connection_type, null: true
+  type Types::DropzoneUserType, null: true
   description "Get a specific user at a dropzone"
 
   argument :id, ID, required: true
