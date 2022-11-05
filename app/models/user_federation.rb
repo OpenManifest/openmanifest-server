@@ -11,10 +11,18 @@ class UserFederation < ApplicationRecord
   validates_uniqueness_of :user_id, scope: :federation_id
 
   after_save do
-    next if dropzone_users.includes(:dropzone).where(
+    # We have to do this because of
+    # how postgres/rails handles nil values,
+    # when doing a not-query nil values are ignored
+    dropzone_users_in_same_federation = dropzone_users.includes(:dropzone).where(
       dropzone: { federation_id: federation_id }
-    ).where.not(
+    )
+    next if dropzone_users_in_same_federation.where.not(
       license_id: license_id
+    ).or(
+      dropzone_users_in_same_federation.where(
+        license_id: nil
+      )
     ).empty?
     dropzone_users.includes(:dropzone).where(
       dropzone: {
