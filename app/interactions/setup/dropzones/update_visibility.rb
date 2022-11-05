@@ -41,9 +41,9 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
   def check_access
     case event.to_sym
     when :request_publication, :unpublish
-      errors.add(:base, 'You cannot perform this action') unless moderator? || owner?
+      errors.add(:base, "You cannot perform this action") unless moderator? || owner?
     when :publish, :archive
-      errors.add(:base, 'You cannot perform this action') unless moderator?
+      errors.add(:base, "You cannot perform this action") unless moderator?
     end
   end
 
@@ -53,11 +53,11 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
   end
 
   private
-  def moderator?
-    access_context.subject.user.is_moderator?
-  end
+    def moderator?
+      access_context.subject.user.is_moderator?
+    end
 
-  def owner?
-    dropzone.dropzone_users.owner.include?(access_context.subject)
-  end
+    def owner?
+      dropzone.dropzone_users.owner.include?(access_context.subject)
+    end
 end
