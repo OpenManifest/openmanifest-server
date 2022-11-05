@@ -14,7 +14,7 @@ module StateMachines::DropzoneState
       end
 
       event :unpublish do
-        transition any => :public
+        transition any => :private
       end
 
       event :archive do
