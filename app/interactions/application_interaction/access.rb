@@ -11,12 +11,12 @@ module ApplicationInteraction::Access
     # ApplicationInteraction::PermissionDenied with an error
     # message if the user doesn't have the required permissions
     def authorize!
-      permissions.each do |slug, message|
+      required_permissions.each do |slug, message|
         raise ::ApplicationInteraction::Errors::PermissionDenied, message unless access_context.can?(slug)
       end
     end
 
-    def permissions
+    def required_permissions
       []
     end
   end
@@ -31,15 +31,15 @@ module ApplicationInteraction::Access
     #
     # @param [Array<Symbol, String, Hash>] permissions
     # @return [void]
-    def allow(*permissions)
-      return unless permissions
-      return if permissions.empty?
+    def allow(*required_permissions)
+      return unless required_permissions
+      return if required_permissions.empty?
 
-      permission_map = permissions.map do |permission|
+      permission_map = required_permissions.map do |permission|
         next permission if permission.is_a?(Hash)
         { permission => "You dont have access to #{self.action_name}. Missing permission: #{permission}" }
       end.reduce(:merge)
-      define_method("permissions", -> { permission_map })
+      define_method("required_permissions", -> { permission_map })
     end
   end
 end

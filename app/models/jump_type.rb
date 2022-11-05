@@ -14,13 +14,28 @@ class JumpType < ApplicationRecord
   has_many :licensed_jump_types
   has_many :licenses, through: :licensed_jump_types
 
-  def self.allowed_for(dropzone_users)
-    jump_type_ids = [dropzone_users].flatten.map do |dz_user|
-      dz_user.licensed_jump_types.pluck(:jump_type_id)
+  class << self
+    # Parse YAML config for default configuration
+    #
+    # @return [Hash<Symbol, Array<String>>]
+    def config
+      @config ||= YAML.safe_load(
+        File.read("config/seed/global.yml"),
+        symbolize_names: true
+      )[:jump_types]
     end
-
-    JumpType.where(id: jump_type_ids.reduce(&:intersection))
+    # Find the intersection of jump types allowed for a set of users
+    #
+    # @param [Array<DropzoneUser>] dropzone_users
+    # @return [ActiveRecord::Collection<JumpType>]
+    def allowed_for(dropzone_users)
+      jump_type_ids = [dropzone_users].flatten.map do |dz_user|
+        dz_user.licensed_jump_types.pluck(:jump_type_id)
+      end
+      JumpType.where(id: jump_type_ids.reduce(&:intersection))
+    end
   end
+
 
   def allowed_for?(dropzone_user)
     JumpType.allowed_for([dropzone_user].flatten).exists?(id: id)

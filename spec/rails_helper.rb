@@ -14,7 +14,6 @@ require "#{Rails.root}/spec/support/graphql/client.rb"
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
-load "#{Rails.root}/db/seeds/australia.rb"
 
 # Add additional requires below this line. Rails is not loaded until this point!
 
@@ -58,6 +57,7 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    ::Setup::Global::Seeds.run!
   end
 
   config.before(:each) do

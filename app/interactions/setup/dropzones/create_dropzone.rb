@@ -14,6 +14,7 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
   boolean :is_credit_system_enabled, default: false
 
   steps :build_dropzone,
+        :create_roles,
         :build_owner,
         :build_rig_inspection_template,
         :save!
@@ -58,6 +59,10 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
       is_credit_system_enabled: is_credit_system_enabled
     )
     save!
+  end
+
+  def create_roles
+    compose(::Setup::Dropzones::Access::CreateDefaults, dropzone: @dropzone)
   end
 
   def save!

@@ -9,4 +9,4 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 # Create default permissions
-load(Rails.root.join("db", "seeds", "australia.rb"))
+Setup::Global::Seeds.run!

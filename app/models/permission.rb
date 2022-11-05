@@ -14,105 +14,29 @@ class Permission < ApplicationRecord
   scope :only_acting, -> { where("name LIKE (?)", "actAs%") }
 
   validates_presence_of :name
+  validates_uniqueness_of :name
   has_many :user_role_permissions, dependent: :destroy
   has_many :user_permissions, dependent: :destroy
 
-  def self.names
-    [
-      :updateDropzone,
-      :deleteDropzone,
-      :undeleteDropzone,
+  class << self
+    def default_acting
+      @default_acting ||= config[:acting].map(&:to_sym)
+    end
 
-      :updateWeatherConditions,
+    def default_crud
+      @default_crud ||= config[:crud].values.flatten.uniq.map(&:to_sym)
+    end
 
-      :createLoad,
-      :updateLoad,
-      :deleteLoad,
-      :readLoad,
+    def slugs
+      Permission.default_acting + Permission.default_crud
+    end
 
-      :createSlot,
-      :createDoubleSlot,
-      :updateSlot,
-      :deleteSlot,
-
-
-      :createUserSlot,
-      :createUserDoubleSlot,
-      :createUserSlotWithSelf,
-      :updateUserSlot,
-      :deleteUserSlot,
-      :undeleteUserSlot,
-
-      :createStudentSlot,
-      :updateStudentSlot,
-      :deleteStudentSlot,
-      :undeleteStudentSlot,
-
-      :createTicketType,
-      :updateTicketType,
-      :deleteTicketType,
-      :undeleteTicketType,
-
-      :createExtra,
-      :updateExtra,
-      :deleteExtra,
-      :readExtra,
-      :undeleteExtra,
-
-      :createPlane,
-      :updatePlane,
-      :deletePlane,
-      :undeletePlane,
-
-      :createRig,
-      :updateRig,
-      :deleteRig,
-      :readRig,
-      :undeleteRig,
-
-      :createDropzoneRig,
-      :updateDropzoneRig,
-      :deleteDropzoneRig,
-      :readDropzoneRig,
-      :undeleteDropzoneRig,
-
-      :readPermissions,
-      :updatePermissions,
-
-      :createPackjob,
-      :updatePackjob,
-      :deletePackjob,
-      :readPackjob,
-
-      :createFormTemplate,
-      :updateFormTemplate,
-      :deleteFormTemplate,
-      :readFormTemplate,
-
-      :readUser,
-      :updateUser,
-      :deleteUser,
-      :createUser,
-      :undeleteUser,
-
-      :actAsPilot,
-      :actAsLoadMaster,
-      :actAsGCA,
-      :actAsDZSO,
-      :actAsRigInspector,
-
-      :createUserTransaction,
-      :readUserTransactions,
-
-      :grantPermission,
-      :revokePermission,
-
-      :viewSystemActivity,
-      :viewUserActivity,
-      :viewAdminActivity,
-
-      :viewRevenue,
-      :viewStatistics,
-    ]
+    def config
+      @config ||= YAML.safe_load(
+        File.read("config/seed/access.yml"),
+        symbolize_names: true,
+        aliases: true
+      )[:permissions]
+    end
   end
 end

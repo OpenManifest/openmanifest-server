@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_03_103346) do
+ActiveRecord::Schema.define(version: 2022_11_05_055041) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -161,6 +161,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["slug"], name: "index_federations_on_slug", unique: true
   end
 
   create_table "form_templates", force: :cascade do |t|
@@ -181,6 +182,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.string "slug"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["slug"], name: "index_jump_types_on_slug", unique: true
   end
 
   create_table "licensed_jump_types", force: :cascade do |t|
@@ -189,6 +191,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["jump_type_id"], name: "index_licensed_jump_types_on_jump_type_id"
+    t.index ["license_id", "jump_type_id"], name: "index_licensed_jump_types_on_license_id_and_jump_type_id", unique: true
     t.index ["license_id"], name: "index_licensed_jump_types_on_license_id"
   end
 
@@ -198,6 +201,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["federation_id"], name: "index_licenses_on_federation_id"
+    t.index ["name", "federation_id"], name: "index_licenses_on_name_and_federation_id", unique: true
   end
 
   create_table "loads", force: :cascade do |t|
@@ -289,6 +293,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "name"
+    t.index ["name"], name: "index_permissions_on_name", unique: true
   end
 
   create_table "planes", force: :cascade do |t|
@@ -468,6 +473,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.bigint "dropzone_user_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["dropzone_user_id", "permission_id"], name: "index_user_permissions_on_dropzone_user_id_and_permission_id", unique: true
     t.index ["dropzone_user_id"], name: "index_user_permissions_on_dropzone_user_id"
     t.index ["permission_id"], name: "index_user_permissions_on_permission_id"
   end
@@ -478,6 +484,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["permission_id"], name: "index_user_role_permissions_on_permission_id"
+    t.index ["user_role_id", "permission_id"], name: "index_user_role_permissions_on_user_role_id_and_permission_id", unique: true
     t.index ["user_role_id"], name: "index_user_role_permissions_on_user_role_id"
   end
 
@@ -487,6 +494,7 @@ ActiveRecord::Schema.define(version: 2022_11_03_103346) do
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "dropzone_id", null: false
     t.index ["dropzone_id"], name: "index_user_roles_on_dropzone_id"
+    t.index ["name", "dropzone_id"], name: "index_user_roles_on_name_and_dropzone_id", unique: true
   end
 
   create_table "users", force: :cascade do |t|
