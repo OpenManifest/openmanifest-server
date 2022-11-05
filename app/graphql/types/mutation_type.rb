@@ -8,6 +8,7 @@ module Types
     field :grant_permission,            mutation: Mutations::Access::GrantPermission
     field :update_notification,         mutation: Mutations::Users::UpdateNotification
     field :update_role,                 mutation: Mutations::Access::UpdateRole
+    field :update_visibility,           mutation: Mutations::Access::UpdateVisibility
 
     # Users
     field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false

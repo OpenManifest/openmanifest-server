@@ -48,6 +48,7 @@ FactoryBot.define do
     provider { "email" }
     password { Faker::Internet.password(min_length: 10, max_length: 20) }
     confirmed_at { DateTime.now }
+    moderation_role { :user }
 
     after(:create) do |user, _evaluator|
       user.confirm
