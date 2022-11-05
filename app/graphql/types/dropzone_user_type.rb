@@ -10,6 +10,10 @@ module Types
     field :user, Types::UserType, null: false
     field :jump_types, [Types::JumpTypeType], null: true
     field :license, Types::LicenseType, null: true
+    field :user_federation, Types::UserFederationType, null: true
+    def user_federation
+      ::UserFederation.find_by(user_id: object.user, federation_id: object.dropzone.federation_id)
+    end
     field :slots, Types::SlotType.connection_type, null: true
     def slots
       object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)
