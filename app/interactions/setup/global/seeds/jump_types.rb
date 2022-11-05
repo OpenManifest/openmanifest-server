@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Setup::Global::Seeds::JumpTypes < ApplicationInteraction
   steps :create_jump_types
 

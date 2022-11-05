@@ -24,7 +24,7 @@ class UserRole < ApplicationRecord
     # @return [Hash<Symbol, Array<String>>]
     def config
       @config ||= YAML.safe_load(
-        File.read('config/seed/access.yml'),
+        File.read("config/seed/access.yml"),
         symbolize_names: true,
         aliases: true
       )[:roles]

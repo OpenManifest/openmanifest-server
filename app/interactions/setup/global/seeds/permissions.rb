@@ -1,5 +1,6 @@
-class Setup::Global::Seeds::Permissions < ApplicationInteraction
+# frozen_string_literal: true
 
+class Setup::Global::Seeds::Permissions < ApplicationInteraction
   steps :clear_removed_permissions,
         :import_new_permissions
 
@@ -44,35 +45,33 @@ class Setup::Global::Seeds::Permissions < ApplicationInteraction
   end
 
   private
-
-
-  # Find all permission slugs defined in the yml
-  #
-  # @return [Array<String>]
-  def yaml_permission_slugs
-    @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
-  end
-
-  # Find all permissions that are no longer defined in the yml file
-  #
-  # @return [Array<String>]
-  def removed_permissions
-    @removed_permissions ||= Permission.where(name: Permission.pluck(:name) - yaml_permission_slugs)
-  end
-
-  # Find all permission slugs defined in the yml file that don't exist
-  #
-  # @return [Array<String>]
-  def new_permission_slugs
-    @new_permission_slugs ||= yaml_permission_slugs - Permission.pluck(:name)
-  end
-
-  # Initialize Permissions from the new permission slugs
-  #
-  # @return [Array<Permission>]
-  def new_permissions
-    @new_permissions ||= new_permission_slugs.map do |slug|
-      Permission.new(name: slug)
+    # Find all permission slugs defined in the yml
+    #
+    # @return [Array<String>]
+    def yaml_permission_slugs
+      @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
     end
-  end
+
+    # Find all permissions that are no longer defined in the yml file
+    #
+    # @return [Array<String>]
+    def removed_permissions
+      @removed_permissions ||= Permission.where(name: Permission.pluck(:name) - yaml_permission_slugs)
+    end
+
+    # Find all permission slugs defined in the yml file that don't exist
+    #
+    # @return [Array<String>]
+    def new_permission_slugs
+      @new_permission_slugs ||= yaml_permission_slugs - Permission.pluck(:name)
+    end
+
+    # Initialize Permissions from the new permission slugs
+    #
+    # @return [Array<Permission>]
+    def new_permissions
+      @new_permissions ||= new_permission_slugs.map do |slug|
+        Permission.new(name: slug)
+      end
+    end
 end

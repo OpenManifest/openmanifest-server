@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Setup::Global::Seeds < ApplicationInteraction
   steps :create_jump_types,
         :create_federations,
@@ -14,5 +16,4 @@ class Setup::Global::Seeds < ApplicationInteraction
   def create_permissions
     compose Permissions
   end
-
 end

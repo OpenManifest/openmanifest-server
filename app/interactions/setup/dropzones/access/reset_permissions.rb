@@ -1,5 +1,6 @@
-class Setup::Dropzones::Access::ResetPermissions < ApplicationInteraction
+# frozen_string_literal: true
 
+class Setup::Dropzones::Access::ResetPermissions < ApplicationInteraction
   record :dropzone
 
   steps :clear_role_permissions
@@ -15,10 +16,10 @@ class Setup::Dropzones::Access::ResetPermissions < ApplicationInteraction
 
 
   private
-  # Find all permission slugs defined in the yml
-  #
-  # @return [Array<String>]
-  def yaml_permission_slugs
-    @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
-  end
+    # Find all permission slugs defined in the yml
+    #
+    # @return [Array<String>]
+    def yaml_permission_slugs
+      @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
+    end
 end

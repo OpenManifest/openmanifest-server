@@ -24,7 +24,7 @@ class Federation < ApplicationRecord
     # @return [Hash<Symbol, Array<String>>]
     def config
       @config ||= YAML.safe_load(
-        File.read('config/seed/global.yml'),
+        File.read("config/seed/global.yml"),
         symbolize_names: true
       )[:federations]
     end

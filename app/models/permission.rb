@@ -33,7 +33,7 @@ class Permission < ApplicationRecord
 
     def config
       @config ||= YAML.safe_load(
-        File.read('config/seed/access.yml'),
+        File.read("config/seed/access.yml"),
         symbolize_names: true,
         aliases: true
       )[:permissions]

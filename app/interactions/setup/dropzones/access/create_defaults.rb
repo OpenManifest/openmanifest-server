@@ -1,5 +1,6 @@
-class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
+# frozen_string_literal: true
 
+class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
   record :dropzone
   array :permissions, default: -> { Permission.all.to_a }
 
@@ -71,23 +72,22 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
 
 
   private
-
-  def default_role_permissions
-    @default_role_permissions ||= dropzone.user_roles.map do |role|
-      UserRole.config[role.name.to_sym].values.flatten.filter_map do |permission|
-        role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
-        next nil unless role_permission
-        {
-          user_role: role,
-          permission: role_permission
-        }
-      end
-    end.compact.flatten
-  end
-  # Find all permission slugs defined in the yml
-  #
-  # @return [Array<String>]
-  def yaml_permission_slugs
-    @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
-  end
+    def default_role_permissions
+      @default_role_permissions ||= dropzone.user_roles.filter_map do |role|
+        UserRole.config[role.name.to_sym].values.flatten.filter_map do |permission|
+          role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
+          next nil unless role_permission
+          {
+            user_role: role,
+            permission: role_permission
+          }
+        end
+      end.flatten
+    end
+    # Find all permission slugs defined in the yml
+    #
+    # @return [Array<String>]
+    def yaml_permission_slugs
+      @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
+    end
 end

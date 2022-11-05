@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddUniquenessIndexToLicenses < ActiveRecord::Migration[6.1]
   def change
     add_index :licenses, [:name, :federation_id], unique: true
