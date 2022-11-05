@@ -9,7 +9,7 @@ module Mutations::Users
     def resolve(attributes:)
       mutate(
         ::Federations::AssignUser,
-        :user,
+        :user_federation,
         federation: attributes[:federation],
         license: attributes[:license],
         uid: attributes[:uid],
