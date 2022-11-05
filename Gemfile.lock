@@ -56,6 +56,8 @@ GEM
     activerecord (6.1.7)
       activemodel (= 6.1.7)
       activesupport (= 6.1.7)
+    activerecord-import (1.4.1)
+      activerecord (>= 4.2)
     activestorage (6.1.7)
       actionpack (= 6.1.7)
       activejob (= 6.1.7)
@@ -462,6 +464,7 @@ DEPENDENCIES
   active_interaction (~> 4.0.0)
   active_interaction-extras
   active_storage_base64
+  activerecord-import
   annotate
   appsignal
   awesome_print

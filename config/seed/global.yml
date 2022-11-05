@@ -1,0 +1,66 @@
+jump_types:
+  - name: Angle/Tracking
+    slug: angle
+  - name: Freefly
+    slug: freefly
+  - name: Camera
+    slug: cam
+  - name: Hop 'n Pop
+    slug: hnp
+  - name: High Pull
+    slug: hp
+  - name: Flat
+    slug: fs
+  - name: Wingsuit
+    slug: ws
+federations:
+  apf:
+    name: APF
+    slug: apf
+    licenses:
+      - name: Certificate A
+        licensed_jump_types:
+          - fs
+          - hnp
+      - name: Certificate B
+        licensed_jump_types:
+          - fs
+          - hnp
+          - hp
+          - angle
+          - freefly
+      - name: Certificate C
+        licensed_jump_types:
+          - fs
+          - hnp
+          - hp
+          - angle
+          - freefly
+          - cam
+      - name: Certificate D
+        licensed_jump_types:
+          - fs
+          - hnp
+          - hp
+          - angle
+          - freefly
+          - cam
+          - ws
+      - name: Certificate E
+        licensed_jump_types:
+          - fs
+          - hnp
+          - hp
+          - angle
+          - freefly
+          - cam
+          - ws
+      - name: Certificate F
+        licensed_jump_types:
+          - fs
+          - hnp
+          - hp
+          - angle
+          - freefly
+          - cam
+          - ws

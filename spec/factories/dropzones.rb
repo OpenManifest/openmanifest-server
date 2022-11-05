@@ -35,13 +35,16 @@ FactoryBot.define do
     time_zone { "Australia/Brisbane" }
     federation { Federation.first }
 
+    after(:create) do |dropzone|
+      ::Setup::Dropzones::Access::CreateDefaults.run!(dropzone: dropzone)
+    end
+
     factory :dropzone_with_loads do
       transient do
         plane_count { 1 }
       end
 
       after(:create) do |dropzone, evaluator|
-        dropzone.create_default_roles
         create_list(:plane_with_loads, evaluator.plane_count, dropzone: dropzone)
 
         # You may need to reload the record here, depending on your application
