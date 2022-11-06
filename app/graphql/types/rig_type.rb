@@ -24,10 +24,12 @@ module Types
     end
 
     field :rig_inspections, Types::RigInspectionType, null: true do
-      argument :dropzone_id, Int, required: true
+      argument :dropzone_id, GraphQL::Types::ID, required: true
     end
     def rig_inspections(dropzone_id: nil)
-      rig.rig_inspections.at_dropzone(Dropzone.find(dropzone_id)) if dropzone_id
+      dropzone = Dropzone.find_by(id: dropzone_id)
+      return nil unless dropzone
+      rig.rig_inspections.at_dropzone(dropzone)
     end
   end
 end
