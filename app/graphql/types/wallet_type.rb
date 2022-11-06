@@ -4,6 +4,11 @@ module Types
   module WalletType
     include Types::BaseInterface
 
+    field :wallet_id, ID, null: false
+    def wallet_id
+      object.to_gid_param
+    end
+
     field :orders, Types::OrderType.connection_type, null: true do
       argument :start_date, Integer, required: false
     end

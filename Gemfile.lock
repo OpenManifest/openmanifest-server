@@ -39,9 +39,9 @@ GEM
       erubi (~> 1.4)
       rails-dom-testing (~> 2.0)
       rails-html-sanitizer (~> 1.1, >= 1.2.0)
-    active_interaction (4.0.6)
-      activemodel (>= 5, < 7)
-      activesupport (>= 5, < 7)
+    active_interaction (5.2.0)
+      activemodel (>= 5.2, < 8)
+      activesupport (>= 5.2, < 8)
     active_interaction-extras (1.0.4)
       active_interaction (>= 4.0.2)
       activemodel (>= 6.0)
@@ -455,13 +455,13 @@ GEM
     xpath (3.2.0)
       nokogiri (~> 1.8)
     yard (0.9.24)
-    zeitwerk (2.6.4)
+    zeitwerk (2.6.5)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_interaction (~> 4.0.0)
+  active_interaction
   active_interaction-extras
   active_storage_base64
   activerecord-import
@@ -484,6 +484,7 @@ DEPENDENCIES
   faker
   fasterer
   geokit-rails
+  globalid
   graphiql-rails
   graphql
   graphql-rails-generators

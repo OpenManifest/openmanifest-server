@@ -16,30 +16,52 @@ class DzSchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Union and Interface Resolution
-  def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct object type for `obj`
-    raise(GraphQL::RequiredImplementationMissingError)
-  end
+  class << self
+    def model_type_map
+      @model_class_map ||= {
+        ::Dropzone            => ::Types::DropzoneType,
+        ::Federation          => ::Types::FederationType,
+        ::DropzoneUser        => ::Types::DropzoneUserType,
+        ::Form                => ::Types::Form,
+        ::License             => ::Types::License,
+        ::LicensedJumpType    => ::Types::LicensedJumpType,
+        ::Load                => ::Types::Load,
+        ::Notification        => ::Types::Notification,
+        ::Rig                 => ::Types::Rig,
+        ::RigInspection       => ::Types::RigInspection,
+        ::FormTemplate        => ::Types::FormTemplate,
+        ::Extra               => ::Types::Extra,
+        ::Passenger           => ::Types::Passenger,
+        ::Permission          => ::Types::Permission,
+        ::Plane               => ::Types::Plane,
+        ::TicketType          => ::Types::TicketType,
+        ::User                => ::Types::User,
+        ::UserFederation      => ::Types::UserFederation,
+        ::Receipt             => ::Types::Receipt,
+        ::Order               => ::Types::Order,
+        ::Transaction         => ::Types::Transaction,
+        ::WeatherCondition    => ::Types::WeatherCondition,
+        ::UserRole            => ::Types::UserRole,
+        ::Slot                => ::Types::Slot,
+        ::Plane               => ::Types::Plane
+      }
+    end
 
-  # Relay-style Object Identification:
+    # Union and Interface Resolution
+    def resolve_type(abstract_type, obj, ctx)
+      model_type_map[abstract_type]
+    end
 
-  # Return a string UUID for `object`
-  def self.id_from_object(object, type_definition, query_ctx)
-    # Here's a simple implementation which:
-    # - joins the type name & object.id
-    # - encodes it with base64:
-    # GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
-  end
+    # Relay-style Object Identification:
 
-  # Given a string UUID, find the object
-  def self.object_from_id(id, query_ctx)
-    # For example, to decode the UUIDs generated above:
-    # type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    #
-    # Then, based on `type_name` and `id`
-    # find an object in your application
-    # ...
+    # Return a string UUID for `object`
+    def id_from_object(object, type_definition, query_ctx)
+      object.to_gid_param
+    end
+
+    # Given a string UUID, find the object
+    def object_from_id(global_id, query_ctx)
+      ::GlobalID.find(global_id)
+    end
   end
 end
