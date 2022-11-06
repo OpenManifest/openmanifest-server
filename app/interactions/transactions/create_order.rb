@@ -4,8 +4,8 @@ class Transactions::CreateOrder < Transactions::Purchase
   integer :amount
   string :title, default: nil
   integer :purchasable, default: nil
-  record :buyer, class: "ApplicationRecord"
-  record :seller, class: "ApplicationRecord"
+  object :buyer, class: [::Dropzone, ::DropzoneUser]
+  object :seller, class: [::Dropzone, ::DropzoneUser]
   record :dropzone
 
   validates :amount, :buyer, :seller, :dropzone, presence: true
@@ -13,9 +13,7 @@ class Transactions::CreateOrder < Transactions::Purchase
   steps :create_order,
         :create_transactions,
         :update_credits,
-        :confirm_order,
-        # Return
-        :@order
+        :confirm_order
 
   # Create events
   success do
@@ -28,7 +26,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "Order ##{@order.id} created with a total value of #{amount}"
+      message: "Order ##{@order.id} created with a total value of $#{amount}"
     )
   end
 
@@ -63,6 +61,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       receipt: @order.receipts.first,
       access_context: access_context
     )
+    @order
   end
 
   def total_cost

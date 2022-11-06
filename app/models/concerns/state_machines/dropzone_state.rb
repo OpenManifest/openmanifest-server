@@ -13,6 +13,10 @@ module StateMachines::DropzoneState
         transition any => :public
       end
 
+      event :demo do
+        transition any => :demo
+      end
+
       event :unpublish do
         transition any => :private
       end

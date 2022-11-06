@@ -11,6 +11,10 @@ class Demo::DataGenerator < ApplicationInteraction
         :create_users,
         :create_loads
 
+  def check_eligibility
+    errors.add(:base, "You cannot add demo data to a live dropzone") if dropzone.state == "public"
+  end
+
   def dz
     @dz ||= dropzone || compose(
       ::Setup::Dropzones::CreateDropzone,
@@ -34,6 +38,7 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_tickets
+    return nil if dropzone.ticket_types.any?
     compose(
       ::Demo::Generators::Tickets,
       access_context: owner_access_context
@@ -41,6 +46,7 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_aircrafts
+    return nil if dropzone.planes.any?
     compose(
       ::Demo::Generators::Aircrafts,
       access_context: owner_access_context

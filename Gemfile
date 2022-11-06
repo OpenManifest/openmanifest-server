@@ -51,7 +51,7 @@ gem "bootsnap", ">= 1.4.4", require: false
 gem "search_cop"
 
 # Separate business logic
-gem "active_interaction", "~> 4.0.0"
+gem "active_interaction"
 gem "active_interaction-extras"
 
 # Count things
@@ -69,6 +69,9 @@ gem "jwt"
 
 # Bulk import
 gem "activerecord-import"
+
+# Find models by global ID
+gem "globalid"
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

@@ -2,8 +2,8 @@
 
 class Transactions::Purchase < ApplicationInteraction
   record :purchasable, class: "ApplicationRecord", default: nil
-  record :buyer, class: "ApplicationRecord"
-  record :seller, class: "ApplicationRecord"
+  object :buyer, class: [::Dropzone, ::DropzoneUser]
+  object :seller, class: [::Dropzone, ::DropzoneUser]
 
   validates :buyer, :seller, presence: true
 
