@@ -26,7 +26,7 @@ class Resolvers::Dropzones < Resolvers::Base
     query = query.includes(:roles)          if lookahead.selects?(:roles)
     query = query.where(state: state).or(
       query.where(
-        dropzone_users: context[:current_resource].dropzone_users.owner
+        id: context[:current_resource].dropzone_users.staff.pluck(:id)
       )
     )
 

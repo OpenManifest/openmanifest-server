@@ -30,7 +30,7 @@ FactoryBot.define do
       end
 
       after(:create) do |plane, evaluator|
-        create_list(:load, evaluator.load_count, plane: plane)
+        create_list(:load, evaluator.load_count, plane: plane, gca: plane.dropzone.dropzone_users.first, pilot: plane.dropzone.dropzone_users.first)
 
         plane.reload
       end
