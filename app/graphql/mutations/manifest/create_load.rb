@@ -25,4 +25,9 @@ module Mutations::Manifest
       )
     end
   end
+
+  def authorized?(attributes: nil)
+    current_user = attributes[:plane].dropzone.dropzone_users.find_by(user: context[:current_resource])
+    current_user.can?(:createLoad)
+  end
 end

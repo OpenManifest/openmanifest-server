@@ -23,7 +23,7 @@ FactoryBot.define do
     dropzone { nil }
     credits { nil }
     user_role {
-      dropzone.user_roles.third
+      dropzone.user_roles.reload.third
     }
     license { Federation.first.licenses.sample }
 

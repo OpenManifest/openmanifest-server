@@ -8,5 +8,12 @@ module Types
     def guid
       object.to_gid_param
     end
+
+    definition_methods do
+      # Determine what object type to use for `object`
+      def resolve_type(object, context)
+        ::DzSchema.resolve_type(object.class, object, context)
+      end
+    end
   end
 end

@@ -31,6 +31,9 @@ class Load < ApplicationRecord
   belongs_to :gca, class_name: "DropzoneUser", optional: true, foreign_key: :gca_id
   belongs_to :pilot, class_name: "DropzoneUser", optional: true, foreign_key: :pilot_id
 
+  validates :gca, presence: { message: "Every load must have a GCA" }
+  validates :pilot, presence: { message: "Pilot is required" }
+
   has_many :notifications, as: :resource
   has_many :slots, dependent: :destroy
 
