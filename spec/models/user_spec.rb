@@ -40,11 +40,11 @@
 require "rails_helper"
 
 RSpec.describe User, type: :model do
-  before(:each) do
+  let!(:dropzone) do
     # Create a dropzone
-    Dropzone.find_or_create_by(
+    create(
+      :dropzone,
       name: "rspec",
-      federation: Federation.first
     )
   end
 
@@ -58,7 +58,8 @@ RSpec.describe User, type: :model do
     )
     user.save!
 
-    Dropzone.first.dropzone_users.find_or_create_by!(
+    create(:dropzone_user,
+      dropzone: dropzone,
       user: user,
     )
   end
