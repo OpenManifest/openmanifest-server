@@ -25,7 +25,7 @@ class DzSchema < GraphQL::Schema
         ::Federation          => ::Types::FederationType,
         ::FormTemplate        => ::Types::FormTemplateType,
         ::License             => ::Types::LicenseType,
-        ::LicensedJumpType    => ::Types::LicensedJumpType,
+        ::LicensedJumpType    => ::Types::LicensedJumpTypeType,
         ::Load                => ::Types::LoadType,
         ::Notification        => ::Types::NotificationType,
         ::Order               => ::Types::OrderType,
