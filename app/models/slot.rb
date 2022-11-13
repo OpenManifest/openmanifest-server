@@ -45,8 +45,8 @@ class Slot < ApplicationRecord
   counter_culture %i[load plane dropzone], column_name: :slots_count
   counter_culture :load, column_name: :slots_count
   counter_culture :load,
-                  column_names: -> {{
-                    Slot.ready => 'ready_slots_count'
+                  column_names: -> { {
+                    Slot.ready => "ready_slots_count"
                   }}
 
 

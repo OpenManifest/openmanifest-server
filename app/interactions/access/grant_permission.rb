@@ -32,7 +32,7 @@ class Access::GrantPermission < ApplicationInteraction
   end
 
   def can_grant?
-    errors.add(:base, 'You are not authorized to grant permissions') unless access_context.can?(:grantPermission)
+    errors.add(:base, "You are not authorized to grant permissions") unless access_context.can?(:grantPermission)
   end
 
   def grant_permission
@@ -41,5 +41,4 @@ class Access::GrantPermission < ApplicationInteraction
     )
     dropzone_user.user_permissions.reload
   end
-
 end

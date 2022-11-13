@@ -32,7 +32,7 @@ class Access::RevokePermission < ApplicationInteraction
   end
 
   def can_revoke?
-    errors.add(:base, 'You are not authorized to revoke permissions') unless access_context.can?(:revokePermission)
+    errors.add(:base, "You are not authorized to revoke permissions") unless access_context.can?(:revokePermission)
   end
 
   def revoke_permission
@@ -42,5 +42,4 @@ class Access::RevokePermission < ApplicationInteraction
     dropzone_user.user_permissions.reload
     dropzone_user.reload
   end
-
 end

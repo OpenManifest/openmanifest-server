@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class AddSlotsCountToLoad < ActiveRecord::Migration[6.1]
   def change
     add_column :loads, :slots_count, :bigint, default: 0

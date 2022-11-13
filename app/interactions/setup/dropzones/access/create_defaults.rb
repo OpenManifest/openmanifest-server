@@ -88,10 +88,9 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
     def default_role_permissions
       @default_role_permissions ||= dropzone.user_roles.filter_map do |role|
         UserRole.config[role.name.to_sym].values.flatten.filter_map do |permission|
-
           # Acting permissions should not be assigned to roles, only users,
           # as we want to grant and revoke these on a user basis
-          next nil if permission =~ /^actAs/
+          next nil if /^actAs/.match?(permission)
 
           role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
           next nil unless role_permission
@@ -105,13 +104,11 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
 
     def default_role_user_permissions
       @default_role_user_permissions ||= dropzone.user_roles.includes(:dropzone_users).filter_map do |role|
-
         role.dropzone_users.filter_map do |dropzone_user|
           UserRole.config[role.name.to_sym].values.flatten.sort.reverse.filter_map do |permission|
-
             # Acting permissions should not be assigned to roles, only users,
             # as we want to grant and revoke these on a user basis
-            next nil unless permission =~ /^actAs/
+            next nil unless /^actAs/.match?(permission)
 
             role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
             next nil unless role_permission
