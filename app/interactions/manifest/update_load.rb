@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "active_interaction"
+
 class Manifest::UpdateLoad < ApplicationInteraction
   allow :updateLoad
 
@@ -34,7 +36,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         created_by: access_context.subject,
         message: "#{access_context.subject.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
       )
-    elsif given?(:dispatch_at)
+    elsif inputs.given?(:dispatch_at)
       compose(
         ::Activity::CreateEvent,
         access_context: access_context,
@@ -103,14 +105,15 @@ class Manifest::UpdateLoad < ApplicationInteraction
   end
 
   def update_load
-    load.assign_attributes(dispatch_at: dispatch_at) if given?(:dispatch_at)
+    load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
     load.assign_attributes(
       {
-        max_slots: max_slots || load.max_slots || load.plane.max_slots,
         gca: gca,
+        plane: plane,
         load_master: load_master,
         pilot: pilot,
         name: name,
+        max_slots: max_slots || load.max_slots || load.plane.max_slots,
         state: state
       }.compact
     )

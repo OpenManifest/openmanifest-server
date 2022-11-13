@@ -12,7 +12,8 @@ module Types
     definition_methods do
       # Determine what object type to use for `object`
       def resolve_type(object, context)
-        ::DzSchema.resolve_type(object.class, object, context)
+        type, = ::DzSchema.resolve_type(object.class, object, context)
+        type
       end
     end
   end

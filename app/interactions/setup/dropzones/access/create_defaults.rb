@@ -7,6 +7,7 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
   steps :create_permissions,
         :create_default_roles,
         :assign_default_role_permissions,
+        :assign_default_role_user_permissions,
         :assert_success!
 
 
@@ -39,12 +40,24 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
   end
 
   def assign_default_role_permissions
-    @role_permissions = default_role_permissions.map do |attrs|
+    @role_permissions = default_role_permissions.filter_map do |attrs|
       UserRolePermission.new(attrs)
     end
 
     UserRolePermission.import!(
       @role_permissions,
+      synchronize: @role_permissions,
+      on_duplicate_key_ignore: true
+    )
+  end
+
+  def assign_default_role_user_permissions
+    @role_user_permissions = default_role_user_permissions.filter_map do |attrs|
+      UserPermission.new(attrs)
+    end
+
+    UserPermission.import!(
+      @role_user_permissions,
       synchronize: @role_permissions,
       on_duplicate_key_ignore: true
     )
@@ -75,6 +88,10 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
     def default_role_permissions
       @default_role_permissions ||= dropzone.user_roles.filter_map do |role|
         UserRole.config[role.name.to_sym].values.flatten.filter_map do |permission|
+          # Acting permissions should not be assigned to roles, only users,
+          # as we want to grant and revoke these on a user basis
+          next nil if /^actAs/.match?(permission)
+
           role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
           next nil unless role_permission
           {
@@ -84,6 +101,28 @@ class Setup::Dropzones::Access::CreateDefaults < ApplicationInteraction
         end
       end.flatten
     end
+
+    def default_role_user_permissions
+      @default_role_user_permissions ||= dropzone.user_roles.includes(:dropzone_users).filter_map do |role|
+        role.dropzone_users.filter_map do |dropzone_user|
+          UserRole.config[role.name.to_sym].values.flatten.sort.reverse.filter_map do |permission|
+            # Acting permissions should not be assigned to roles, only users,
+            # as we want to grant and revoke these on a user basis
+            next nil unless /^actAs/.match?(permission)
+
+            role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
+            next nil unless role_permission
+            {
+              dropzone_user: dropzone_user,
+              permission: role_permission
+            }
+          end
+        end
+      end.flatten || []
+      @default_role_user_permissions ||= []
+    end
+
+
     # Find all permission slugs defined in the yml
     #
     # @return [Array<String>]
