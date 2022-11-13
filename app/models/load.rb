@@ -88,11 +88,14 @@ class Load < ApplicationRecord
   end
 
   def ready?
-    gca.present? && load_master.present? && plane.present? && slots.count(&:ready?) >= plane.min_slots
+    return false unless gca.present?
+    return false unless load_master.present?
+    return false unless plane.present?
+    ready_slots_count >= plane.min_slots
   end
 
   def available_slots
-    (max_slots || plane.max_slots) - (slots.count || 0)
+    (max_slots || plane.max_slots) - (slots_count || 0)
   end
 
   def occupied_slots

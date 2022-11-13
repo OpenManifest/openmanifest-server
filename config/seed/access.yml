@@ -297,5 +297,7 @@ roles:
       - viewRevenue
   admin:
     <<: *crud
+    all_acting: *acting
   owner:
     <<: *crud
+    all_acting: *acting

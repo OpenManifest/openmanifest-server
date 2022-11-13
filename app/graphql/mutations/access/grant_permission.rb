@@ -6,54 +6,27 @@ module Mutations::Access
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :permission, Types::PermissionType, required: true
-    argument :id, Int, required: false
+    argument :permission, Types::PermissionType,
+             required: true,
+             prepare: -> (value, ctx) { ::Permission.find_by(name: value) }
 
-    def resolve(permission:, id: nil)
-      model = DropzoneUser.find(id)
+    argument :dropzone_user, ID, required: false,
+             prepare: -> (value, ctx) { DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value) }
 
-      model.grant! permission
-      model.user_permissions.reload
+    def resolve(permission:, dropzone_user: nil)
 
-      Notification.create(
-        received_by: model,
-        message: "Permission granted: #{permission}",
-        notification_type: :permission_granted,
-        resource: model,
-        sent_by: model.dropzone.dropzone_users.find_by(user_id: context[:current_resource].id)
+      mutate(
+        ::Access::GrantPermission,
+        :dropzone_user,
+        access_context: access_context_for(dropzone_user.dropzone),
+        permission: permission,
+        dropzone_user: dropzone_user
       )
-
-      {
-        dropzone_user: model.reload,
-        errors: nil,
-        field_errors: nil,
-      }
-    rescue ActiveRecord::RecordInvalid => invalid
-      # Failed save, return the errors to the client
-      {
-        dropzone_user: nil,
-        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
-      }
-    rescue ActiveRecord::RecordNotSaved => error
-      # Failed save, return the errors to the client
-      {
-        dropzone_user: nil,
-        field_errors: nil,
-        errors: error.record.errors.full_messages
-      }
-    rescue ActiveRecord::RecordNotFound => error
-      {
-        dropzone_user: nil,
-        field_errors: nil,
-        errors: [ error.message ]
-      }
     end
 
-    def authorized?(id: nil, permission: nil)
-      dz_user = DropzoneUser.find(id)
+    def authorized?(dropzone_user: nil, permission: nil)
       current_dz_user = context[:current_resource].dropzone_users.find_by(
-        dropzone_id: dz_user.dropzone_id
+        dropzone_id: dropzone_user.dropzone_id
       )
 
       # Users cannot grant permissions they dont have,
@@ -66,7 +39,7 @@ module Mutations::Access
             "You can't grant permissions for this dropzone"
           ]
         }
-      elsif /^actAs.*/ !~ permission && !current_dz_user.all_permissions.includes?(permission)
+      elsif /^actAs.*/ !~ permission.name && !current_dz_user.can?(permission.name)
         return false, {
           errors: [
             "You can't grant permissions you don't have"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_11_05_055041) do
+ActiveRecord::Schema.define(version: 2022_11_13_010753) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -219,11 +219,15 @@ ActiveRecord::Schema.define(version: 2022_11_05_055041) do
     t.integer "state"
     t.integer "load_number"
     t.datetime "discarded_at"
+    t.bigint "slots_count", default: 0
+    t.bigint "ready_slots_count", default: 0
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
     t.index ["plane_id"], name: "index_loads_on_plane_id"
+    t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
+    t.index ["slots_count"], name: "index_loads_on_slots_count"
   end
 
   create_table "master_logs", force: :cascade do |t|
