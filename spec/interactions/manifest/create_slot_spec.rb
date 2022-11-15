@@ -5,9 +5,12 @@ require "rails_helper"
 RSpec.describe Manifest::CreateSlot do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
+
+  let!(:gca) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "GCA")) }
+  let!(:pilot) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "Pilot")) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
   let!(:plane) { create(:plane, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane) }
+  let!(:plane_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createSlot
@@ -90,7 +93,9 @@ RSpec.describe Manifest::CreateSlot do
         )
       end
 
-      let!(:second_load) { create(:load, plane: plane) }
+      let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:second_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
 
       let!(:outcome) do
         Manifest::CreateSlot.run(
@@ -133,7 +138,9 @@ RSpec.describe Manifest::CreateSlot do
         access_context.subject.grant! :createDoubleSlot
       end
 
-      let!(:second_load) { create(:load, plane: plane) }
+      let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:second_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
 
       it { is_expected.to be_a Slot }
       it { expect { subject }.not_to raise_error }

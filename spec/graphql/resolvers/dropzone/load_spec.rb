@@ -7,9 +7,11 @@ module Mutations
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone) }
     let!(:plane) { create(:plane, dropzone: dropzone) }
-    let!(:load1) { create(:load, plane: plane, created_at: 1.day.ago) }
-    let!(:load2) { create(:load, plane: plane, created_at: DateTime.current.beginning_of_day + 5.hours) }
-    let!(:load3) { create(:load, plane: plane, created_at: 1.day.from_now) }
+    let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:load1) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.ago) }
+    let!(:load2) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: DateTime.current.beginning_of_day + 5.hours) }
+    let!(:load3) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.from_now) }
 
     before do
       dropzone_user.grant! :createUser

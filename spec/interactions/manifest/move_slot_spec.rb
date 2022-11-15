@@ -7,8 +7,10 @@ RSpec.describe Manifest::MoveSlot do
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
   let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
   let!(:plane) { create(:plane, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane) }
-  let!(:target_load) { create(:load, plane: plane) }
+  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
+  let!(:target_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createSlot

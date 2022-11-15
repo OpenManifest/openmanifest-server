@@ -29,11 +29,13 @@ FactoryBot.define do
     state { "open" }
     max_slots { plane.max_slots }
     dispatch_at { nil }
+    gca { nil }
+    pilot { nil }
 
     before(:validation) do |instance, evaluator|
       instance.assign_attributes(
-        gca: instance.gca || instance.dropzone.dropzone_users.first,
-        pilot: instance.pilot || instance.dropzone.dropzone_users.first,
+        gca: instance.gca || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),
+        pilot: instance.pilot || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),
       )
     end
 
