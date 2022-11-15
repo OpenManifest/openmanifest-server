@@ -149,7 +149,7 @@ module Types
 
     def banner
       return nil unless object.banner.attached?
-      Rails.application.routes.url_helpers.rails_blob_path(object.banner)
+      Rails.application.routes.url_helpers.url_for(object.banner)
     rescue ActiveStorage::FileNotFoundError
       nil
     end
