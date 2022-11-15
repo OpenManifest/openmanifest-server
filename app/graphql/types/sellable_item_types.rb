@@ -5,7 +5,7 @@ class Types::SellableItemTypes < Types::BaseEnum
     Pack,
     TicketType,
     Extra,
-    Slot
+    Slot,
   ].map do |model|
     value model.name.camelize(:lower), value: model.name
   end

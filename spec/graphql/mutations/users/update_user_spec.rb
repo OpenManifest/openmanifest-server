@@ -11,16 +11,17 @@ module Mutations
     let!(:apf_response) do
       []
     end
+
     before do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
-      to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
+        to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
       dropzone_user.grant! :createUser
     end
 
     describe ".resolve" do
       context "successfully" do
         let!(:license) { dropzone.federation.licenses.where.not(id: dropzone_user&.license&.id).to_a.sample }
-        let(:query_str) {
+        let(:query_str) do
           query(
             id: dropzone_user.user.id,
             name: "rspec",
@@ -30,18 +31,19 @@ module Mutations
             license_id: license.reload.id,
             exit_weight: 50,
           )
-        }
+        end
         let(:post_request) do
           post "/graphql",
                params: {
-                 query: query_str
+                 query: query_str,
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body, symbolize_names: true)
-        }
+        end
+
         it { expect(post_request).to eq 200 }
         it do
           post_request

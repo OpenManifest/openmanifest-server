@@ -67,7 +67,6 @@ class Manifest::DeleteSlot < ApplicationInteraction
     slot
   end
 
-
   def is_self?
     access_context.subject.id == slot.dropzone_user_id
   end

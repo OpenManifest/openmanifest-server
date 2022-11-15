@@ -12,12 +12,14 @@ RSpec.describe Manifest::CreateMultipleSlots do
       {
         rig: dz_user.user.rigs&.first,
         exit_weight: dz_user.exit_weight,
-        dropzone_user: dz_user
+        dropzone_user: dz_user,
       }
     end
   end
   let!(:plane) { create(:plane, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane) }
+  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createUserSlot
@@ -47,6 +49,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
       before do
         dropzone_users.sample.update(credits: ticket_type.cost - 10)
       end
+
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,

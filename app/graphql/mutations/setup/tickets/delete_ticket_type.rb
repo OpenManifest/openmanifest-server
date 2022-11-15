@@ -2,9 +2,9 @@
 
 module Mutations::Setup::Tickets
   class DeleteTicketType < Mutations::BaseMutation
-    field :ticket_type, Types::TicketTypeType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :ticket_type, Types::TicketTypeType, null: true
 
     argument :id, Int, required: true
 
@@ -21,27 +21,27 @@ module Mutations::Setup::Tickets
       {
         ticket_type: model.reload,
         field_errors: nil,
-        errors: nil
+        errors: nil,
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
         ticket_type: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
         ticket_type: nil,
         field_errors: nil,
-        errors: error.record.errors.full_messages
+        errors: error.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         ticket_type: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -50,9 +50,11 @@ module Mutations::Setup::Tickets
       if dz_user.can? :deleteDropzone
         true
       else
-        return false, {
-          errors: ["You cant delete this dropzone"]
-        }
+        [
+          false, {
+            errors: ["You cant delete this dropzone"],
+          },
+        ]
       end
     end
   end

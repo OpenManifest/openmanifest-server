@@ -43,7 +43,6 @@ class Demo::Generators::Loads < ApplicationInteraction
     end
   end
 
-
   def create_past_load(date)
     @load_count ||= 0
     @slot_count ||= 0
@@ -61,7 +60,7 @@ class Demo::Generators::Loads < ApplicationInteraction
 
     # Manifest user groups
     taken_slots = 0
-    while taken_slots < plane_load.max_slots do
+    while taken_slots < plane_load.max_slots
       group_size = Random.rand(4) + 1
       taken_slots += group_size
       break if taken_slots > plane_load.max_slots

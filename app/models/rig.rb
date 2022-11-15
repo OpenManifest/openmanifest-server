@@ -23,9 +23,7 @@
 #
 class Rig < ApplicationRecord
   include Discard::Model
-  include CloudinaryHelper
-  mount_base64_uploader :packing_card, PackingCardUploader,
-  file_name: -> (u) { "packing-card-#{u.id}-#{Time.current.to_i}.png" }
+  has_one_base64_attached :packing_card
 
   belongs_to :user, optional: true
   belongs_to :dropzone, optional: true
@@ -34,14 +32,10 @@ class Rig < ApplicationRecord
   has_many :users, as: :packers, through: :packs
   has_many :rig_inspections
 
-  enum rig_type: [
-    :student,
-    :sport,
-    :tandem,
-  ]
+  enum rig_type: { :student => 0, :sport => 1, :tandem => 2 }
 
   before_save do
-    assign_attributes(rig_type: :sport) unless rig_type.present?
+    assign_attributes(rig_type: :sport) if rig_type.blank?
   end
 
   def inspected_at?(dropzone)

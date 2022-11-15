@@ -2,8 +2,6 @@
 
 require "open-uri"
 
-
-
 # Create a dropzone with this user
 dropzone = Dropzone.find_or_initialize_by(
   name: "Demo",
@@ -81,7 +79,6 @@ if dropzone.new_record?
     is_tandem: true,
     currency: "AUD"
   )
-
 
   puts "--Creating ticket type: Tandem"
   tandem = TicketType.create(
@@ -177,8 +174,6 @@ if dropzone.dropzone_users.length < 2
         name: "fun_jumper"
       )
     )
-
-
 
     # Pick a random license
     dz_user.user.update(

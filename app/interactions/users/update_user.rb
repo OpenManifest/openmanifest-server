@@ -23,13 +23,17 @@ class Users::UpdateUser < ApplicationInteraction
         name: name,
         nickname: nickname,
         push_token: push_token,
-        image: image,
         phone: phone,
         email: email,
         exit_weight: exit_weight,
       }.compact
     )
     errors.merge!(dropzone_user.user.errors) unless dropzone_user.user.save
+    if image
+      dropzone_user.user.avatar.attach(data: image)
+      # Resize image
+      dropzone_user.user.avatar.variant(resize_to_fill: [500, 500], gravity: 'north')
+    end
   end
 
   def assign_federation

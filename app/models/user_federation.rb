@@ -26,7 +26,7 @@ class UserFederation < ApplicationRecord
     ).empty?
     dropzone_users.includes(:dropzone).where(
       dropzone: {
-        federation_id: federation.id
+        federation_id: federation.id,
       }
     ).update_all(license_id: license_id)
   end

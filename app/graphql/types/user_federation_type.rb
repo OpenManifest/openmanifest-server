@@ -7,7 +7,7 @@ module Types
     field :federation, Types::FederationType, null: false
     field :license, Types::LicenseType, null: true
     field :uid, String, null: true,
-    description: "User Federation ID, e.g APF number"
+                        description: "User Federation ID, e.g APF number"
     field :user, Types::UserType, null: false
     field :qualifications, [Types::UserQualificationType], null: true
     def qualifications

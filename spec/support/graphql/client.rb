@@ -22,7 +22,7 @@ module Specs
         if query_hash.key?(:mutation)
           query_hash[:mutation][operation_name][:fieldErrors] = {
             message: "",
-            field: ""
+            field: "",
           }
           query_hash[:mutation][operation_name][:errors] = nil
         end
@@ -32,8 +32,8 @@ module Specs
         self.query_string = GraphQL::Language::Printer.new.print(query_document)
         self.pundit_user = pundit_user
         self.match_hash = deep_reject(query_hash[:mutation] || query_hash[:query]) { |k, v| k == :args }
-        self.match_hash[operation_name][:fieldErrors] = nil
-        self.match_hash[operation_name][:errors] = nil
+        match_hash[operation_name][:fieldErrors] = nil
+        match_hash[operation_name][:errors] = nil
       end
 
       def execute
@@ -43,7 +43,7 @@ module Specs
           variables: {},
           context: {
             current_resource: @actor,
-            controller: @controller
+            controller: @controller,
           }
         )
         warn "Executing query:"

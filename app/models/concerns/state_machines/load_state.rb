@@ -10,7 +10,7 @@ module StateMachines::LoadState
 
       after_transition any => :cancelled do |record|
         record.slots.each do |slot|
-          next unless slot.dropzone_user.present?
+          next if slot.dropzone_user.blank?
 
           Notification.create(
             message: "Load ##{record.load_number} call canceled",
@@ -23,7 +23,7 @@ module StateMachines::LoadState
 
       after_transition any => :boarding_call do |record|
         record.slots.each do |slot|
-          next unless slot.dropzone_user.present?
+          next if slot.dropzone_user.blank?
 
           Notification.create(
             message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.plane.dropzone.time_zone).strftime('%H:%M')}",

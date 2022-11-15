@@ -60,7 +60,7 @@ class Login::Apple < ActiveInteraction::Base
 
     puts token_data.to_json
 
-    if token_data.has_key?("sub") && token_data.has_key?("email") && user_identity == token_data["sub"]
+    if token_data.key?("sub") && token_data.key?("email") && user_identity == token_data["sub"]
 
       user = User.find_or_initialize_by(
         provider: :apple,
@@ -78,7 +78,7 @@ class Login::Apple < ActiveInteraction::Base
           provider: :apple,
           uid: token_data["sub"],
         )
-        user.password = SecureRandom.urlsafe_base64(9) unless user.password.present?
+        user.password = SecureRandom.urlsafe_base64(9) if user.password.blank?
         user.save(validate: false)
         user.confirm
         errors.merge!(user.errors) unless user.save

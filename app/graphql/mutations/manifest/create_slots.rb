@@ -33,31 +33,36 @@ module Mutations::Manifest
       # Check if the user has permissions to manifest others
       can_manifest_others = context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
 
-
       if manifesting_tandems && !can_manifest_others && contains_others
-        return false, {
-          load: nil,
-          field_errors: nil,
-          errors: [
-            "You dont have permissions to manifest other people"
-          ]
-        }
+        [
+          false, {
+            load: nil,
+            field_errors: nil,
+            errors: [
+              "You dont have permissions to manifest other people",
+            ],
+          },
+        ]
       elsif context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
         true
       elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
         true
       elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
-        return false, {
-          errors: [
-            "You can only manifest a group if you're a part of it"
-          ]
-        }
+        [
+          false, {
+            errors: [
+              "You can only manifest a group if you're a part of it",
+            ],
+          },
+        ]
       else
-        return false, {
-          errors: [
-            "You don't have permissions to manifest other users #{required_permission}"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to manifest other users #{required_permission}",
+            ],
+          },
+        ]
       end
     end
   end

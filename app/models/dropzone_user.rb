@@ -33,7 +33,6 @@ class DropzoneUser < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
-
   has_many :rig_inspections, dependent: :destroy
   has_many :approved_rigs, through: :rig_inspections, source: :rig
 
@@ -44,7 +43,7 @@ class DropzoneUser < ApplicationRecord
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
   scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
-  scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i[tandem_passenger student pilot fun_jumper] }) }
+  scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_passenger student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
 
   validates :user_id, uniqueness: { scope: :dropzone_id }
@@ -74,24 +73,24 @@ class DropzoneUser < ApplicationRecord
   # @return [Array<Rig>]
   def available_rigs(load_id: nil)
     query = Rig.where(id: approved_rigs.pluck(:id) + dropzone.student_rigs.pluck(:id))
-    query = query.where.not(
-      id: Slot.where(
-        load_id: load_id
-      ).where.not(
-        # We do this to allow the user to
-        # see the rig on his/her own slot,
-        # e.g don't filter it out if its taken
-        # by the current user
-        dropzone_user_id: id
-      ).pluck(:rig_id)
-    ) if load_id
+    if load_id
+      query = query.where.not(
+        id: Slot.where(
+          load_id: load_id
+        ).where.not(
+          # We do this to allow the user to
+          # see the rig on his/her own slot,
+          # e.g don't filter it out if its taken
+          # by the current user
+          dropzone_user_id: id
+        ).pluck(:rig_id)
+      )
+    end
     query.where("repack_expires_at > ?", DateTime.now).distinct
   end
 
   def can?(permission)
-    all_permissions.where(
-      name: permission
-    ).exists?
+    all_permissions.exists?(name: permission)
   end
 
   # Grant the user a permission, specifically for this user

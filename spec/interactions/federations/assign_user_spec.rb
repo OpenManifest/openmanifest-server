@@ -13,7 +13,7 @@ RSpec.describe Federations::AssignUser do
   describe "assign a user to APF" do
     before do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
-      to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
+        to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
       Federations::AssignUser.run(
         user: user,
         federation: Federation.find_by(slug: :apf),

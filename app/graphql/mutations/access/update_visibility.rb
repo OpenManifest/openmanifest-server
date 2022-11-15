@@ -7,7 +7,7 @@ module Mutations::Access
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :dropzone, GraphQL::Types::ID, required: true,
-             prepare: -> (id, ctx) { Dropzone.find_by(id: id) }
+                                            prepare: -> (id, ctx) { Dropzone.find_by(id: id) }
     argument :event, Types::Dropzone::StateEvent, required: true
 
     def resolve(dropzone:, event:)

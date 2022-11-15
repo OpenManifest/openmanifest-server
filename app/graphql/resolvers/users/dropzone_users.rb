@@ -4,11 +4,11 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
   type Types::DropzoneUserType.connection_type, null: true
   description "Search users at a dropzone"
 
+  argument :dropzone, ::GraphQL::Types::ID, required: true,
+                                            prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
+  argument :licensed, Boolean, required: false
   argument :permissions, [Types::PermissionType], required: false
   argument :search, String, required: false
-  argument :licensed, Boolean, required: false
-  argument :dropzone, ::GraphQL::Types::ID, required: true,
-           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
 
   def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)
     lookahead = lookahead.selection(:edges).selection(:node)
@@ -20,11 +20,11 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
     query = query.includes(:slots)      if lookahead.selects?(:slots)
     query = query.includes(:user)       if lookahead.selects?(:user)
     query = query.includes(:license)    if lookahead.selects?(:license)
-    query = query.includes(user_permissions: :permission) unless permissions.blank?
+    query = query.includes(user_permissions: :permission) if permissions.present?
 
     query = query.where.not(license_id: nil) if licensed
 
-    unless permissions.blank?
+    if permissions.present?
       query = query.where(
         user_role: UserRolePermission.includes(:permission, :user_role).where(
           permission: { name: permissions },
@@ -33,12 +33,12 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
       ).or(
         query.where(
           user_permissions: {
-            permissions: { name: permissions }
+            permissions: { name: permissions },
           }
         )
       )
     end
-    query = query.search(search) unless search.blank?
+    query = query.search(search) if search.present?
     query
   end
 end

@@ -22,7 +22,7 @@ module Types
                required: true,
                description: "Total amount of the order"
       argument :dropzone, ID, required: true,
-               prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
+                              prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
     end
   end
 end

@@ -51,7 +51,6 @@ module Types
     field :create_slots,                mutation: Mutations::Manifest::CreateSlots
     field :update_slot,                 mutation: Mutations::Manifest::UpdateSlot
 
-
     # Payments
     field :create_order,                mutation: Mutations::Payments::CreateOrder
   end

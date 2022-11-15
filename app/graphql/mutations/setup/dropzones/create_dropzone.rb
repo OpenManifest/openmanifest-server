@@ -18,6 +18,7 @@ module Mutations::Setup::Dropzones
           :lat,
           :lng,
           :federation,
+          :banner,
           :request_publication,
           :is_public,
           :primary_color,

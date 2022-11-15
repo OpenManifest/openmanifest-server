@@ -12,18 +12,18 @@ class Transactions::Refund < ApplicationInteraction
 
   # Create events
   success do
-   compose(
-     ::Activity::CreateEvent,
-     access_level: :system,
-     level: :debug,
-     access_context: access_context,
-     resource: order,
-     action: :updated,
-     dropzone: access_context.dropzone,
-     created_by: access_context.subject,
-     message: "Order ##{order.id} was refunded"
-   )
- end
+    compose(
+      ::Activity::CreateEvent,
+      access_level: :system,
+      level: :debug,
+      access_context: access_context,
+      resource: order,
+      action: :updated,
+      dropzone: access_context.dropzone,
+      created_by: access_context.subject,
+      message: "Order ##{order.id} was refunded"
+    )
+  end
 
   error do
     compose(
@@ -51,7 +51,7 @@ class Transactions::Refund < ApplicationInteraction
   end
 
   def create_transactions
-    @receipt.transactions.where(status: %i[completed reserved]).each do |transaction|
+    @receipt.transactions.where(status: %i(completed reserved)).each do |transaction|
       # Create reversed transaction
       transaction = Transaction.create(
         sender: transaction.sender,

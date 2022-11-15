@@ -7,7 +7,7 @@ class Resolvers::Access::CurrentUser < Resolvers::Base
   def resolve
     return nil unless context[:current_resource]
     query = User
-    query = query.includes(:rigs)   if lookahead.selects?(:rigs)
+    query = query.includes(:rigs) if lookahead.selects?(:rigs)
     if lookahead.selects?(:dropzone_users)
       if lookahead.selection(:dropzone_users).selects?(:dropzone)
         query = query.includes(dropzone_users: :dropzone)

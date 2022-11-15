@@ -38,12 +38,10 @@ module Types
     field :state, Types::LoadStateType, null: false
     field :gca, Types::DropzoneUserType, null: true
 
-
     field :is_ready, Boolean, null: false
     def is_ready
       object.ready?
     end
-
 
     field :is_full, Boolean, null: false
     def is_full

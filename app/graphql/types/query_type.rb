@@ -25,7 +25,7 @@ module Types
     field :activity,        extras: [:lookahead],   resolver: Resolvers::Dropzone::Activity
 
     field :geocode, Types::GeocodedLocationType, null: true,
-    description: "Find location by searching" do
+                                                 description: "Find location by searching" do
       argument :search, String, required: true
     end
     def geocode(search: "")

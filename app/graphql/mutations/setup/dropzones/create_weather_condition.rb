@@ -2,9 +2,9 @@
 
 module Mutations::Setup::Dropzones
   class CreateWeatherCondition < Mutations::BaseMutation
-    field :weather_condition, Types::WeatherConditionType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :weather_condition, Types::WeatherConditionType, null: true
 
     argument :attributes, Types::Input::WeatherConditionInput, required: true
     argument :id, Int, required: false
@@ -14,11 +14,11 @@ module Mutations::Setup::Dropzones
 
       # Ensure only valid winds received
       winds = if attributes[:winds].present?
-        JSON.parse(attributes[:winds] || "[]", symbolize_names: true)
-      else
-        puts "Winds were"
-        puts attributes[:winds]
-        []
+                JSON.parse(attributes[:winds] || "[]", symbolize_names: true)
+              else
+                puts "Winds were"
+                puts attributes[:winds]
+                []
       end
 
       puts "-- 1"
@@ -52,20 +52,20 @@ module Mutations::Setup::Dropzones
       {
         weather_condition: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
         weather_condition: nil,
         field_errors: nil,
-        errors: error.record.errors.full_messages
+        errors: error.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         weather_condition: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -73,8 +73,8 @@ module Mutations::Setup::Dropzones
       if !context[:current_resource].can? :updateWeatherConditions, dropzone_id: attributes[:dropzone_id]
         return false, {
           errors: [
-            "You can't update weather conditions"
-          ]
+            "You can't update weather conditions",
+          ],
         }
       end
       true

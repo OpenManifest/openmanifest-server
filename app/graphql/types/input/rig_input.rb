@@ -14,7 +14,7 @@ module Types
       argument :packing_card, String, required: false
       argument :user_id, Int, required: false
       argument :rig_type, String, required: false,
-      description: Rig.rig_types.keys.join(" / ")
+                                  description: Rig.rig_types.keys.join(" / ")
       argument :is_public, Boolean, required: false
       argument :canopy_size, Int, required: false
     end

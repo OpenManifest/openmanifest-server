@@ -12,7 +12,6 @@ class Manifest::CreateLoad < ApplicationInteraction
   string  :state,         default: "open"
   date_time :created_at,  default: -> { DateTime.current }
 
-
   steps :build_load,
         :save
 
@@ -47,13 +46,13 @@ class Manifest::CreateLoad < ApplicationInteraction
 
   def build_load
     @load = access_context.dropzone.loads.new(
-      name:         name,
-      gca:          gca,
-      pilot:        pilot,
-      load_master:  load_master,
-      plane:        plane,
-      state:        state,
-      max_slots:    max_slots || plane.max_slots,
+      name: name,
+      gca: gca,
+      pilot: pilot,
+      load_master: load_master,
+      plane: plane,
+      state: state,
+      max_slots: max_slots || plane.max_slots,
       created_at: created_at
     )
   end

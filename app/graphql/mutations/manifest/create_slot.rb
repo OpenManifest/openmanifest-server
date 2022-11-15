@@ -2,9 +2,9 @@
 
 module Mutations::Manifest
   class CreateSlot < Mutations::BaseMutation
-    field :slot, Types::SlotType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :slot, Types::SlotType, null: true
 
     argument :attributes, Types::Input::SlotInput, required: true
 

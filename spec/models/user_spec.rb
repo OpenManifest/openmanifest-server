@@ -60,8 +60,7 @@ RSpec.describe User, type: :model do
 
     create(:dropzone_user,
       dropzone: dropzone,
-      user: user,
-    )
+      user: user,)
   end
 
   describe "can?" do

@@ -7,13 +7,14 @@ module Mutations
     include_context("federation_sync")
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 50) }
+
     before do
       dropzone_user.grant! :createUser
     end
 
     describe ".resolve" do
       context "successfully" do
-        let(:query_str) {
+        let(:query_str) do
           query(
             name: "rspec",
             phone: "123123123",
@@ -24,18 +25,19 @@ module Mutations
             exit_weight: 50,
             dropzone_id: dropzone.id
           )
-        }
+        end
         let(:post_request) do
           post "/graphql",
                params: {
-                 query: query_str
+                 query: query_str,
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body, symbolize_names: true)
-        }
+        end
+
         it { expect(post_request).to eq 200 }
         it { expect { post_request }.to change(DropzoneUser, :count).by(1) }
         it { expect { post_request }.to change(User, :count).by(1) }

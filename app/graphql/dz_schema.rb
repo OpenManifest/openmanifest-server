@@ -3,12 +3,12 @@
 class DzSchema < GraphQL::Schema
   default_page_size 50
   use GraphqlDevise::SchemaPlugin.new(
-    query:                Types::QueryType,
-    mutation:             Types::MutationType,
+    query: Types::QueryType,
+    mutation: Types::MutationType,
     public_introspection: true,
     resource_loaders: [
       GraphqlDevise::ResourceLoader.new(User, operations: {
-        register: Mutations::Users::SignUp
+        register: Mutations::Users::SignUp,
       }),
     ]
   )
@@ -19,28 +19,28 @@ class DzSchema < GraphQL::Schema
   class << self
     def model_type_map
       @model_class_map ||= {
-        ::Dropzone            => ::Types::DropzoneType,
-        ::DropzoneUser        => ::Types::DropzoneUserType,
-        ::Extra               => ::Types::ExtraType,
-        ::Federation          => ::Types::FederationType,
-        ::FormTemplate        => ::Types::FormTemplateType,
-        ::License             => ::Types::LicenseType,
-        ::LicensedJumpType    => ::Types::LicensedJumpTypeType,
-        ::Load                => ::Types::LoadType,
-        ::Notification        => ::Types::NotificationType,
-        ::Order               => ::Types::OrderType,
-        ::Permission          => ::Types::PermissionType,
-        ::Plane               => ::Types::PlaneType,
-        ::Receipt             => ::Types::ReceiptType,
-        ::Rig                 => ::Types::RigType,
-        ::RigInspection       => ::Types::RigInspectionType,
-        ::Slot                => ::Types::SlotType,
-        ::TicketType          => ::Types::TicketTypeType,
-        ::Transaction         => ::Types::TransactionType,
-        ::User                => ::Types::UserType,
-        ::UserRole            => ::Types::UserRoleType,
-        ::UserFederation      => ::Types::UserFederationType,
-        ::WeatherCondition    => ::Types::WeatherConditionType,
+        ::Dropzone => ::Types::DropzoneType,
+        ::DropzoneUser => ::Types::DropzoneUserType,
+        ::Extra => ::Types::ExtraType,
+        ::Federation => ::Types::FederationType,
+        ::FormTemplate => ::Types::FormTemplateType,
+        ::License => ::Types::LicenseType,
+        ::LicensedJumpType => ::Types::LicensedJumpTypeType,
+        ::Load => ::Types::LoadType,
+        ::Notification => ::Types::NotificationType,
+        ::Order => ::Types::OrderType,
+        ::Permission => ::Types::PermissionType,
+        ::Plane => ::Types::PlaneType,
+        ::Receipt => ::Types::ReceiptType,
+        ::Rig => ::Types::RigType,
+        ::RigInspection => ::Types::RigInspectionType,
+        ::Slot => ::Types::SlotType,
+        ::TicketType => ::Types::TicketTypeType,
+        ::Transaction => ::Types::TransactionType,
+        ::User => ::Types::UserType,
+        ::UserRole => ::Types::UserRoleType,
+        ::UserFederation => ::Types::UserFederationType,
+        ::WeatherCondition => ::Types::WeatherConditionType,
       }
     end
 

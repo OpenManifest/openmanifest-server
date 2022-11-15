@@ -7,7 +7,9 @@ module Mutations
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
     let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-    let!(:plane_load) { create(:load, plane: plane) }
+    let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
     let!(:dropzone_users) { create_list(:dropzone_user, 3, dropzone: dropzone, credits: 200) }
     let!(:jump_type) { JumpType.allowed_for(dropzone_users).sample }
     let!(:dropzone_user) do
@@ -15,6 +17,7 @@ module Mutations
       u.grant! :createUserSlot
       u
     end
+
     describe ".resolve" do
       context "successfully" do
         let(:post_request) do
@@ -25,7 +28,7 @@ module Mutations
                    ticket_type: ticket_type,
                    plane_load: plane_load,
                    user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body)
@@ -62,7 +65,7 @@ module Mutations
                    user_group: dropzone_users.map do |user|
                      { id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name, passenger_exit_weight: 80 }
                    end
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body)
@@ -89,14 +92,14 @@ module Mutations
                    plane_load: plane_load,
                    jump_type: jump_type,
                    user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body)
-        }
+        end
 
         it { expect(json["data"]["createSlots"]["errors"]).not_to be_empty }
         it { expect(json["data"]["createSlots"]["fieldErrors"].count).to eq 1 }

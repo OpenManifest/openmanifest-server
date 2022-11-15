@@ -8,9 +8,7 @@ Rails.application.configure do
   # Code is not reloaded between requests.
   config.cache_classes = true
 
-  # Use cloudinary for storage
-  config.active_storage.service = :cloudinary
-
+  config.active_storage.service = :flyio
 
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
@@ -51,15 +49,29 @@ Rails.application.configure do
   # config.action_cable.url = 'wss://example.com/cable'
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
   ActionMailer::Base.smtp_settings = {
-    port: ENV["MAILGUN_SMTP_PORT"],
-    address: ENV["MAILGUN_SMTP_SERVER"],
-    user_name: ENV["MAILGUN_SMTP_LOGIN"],
-    password: ENV["MAILGUN_SMTP_PASSWORD"],
-    domain: "mail.openmanifest.org",
+    port: ENV["SMTP_PORT"],
+    address: ENV["SMTP_SERVER"],
+    domain: ENV["SMTP_DOMAIN"],
+    user_name: ENV["SMTP_USERNAME"],
+    password: ENV["SMTP_PASSWORD"],
     authentication: :plain,
+    enable_starttls_auto: true,
   }
-  ActionMailer::Base.delivery_method = :smtp
-  config.action_mailer.default_url_options = { host: "openmanifest.org", protocol: "https" }
+  config.action_mailer.smtp_settings = {
+    port: ENV["SMTP_PORT"],
+    address: ENV["SMTP_SERVER"],
+    domain: ENV["SMTP_DOMAIN"],
+    user_name: ENV["SMTP_USERNAME"],
+    password: ENV["SMTP_PASSWORD"],
+    authentication: :plain,
+    enable_starttls_auto: true,
+  }
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.default_url_options = {
+    host: "openmanifest.org",
+    protocol: "https",
+  }
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
 
@@ -68,7 +80,7 @@ Rails.application.configure do
   config.log_level = :info
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store

@@ -6,7 +6,9 @@ RSpec.describe Manifest::FinalizeLoad do
   let!(:dropzone) { create(:dropzone, credits: 50) }
   let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane) }
+  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :deleteLoad
@@ -34,6 +36,7 @@ RSpec.describe Manifest::FinalizeLoad do
         load: plane_load
       )
     end
+
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }
     it { expect(outcome.errors).to be_empty }

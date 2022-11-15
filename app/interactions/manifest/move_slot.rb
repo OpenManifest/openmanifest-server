@@ -101,15 +101,16 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   private
-    def destination_load
-      return target_slot.load if target_slot
-      target_load
-    end
 
-    def authorize
-      # Users are allowed to move their own slot
-      return true if access_context.subject == source_slot.dropzone_user && access_context.subject.can?(:updateOwnSlot)
-      return true if access_context.subject.can?(:updateUserSlot)
-      raise ::ApplicationInteraction::Errors::PermissionDenied, "You don't have permissions to move other users"
-    end
+  def destination_load
+    return target_slot.load if target_slot
+    target_load
+  end
+
+  def authorize
+    # Users are allowed to move their own slot
+    return true if access_context.subject == source_slot.dropzone_user && access_context.subject.can?(:updateOwnSlot)
+    return true if access_context.subject.can?(:updateUserSlot)
+    raise ::ApplicationInteraction::Errors::PermissionDenied, "You don't have permissions to move other users"
+  end
 end

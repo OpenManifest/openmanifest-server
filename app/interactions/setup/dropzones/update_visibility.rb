@@ -53,11 +53,12 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
   end
 
   private
-    def moderator?
-      access_context.subject.user.is_moderator?
-    end
 
-    def owner?
-      dropzone.dropzone_users.owner.include?(access_context.subject)
-    end
+  def moderator?
+    access_context.subject.user.is_moderator?
+  end
+
+  def owner?
+    dropzone.dropzone_users.owner.include?(access_context.subject)
+  end
 end

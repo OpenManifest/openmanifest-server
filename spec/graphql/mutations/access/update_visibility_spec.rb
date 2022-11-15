@@ -30,29 +30,24 @@ module Mutations
 
     describe "Moderator" do
       context "can unpublish" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :unpublish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: moderator.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :unpublish
+          )
         end
 
         it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "private" } } }) }
       end
 
       context "can request review" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :request_publication
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
@@ -60,21 +55,29 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :request_publication
+          )
+        end
+
         it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "in_review" } } }) }
       end
 
       context "can publish" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :publish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: moderator.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :publish
+          )
         end
 
         it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } }) }
@@ -83,46 +86,42 @@ module Mutations
 
     describe "Owner" do
       context "can unpublish" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :unpublish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: owner.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :unpublish
+          )
         end
 
         it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "private" } } }) }
       end
 
       context "can request review" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :request_publication
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: owner.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :request_publication
+          )
         end
 
         it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "in_review" } } }) }
       end
 
       context "can not publish" do
-        let(:query_str) {
-          query(
-            id: dropzone.reload.id,
-            event: :publish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
@@ -130,24 +129,32 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
-        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s  } } }) }
+        let(:query_str) do
+          query(
+            id: dropzone.reload.id,
+            event: :publish
+          )
+        end
+
+        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s } } }) }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
     end
 
     describe "User" do
       context "can not unpublish" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :unpublish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :unpublish
+          )
         end
 
         it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { state: "private" } } }) }
@@ -155,17 +162,18 @@ module Mutations
       end
 
       context "can not request review" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :request_publication
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
                 headers: user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :request_publication
+          )
         end
 
         it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { state: "in_review" } } }) }
@@ -173,12 +181,6 @@ module Mutations
       end
 
       context "can not publish" do
-        let(:query_str) {
-          query(
-            id: dropzone.id,
-            event: :publish
-          )
-        }
         subject do
           post "/graphql",
                 params: { query: query_str },
@@ -186,12 +188,17 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
+        let(:query_str) do
+          query(
+            id: dropzone.id,
+            event: :publish
+          )
+        end
+
         it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } }) }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
     end
-
-
 
     def query(id:, event:)
       <<~GQL

@@ -20,7 +20,8 @@ module Types
     field :owner, Types::UserType, null: true, method: :user
     field :packing_card, String, null: true
     def packing_card
-      object.packing_card_url
+      return nil unless object.packing_card.attached?
+      Rails.application.routes.url_helpers.rails_blob_path(object.packing_card)
     end
 
     field :rig_inspections, Types::RigInspectionType, null: true do

@@ -89,9 +89,8 @@ class Manifest::UpdateLoad < ApplicationInteraction
     end
   end
 
-
   def check_max_slots
-    return unless max_slots.present?
+    return if max_slots.blank?
     errors.add(:base, "You have too many manifested jumpers") unless max_slots < load.slots.count
   end
 
@@ -114,7 +113,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         pilot: pilot,
         name: name,
         max_slots: max_slots || load.max_slots || load.plane.max_slots,
-        state: state
+        state: state,
       }.compact
     )
   end

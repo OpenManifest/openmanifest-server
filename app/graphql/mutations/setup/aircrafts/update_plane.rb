@@ -2,12 +2,12 @@
 
 module Mutations::Setup::Aircrafts
   class UpdatePlane < Mutations::BaseMutation
-    field :plane, Types::PlaneType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :plane, Types::PlaneType, null: true
 
-    argument :id, Int, required: true
     argument :attributes, Types::Input::PlaneInput, required: true
+    argument :id, Int, required: true
 
     def resolve(attributes:, id:)
       model = Plane.find(id)
@@ -23,20 +23,20 @@ module Mutations::Setup::Aircrafts
       {
         plane: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         plane: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         plane: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -47,11 +47,13 @@ module Mutations::Setup::Aircrafts
       )
         true
       else
-        return false, {
-          errors: [
-            "You don't have permissions to update this plane"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to update this plane",
+            ],
+          },
+        ]
       end
     end
   end

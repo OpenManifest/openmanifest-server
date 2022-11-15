@@ -27,12 +27,7 @@ class Order < ApplicationRecord
 
   before_create :set_order_number
 
-  enum state: %i[
-    pending
-    completed
-    refunded
-    cancelled
-  ]
+  enum state: { :pending => 0, :completed => 1, :refunded => 2, :cancelled => 3 }
 
   scope :at_dropzone, ->(dropzone) { where(dropzone: dropzone) }
 

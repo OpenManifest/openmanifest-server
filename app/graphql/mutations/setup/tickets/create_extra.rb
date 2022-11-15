@@ -2,8 +2,8 @@
 
 module Mutations::Setup::Tickets
   class CreateExtra < Mutations::BaseMutation
-    field :extra, Types::ExtraType, null: true
     field :errors, [String], null: true
+    field :extra, Types::ExtraType, null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :attributes, Types::Input::ExtraInput, required: true
@@ -46,20 +46,20 @@ module Mutations::Setup::Tickets
       {
         extra: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         extra: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         extra: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -70,11 +70,13 @@ module Mutations::Setup::Tickets
       )
         true
       else
-        return false, {
-          errors: [
-            "You don't have permissions to create ticket addons"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to create ticket addons",
+            ],
+          },
+        ]
       end
     end
 

@@ -5,7 +5,7 @@ class Resolvers::Dropzones < Resolvers::Base
   description "Get all available dropzones"
 
   argument :state, [Types::Dropzone::State], required: false,
-           default_value: ["public"]
+                                             default_value: ["public"]
   def resolve(
     state: nil,
     lookahead: nil
@@ -26,10 +26,10 @@ class Resolvers::Dropzones < Resolvers::Base
     query = query.includes(:roles)          if lookahead.selects?(:roles)
     query = query.where(state: state).or(
       query.where(
-        id: context[:current_resource].dropzone_users.staff.pluck(:id)
+        id: context[:current_resource].dropzone_users.staff.pluck(:dropzone_id)
       )
     )
 
-    query.distinct
+    query.distinct.order(id: :asc)
   end
 end

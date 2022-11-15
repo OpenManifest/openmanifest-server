@@ -40,7 +40,7 @@ class Transactions::Confirm < ApplicationInteraction
   end
 
   def complete_transactions
-    return unless receipt.transactions.where(status: :reserved).exists?
+    return unless receipt.transactions.exists?(status: :reserved)
 
     receipt.transactions.each do |transaction|
       transaction.update(status: :completed)

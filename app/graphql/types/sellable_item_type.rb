@@ -11,7 +11,7 @@ module Types
         {
           ::TicketType => Types::TicketTypeType,
           ::Extra => Types::ExtraType,
-          ::Slot => Types::SlotType
+          ::Slot => Types::SlotType,
         }[object.class]
       end
     end

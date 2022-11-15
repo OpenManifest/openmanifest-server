@@ -37,17 +37,16 @@ class Demo::Generators::Users < ApplicationInteraction
         aff_instructor_count,
         coach_count,
         pilot_count,
-        jumper_count
+        jumper_count,
       ].sum
     )
   end
-
 
   def build_ci
     {
       user_id: users.pop.id,
       dropzone_id: access_context.dropzone.id,
-      user_role_id: access_context.dropzone.user_roles.find_by(name: :chief_instructor).id
+      user_role_id: access_context.dropzone.user_roles.find_by(name: :chief_instructor).id,
     }
   end
 
@@ -67,7 +66,7 @@ class Demo::Generators::Users < ApplicationInteraction
       {
         user_id: users.pop.id,
         dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :coach).id
+        user_role_id: access_context.dropzone.user_roles.find_by(name: :coach).id,
       }
     end
   end
@@ -78,7 +77,7 @@ class Demo::Generators::Users < ApplicationInteraction
       {
         user_id: users.pop.id,
         dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :aff_instructor).id
+        user_role_id: access_context.dropzone.user_roles.find_by(name: :aff_instructor).id,
       }
     end
   end
@@ -89,7 +88,7 @@ class Demo::Generators::Users < ApplicationInteraction
       {
         user_id: users.pop.id,
         dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :pilot).id
+        user_role_id: access_context.dropzone.user_roles.find_by(name: :pilot).id,
       }
     end
   end
@@ -100,7 +99,7 @@ class Demo::Generators::Users < ApplicationInteraction
       {
         user_id: users.pop.id,
         dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :fun_jumper).id
+        user_role_id: access_context.dropzone.user_roles.find_by(name: :fun_jumper).id,
       }
     end
   end
@@ -112,7 +111,7 @@ class Demo::Generators::Users < ApplicationInteraction
       build_aff_instructors,
       build_coaches,
       build_pilots,
-      build_jumpers
+      build_jumpers,
     ].flatten.map do |importable|
       importable.merge(created_at: DateTime.now, updated_at: DateTime.now)
     end
@@ -164,8 +163,8 @@ class Demo::Generators::Users < ApplicationInteraction
   def assign_licenses
     access_context.dropzone.dropzone_users.includes(:license).where(license: { id: nil }).each do |dz_user|
       license_options = access_context.dropzone.federation.licenses.order(id: :desc)
-      license_options = license_options.limit(3).to_a.sample if %i[chief_instructor tandem_instructor aff_instructor coach].include?(dz_user.user_role.name)
-      license_options = license_options.to_a.sample unless %i[chief_instructor tandem_instructor aff_instructor coach].include?(dz_user.user_role.name)
+      license_options = license_options.limit(3).to_a.sample if %i(chief_instructor tandem_instructor aff_instructor coach).include?(dz_user.user_role.name)
+      license_options = license_options.to_a.sample unless %i(chief_instructor tandem_instructor aff_instructor coach).include?(dz_user.user_role.name)
       compose(
         ::Federations::AssignUser,
         access_context: ::ApplicationInteraction::AccessContext.new(dz_user),

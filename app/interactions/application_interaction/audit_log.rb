@@ -11,6 +11,7 @@ module ApplicationInteraction::AuditLog
 
     def success
     end
+
     def error
     end
   end

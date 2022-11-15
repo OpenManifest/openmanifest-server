@@ -7,7 +7,9 @@ module Mutations
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
     let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-    let!(:plane_load) { create(:load, plane: plane) }
+    let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
 
     describe ".resolve" do
@@ -20,14 +22,14 @@ module Mutations
                    plane_load: plane_load,
                    dropzone_user: dropzone_user,
                    exit_weight: dropzone_user.exit_weight || 105
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body)
-        }
+        end
 
         it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 1 }
         it { expect { post_request }.to change { DropzoneUser.find(dropzone_user.id).credits }.by ticket_type.cost * -1 }
@@ -56,7 +58,7 @@ module Mutations
                    exit_weight: dropzone_user.user.exit_weight,
                    passenger_name: '"Eric"',
                    passenger_exit_weight: 60.0
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body)
@@ -82,14 +84,14 @@ module Mutations
                    plane_load: plane_load,
                    dropzone_user: dropzone_user,
                    exit_weight: dropzone_user.user.exit_weight
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body)
-        }
+        end
 
         it { expect(json["data"]["createSlot"]["errors"]).not_to be_empty }
         it { expect(json["data"]["createSlot"]["fieldErrors"]).to be_empty }

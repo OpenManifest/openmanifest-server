@@ -7,9 +7,11 @@ module Mutations
     let!(:dropzone) { create(:dropzone, credits: 50) }
     let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone) }
     let!(:plane) { create(:plane, dropzone: dropzone) }
-    let!(:load1) { create(:load, plane: plane, created_at: 1.day.ago) }
-    let!(:load2) { create(:load, plane: plane, created_at: DateTime.current.beginning_of_day + 5.hours) }
-    let!(:load3) { create(:load, plane: plane, created_at: 1.day.from_now) }
+    let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+    let!(:load1) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.ago) }
+    let!(:load2) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: DateTime.current.beginning_of_day + 5.hours) }
+    let!(:load3) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.from_now) }
 
     before do
       dropzone_user.grant! :createUser
@@ -17,16 +19,17 @@ module Mutations
 
     describe ".resolve" do
       context "successfully" do
-        let(:query_str) {
-          query(
-            id: load2.id
-          )
-        }
         subject do
           post "/graphql",
                params: { query: query_str },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: load2.id
+          )
         end
 
         it { is_expected.to include_json(data: { load: { id: load2.id.to_s } }) }

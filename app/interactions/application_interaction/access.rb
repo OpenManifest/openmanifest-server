@@ -37,7 +37,7 @@ module ApplicationInteraction::Access
 
       permission_map = required_permissions.map do |permission|
         next permission if permission.is_a?(Hash)
-        { permission => "You dont have access to #{self.action_name}. Missing permission: #{permission}" }
+        { permission => "You dont have access to #{action_name}. Missing permission: #{permission}" }
       end.reduce(:merge)
       define_method("required_permissions", -> { permission_map })
     end
