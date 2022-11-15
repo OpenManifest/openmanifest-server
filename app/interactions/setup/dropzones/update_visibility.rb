@@ -24,7 +24,7 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
     )
   end
 
-  success do
+  error do
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,

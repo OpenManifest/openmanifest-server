@@ -41,12 +41,13 @@ class DzSchema < GraphQL::Schema
         ::UserRole => ::Types::UserRoleType,
         ::UserFederation => ::Types::UserFederationType,
         ::WeatherCondition => ::Types::WeatherConditionType,
+        nil => ::Types::BaseObject,
       }
     end
 
     # Union and Interface Resolution
     def resolve_type(abstract_type, obj, ctx)
-      model_type_map[abstract_type]
+      model_type_map[obj.class]
     end
 
     # Relay-style Object Identification:

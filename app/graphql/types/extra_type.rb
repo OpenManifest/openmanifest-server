@@ -3,6 +3,7 @@
 module Types
   class ExtraType < Types::BaseObject
     implements Types::SellableItemType
+    implements Types::AnyResourceType
     def title
       object.name
     end
