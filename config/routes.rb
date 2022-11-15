@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  default_url_options host: ENV['BACKEND_URL']
   # Not needed with schema plugin
   # mount_graphql_devise_for 'User', at: 'graphql_auth'
   devise_for :users
