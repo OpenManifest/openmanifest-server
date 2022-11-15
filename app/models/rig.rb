@@ -23,6 +23,7 @@
 #
 class Rig < ApplicationRecord
   include Discard::Model
+  include ActiveStorageSupport::SupportForBase64
   has_one_base64_attached :packing_card
 
   belongs_to :user, optional: true
