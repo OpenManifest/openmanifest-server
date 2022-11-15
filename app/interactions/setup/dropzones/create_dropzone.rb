@@ -67,7 +67,7 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
   end
 
   def attach_banner
-    return unless banner
+    return if banner.blank?
     @dropzone.banner.attach(data: banner)
     @dropzone.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
   end
