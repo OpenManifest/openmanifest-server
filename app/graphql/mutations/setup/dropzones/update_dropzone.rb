@@ -12,7 +12,11 @@ module Mutations::Setup::Dropzones
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
       attrs = attributes.to_h.except(:banner)
-      attrs[:image] = attributes[:banner] if attributes[:banner].present?
+      if attributes[:banner]
+        dropzone_user.banner.attach(image)
+        # Resize image
+        # dropzone_user.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
+      end
       if attrs[:request_publication] && !model.is_public
         # Send a notification to administrators
         User.where(moderation_role: "administrator").each do |user|

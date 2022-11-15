@@ -62,8 +62,7 @@ class Dropzone < ApplicationRecord
              optional: true,
              foreign_key: "rig_inspection_template_id"
 
-  mount_base64_uploader :image, BannerUploader, file_name: ->(u) { "banner-#{u.id}-#{Time.current.to_i}.png" }
-
+  has_one_base64_attached :banner
   after_create :set_appsignal_gauge
 
   before_destroy do

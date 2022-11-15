@@ -21,6 +21,7 @@ federations:
       - name: Certificate A
         licensed_jump_types:
           - fs
+          - hp
           - hnp
       - name: Certificate B
         licensed_jump_types:

@@ -30,7 +30,7 @@ FactoryBot.define do
     max_slots { plane.max_slots }
     dispatch_at { nil }
 
-    before(:create) do |instance, evaluator|
+    before(:validation) do |instance, evaluator|
       instance.assign_attributes(
         gca: instance.gca || instance.dropzone.dropzone_users.first,
         pilot: instance.pilot || instance.dropzone.dropzone_users.first,

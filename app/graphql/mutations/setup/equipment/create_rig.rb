@@ -23,6 +23,9 @@ module Mutations::Setup::Equipment
       model.assign_attributes(attrs)
 
       model.save!
+      if attributes[:packing_card]
+        model.packing_card.attach(image)
+      end
 
       {
         rig: model,

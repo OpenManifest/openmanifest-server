@@ -3,7 +3,6 @@
 module Types
   class UserType < Types::BaseObject
     implements Types::AnyResourceType
-    include CloudinaryHelper
 
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true

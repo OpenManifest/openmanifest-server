@@ -1,0 +1,108 @@
+env:
+  RUBY_VERSION: 2.7.6
+  SECRET_KEY_BASE: 189254c36c8dcd2ef36d99ee9c3688ee6c592ab003d681499a8bf7493dcbc1f1c52d10f1e8dc4cee463e197015abb2ece014e2503d9606c2e0b18b573ac16743
+  BUNDLE_JOBS: 32
+  PGHOST: 127.0.0.1
+  PGUSER: github
+  PGPASSWORD: github
+  RAILS_ENV: test
+name: Unit Tests
+defaults:
+  run:
+    shell: bash
+on:
+  push:
+    branches:
+      - "**" # Match every branch
+      - "!main" # ... and exclude develop: if its merged it should have been run already
+  schedule:
+    # Run every day at 5:30pm on develop to rebuild cache
+    - cron: "30 5,17 * * *"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  rspec-test:
+    name: Rubocop & RSpec
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_USER: ${{ env.PGUSER }}
+          POSTGRES_PASSWORD: ${{ env.PGPASSWORD }}
+          POSTGRES_DB: ${{ env.PGDATABASE }}
+          POSTGRESQL_FSYNC: "off"
+        ports:
+          - 5432:5432
+        options: >-
+          --shm-size=4g
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+    steps:
+      - name: "Tweak Postgres"
+        run: |
+          docker exec ${{ job.services.postgres.id }} sh -c 'cat /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "fsync=off" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "full_page_writes=off" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "synchronous_commit=off" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "max_locks_per_transaction=8192" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "shared_buffers=1024MB" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "work_mem=100MB" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "max_parallel_workers_per_gather=10" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "max_prepared_transactions=200" >> /var/lib/postgresql/data/postgresql.conf'
+          docker exec ${{ job.services.postgres.id }} sh -c 'echo "max_connections=200" >> /var/lib/postgresql/data/postgresql.conf'
+          docker kill --signal=SIGHUP ${{ job.services.postgres.id }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+        name: Checkout source code
+      - uses: ruby/setup-ruby@v1
+        name: Set up Ruby
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+          cache-version: ${{ hashFiles('**/Gemfile.lock') }}
+      - name: Rubocop
+        run: bundle exec rubocop --parallel
+      - name: Create databases
+        run: |
+          RAILS_ENV=test bundle exec rails parallel:setup
+      - name: Configure rspec
+        run: |
+          echo "--fail-fast --format progress --format RspecJunitFormatter --out tmp/rspec<%= ENV['TEST_ENV_NUMBER'] %>.xml" > .rspec_parallel
+      - name: rspec parallell
+        id: rspec-test
+        env:
+          RAILS_ENV: test
+          RSPEC_OUTPUT: tmp/
+          CI: true
+        continue-on-error: true
+        run: |
+          RAILS_ENV=test bundle exec rails parallel:spec
+      - name: Upload RSpec Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Unit Test Results (RSpec ${{ matrix.ci_node_index }})
+          path: tmp/*.xml
+  publish-test-results:
+    name: "Publish Unit Tests Results"
+    needs:
+      - rspec-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          junit_files: artifacts/**/*.xml

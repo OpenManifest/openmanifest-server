@@ -12,9 +12,13 @@ module Mutations::Setup::Equipment
     def resolve(attributes:, id: nil)
       model = Rig.find(id)
 
-      attrs = attributes.to_h
+      attrs = attributes.to_h.except(:packing_card)
       if attrs[:repack_expires_at]
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
+      end
+
+      if attributes[:packing_card]
+        model.packing_card.attach(image)
       end
       model.assign_attributes(attrs.to_h)
       model.save!

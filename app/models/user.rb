@@ -38,7 +38,8 @@
 #  plane_count            :integer          default(0), not null
 #
 class User < ApplicationRecord
-  include CloudinaryHelper
+  include ActiveStorageSupport::SupportForBase64
+
 
   # Include default devise modules.
   devise :database_authenticatable, :registerable,
@@ -62,7 +63,7 @@ class User < ApplicationRecord
     Appsignal.set_gauge("users.count", User.count)
   end
 
-  mount_base64_uploader :image, AvatarUploader, file_name: -> (u) { "avatar-#{u.id}-#{Time.current.to_i}.png" }
+  has_one_base64_attached :avatar
 
   has_many :rigs, -> { kept }
   has_many :packs

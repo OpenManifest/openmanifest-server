@@ -20,16 +20,10 @@ gem "bcrypt", "~> 3.1.7"
 # Coordinate based location
 gem "geokit-rails"
 
-# Set CLOUDINARY_URL and other env variables
 gem "dotenv-rails", groups: %i[development test], require: "dotenv/rails-now"
 
 # Soft delete records
 gem "discard", "~> 1.2"
-
-# File upload
-gem "carrierwave"
-gem "carrierwave-base64"
-gem "cloudinary"
 
 # GraphQL queries
 gem "graphql"
@@ -87,6 +81,8 @@ group :development, :test do
 
   gem "database_cleaner"
   gem "rspec-rails", "~> 5.0"
+  gem "parallel_tests"
+  gem "rspec_junit_formatter"
 end
 
 group :development do
@@ -104,8 +100,6 @@ group :development do
   # Make it go fasterer!
   gem "fasterer"
 
-  # Linting
-  gem "rspec_junit_formatter"
   gem "rubocop"
   gem "rubocop-performance"
   gem "rubocop-rails"

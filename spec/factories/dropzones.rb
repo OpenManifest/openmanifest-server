@@ -46,7 +46,7 @@ FactoryBot.define do
 
       after(:create) do |dropzone, evaluator|
         create(:dropzone_user, dropzone: dropzone)
-        create_list(:plane_with_loads, evaluator.plane_count, dropzone: dropzone)
+        create_list(:plane_with_loads, evaluator.plane_count, dropzone: dropzone.reload)
 
         # You may need to reload the record here, depending on your application
         dropzone.reload

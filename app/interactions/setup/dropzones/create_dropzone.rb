@@ -17,6 +17,7 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
         :create_roles,
         :build_owner,
         :build_rig_inspection_template,
+        :attach_banner,
         :save!
 
   success do
@@ -63,6 +64,11 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
 
   def create_roles
     compose(::Setup::Dropzones::Access::CreateDefaults, dropzone: @dropzone)
+  end
+
+  def attach_banner
+    return unless banner
+    @dropzone.banner.attach(banner)
   end
 
   def save!

@@ -23,9 +23,7 @@
 #
 class Rig < ApplicationRecord
   include Discard::Model
-  include CloudinaryHelper
-  mount_base64_uploader :packing_card, PackingCardUploader,
-  file_name: -> (u) { "packing-card-#{u.id}-#{Time.current.to_i}.png" }
+  has_one_base64_attached :packing_card
 
   belongs_to :user, optional: true
   belongs_to :dropzone, optional: true
