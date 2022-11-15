@@ -6,16 +6,16 @@ module Mutations::Setup::Dropzones
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :id, Int, required: true
     argument :attributes, Types::Input::DropzoneInput, required: true
+    argument :id, Int, required: true
 
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
       attrs = attributes.to_h.except(:banner)
       if attributes[:banner]
-        dropzone_user.banner.attach(image)
+        dropzone_user.banner.attach(data: image)
         # Resize image
-        # dropzone_user.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
+        dropzone_user.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
       end
       if attrs[:request_publication] && !model.is_public
         # Send a notification to administrators
@@ -41,20 +41,20 @@ module Mutations::Setup::Dropzones
       {
         dropzone: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         dropzone: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         dropzone: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -65,8 +65,8 @@ module Mutations::Setup::Dropzones
         if User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"]
           return false, {
             errors: [
-              "You cant modify the publication state of this dropzone"
-            ]
+              "You cant modify the publication state of this dropzone",
+            ],
           }
         end
       end
@@ -77,11 +77,13 @@ module Mutations::Setup::Dropzones
       )
         return true
       end
-      return false, {
-        errors: [
-          "You don't have permissions to edit this dropzone"
-          ]
-        }
+      [
+        false, {
+          errors: [
+            "You don't have permissions to edit this dropzone",
+          ],
+        },
+      ]
     end
   end
 end

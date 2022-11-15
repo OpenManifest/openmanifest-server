@@ -4,11 +4,11 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
   type Types::LoadType.connection_type, null: false
   description "Get all loads"
 
-  argument :dropzone, GraphQL::Types::ID, required: true,
-           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   argument :date, GraphQL::Types::ISO8601Date, required: false,
-           prepare: -> (value, ctx) { value.to_date },
-           description: "Search for loads for a specific day"
+                                               prepare: -> (value, ctx) { value.to_date },
+                                               description: "Search for loads for a specific day"
+  argument :dropzone, GraphQL::Types::ID, required: true,
+                                          prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   def resolve(dropzone: nil, earliest_timestamp: nil, lookahead: nil, date: nil)
     return nil unless dropzone
     lookahead = lookahead.selection(:edges).selection(:node)

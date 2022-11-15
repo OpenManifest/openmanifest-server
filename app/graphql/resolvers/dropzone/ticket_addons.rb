@@ -4,9 +4,9 @@ class Resolvers::Dropzone::TicketAddons < Resolvers::Base
   description "Get all ticket type extras"
   type [Types::ExtraType], null: false
   argument :dropzone, GraphQL::Types::ID, required: false,
-           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
+                                          prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   argument :ticket_type, GraphQL::Types::ID, required: false,
-           prepare: -> (value, ctx) { ::TicketType.find_by(id: value) }
+                                             prepare: -> (value, ctx) { ::TicketType.find_by(id: value) }
 
   def resolve(dropzone: nil, ticket_type: nil, lookahead: nil)
     return nil unless dropzone || ticket_type

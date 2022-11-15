@@ -3,13 +3,13 @@
 class Mutations::Users::Register::Base < GraphqlDevise::Mutations::Base
   argument :confirm_url, String, required: false, description: "Used to create the redirect URL"
 
-  field :errors, [String], null: true
-  field :field_errors, [Types::FieldErrorType], null: true
   field :authenticatable, Types::UserType, null: true
   field :credentials,
         GraphqlDevise::Types::CredentialType,
-        null:        true,
+        null: true,
         description: "Authentication credentials. Null if after signUp resource is not active for authentication (e.g. Email confirmation required)."
+  field :errors, [String], null: true
+  field :field_errors, [Types::FieldErrorType], null: true
 
   def resource_class
     User
@@ -33,7 +33,7 @@ class Mutations::Users::Register::Base < GraphqlDevise::Mutations::Base
 
       unless resource.confirmed?
         resource.send_confirmation_instructions(
-          redirect_url:  redirect_url,
+          redirect_url: redirect_url,
           template_path: ["graphql_devise/mailer"]
         )
       end
@@ -55,7 +55,8 @@ class Mutations::Users::Register::Base < GraphqlDevise::Mutations::Base
   end
 
   private
-    def build_resource(attrs)
-      resource_class.new(attrs)
-    end
+
+  def build_resource(attrs)
+    resource_class.new(attrs)
+  end
 end

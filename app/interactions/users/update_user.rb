@@ -30,9 +30,9 @@ class Users::UpdateUser < ApplicationInteraction
     )
     errors.merge!(dropzone_user.user.errors) unless dropzone_user.user.save
     if image
-      dropzone_user.user.image.attach(image)
+      dropzone_user.user.avatar.attach(data: image)
       # Resize image
-      dropzone_user.user.image.variant(resize_to_fill: [500, 500], gravity: 'north')
+      dropzone_user.user.avatar.variant(resize_to_fill: [500, 500], gravity: 'north')
     end
   end
 

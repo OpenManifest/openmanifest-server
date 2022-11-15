@@ -29,20 +29,20 @@ module Mutations::Users
       {
         dropzone_user: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
         dropzone_user: nil,
         field_errors: nil,
-        errors: error.record.errors.full_messages
+        errors: error.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         dropzone_user: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -58,17 +58,21 @@ module Mutations::Users
 
       # Check if the user is trying to change the UserRole:
       if allowed_to_update_others && is_role_changed && !is_allowed_to_change_role
-        return false, {
-          errors: [
-            "You don't have permissions to assign this role"
-          ]
-        }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to assign this role",
+            ],
+          },
+        ]
       elsif !allowed_to_update_others
-        return false, {
-          errors: [
-            "You don't have permission to update this"
-          ]
-        }
+        [
+          false, {
+            errors: [
+              "You don't have permission to update this",
+            ],
+          },
+        ]
       else
         true
       end

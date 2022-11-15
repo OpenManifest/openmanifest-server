@@ -20,7 +20,7 @@ module Mutations::Payments
     end
 
     def authorized?(attributes: nil, id: nil)
-      return false unless attributes[:dropzone].present?
+      return false if attributes[:dropzone].blank?
       current_user = attributes[:dropzone].dropzone_users.find_by(user: context[:current_resource])
       amount = attributes[:amount]
       is_peer_to_peer = attributes[:seller].is_a?(::DropzoneUser) && attributes[:buyer].is_a?(::DropzoneUser)
@@ -32,11 +32,13 @@ module Mutations::Payments
       return true if current_user == attributes[:buyer] && is_peer_to_peer
       return true if current_user.can?(:createUserTransaction)
 
-      [false, {
-        errors: [
-          "You don't have permissions to create this order"
-        ]
-      }]
+      [
+        false, {
+          errors: [
+            "You don't have permissions to create this order",
+          ],
+        },
+      ]
     end
   end
 end

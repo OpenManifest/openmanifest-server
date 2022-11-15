@@ -1,14 +1,13 @@
 require:
+  - rubocop-airbnb
   - rubocop-performance
-inherit_gem:
-  rubocop-rails_config:
-    - config/rails.yml
-
+  - rubocop-graphql
 AllCops:
-  TargetRubyVersion: 2.7.3
-Security:
-  Enabled: true
-Rails/OutputSafety:
-  Enabled: true
-Style/MutableConstant:
-  Enabled: true
+  NewCops: enable
+  TargetRubyVersion: 2.7.6
+  Exclude:
+    - "bin/**/*"
+    - "node_modules/**/*"
+    - ".rvm/**/*"
+    - "vendor/**/*"
+    - "db/schema.rb"

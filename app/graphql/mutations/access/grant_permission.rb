@@ -11,7 +11,7 @@ module Mutations::Access
              prepare: -> (value, ctx) { ::Permission.find_by(name: value) }
 
     argument :dropzone_user, ID, required: false,
-             prepare: -> (value, ctx) { DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value) }
+                                 prepare: -> (value, ctx) { DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value) }
 
     def resolve(permission:, dropzone_user: nil)
       mutate(
@@ -33,17 +33,21 @@ module Mutations::Access
       # To grant any permissions, users must have :grantPermission
 
       if !current_dz_user.can?(:grantPermission)
-        return false, {
-          errors: [
-            "You can't grant permissions for this dropzone"
-          ]
-        }
+        [
+          false, {
+            errors: [
+              "You can't grant permissions for this dropzone",
+            ],
+          },
+        ]
       elsif /^actAs.*/ !~ permission.name && !current_dz_user.can?(permission.name)
-        return false, {
-          errors: [
-            "You can't grant permissions you don't have"
-          ]
-        }
+        [
+          false, {
+            errors: [
+              "You can't grant permissions you don't have",
+            ],
+          },
+        ]
       else
         true
       end

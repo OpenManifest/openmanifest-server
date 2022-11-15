@@ -5,26 +5,72 @@ module Types
     implements Types::AnyResourceType
     implements Types::WalletType
     field :id, GraphQL::Types::ID, null: false
+
+    field :name, String, null: true
+
+    field :state, Types::Dropzone::State, null: false
+
+    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    field :lat, Float, null: true
+
+    field :lng, Float, null: true
+
+    field :federation, FederationType, null: false
+
+    field :primary_color, String, null: true
+
+    field :secondary_color, String, null: true
+
+    field :rig_inspection_template, Types::FormTemplateType, null: true
+
+    field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
+
+    field :current_user, Types::DropzoneUserType, null: false
+
+    field :user_roles, [Types::UserRoleType], null: false
+
+    field :allowed_jump_types, [Types::JumpTypeType], null: false do
+      argument :user_id, [Int], required: true
+    end
+
+    field :current_conditions, Types::WeatherConditionType, null: false
+
+    field :dropzone_user, Types::DropzoneUserType, null: true do
+      argument :id, Int, required: false
+      argument :user_id, Int, required: false
+    end
+
+    field :ticket_types, [Types::TicketTypeType], null: false do
+      argument :is_public, Boolean, required: false
+    end
+
+    field :extras, [Types::ExtraType], null: false
+
+    field :rigs, [Types::RigType], null: true,
+                                   description: "Get rigs for dropzone"
+
+    field :planes, [Types::PlaneType], null: false, method: :planes
+
+    field :roles, [Types::UserRoleType], null: false do
+      argument :selectable, Boolean, required: false
+    end
+
+    field :master_log, Types::MasterLogType, null: false,
+                                             description: "Get the master log entry for a given date" do
+      argument :date, Int, required: true,
+                           description: "This should be the timestamp of the beginning of the day"
+    end
+
+    field :banner, String, null: true
+
     field :statistics, Types::Admin::StatisticsType, null: false
     def statistics
       object
     end
-    field :name, String, null: true
-    field :state, Types::Dropzone::State, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :lat, Float, null: true
-    field :lng, Float, null: true
-    field :federation, FederationType, null: false
-    field :primary_color, String, null: true
-    field :secondary_color, String, null: true
-    field :rig_inspection_template, Types::FormTemplateType, null: true
-    field :is_credit_system_enabled, Boolean, null: false
-    def is_credit_system_enabled
-      object.is_credit_system_enabled?
-    end
 
-    field :current_user, Types::DropzoneUserType, null: false
     def current_user
       unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
         dz_user = object.dropzone_users.find_or_create_by(
@@ -36,7 +82,7 @@ module Types
       # If the user has a rig, has set up exit weight, and
       # has a license, the user should be set to fun jumper
       # if the user is anything less
-      if dz_user.user.rigs.present? && dz_user.license.present? && !dz_user.user.exit_weight.blank?
+      if dz_user.user.rigs.present? && dz_user.license.present? && dz_user.user.exit_weight.present?
         if dz_user.user_role_id == object.user_roles.first.id
           dz_user.update(user_role: object.user_roles.find_by(name: :fun_jumper))
         end
@@ -51,22 +97,11 @@ module Types
       dz_user
     end
 
-    field :user_roles, [Types::UserRoleType], null: false
-
-    field :allowed_jump_types, [Types::JumpTypeType], null: false do
-      argument :user_id, [Int], required: true
-    end
     def allowed_jump_types(user_id: nil)
       # Get allowed jump types for each user:
       JumpType.allowed_for(object.dropzone_users.where(id: user_id))
     end
 
-    field :current_conditions, Types::WeatherConditionType, null: false
-
-    field :dropzone_user, Types::DropzoneUserType, null: true do
-      argument :id, Int, required: false
-      argument :user_id, Int, required: false
-    end
     def dropzone_user(id: nil, user_id: nil)
       if id
         object.dropzone_users.includes(:user).find(id)
@@ -75,22 +110,16 @@ module Types
       end
     end
 
-    field :ticket_types, [Types::TicketTypeType], null: false do
-      argument :is_public, Boolean, required: false
-    end
     def ticket_types(is_public: nil)
       query = object.ticket_types
       query = query.where(allow_manifesting_self: is_public) unless is_public.nil?
       query.order(name: :asc)
     end
 
-    field :extras, [Types::ExtraType], null: false
     def extras
       Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: object.id).order(name: :asc)
     end
 
-    field :rigs, [Types::RigType], null: true,
-    description: "Get rigs for dropzone"
     def rigs
       if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
         object.rigs.order(rig_type: :asc)
@@ -99,15 +128,6 @@ module Types
       end
     end
 
-
-    field :planes, [Types::PlaneType], null: false
-    def planes
-      object.planes
-    end
-
-    field :roles, [Types::UserRoleType], null: false do
-      argument :selectable, Boolean, required: false
-    end
     def roles(selectable: nil)
       query = object.user_roles
 
@@ -119,11 +139,6 @@ module Types
       query.order(id: :asc)
     end
 
-    field :master_log, Types::MasterLogType, null: false,
-    description: "Get the master log entry for a given date" do
-      argument :date, Int, required: true,
-      description: "This should be the timestamp of the beginning of the day"
-    end
     def master_log(date: nil)
       log = object.master_logs.find_or_initialize_by(created_at: Time.at(date))
 
@@ -132,10 +147,9 @@ module Types
       log
     end
 
-
-    field :banner, String, null: true
     def banner
-      object.image_url
+      return nil unless object.banner.attached?
+      Rails.application.routes.url_helpers.rails_blob_path(object.banner)
     rescue ActiveStorage::FileNotFoundError
       nil
     end

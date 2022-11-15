@@ -2,12 +2,12 @@
 
 module Mutations::Manifest
   class UpdateLoad < Mutations::BaseMutation
-    field :load, Types::LoadType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :load, Types::LoadType, null: true
 
-    argument :id, Int, required: true
     argument :attributes, Types::Input::LoadInput, required: true
+    argument :id, Int, required: true
 
     def resolve(attributes:, id:)
       mutate(

@@ -2,10 +2,9 @@
 
 module Mutations::Setup::RigInspections
   class UpdateRigInspection < Mutations::BaseMutation
-    field :rig_inspection, Types::RigInspectionType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
-
+    field :rig_inspection, Types::RigInspectionType, null: true
 
     argument :attributes, Types::Input::RigInspectionInput, required: true
     argument :id, Int, required: false
@@ -13,7 +12,6 @@ module Mutations::Setup::RigInspections
     def resolve(attributes:, id: nil)
       model = RigInspection.find(id)
       model.assign_attributes(attributes.to_h)
-
 
       model.save!
 
@@ -27,20 +25,20 @@ module Mutations::Setup::RigInspections
       {
         rig_inspection: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         rig_inspection: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         rig_inspection: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -51,11 +49,13 @@ module Mutations::Setup::RigInspections
       )
         true
       else
-        return false, {
-          errors: [
-            "You don't have permissions to inspect rigs"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to inspect rigs",
+            ],
+          },
+        ]
       end
     end
   end

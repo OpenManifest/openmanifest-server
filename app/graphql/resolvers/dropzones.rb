@@ -5,7 +5,7 @@ class Resolvers::Dropzones < Resolvers::Base
   description "Get all available dropzones"
 
   argument :state, [Types::Dropzone::State], required: false,
-           default_value: ["public"]
+                                             default_value: ["public"]
   def resolve(
     state: nil,
     lookahead: nil

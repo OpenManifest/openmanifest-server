@@ -2,10 +2,10 @@
 
 module Mutations::Users
   class SignUp < GraphqlDevise::Mutations::Register
-    argument :phone, String, required: true
     argument :exit_weight, Float, required: true
-    argument :name, String, required: true
     argument :license_id, Int, required: false
+    argument :name, String, required: true
+    argument :phone, String, required: true
     argument :push_token, String, required: false
 
     field :authenticatable, Types::UserType, null: true
@@ -36,7 +36,7 @@ module Mutations::Users
         authenticatable: nil,
         credentials: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
@@ -44,14 +44,14 @@ module Mutations::Users
         authenticatable: nil,
         credentials: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         authenticatable: nil,
         credentials: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
   end

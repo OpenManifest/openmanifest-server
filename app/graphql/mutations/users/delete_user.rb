@@ -7,7 +7,7 @@ module Mutations::Users
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :id, Int, required: true,
-      description: "The ID of the dropzone user to delete"
+                       description: "The ID of the dropzone user to delete"
 
     def resolve(id:)
       model = DropzoneUser.find(id)
@@ -17,34 +17,34 @@ module Mutations::Users
       {
         dropzone_user: model.reload,
         field_errors: nil,
-        errors: nil
+        errors: nil,
       }
     rescue Discard::RecordNotDiscarded
       # Failed save, return the errors to the client
       {
         dropzone: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: ["Failed to archive this user"]
+        errors: ["Failed to archive this user"],
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
         dropzone_user: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
         dropzone_user: nil,
         field_errors: nil,
-        errors: error.record.errors.full_messages
+        errors: error.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         dropzone_user: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -60,9 +60,11 @@ module Mutations::Users
       elsif context[:current_resource].can?(:deleteUser, dropzone_id: dz_user.dropzone_id)
         true
       else
-        return false, {
-          errors: ["You cant delete this aircraft"]
-        }
+        [
+          false, {
+            errors: ["You cant delete this aircraft"],
+          },
+        ]
       end
     end
   end

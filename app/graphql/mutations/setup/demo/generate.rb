@@ -6,11 +6,11 @@ module Mutations::Setup::Demo
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :dropzone, ID, required: true,
-             prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
     argument :attributes, Types::Input::DemoDataInput, required: true
+    argument :dropzone, ID, required: true,
+                            prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
 
-    def resolve(attributes:)
+    def resolve(attributes:, dropzone:)
       mutate(
         ::Demo::DataGenerator,
         :dropzone,

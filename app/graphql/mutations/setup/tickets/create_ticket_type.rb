@@ -2,10 +2,9 @@
 
 module Mutations::Setup::Tickets
   class CreateTicketType < Mutations::BaseMutation
-    field :ticket_type, Types::TicketTypeType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
-
+    field :ticket_type, Types::TicketTypeType, null: true
 
     argument :attributes, Types::Input::TicketTypeInput, required: true
 
@@ -30,20 +29,20 @@ module Mutations::Setup::Tickets
       {
         ticket_type: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         ticket_type: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         ticket_type: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -54,11 +53,13 @@ module Mutations::Setup::Tickets
       )
         true
       else
-        return false, {
-          errors: [
-            "You don't have permissions to create ticket addons"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to create ticket addons",
+            ],
+          },
+        ]
       end
     end
   end

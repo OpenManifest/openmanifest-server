@@ -37,17 +37,20 @@ module Mutations::Manifest
       )
         true
       else
-        [false, {
-          errors: [
-            "You don't have permissions to create ticket addons"
-          ]
-        }]
+        [
+          false, {
+            errors: [
+              "You don't have permissions to create ticket addons",
+            ],
+          },
+        ]
       end
     end
 
     private
-      def load_by_id(id)
-        @load_by_id ||= Load.find(id)
-      end
+
+    def load_by_id(id)
+      @load_by_id ||= Load.find(id)
+    end
   end
 end

@@ -2,9 +2,9 @@
 
 module Mutations::Setup::Aircrafts
   class CreatePlane < Mutations::BaseMutation
-    field :plane, Types::PlaneType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :plane, Types::PlaneType, null: true
 
     argument :attributes, Types::Input::PlaneInput, required: true
 

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
+  argument :push_token, String, required: false
   argument :token, String, required: true
   argument :user_identity, String, required: true
-  argument :push_token, String, required: false
 
   # Override devises initializer to allow
   # signing up on an existing user if the user
@@ -14,7 +14,7 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       user_identity: attrs[:user_identity]
     )
   rescue => e
-    $stderr.puts e.message
+    warn e.message
     raise Login::Facebook::AuthenticationFailed
   end
 
@@ -31,7 +31,7 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       authenticatable: nil,
       credentials: nil,
       field_errors: nil,
-      errors: ["Apple authentication failed"]
+      errors: ["Apple authentication failed"],
     }
   rescue ActiveRecord::RecordInvalid => invalid
     # Failed save, return the errors to the client
@@ -39,7 +39,7 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       authenticatable: nil,
       credentials: nil,
       field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-      errors: invalid.record.errors.full_messages
+      errors: invalid.record.errors.full_messages,
     }
   rescue ActiveRecord::RecordNotSaved => invalid
     # Failed save, return the errors to the client
@@ -47,14 +47,14 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       authenticatable: nil,
       credentials: nil,
       field_errors: nil,
-      errors: invalid.record.errors.full_messages
+      errors: invalid.record.errors.full_messages,
     }
   rescue ActiveRecord::RecordNotFound => error
     {
       authenticatable: nil,
       credentials: nil,
       field_errors: nil,
-      errors: [ error.message ]
+      errors: [error.message],
     }
   end
 end

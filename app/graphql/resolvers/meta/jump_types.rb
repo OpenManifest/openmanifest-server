@@ -4,7 +4,7 @@ class Resolvers::Meta::JumpTypes < Resolvers::Base
   description "Get all jump types"
   type [Types::JumpTypeType], null: false
   argument :dropzone_users, [Int], required: false,
-           prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
+                                   prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
 
   def resolve(dropzone_users: nil, lookahead: nil)
     if dropzone_users

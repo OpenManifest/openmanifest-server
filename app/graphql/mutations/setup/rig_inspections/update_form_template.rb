@@ -2,9 +2,9 @@
 
 module Mutations::Setup::RigInspections
   class UpdateFormTemplate < Mutations::BaseMutation
-    field :form_template, Types::FormTemplateType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
+    field :form_template, Types::FormTemplateType, null: true
 
     argument :attributes, Types::Input::FormTemplateInput, required: true
     argument :id, Int, required: false
@@ -23,20 +23,20 @@ module Mutations::Setup::RigInspections
       {
         form_template: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
         form_template: nil,
         field_errors: nil,
-        errors: invalid.record.errors.full_messages
+        errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
         form_template: nil,
         field_errors: nil,
-        errors: [ error.message ]
+        errors: [error.message],
       }
     end
 
@@ -47,11 +47,13 @@ module Mutations::Setup::RigInspections
       )
         true
       else
-        return false, {
-          errors: [
-            "You don't have permissions to update this form"
-            ]
-          }
+        [
+          false, {
+            errors: [
+              "You don't have permissions to update this form",
+            ],
+          },
+        ]
       end
     end
   end

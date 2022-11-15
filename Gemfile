@@ -20,7 +20,7 @@ gem "bcrypt", "~> 3.1.7"
 # Coordinate based location
 gem "geokit-rails"
 
-gem "dotenv-rails", groups: %i[development test], require: "dotenv/rails-now"
+gem "dotenv-rails", groups: %i(development test), require: "dotenv/rails-now"
 
 # Soft delete records
 gem "discard", "~> 1.2"
@@ -69,14 +69,15 @@ gem "globalid"
 
 gem "faker"
 
+gem "pry"
+gem "awesome_print"
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem "byebug", platforms: %i[mri mingw x64_mingw]
+  gem "byebug", platforms: %i(mri mingw x64_mingw)
   gem "factory_bot_rails"
   gem "guard"
   gem "guard-rspec"
-  gem "pry"
-  gem "awesome_print"
   gem "rspec-json_expectations"
 
   gem "database_cleaner"
@@ -102,8 +103,8 @@ group :development do
 
   gem "rubocop"
   gem "rubocop-performance"
-  gem "rubocop-rails"
-  gem "rubocop-rails_config"
+  gem "rubocop-airbnb"
+  gem "rubocop-graphql"
   gem "rubocop-rspec"
 
   # Security
@@ -133,4 +134,4 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "graphiql-rails"
-gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
+gem "tzinfo-data", platforms: %i(mingw mswin x64_mingw jruby)

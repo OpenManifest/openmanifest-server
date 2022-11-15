@@ -22,9 +22,8 @@ module Types
 
     field :image, String, null: true
     def image
-      return nil unless object.image
-      return nil unless object.image_url
-      object.image_url
+      return nil unless object.avatar.attached?
+      Rails.application.routes.url_helpers.rails_blob_path(object.avatar)
     rescue
       nil
     end
