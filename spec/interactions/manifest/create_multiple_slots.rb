@@ -12,7 +12,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
       {
         rig: dz_user.user.rigs&.first,
         exit_weight: dz_user.exit_weight,
-        dropzone_user: dz_user
+        dropzone_user: dz_user,
       }
     end
   end
@@ -47,6 +47,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
       before do
         dropzone_users.sample.update(credits: ticket_type.cost - 10)
       end
+
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,

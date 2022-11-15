@@ -42,7 +42,7 @@ class Login::Facebook < ActiveInteraction::Base
         provider: :facebook,
         uid: response.parsed_response["id"],
       )
-      user.password = SecureRandom.urlsafe_base64(9) unless user.password.present?
+      user.password = SecureRandom.urlsafe_base64(9) if user.password.blank?
       user.save(validate: false)
       user.confirm
       user.save!

@@ -11,7 +11,7 @@ class RequestRigInspectionJob < ApplicationJob
       # rig inspections
       dz_user.dropzone.dropzone_users.with_acting_permission(:actAsRigInspector).each do |inspector|
         # Only send once
-        unless Notification.where(received_by: inspector, type: :rig_inspection_requested, resource: rig).exists?
+        unless Notification.exists?(received_by: inspector, type: :rig_inspection_requested, resource: rig)
           ::Notification.create(
             received_by: inspector,
             message: "#{rig.user.name} needs a rig inspection",

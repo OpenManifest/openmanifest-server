@@ -122,33 +122,33 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   private
-    def authorize
-      dropzone = load.plane.dropzone
-      action = if load.slots.exists?(dropzone_user: dropzone_user)
-        "update"
-      else
-        "create"
-      end
 
-      if dropzone.loads_today.active.where(dropzone_user: dropzone_user)
-        resource = if dropzone_user.id != access_context.subject.id
-          "UserSlot"
-        else
-          "Slot"
-        end
-
-        return true if access_context.subject.can?("#{action}#{resource}")
-        raise PermissionDenied, "You don't have permissions to manifest other users (missing #{"#{action}#{resource}"})"
-      else
-        resource = if dropzone_user.id != access_context.subject.id
-          "UserDoubleSlot"
-        else
-          "DoubleSlot"
-        end
-
-
-        return true if access_context.can?("#{action}#{resource}")
-        raise PermissionDenied, "You don't have permissions to double-manifest (missing #{"#{action}#{resource}"})"
-      end
+  def authorize
+    dropzone = load.plane.dropzone
+    action = if load.slots.exists?(dropzone_user: dropzone_user)
+               "update"
+             else
+               "create"
     end
+
+    if dropzone.loads_today.active.where(dropzone_user: dropzone_user)
+      resource = if dropzone_user.id != access_context.subject.id
+                   "UserSlot"
+                 else
+                   "Slot"
+      end
+
+      return true if access_context.subject.can?("#{action}#{resource}")
+      raise PermissionDenied, "You don't have permissions to manifest other users (missing #{"#{action}#{resource}"})"
+    else
+      resource = if dropzone_user.id != access_context.subject.id
+                   "UserDoubleSlot"
+                 else
+                   "DoubleSlot"
+      end
+
+      return true if access_context.can?("#{action}#{resource}")
+      raise PermissionDenied, "You don't have permissions to double-manifest (missing #{"#{action}#{resource}"})"
+    end
+  end
 end

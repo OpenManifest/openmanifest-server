@@ -15,7 +15,7 @@ RSpec.describe Federations::ApfSync do
   describe "syncing federation qualifications" do
     before do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
-      to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
+        to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
       Federations::ApfSync.run(access_context: access_context, user_federation: user_federation)
     end
 
@@ -29,7 +29,7 @@ RSpec.describe Federations::ApfSync do
   describe "syncing failed" do
     before do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
-      to_return(body: nil, headers: { "Content-Type" => "application/json" })
+        to_return(body: nil, headers: { "Content-Type" => "application/json" })
       dropzone_user.user.user_federations.destroy_all
       dropzone_user.update(license: nil)
       Federations::ApfSync.run(access_context: access_context, user_federation: user_federation)

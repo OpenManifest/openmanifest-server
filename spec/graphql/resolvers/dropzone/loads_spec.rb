@@ -11,20 +11,20 @@ module Mutations
     let!(:load2) { create(:load, plane: plane, created_at: DateTime.current.beginning_of_day + 5.hours) }
     let!(:load3) { create(:load, plane: plane, created_at: 1.day.from_now) }
 
-
     describe ".resolve" do
       context "successfully" do
-        let(:query_str) {
-          query(
-            dropzone: dropzone.id,
-            date: Date.today.iso8601
-          )
-        }
         subject do
           post "/graphql",
                params: { query: query_str },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            dropzone: dropzone.id,
+            date: Date.today.iso8601
+          )
         end
 
         it { is_expected.to include_json(data: { loads: { edges: [{ node: { id: load2.id.to_s } }] } }) }

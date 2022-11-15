@@ -50,7 +50,7 @@ RSpec.describe JumpType, type: :model do
     expect(
       JumpType.allowed_for([
         certificate_e_user,
-        certificate_a_user
+        certificate_a_user,
       ]).pluck(:slug).sort
     ).to eq ["fs", "hnp", "hp"].sort
   end
@@ -60,7 +60,7 @@ RSpec.describe JumpType, type: :model do
       JumpType.allowed_for([
         certificate_e_user,
         certificate_c_user,
-        certificate_a_user
+        certificate_a_user,
       ]).pluck(:slug).sort
     ).to eq ["fs", "hnp", "hp"].sort
   end
@@ -69,7 +69,7 @@ RSpec.describe JumpType, type: :model do
     expect(
       JumpType.allowed_for([
         certificate_e_user,
-        certificate_c_user
+        certificate_c_user,
       ]).pluck(:slug).sort
     ).to eq ["fs", "hp", "hnp", "angle", "freefly", "cam"].sort
   end

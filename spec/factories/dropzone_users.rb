@@ -22,9 +22,9 @@ FactoryBot.define do
     user
     dropzone { nil }
     credits { nil }
-    user_role {
+    user_role do
       dropzone.user_roles.reload.third
-    }
+    end
     license { Federation.first.licenses.sample }
 
     after(:create) do |dz_user, evaluator|

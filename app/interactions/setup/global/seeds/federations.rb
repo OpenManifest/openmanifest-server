@@ -46,11 +46,12 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
   end
 
   private
-    def federations_by_slug
-      @federations_by_slug ||= ::Federation.all.index_by(&:slug)
-    end
 
-    def jump_types_by_slug
-      @jump_types_by_slug ||= ::JumpType.all.index_by(&:slug)
-    end
+  def federations_by_slug
+    @federations_by_slug ||= ::Federation.all.index_by(&:slug)
+  end
+
+  def jump_types_by_slug
+    @jump_types_by_slug ||= ::JumpType.all.index_by(&:slug)
+  end
 end

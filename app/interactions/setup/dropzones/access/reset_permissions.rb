@@ -5,7 +5,6 @@ class Setup::Dropzones::Access::ResetPermissions < ApplicationInteraction
 
   steps :clear_role_permissions
 
-
   # Finds all removed permissions and deletes any links
   # to roles and users
   def clear_role_permissions
@@ -14,12 +13,12 @@ class Setup::Dropzones::Access::ResetPermissions < ApplicationInteraction
     ).delete_all
   end
 
-
   private
-    # Find all permission slugs defined in the yml
-    #
-    # @return [Array<String>]
-    def yaml_permission_slugs
-      @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
-    end
+
+  # Find all permission slugs defined in the yml
+  #
+  # @return [Array<String>]
+  def yaml_permission_slugs
+    @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
+  end
 end

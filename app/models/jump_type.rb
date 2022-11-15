@@ -24,6 +24,7 @@ class JumpType < ApplicationRecord
         symbolize_names: true
       )[:jump_types]
     end
+
     # Find the intersection of jump types allowed for a set of users
     #
     # @param [Array<DropzoneUser>] dropzone_users
@@ -35,7 +36,6 @@ class JumpType < ApplicationRecord
       JumpType.where(id: jump_type_ids.reduce(&:intersection))
     end
   end
-
 
   def allowed_for?(dropzone_user)
     JumpType.allowed_for([dropzone_user].flatten).exists?(id: id)

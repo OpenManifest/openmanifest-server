@@ -89,7 +89,7 @@ module Types
 
         # If the user has no rigs inspected at this dropzone,
         # notify a staff member if no previous notifications
-        unless RigInspection.where(dropzone_user: dz_user).exists?
+        unless RigInspection.exists?(dropzone_user: dz_user)
           RequestRigInspectionJob.perform_now(dz_user.rigs.find { |rig| !rig.inspected_at?(object) }, dz_user)
         end
       end

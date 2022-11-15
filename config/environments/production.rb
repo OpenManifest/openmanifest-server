@@ -10,7 +10,6 @@ Rails.application.configure do
 
   config.active_storage.service = :flyio
 
-
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
   # and those relying on copy on write to perform better.
@@ -56,7 +55,7 @@ Rails.application.configure do
     user_name: ENV["SMTP_USERNAME"],
     password: ENV["SMTP_PASSWORD"],
     authentication: :plain,
-    enable_starttls_auto: true
+    enable_starttls_auto: true,
   }
   config.action_mailer.smtp_settings = {
     port: ENV["SMTP_PORT"],
@@ -65,13 +64,13 @@ Rails.application.configure do
     user_name: ENV["SMTP_USERNAME"],
     password: ENV["SMTP_PASSWORD"],
     authentication: :plain,
-    enable_starttls_auto: true
+    enable_starttls_auto: true,
   }
 
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = {
     host: "openmanifest.org",
-    protocol: "https"
+    protocol: "https",
   }
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
@@ -81,7 +80,7 @@ Rails.application.configure do
   config.log_level = :info
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store

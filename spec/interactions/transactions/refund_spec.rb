@@ -14,6 +14,7 @@ RSpec.describe Transactions::Refund do
 
   describe "Refunding a purchase" do
     let!(:outcome) { Transactions::Refund.run(order: order.result, access_context: access_context) }
+
     it { expect(outcome.result).to be_a Order }
     it { expect(outcome.result.valid?).to be true }
     it { expect(outcome.result.receipts.count).to eq 2 }

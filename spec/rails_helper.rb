@@ -4,7 +4,6 @@
 require "spec_helper"
 require "rspec/json_expectations"
 
-
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "#{Rails.root}/spec/support/factory_bot.rb"

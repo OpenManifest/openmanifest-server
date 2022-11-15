@@ -34,6 +34,7 @@ RSpec.describe Manifest::FinalizeLoad do
         load: plane_load
       )
     end
+
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }
     it { expect(outcome.errors).to be_empty }

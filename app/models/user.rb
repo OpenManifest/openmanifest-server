@@ -40,7 +40,6 @@
 class User < ApplicationRecord
   include ActiveStorageSupport::SupportForBase64
 
-
   # Include default devise modules.
   devise :database_authenticatable, :registerable,
   :recoverable, :rememberable, :trackable, :validatable, :confirmable
@@ -52,12 +51,7 @@ class User < ApplicationRecord
   # Most users will have 'user', and only users with
   # permissions to manage on an organizational level
   # have anything else
-  enum moderation_role: [
-    :user,
-    :support,
-    :moderator,
-    :administrator
-  ]
+  enum moderation_role: { :user => 0, :support => 1, :moderator => 2, :administrator => 3 }
 
   after_create do
     Appsignal.set_gauge("users.count", User.count)
@@ -79,7 +73,6 @@ class User < ApplicationRecord
   has_many :licenses, through: :user_federations
   has_many :user_federation_qualifications, through: :user_federations
   has_many :qualifications, through: :user_federation_qualifications
-
 
   def can?(permission_name, dropzone_id:)
     if dz_user = dropzone_users.find_by(dropzone_id: dropzone_id)

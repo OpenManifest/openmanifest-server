@@ -29,19 +29,9 @@ class Transaction < ApplicationRecord
 
   after_create :notify!
 
-  enum status: %i[
-    reserved
-    completed
-    cancelled
-  ]
+  enum status: { :reserved => 0, :completed => 1, :cancelled => 2 }
 
-  enum transaction_type: %i[
-    purchase
-    sale
-    deposit
-    withdrawal
-    refund
-  ]
+  enum transaction_type: { :purchase => 0, :sale => 1, :deposit => 2, :withdrawal => 3, :refund => 4 }
 
   scope :completed, -> { where(status: :completed) }
   scope :reserved,  -> { where(status: :reserved) }

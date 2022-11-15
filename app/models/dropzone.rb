@@ -59,8 +59,7 @@ class Dropzone < ApplicationRecord
   belongs_to :federation
   belongs_to :rig_inspection_template,
              class_name: "FormTemplate",
-             optional: true,
-             foreign_key: "rig_inspection_template_id"
+             optional: true
 
   has_one_base64_attached :banner
   after_create :set_appsignal_gauge

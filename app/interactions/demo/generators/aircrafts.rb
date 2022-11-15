@@ -16,7 +16,6 @@ class Demo::Generators::Aircrafts < ApplicationInteraction
     )
   end
 
-
   def create_aircrafts
     access_context.dropzone.planes.find_or_create_by(
       name: "Caravan C208",

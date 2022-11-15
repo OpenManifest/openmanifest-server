@@ -1,7 +1,6 @@
 require:
   - rubocop-airbnb
   - rubocop-performance
-  - rubocop-graphql
 AllCops:
   NewCops: enable
   TargetRubyVersion: 2.7.6
@@ -10,4 +9,7 @@ AllCops:
     - "node_modules/**/*"
     - ".rvm/**/*"
     - "vendor/**/*"
+    - "tmp/**/*"
+    - "log/**/*"
+    - "public/**/*"
     - "db/schema.rb"

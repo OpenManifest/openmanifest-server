@@ -3,7 +3,7 @@
 class Types::WalletableTypes < Types::BaseEnum
   [
     DropzoneUser,
-    Dropzone
+    Dropzone,
   ].map do |model|
     value model.name.camelize(:lower), value: model.name
   end

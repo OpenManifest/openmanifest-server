@@ -40,6 +40,7 @@ RSpec.describe Manifest::CreateSlot do
       before do
         dropzone_user.update(credits: ticket_type.cost - 10)
       end
+
       let!(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
@@ -109,6 +110,17 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "when the user is double manifested but allowed to" do
+      subject do
+        Manifest::CreateSlot.run!(
+          access_context: access_context,
+          ticket_type: ticket_type,
+          dropzone_user: dropzone_user,
+          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          load: second_load,
+          exit_weight: dropzone_user.exit_weight
+        )
+      end
+
       before do
         Manifest::CreateSlot.run(
           access_context: access_context,
@@ -122,17 +134,6 @@ RSpec.describe Manifest::CreateSlot do
       end
 
       let!(:second_load) { create(:load, plane: plane) }
-
-      subject do
-        Manifest::CreateSlot.run!(
-          access_context: access_context,
-          ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
-          load: second_load,
-          exit_weight: dropzone_user.exit_weight
-        )
-      end
 
       it { is_expected.to be_a Slot }
       it { expect { subject }.not_to raise_error }

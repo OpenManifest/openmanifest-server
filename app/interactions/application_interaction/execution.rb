@@ -28,7 +28,7 @@ module ApplicationInteraction::Execution
     end
 
     def action_name
-      self.name.split("::").last.underscore.humanize
+      name.split("::").last.underscore.humanize
     end
   end
 
@@ -36,9 +36,11 @@ module ApplicationInteraction::Execution
     def before_hooks
       []
     end
+
     def after_hooks
       []
     end
+
     # Execute all defined steps in order
     def execute
       authorize!

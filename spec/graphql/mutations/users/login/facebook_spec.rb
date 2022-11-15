@@ -6,15 +6,16 @@ RSpec.describe Mutations::Users::Login::Facebook do
   before do
     token = "12345"
     stub_request(:get, "https://graph.facebook.com/me?access_token=%s&fields=name,email,picture" % token).
-    to_return(
-      headers: { "Content-Type" => "application/json" },
-      body: {
-        "id": "427773",
-        "email": "user@rspec.com",
-        "name": "Rspec User",
-      }.to_json
-    )
+      to_return(
+        headers: { "Content-Type" => "application/json" },
+        body: {
+          "id": "427773",
+          "email": "user@rspec.com",
+          "name": "Rspec User",
+        }.to_json
+      )
   end
+
   it_behaves_like "graphql", {
     actor: nil,
     permissions: [],
@@ -23,7 +24,7 @@ RSpec.describe Mutations::Users::Login::Facebook do
         loginWithFacebook: {
           args: {
             token: "12345",
-            confirm_url: "https://openmanifest.org/"
+            confirm_url: "https://openmanifest.org/",
           },
           authenticatable: {
             id: /\d/,
@@ -35,10 +36,10 @@ RSpec.describe Mutations::Users::Login::Facebook do
             tokenType: "Bearer",
             client: /\w+/,
             expiry: /\d+/,
-            uid: "427773"
-          }
-        }
-      }
-    }
+            uid: "427773",
+          },
+        },
+      },
+    },
   }
 end

@@ -30,13 +30,14 @@ module Mutations
 
     describe "Owner can see public dropzones + dropzone they own" do
       context "when querying with no variables" do
-        let!(:query_str) { query() }
         subject do
           post "/graphql",
                params: { query: query_str },
                headers: owner.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
+
+        let!(:query_str) { query }
 
         it "shows owned and public dropzones" do
           is_expected.to include_json(
@@ -44,8 +45,8 @@ module Mutations
               dropzones: {
                 edges: [owners_dropzone, public_dropzone].map do |dropzone|
                   { node: { id: dropzone.id.to_s } }
-                end
-              }
+                end,
+              },
             }
           )
           is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] } })
@@ -53,7 +54,6 @@ module Mutations
       end
 
       context "even when specifying state" do
-        let!(:query_str) { query(state: ["private", "public", "archived"]) }
         subject do
           post "/graphql",
                params: { query: query_str },
@@ -61,14 +61,16 @@ module Mutations
           JSON.parse(response.body, symbolize_names: true)
         end
 
+        let!(:query_str) { query(state: ["private", "public", "archived"]) }
+
         it "shows owned and public dropzones" do
           is_expected.to include_json(
             data: {
               dropzones: {
                 edges: [owners_dropzone.reload, public_dropzone.reload].map do |dropzone|
                   { node: { id: dropzone.id.to_s } }
-                end
-              }
+                end,
+              },
             }
           )
           is_expected.not_to include_json(data: { dropzones: { edges: [{ node: { id: private_dropzone.id.to_s } }] } })

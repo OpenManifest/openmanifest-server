@@ -20,14 +20,14 @@ module Mutations
                    plane_load: plane_load,
                    dropzone_user: dropzone_user,
                    exit_weight: dropzone_user.exit_weight || 105
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body)
-        }
+        end
 
         it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 1 }
         it { expect { post_request }.to change { DropzoneUser.find(dropzone_user.id).credits }.by ticket_type.cost * -1 }
@@ -56,7 +56,7 @@ module Mutations
                    exit_weight: dropzone_user.user.exit_weight,
                    passenger_name: '"Eric"',
                    passenger_exit_weight: 60.0
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body)
@@ -82,14 +82,14 @@ module Mutations
                    plane_load: plane_load,
                    dropzone_user: dropzone_user,
                    exit_weight: dropzone_user.user.exit_weight
-                 )
+                 ),
                },
                headers: dropzone_user.user.create_new_auth_token
         end
 
-        let(:json) {
+        let(:json) do
           JSON.parse(response.body)
-        }
+        end
 
         it { expect(json["data"]["createSlot"]["errors"]).not_to be_empty }
         it { expect(json["data"]["createSlot"]["fieldErrors"]).to be_empty }

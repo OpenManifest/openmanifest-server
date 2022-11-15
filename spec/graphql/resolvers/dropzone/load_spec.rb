@@ -17,16 +17,17 @@ module Mutations
 
     describe ".resolve" do
       context "successfully" do
-        let(:query_str) {
-          query(
-            id: load2.id
-          )
-        }
         subject do
           post "/graphql",
                params: { query: query_str },
                headers: dropzone_user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
+        end
+
+        let(:query_str) do
+          query(
+            id: load2.id
+          )
         end
 
         it { is_expected.to include_json(data: { load: { id: load2.id.to_s } }) }

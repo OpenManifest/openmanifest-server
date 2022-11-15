@@ -10,7 +10,7 @@ RSpec.describe ActiveInteraction do
             :two,
             :three
 
-      before_steps do self.sum = 1 end
+      before_steps { self.sum = 1 }
       def one
         self.sum += 1
       end

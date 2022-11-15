@@ -14,7 +14,7 @@ RSpec.describe Manifest::FinalizeLoad do
       create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
       create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
       create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
-      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2)
+      create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
     ]
     dropzone_users.filter_map do |dz_user|
       dz_user.update!(credits: ticket_type.cost * 2)

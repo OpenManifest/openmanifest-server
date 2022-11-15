@@ -44,9 +44,6 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     load.reload
   end
 
-
-
-
   def check_available_slots
     # Check how many users we're manifesting, and return
     # an error if there aren't enough slots on this load
@@ -91,15 +88,16 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   end
 
   private
-    def dropzone_users
-      users.pluck(:dropzone_user)
-    end
 
-    def plane_load
-      load.reload
-    end
+  def dropzone_users
+    users.pluck(:dropzone_user)
+  end
 
-    def dropzone
-      plane_load.plane.dropzone
-    end
+  def plane_load
+    load.reload
+  end
+
+  def dropzone
+    plane_load.plane.dropzone
+  end
 end

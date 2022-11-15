@@ -13,12 +13,12 @@ module Types
         if dropzone_or_dropzone_id = opts[:dropzone] || opts[:dropzone_id]
           if dropzone_or_dropzone_id.is_a?(ApplicationRecord)
             opts[:access_context] = access_context_for(
-                dropzone_or_dropzone_id
-              )
+              dropzone_or_dropzone_id
+            )
           elsif dropzone_or_dropzone_id.is_a?(Integer)
             opts[:access_context] = access_context_for(
-                dropzone_or_dropzone_id
-              )
+              dropzone_or_dropzone_id
+            )
           end
         end
       end
@@ -28,20 +28,20 @@ module Types
         {
           field_name => outcome.result,
           error: nil,
-          field_errors: nil
+          field_errors: nil,
         }
       else
         {
           field_name => nil,
           field_errors: outcome.errors.to_hash.except(:base).map { |field, message| { field: field, message: [message].flatten.reject(&:blank?).first } },
-          errors: outcome.errors.full_messages_for(:base)
+          errors: outcome.errors.full_messages_for(:base),
         }
       end
     rescue ::ApplicationInteraction::Errors::PermissionDenied => e
       {
         field_name => nil,
         field_errors: nil,
-        errors: [e.message]
+        errors: [e.message],
       }
     end
   end

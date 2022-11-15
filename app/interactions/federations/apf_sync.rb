@@ -112,7 +112,7 @@ class Federations::ApfSync < ApplicationInteraction
           name: license_or_crest["Qualification"],
           federation: user_federation.federation,
         ),
-        user_federation_id: user_federation.id
+        user_federation_id: user_federation.id,
       }.merge(
         uid: license_or_crest["SerialNumber"],
         expires_at: if license_or_crest["ExpiryDate"]
@@ -150,25 +150,25 @@ class Federations::ApfSync < ApplicationInteraction
     end
   end
 
-
   private
-    def api_url
-      "https://www.apf.com.au/apf/api/student"
-    end
 
-    def last_name
-      *_, last_name = user_federation.user.name.split(/\s+/)
-      last_name
-    end
+  def api_url
+    "https://www.apf.com.au/apf/api/student"
+  end
 
-    def query_params
-      {
-        SurName: last_name,
-        APFNum: user_federation.uid
-      }.to_query
-    end
+  def last_name
+    *_, last_name = user_federation.user.name.split(/\s+/)
+    last_name
+  end
 
-    def url
-      [api_url, query_params].join("?")
-    end
+  def query_params
+    {
+      SurName: last_name,
+      APFNum: user_federation.uid,
+    }.to_query
+  end
+
+  def url
+    [api_url, query_params].join("?")
+  end
 end

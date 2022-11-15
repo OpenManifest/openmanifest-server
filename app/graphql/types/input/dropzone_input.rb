@@ -6,7 +6,7 @@ module Types
       argument :name, String, required: true
       argument :banner, String, required: false
       argument :federation, Int, required: true,
-               prepare: -> (value, ctx) { Federation.find_by(id: value) }
+                                 prepare: -> (value, ctx) { Federation.find_by(id: value) }
       argument :request_publication, Boolean, required: false
       argument :is_public, Boolean, required: false
       argument :lat, Float, required: false

@@ -18,7 +18,6 @@ class Demo::Generators::Tickets < ApplicationInteraction
     )
   end
 
-
   def create_height_ticket
     access_context.dropzone.ticket_types.find_or_create_by(
       name: "Height",

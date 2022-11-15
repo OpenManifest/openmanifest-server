@@ -42,13 +42,14 @@ class Slot < ApplicationRecord
   has_many :notifications, as: :resource
   scope :ready, -> { where.not(dropzone_user: nil).or(where.not(passenger: nil)).where.not(ticket_type: nil, load: nil, jump_type: nil) }
 
-  counter_culture %i[load plane dropzone], column_name: :slots_count
+  counter_culture %i(load plane dropzone), column_name: :slots_count
   counter_culture :load, column_name: :slots_count
   counter_culture :load,
-                  column_names: -> { {
-                    Slot.ready => "ready_slots_count"
-                  }}
-
+                  column_names: -> {
+                                  {
+                                    Slot.ready => "ready_slots_count",
+                                  }
+                                }
 
   validate :available?,
            :double_manifest?,
@@ -80,9 +81,9 @@ class Slot < ApplicationRecord
   end
 
   def ready?
-    return false unless ticket_type.present?
-    return false unless load.present?
-    return false unless jump_type.present?
+    return false if ticket_type.blank?
+    return false if load.blank?
+    return false if jump_type.blank?
     (passenger.present? || dropzone_user.present?)
   end
 
@@ -106,37 +107,38 @@ class Slot < ApplicationRecord
   end
 
   private
-    def required_slots
-      return 2 if has_passenger?
-      1
-    end
 
-    def available?
-      errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
-    end
+  def required_slots
+    return 2 if has_passenger?
+    1
+  end
 
-    def double_manifest?
-      return if is_passenger?
-      # Check if the user is manifest on any loads that have
-      # not yet been dispatched
-      return unless Slot.where.not(id: id).exists?(
-        load: dropzone.loads_today.active,
-        dropzone_user: dropzone_user
-      )
-      return if created_by.can?(:createDoubleSlot)
-      errors.add(:base, "Double-manifesting is not allowed")
-    end
+  def available?
+    errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
+  end
 
-    def affordable?
-      return true if is_passenger?
-      return unless dropzone.is_credit_system_enabled?
-      credits = dropzone_user.credits || 0
-      errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
-    end
+  def double_manifest?
+    return if is_passenger?
+    # Check if the user is manifest on any loads that have
+    # not yet been dispatched
+    return unless Slot.where.not(id: id).exists?(
+      load: dropzone.loads_today.active,
+      dropzone_user: dropzone_user
+    )
+    return if created_by.can?(:createDoubleSlot)
+    errors.add(:base, "Double-manifesting is not allowed")
+  end
 
-    def allowed_jump_type?
-      return true if is_passenger? && ticket_type.is_tandem?
-      return if jump_type.allowed_for?(dropzone_user)
-      errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
-    end
+  def affordable?
+    return true if is_passenger?
+    return unless dropzone.is_credit_system_enabled?
+    credits = dropzone_user.credits || 0
+    errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
+  end
+
+  def allowed_jump_type?
+    return true if is_passenger? && ticket_type.is_tandem?
+    return if jump_type.allowed_for?(dropzone_user)
+    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
+  end
 end
