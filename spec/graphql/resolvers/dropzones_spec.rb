@@ -4,7 +4,6 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Resolvers::Dropzones, type: :request do
-
     describe "Owner can see public dropzones + dropzone they own" do
       let!(:moderator) { create(:user, moderation_role: :moderator) }
       let!(:fun_jumper) { create(:user, moderation_role: :user) }
@@ -29,6 +28,7 @@ module Mutations
         end
         create(:dropzone_user, dropzone: owners_dropzone, user: owner, user_role: owners_dropzone.user_roles.find_by(name: :owner))
       end
+
       context "when querying with no variables" do
         subject do
           post "/graphql",
