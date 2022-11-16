@@ -20,12 +20,6 @@ module Types
     field :dropzone_users, [Types::DropzoneUserType], null: true
     field :user_federations, [Types::UserFederationType], null: true
 
-    field :image, String, null: true
-    def image
-      return nil unless object.avatar.attached?
-      Rails.application.routes.url_helpers.url_for(object.avatar)
-    rescue
-      nil
-    end
+    field :image, String, null: true, method: :avatar_url
   end
 end
