@@ -27,6 +27,7 @@ class Dropzone < ApplicationRecord
   include ActiveStorageSupport::SupportForBase64
   include Discard::Model
   include StateMachines::DropzoneState
+  include Image::Resizer
   acts_as_mappable default_units: :kms,
                    default_formula: :sphere,
                    distance_field_name: :distance,
@@ -63,6 +64,7 @@ class Dropzone < ApplicationRecord
              optional: true
 
   has_one_base64_attached :banner
+  resize_attached_image :banner, size: '1280x720'
   after_create :set_appsignal_gauge
 
   before_destroy do

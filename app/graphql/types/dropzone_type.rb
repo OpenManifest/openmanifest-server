@@ -64,7 +64,7 @@ module Types
                            description: "This should be the timestamp of the beginning of the day"
     end
 
-    field :banner, String, null: true
+    field :banner, String, null: true, method: :banner_url
 
     field :statistics, Types::Admin::StatisticsType, null: false
     def statistics
@@ -145,13 +145,6 @@ module Types
       # Creating log record if none exists
       log.save! if log.new_record?
       log
-    end
-
-    def banner
-      return nil unless object.banner.attached?
-      Rails.application.routes.url_helpers.url_for(object.banner)
-    rescue ActiveStorage::FileNotFoundError
-      nil
     end
   end
 end
