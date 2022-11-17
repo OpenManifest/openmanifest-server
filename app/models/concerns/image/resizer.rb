@@ -9,7 +9,12 @@ module Image::Resizer
       define_method "#{name}_url" do
         return unless send(name).attached?
 
-        rails_representation_url(send(name).variant(resize: size).processed)
+        begin
+          rails_representation_url(send(name).variant(resize: size).processed)
+        rescue => e
+          Appsignal.set_error(e)
+          nil
+        end
       end
     end
   end

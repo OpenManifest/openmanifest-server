@@ -5,7 +5,7 @@ class Resolvers::Dropzones < Resolvers::Base
   description "Get all available dropzones"
 
   argument :state, [Types::Dropzone::State], required: false,
-                                             default_value: ["public"]
+                                             default_value: nil
   def resolve(
     state: nil,
     lookahead: nil
@@ -13,7 +13,11 @@ class Resolvers::Dropzones < Resolvers::Base
     lookahead = lookahead.selection(:edges).selection(:node)
 
     # If the user is not a moderator, only show public dropzones
-    state = ["public"] unless context[:current_resource].is_moderator?
+    if context[:current_resource].is_moderator?
+      state ||= Dropzone.state_machine.states.keys
+    else
+      state = ["public"]
+    end
 
     query = Dropzone.kept
     query = query.includes(:user_roles)     if lookahead.selects?(:user_roles)
