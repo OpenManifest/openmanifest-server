@@ -38,7 +38,7 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
         )
       )
     end
-    query = query.search(search) if search.present?
+    query = query.search(search) unless search.blank?
     query
   end
 end
