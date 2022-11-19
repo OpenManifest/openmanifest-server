@@ -15,6 +15,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
   steps :check_user_exists,
         :initialize_user,
         :create_dropzone_user,
+        :invite,
         :assign_federation,
         :record
 
@@ -72,6 +73,10 @@ class Setup::Users::CreateGhost < ApplicationInteraction
       user_role: role,
       user: @user
     )
+  end
+
+  def invite
+    @user&.send_confirmation_instructions
   end
 
   def assign_federation
