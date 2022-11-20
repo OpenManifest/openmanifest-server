@@ -8,7 +8,7 @@ module Mutations::Users
 
     argument :attributes, Types::Input::DropzoneUserInput, required: true
     argument :dropzone_user, ID, required: false,
-             prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
+                                 prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
     def resolve(attributes:, id: nil)
       model = DropzoneUser.find(id)

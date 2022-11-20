@@ -62,7 +62,6 @@ class Users::UpdateUser < ApplicationInteraction
       return false
     end
 
-
     # Users can always update their own profile
     if access_context.user.id == dropzone_user.user.id
       true
