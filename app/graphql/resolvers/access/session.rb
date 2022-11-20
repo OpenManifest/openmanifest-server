@@ -5,6 +5,7 @@ class Resolvers::Access::Session < Resolvers::Base
 
   def resolve(dropzone: nil, lookahead: nil)
     Dropzone.includes(
+      :user_roles,
       dropzone_users: [
         :license,
         :user,
