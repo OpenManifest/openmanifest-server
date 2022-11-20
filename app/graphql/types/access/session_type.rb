@@ -18,12 +18,11 @@ class Types::Access::SessionType < Types::BaseObject
 
   def current_dropzone_user
     return @current_dropzone_user if defined?(@current_dropzone_user)
-    unless @current_dropzone_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-      @current_dropzone_user = object.dropzone_users.find_or_create_by(
-        user: context[:current_resource],
-        user_role: object.user_roles.first
-      )
-    end
+    @current_dropzone_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
+    @current_dropzone_user ||= object.dropzone_users.find_or_create_by(
+      user: context[:current_resource],
+      user_role: object.user_roles.first
+    )
 
     # If the user has a rig, has set up exit weight, and
     # has a license, the user should be set to fun jumper

@@ -11,8 +11,9 @@ class Resolvers::Access::Session < Resolvers::Base
         :user,
         :user_role,
         :permissions,
-        :role_permissions
-      ]).find_by(id: value)
+        :role_permissions,
+      ]
+    ).find_by(id: value)
   end
 
   def authorized?
