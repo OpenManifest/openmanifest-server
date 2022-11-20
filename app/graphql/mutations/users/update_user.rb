@@ -7,8 +7,8 @@ module Mutations::Users
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :attributes, Types::Input::UserInput, required: true
-    argument :dropzone_user, Integer, required: false,
-                                      prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
+    argument :dropzone_user, ID, required: false,
+              prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
     def resolve(attributes: nil, dropzone_user: nil)
       mutate(
@@ -17,6 +17,7 @@ module Mutations::Users
         access_context: access_context_for(dropzone_user.dropzone_id),
         dropzone_user: dropzone_user,
         name: attributes[:name],
+        user_role_id: attributes[:user_role_id],
         nickname: attributes[:nickname],
         push_token: attributes[:push_token],
         image: attributes[:image],
@@ -25,6 +26,7 @@ module Mutations::Users
         email: attributes[:email],
         license: attributes[:license],
         exit_weight: attributes[:exit_weight],
+        expires_at: attributes[:expires_at],
       )
     end
   end

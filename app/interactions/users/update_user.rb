@@ -9,8 +9,10 @@ class Users::UpdateUser < ApplicationInteraction
   string :federation_number, default: nil
   string :phone, default: nil
   string :email, default: nil
+  integer :user_role_id, default: nil
   decimal :exit_weight, default: nil
   record :license, default: nil
+  datetime :expires_at, default: nil
 
   steps :authorize,
         :assign_attributes,
@@ -26,6 +28,8 @@ class Users::UpdateUser < ApplicationInteraction
         phone: phone,
         email: email,
         exit_weight: exit_weight,
+        user_role_id: user_role_id,
+        expires_at: expires_at,
       }.compact
     )
     errors.merge!(dropzone_user.user.errors) unless dropzone_user.user.save
@@ -45,6 +49,7 @@ class Users::UpdateUser < ApplicationInteraction
       Federations::AssignUser,
       user: dropzone_user.user,
       license: license,
+      uid: federation_number,
       federation: license.federation,
       access_context: access_context
     )
@@ -52,6 +57,11 @@ class Users::UpdateUser < ApplicationInteraction
 
   def authorize
     user_dropzone_ids = dropzone_user.user.dropzone_users.pluck(:dropzone_id)
+    if user_role_id && user_role_id != dropzone_user.user_role_id && !access_context.subject.can?(:grantPermission)
+      errors.add(:base, 'You are not authorized to change user roles')
+      return false
+    end
+
 
     # Users can always update their own profile
     if access_context.user.id == dropzone_user.user.id
