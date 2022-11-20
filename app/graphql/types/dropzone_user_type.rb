@@ -47,7 +47,7 @@ module Types
 
     field :role, Types::UserRoleType, null: true, method: :user_role
 
-    field :permissions, [Types::PermissionType], null: true
+    field :permissions, [Types::Access::PermissionType], null: true
 
     field :dropzone, Types::DropzoneType, null: false
     field :jump_types, [Types::JumpTypeType], null: true
