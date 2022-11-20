@@ -39,10 +39,11 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
         end
       end
     end.flatten
+    return if licensed_jump_types.empty?
     ::LicensedJumpType.import!(
       licensed_jump_types,
       on_duplicate_key_ignore: true
-    ) unless licensed_jump_types.empty?
+    )
   end
 
   private
