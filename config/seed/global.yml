@@ -18,6 +18,11 @@ federations:
     name: APF
     slug: apf
     licenses:
+      - name: No license
+        licensed_jump_types:
+      - name: Student
+        licensed_jump_types:
+          - fs
       - name: Certificate A
         licensed_jump_types:
           - fs

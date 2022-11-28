@@ -18,7 +18,7 @@ class Resolvers::Dropzone < Resolvers::Base
   def scope
     query = Dropzone.kept.includes(:dropzone_users)
     query.where(state: :public).or(
-      query.where(dropzone_users: User.first.dropzone_users.owner)
+      query.where(dropzone_users: context[:current_resource].dropzone_users.owner)
     )
   end
 end

@@ -25,7 +25,7 @@ FactoryBot.define do
     user_role do
       dropzone.user_roles.reload.third
     end
-    license { Federation.first.licenses.sample }
+    license { Federation.first.licenses.where.not(name: 'No license').sample }
 
     after(:create) do |dz_user, evaluator|
       create(:user_federation, federation: evaluator.federation, license: dz_user.license, user: dz_user.user)

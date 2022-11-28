@@ -6,7 +6,7 @@ module Mutations::Access
     field :errors, [String], null: true
     field :field_errors, [Types::FieldErrorType], null: true
 
-    argument :permission, Types::PermissionType,
+    argument :permission, Types::Access::PermissionType,
              required: true,
              prepare: -> (value, ctx) { ::Permission.find_by(name: value) }
 

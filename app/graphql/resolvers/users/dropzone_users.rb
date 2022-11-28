@@ -7,7 +7,7 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
   argument :dropzone, ::GraphQL::Types::ID, required: true,
                                             prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   argument :licensed, Boolean, required: false
-  argument :permissions, [Types::PermissionType], required: false
+  argument :permissions, [Types::Access::PermissionType], required: false
   argument :search, String, required: false
 
   def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)

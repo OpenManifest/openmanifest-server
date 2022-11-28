@@ -6,6 +6,7 @@ env:
   PGUSER: github
   PGPASSWORD: github
   RAILS_ENV: test
+  BACKEND_URL: http://testapi.example.com/
 name: Unit Tests
 defaults:
   run:
