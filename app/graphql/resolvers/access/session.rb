@@ -1,5 +1,5 @@
 class Resolvers::Access::Session < Resolvers::Base
-  type Types::SessionType
+  type Types::Access::SessionType
   description 'Get the current user session, with or without dropzone'
   argument :dropzone, ID, required: false
 
@@ -13,7 +13,7 @@ class Resolvers::Access::Session < Resolvers::Base
         :permissions,
         :role_permissions,
       ]
-    ).find_by(id: value)
+    ).find_by(id: dropzone)
   end
 
   def authorized?
