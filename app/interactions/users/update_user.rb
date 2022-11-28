@@ -12,7 +12,7 @@ class Users::UpdateUser < ApplicationInteraction
   integer :user_role_id, default: nil
   decimal :exit_weight, default: nil
   record :license, default: nil
-  datetime :expires_at, default: nil
+  date_time :expires_at, default: nil
 
   steps :authorize,
         :assign_attributes,
