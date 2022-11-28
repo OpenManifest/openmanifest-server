@@ -29,7 +29,7 @@ class DzSchema < GraphQL::Schema
         ::Load => ::Types::LoadType,
         ::Notification => ::Types::NotificationType,
         ::Order => ::Types::OrderType,
-        ::Permission => ::Types::PermissionType,
+        ::Permission => ::Types::Access::PermissionType,
         ::Plane => ::Types::PlaneType,
         ::Receipt => ::Types::ReceiptType,
         ::Rig => ::Types::RigType,
