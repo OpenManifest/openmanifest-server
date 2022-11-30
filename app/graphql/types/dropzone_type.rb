@@ -36,6 +36,11 @@ module Types
       argument :user_id, [Int], required: true
     end
 
+    def allowed_jump_types(user_id: nil)
+      # Get allowed jump types for each user:
+      JumpType.allowed_for(object.dropzone_users.where(id: user_id))
+    end
+
     field :current_conditions, Types::WeatherConditionType, null: false
 
     field :dropzone_user, Types::DropzoneUserType, null: true do
