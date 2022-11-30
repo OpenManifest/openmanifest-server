@@ -97,29 +97,6 @@ module Types
       dz_user
     end
 
-    def allowed_jump_types(user_id: nil)
-      # Get allowed jump types for each user:
-      JumpType.allowed_for(object.dropzone_users.where(id: user_id))
-    end
-
-    def dropzone_user(id: nil, user_id: nil)
-      if id
-        object.dropzone_users.includes(:user).find(id)
-      elsif user_id
-        object.dropzone_users.includes(:user).find_by(user_id: user_id)
-      end
-    end
-
-    def ticket_types(is_public: nil)
-      query = object.ticket_types
-      query = query.where(allow_manifesting_self: is_public) unless is_public.nil?
-      query.order(name: :asc)
-    end
-
-    def extras
-      Extra.includes(ticket_type_extras: :ticket_type).where(dropzone_id: object.id).order(name: :asc)
-    end
-
     def rigs
       if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
         object.rigs.order(rig_type: :asc)

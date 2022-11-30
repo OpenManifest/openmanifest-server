@@ -31,7 +31,7 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
     licensed_jump_types = ::Federation.all.map do |federation|
       federation.licenses.map do |license|
         configuration = ::Federation.config[federation.slug.to_sym][:licenses].find { |l| l[:name] == license.name }
-        configuration[:licensed_jump_types].map do |jump_type|
+        (configuration[:licensed_jump_types] || []).map do |jump_type|
           ::LicensedJumpType.new(
             license: license,
             jump_type: jump_types_by_slug[jump_type.to_s]
@@ -39,6 +39,7 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
         end
       end
     end.flatten
+    return if licensed_jump_types.empty?
     ::LicensedJumpType.import!(
       licensed_jump_types,
       on_duplicate_key_ignore: true

@@ -5,7 +5,7 @@ class Resolvers::Image < Resolvers::Base
   description "Get Base64 images via GraphQL"
   argument :id, Int, required: true
   def resolve(id: nil)
-    blob = ActiveStorage::Blod.find(id)
+    blob = ActiveStorage::Blob.find(id)
     blob.download
   end
 end

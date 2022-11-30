@@ -3,15 +3,15 @@
 require "rails_helper"
 
 RSpec.describe Manifest::CreateSlot do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
+  let(:dropzone) { create(:dropzone, credits: 50) }
+  let(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
 
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "GCA")) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "Pilot")) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
-  let!(:plane) { create(:plane, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
-  let!(:access_context) do
+  let(:gca) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "GCA")) }
+  let(:pilot) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "Pilot")) }
+  let(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+  let(:plane) { create(:plane, dropzone: dropzone) }
+  let(:plane_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
+  let(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createSlot
     u.grant! :createUserSlot
@@ -32,8 +32,8 @@ RSpec.describe Manifest::CreateSlot do
       end
 
       it { expect(outcome.result).to be_a Slot }
-      it { expect(outcome.valid?).to be true }
       it { expect(outcome.errors).to be_empty }
+      it { expect(outcome.valid?).to be true }
       it { expect(outcome.result.order).not_to be nil }
       it { expect(outcome.result.order.receipts.count).to eq 1 }
       it { expect(outcome.result.order.transactions.where(status: :reserved).count).to eq 2 }
@@ -147,8 +147,8 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "with a tandem passenger" do
-      let!(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
-      let!(:outcome) do
+      let(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
+      let(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: tandem_ticket,

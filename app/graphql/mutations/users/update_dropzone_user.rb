@@ -7,7 +7,8 @@ module Mutations::Users
     field :field_errors, [Types::FieldErrorType], null: true
 
     argument :attributes, Types::Input::DropzoneUserInput, required: true
-    argument :id, Int, required: false
+    argument :dropzone_user, ID, required: false,
+                                 prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
     def resolve(attributes:, id: nil)
       model = DropzoneUser.find(id)

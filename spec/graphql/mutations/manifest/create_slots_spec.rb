@@ -4,15 +4,14 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Mutations::Manifest::CreateSlots, type: :request do
-    let!(:dropzone) { create(:dropzone, credits: 50) }
-    let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
-    let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-    let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-    let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-    let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
-    let!(:dropzone_users) { create_list(:dropzone_user, 3, dropzone: dropzone, credits: 200) }
-    let!(:jump_type) { JumpType.allowed_for(dropzone_users).sample }
-    let!(:dropzone_user) do
+    let(:dropzone) { create(:dropzone, credits: 50) }
+    let(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
+    let(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
+    let(:gca) { create(:dropzone_user, dropzone: dropzone) }
+    let(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+    let(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
+    let(:dropzone_users) { create_list(:dropzone_user, 3, dropzone: dropzone, credits: 200) }
+    let(:dropzone_user) do
       u = dropzone_users.first
       u.grant! :createUserSlot
       u
@@ -24,7 +23,7 @@ module Mutations
           post "/graphql",
                params: {
                  query: query(
-                   jump_type: jump_type,
+                   jump_type: JumpType.allowed_for(dropzone_users).sample,
                    ticket_type: ticket_type,
                    plane_load: plane_load,
                    user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
@@ -61,7 +60,7 @@ module Mutations
                  query: query(
                    ticket_type: ticket_type,
                    plane_load: plane_load,
-                   jump_type: jump_type,
+                   jump_type: JumpType.allowed_for(dropzone_users).sample,
                    user_group: dropzone_users.map do |user|
                      { id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name, passenger_exit_weight: 80 }
                    end
@@ -90,7 +89,7 @@ module Mutations
                  query: query(
                    ticket_type: ticket_type,
                    plane_load: plane_load,
-                   jump_type: jump_type,
+                   jump_type: JumpType.allowed_for(dropzone_users).sample,
                    user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
                  ),
                },
