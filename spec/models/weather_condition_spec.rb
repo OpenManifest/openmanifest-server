@@ -17,6 +17,6 @@
 #
 require "rails_helper"
 
-RSpec.describe WeatherCondition, type: :model do
+RSpec.describe WeatherCondition do
   pending "add some examples to (or delete) #{__FILE__}"
 end

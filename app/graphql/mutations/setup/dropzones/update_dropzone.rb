@@ -61,15 +61,13 @@ module Mutations::Setup::Dropzones
     def authorized?(id: nil, attributes: nil)
       dropzone = Dropzone.find(id)
 
-      if attributes[:is_public] && dropzone.is_public != attributes[:is_public]
-        if User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"]
-          return false, {
-            errors: [
-              "You cant modify the publication state of this dropzone",
-            ],
-          }
+      if attributes[:is_public] && dropzone.is_public != attributes[:is_public] && (User.moderation_roles[context[:current_resource].moderation_role] < User.moderation_roles["moderator"])
+        return false, {
+          errors: [
+            "You cant modify the publication state of this dropzone",
+          ],
+        }
         end
-      end
 
       if context[:current_resource].can?(
         "updateDropzone",

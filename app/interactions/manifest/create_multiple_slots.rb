@@ -47,7 +47,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_available_slots
     # Check how many users we're manifesting, and return
     # an error if there aren't enough slots on this load
-    slots_expected = users.map { |user| user[:passenger_name] ? 2 : 1 }.sum
+    slots_expected = users.sum { |user| user[:passenger_name] ? 2 : 1 }
 
     if slots_expected > plane_load.reload.available_slots
       errors.add(:base, "Only #{plane_load.available_slots} slots available")

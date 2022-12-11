@@ -12,6 +12,6 @@
 #
 require "rails_helper"
 
-RSpec.describe Receipt, type: :model do
+RSpec.describe Receipt do
   pending "add some examples to (or delete) #{__FILE__}"
 end

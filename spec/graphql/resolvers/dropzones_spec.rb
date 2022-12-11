@@ -26,7 +26,8 @@ module Mutations
         [public_dropzone, private_dropzone].each do |dropzone|
           create(:dropzone_user, dropzone: dropzone, user: owner, user_role: dropzone.user_roles.find_by(name: :fun_jumper))
         end
-        create(:dropzone_user, dropzone: owners_dropzone, user: owner, user_role: owners_dropzone.user_roles.find_by(name: :owner))
+        create(:dropzone_user, dropzone: owners_dropzone, user: owner,
+                               user_role: owners_dropzone.user_roles.find_by(name: :owner))
       end
 
       context "when querying with no variables" do

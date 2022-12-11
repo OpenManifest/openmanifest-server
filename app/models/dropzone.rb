@@ -42,7 +42,9 @@ class Dropzone < ApplicationRecord
 
   has_many :planes, -> { kept }, dependent: :destroy
   has_many :loads, -> { kept }, through: :planes
-  has_many :loads_today, -> (r) { kept.where(created_at: DateTime.now.in_time_zone(r.timezone).beginning_of_day..DateTime.now.in_time_zone(r.timezone).end_of_day) }, through: :planes, source: :loads
+  has_many :loads_today, -> (r) {
+                           kept.where(created_at: DateTime.now.in_time_zone(r.timezone).all_day)
+                         }, through: :planes, source: :loads
 
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy

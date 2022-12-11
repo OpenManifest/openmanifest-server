@@ -14,7 +14,7 @@ RSpec.describe Manifest::FinalizeLoad do
     u.grant! :deleteLoad
     u.grant! :createSlot
     u.grant! :createUserSlot
-    ::ApplicationInteraction::AccessContext.new(u)
+    ApplicationInteraction::AccessContext.new(u)
   end
   let!(:slots) do
     create_list(:dropzone_user, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|

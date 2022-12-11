@@ -17,7 +17,8 @@ module ApplicationInteraction::Analytics::AppSignal
         interaction_time = Benchmark.measure(&block)
 
         # Track how this interaction performed over time
-        Appsignal.add_distribution_value("benchmark.active_interaction.resolve_time", interaction_time.real.in_milliseconds, name: self.class.name)
+        Appsignal.add_distribution_value("benchmark.active_interaction.resolve_time", interaction_time.real.in_milliseconds,
+                                         name: self.class.name)
       end
     end
 
@@ -27,7 +28,7 @@ module ApplicationInteraction::Analytics::AppSignal
     # @return [Boolean]
     def skip_appsignal?
       return true if Rails.env.test?
-      ENV["APPSIGNAL_DISABLE_INTERACTION_METRICS"]
+      ENV.fetch("APPSIGNAL_DISABLE_INTERACTION_METRICS", nil)
     end
   end
 end

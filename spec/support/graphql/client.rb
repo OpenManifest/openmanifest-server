@@ -56,18 +56,19 @@ module Specs
       # enums, which are strings not surrounded by "". In Ruby,
       # we represent this with symbols
       def create_input_arguments(item, depth = 0)
-        if item.is_a?(Hash)
+        case item
+        when Hash
           result = item.reduce(nil) do |str, (key, value)|
-            [str, "#{key}: #{create_input_arguments(value, depth + 1)}"].reject(&:nil?).join(", ")
+            [str, "#{key}: #{create_input_arguments(value, depth + 1)}"].compact.join(", ")
           end
-          if depth != 0
-            "{ %s }" % result
-          else
+          if depth == 0
             result
+          else
+            "{ %s }" % result
           end
-        elsif item.is_a?(Array)
-          "[#{item.map { |v| create_input_arguments(v, depth + 1) }.reject(&:nil?).join(', ')}]"
-        elsif item.is_a?(Symbol)
+        when Array
+          "[#{item.filter_map { |v| create_input_arguments(v, depth + 1) }.join(', ')}]"
+        when Symbol
           item.to_s
         else
           item.to_json
@@ -80,7 +81,8 @@ module Specs
           # ':args' is a reserved keyword and will be
           # used to create input arguments for this node
           value = value.array if value.is_a?(UnorderedArrayMatcher)
-          if value.is_a?(Hash)
+          case value
+          when Hash
             if value.key?(:args)
               input_args = "(#{create_input_arguments(value[:args])})"
             end
@@ -92,8 +94,8 @@ module Specs
                   #{from_hash(value.except(:args), depth + 1)}
               }
             "
-          elsif value.is_a?(Array)
-            if value.size > 0 && value.all? { |item| item.is_a?(Hash) }
+          when Array
+            if value.size > 0 && value.all?(Hash)
               "
                 #{key} {
                   #{from_hash(value.reduce(:merge).except(:args), depth + 1)}

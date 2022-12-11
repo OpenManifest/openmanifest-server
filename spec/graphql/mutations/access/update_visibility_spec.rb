@@ -32,8 +32,8 @@ module Mutations
       context "can unpublish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: moderator.user.create_new_auth_token
+               params: { query: query_str },
+               headers: moderator.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -50,8 +50,8 @@ module Mutations
       context "can request review" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: moderator.user.create_new_auth_token
+               params: { query: query_str },
+               headers: moderator.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -68,8 +68,8 @@ module Mutations
       context "can publish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: moderator.user.create_new_auth_token
+               params: { query: query_str },
+               headers: moderator.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -88,8 +88,8 @@ module Mutations
       context "can unpublish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: owner.user.create_new_auth_token
+               params: { query: query_str },
+               headers: owner.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -106,8 +106,8 @@ module Mutations
       context "can request review" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: owner.user.create_new_auth_token
+               params: { query: query_str },
+               headers: owner.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -124,8 +124,8 @@ module Mutations
       context "can not publish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: owner.user.create_new_auth_token
+               params: { query: query_str },
+               headers: owner.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -145,8 +145,8 @@ module Mutations
       context "can not unpublish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: user.user.create_new_auth_token
+               params: { query: query_str },
+               headers: user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -164,8 +164,8 @@ module Mutations
       context "can not request review" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: user.user.create_new_auth_token
+               params: { query: query_str },
+               headers: user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -183,8 +183,8 @@ module Mutations
       context "can not publish" do
         subject do
           post "/graphql",
-                params: { query: query_str },
-                headers: user.user.create_new_auth_token
+               params: { query: query_str },
+               headers: user.user.create_new_auth_token
           JSON.parse(response.body, symbolize_names: true)
         end
 
@@ -195,7 +195,9 @@ module Mutations
           )
         end
 
-        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } }) }
+        it {
+          is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } })
+        }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
     end

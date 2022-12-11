@@ -48,7 +48,9 @@ module Mutations
         it do
           post_request
           expect(dropzone_user.reload.license.id).to eq license.reload.id
-          expect(json[:data][:updateUser][:dropzoneUser][:user][:dropzoneUsers].find { |d| d[:id].to_i == dropzone_user.id }[:license][:id].to_i).to eq license.reload.id
+          expect(json[:data][:updateUser][:dropzoneUser][:user][:dropzoneUsers].find do |d|
+                   d[:id].to_i == dropzone_user.id
+                 end[:license][:id].to_i).to eq license.reload.id
         end
       end
     end

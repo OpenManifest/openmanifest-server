@@ -36,6 +36,11 @@ module Types
       argument :user_id, [Int], required: true
     end
 
+    def allowed_jump_types(user_id: nil)
+      # Get allowed jump types for each user:
+      JumpType.allowed_for(object.dropzone_users.where(id: user_id))
+    end
+
     field :current_conditions, Types::WeatherConditionType, null: false
 
     field :dropzone_user, Types::DropzoneUserType, null: true do
@@ -43,8 +48,17 @@ module Types
       argument :user_id, Int, required: false
     end
 
+    def dropzone_user(id: nil, user_id: nil)
+      object.dropzone_users.find_by({ id: id, user_id: user_id }.compact)
+    end
+
     field :ticket_types, [Types::TicketTypeType], null: false do
       argument :is_public, Boolean, required: false
+    end
+
+    def ticket_types(is_public: true)
+      return object.ticket_types.where(allow_manifesting_self: is_public) unless is_public.nil?
+      object.ticket_types
     end
 
     field :extras, [Types::ExtraType], null: false

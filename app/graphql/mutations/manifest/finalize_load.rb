@@ -9,7 +9,8 @@ module Mutations::Manifest
     argument :state, Types::LoadStateType, required: true
 
     def resolve(state:, id:)
-      if state == "landed"
+      case state
+      when "landed"
         mutate(
           Manifest::FinalizeLoad,
           :load,
@@ -18,7 +19,7 @@ module Mutations::Manifest
             load_by_id(id).dropzone
           )
         )
-      elsif state == "cancelled"
+      when "cancelled"
         mutate(
           Manifest::CancelLoad,
           :load,

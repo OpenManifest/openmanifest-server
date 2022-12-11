@@ -163,8 +163,14 @@ class Demo::Generators::Users < ApplicationInteraction
   def assign_licenses
     access_context.dropzone.dropzone_users.includes(:license).where(license: { id: nil }).each do |dz_user|
       license_options = access_context.dropzone.federation.licenses.order(id: :desc)
-      license_options = license_options.limit(3).to_a.sample if %i(chief_instructor tandem_instructor aff_instructor coach).include?(dz_user.user_role.name)
-      license_options = license_options.to_a.sample unless %i(chief_instructor tandem_instructor aff_instructor coach).include?(dz_user.user_role.name)
+      license_options = license_options.limit(3).to_a.sample if %i(
+        chief_instructor tandem_instructor aff_instructor
+        coach
+      ).include?(dz_user.user_role.name)
+      license_options = license_options.to_a.sample unless %i(
+        chief_instructor tandem_instructor aff_instructor
+        coach
+      ).include?(dz_user.user_role.name)
       compose(
         ::Federations::AssignUser,
         access_context: ::ApplicationInteraction::AccessContext.new(dz_user),

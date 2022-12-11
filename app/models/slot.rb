@@ -40,7 +40,9 @@ class Slot < ApplicationRecord
   has_many :slot_extras
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
-  scope :ready, -> { where.not(dropzone_user: nil).or(where.not(passenger: nil)).where.not(ticket_type: nil, load: nil, jump_type: nil) }
+  scope :ready, -> {
+                  where.not(dropzone_user: nil).or(where.not(passenger: nil)).where.not(ticket_type: nil, load: nil, jump_type: nil)
+                }
 
   counter_culture %i(load plane dropzone), column_name: :slots_count
   counter_culture :load, column_name: :slots_count
@@ -75,7 +77,7 @@ class Slot < ApplicationRecord
   end
 
   def cost
-    extra_cost = extras.map(&:cost).reduce(&:+)
+    extra_cost = extras.sum(&:cost)
     extra_cost ||= 0
     extra_cost + ticket_type.cost
   end

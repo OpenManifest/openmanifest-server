@@ -22,7 +22,10 @@ class Login::Facebook < ActiveInteraction::Base
 
     if response.parsed_response["picture"] && response.parsed_response["picture"]["data"] && response.parsed_response["picture"]["data"]["url"]
       image_response = HTTParty.get(response.parsed_response["picture"]["data"]["url"])
-      user_attributes[:image] = "data:image/png;base64,%s" % Base64.strict_encode64(image_response.parsed_response) if image_response&.parsed_response
+      if image_response&.parsed_response
+        user_attributes[:image] =
+          "data:image/png;base64,%s" % Base64.strict_encode64(image_response.parsed_response)
+      end
     end
 
     user = User.find_or_initialize_by(
@@ -30,8 +33,8 @@ class Login::Facebook < ActiveInteraction::Base
       uid: response.parsed_response["id"],
     )
 
-    if existing = User.find_by(email: response.parsed_response["email"])
-      errors.add(:base, "You need to login with #{existing.provider}") if existing.provider != user.provider
+    if (existing = User.find_by(email: response.parsed_response["email"])) && (existing.provider != user.provider)
+      errors.add(:base, "You need to login with #{existing.provider}")
     end
 
     # Email is unique, so logging in with

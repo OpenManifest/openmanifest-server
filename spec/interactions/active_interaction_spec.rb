@@ -6,6 +6,7 @@ RSpec.describe ActiveInteraction do
   module InteractionSpec
     class SpecInteraction < ::ApplicationInteraction
       attr_accessor :sum
+
       steps :one,
             :two,
             :three

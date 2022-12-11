@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe RigInspection, type: :model do
+RSpec.describe RigInspection do
   let!(:federation) { Federation.find_by(slug: :apf) }
   let!(:dropzone) { create(:dropzone) }
   let!(:dropzone_users) { create_list(:dropzone_user, 5, dropzone: dropzone) }

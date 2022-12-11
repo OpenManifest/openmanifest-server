@@ -2,6 +2,6 @@
 
 require "rails_helper"
 
-RSpec.describe Qualification, type: :model do
+RSpec.describe Qualification do
   pending "add some examples to (or delete) #{__FILE__}"
 end

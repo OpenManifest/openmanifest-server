@@ -21,14 +21,14 @@ RSpec.describe Mutations::Users::Login::Facebook do
 
     header = { alg: "RS256", typ: "JWT", kid: "12345" }
     payload =
-      { 'sub': "1234567890", 'name': "Rspec Specson", 'admin': true, 'iat': 1516239022, 'email': "user@rspec.com" },
+      { sub: "1234567890", name: "Rspec Specson", admin: true, iat: 1516239022, email: "user@rspec.com" },
 
       rsa_private = OpenSSL::PKey::RSA.generate(2048)
     jwk = JWT::JWK.new(rsa_private, "12345")
 
     @token = JWT.encode(payload, jwk.keypair, "RS256", header)
 
-    stub_request(:get, ::Login::Apple::APPLE_PEM_URL).
+    stub_request(:get, Login::Apple::APPLE_PEM_URL).
       to_return(
         headers: { "Content-Type" => "text/plain" },
         body: {

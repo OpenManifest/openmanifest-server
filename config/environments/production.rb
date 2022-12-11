@@ -49,20 +49,20 @@ Rails.application.configure do
   # config.action_cable.url = 'wss://example.com/cable'
   # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
   ActionMailer::Base.smtp_settings = {
-    port: ENV["SMTP_PORT"],
-    address: ENV["SMTP_SERVER"],
-    domain: ENV["SMTP_DOMAIN"],
-    user_name: ENV["SMTP_USERNAME"],
-    password: ENV["SMTP_PASSWORD"],
+    port: ENV.fetch("SMTP_PORT", nil),
+    address: ENV.fetch("SMTP_SERVER", nil),
+    domain: ENV.fetch("SMTP_DOMAIN", nil),
+    user_name: ENV.fetch("SMTP_USERNAME", nil),
+    password: ENV.fetch("SMTP_PASSWORD", nil),
     authentication: :plain,
     enable_starttls_auto: true,
   }
   config.action_mailer.smtp_settings = {
-    port: ENV["SMTP_PORT"],
-    address: ENV["SMTP_SERVER"],
-    domain: ENV["SMTP_DOMAIN"],
-    user_name: ENV["SMTP_USERNAME"],
-    password: ENV["SMTP_PASSWORD"],
+    port: ENV.fetch("SMTP_PORT", nil),
+    address: ENV.fetch("SMTP_SERVER", nil),
+    domain: ENV.fetch("SMTP_DOMAIN", nil),
+    user_name: ENV.fetch("SMTP_USERNAME", nil),
+    password: ENV.fetch("SMTP_PASSWORD", nil),
     authentication: :plain,
     enable_starttls_auto: true,
   }
@@ -109,14 +109,14 @@ Rails.application.configure do
   config.active_support.disallowed_deprecation_warnings = []
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
+  config.log_formatter = Logger::Formatter.new
 
   # Use a different logger for distributed setups.
   # require "syslog/logger"
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
   if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger           = ActiveSupport::Logger.new($stdout)
     logger.formatter = config.log_formatter
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end

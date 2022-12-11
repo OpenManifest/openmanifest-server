@@ -46,7 +46,7 @@ RSpec.configure do |config|
   config.example_status_persistence_file_path = "tmp/rspec_examples.txt"
   config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{::Rails.root}/spec/fixtures"
+  config.fixture_path = "#{Rails.root}/spec/fixtures"
   config.filter_run focus: true
   config.run_all_when_everything_filtered = true
 
@@ -57,7 +57,7 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
-    ::Setup::Global::Seeds.run!
+    Setup::Global::Seeds.run!
   end
 
   config.before(:each) do

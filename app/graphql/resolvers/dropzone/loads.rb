@@ -19,7 +19,7 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
       query = query.includes(:load_master)               if lookahead.selects?(:load_master)
       query = query.includes(:pilot)                     if lookahead.selects?(:pilot)
       query = query.includes(:plane)                     if lookahead.selects?(:plane)
-      query = query.where(loads: { created_at: date.beginning_of_day..date.end_of_day }) unless date.nil?
+      query = query.where(loads: { created_at: date.all_day }) unless date.nil?
       query.order(created_at: :desc)
     end
   end

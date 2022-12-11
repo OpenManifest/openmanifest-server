@@ -39,7 +39,7 @@
 #
 require "rails_helper"
 
-RSpec.describe User, type: :model do
+RSpec.describe User do
   let!(:dropzone) do
     # Create a dropzone
     create(
@@ -59,8 +59,8 @@ RSpec.describe User, type: :model do
     user.save!
 
     create(:dropzone_user,
-      dropzone: dropzone,
-      user: user,)
+           dropzone: dropzone,
+           user: user,)
   end
 
   describe "can?" do
