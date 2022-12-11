@@ -62,7 +62,10 @@ module Mutations
                    plane_load: plane_load,
                    jump_type: JumpType.allowed_for(dropzone_users).sample,
                    user_group: dropzone_users.map do |user|
-                     { id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name, passenger_exit_weight: 80 }
+                     {
+                       id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name,
+                       passenger_exit_weight: 80,
+                     }
                    end
                  ),
                },

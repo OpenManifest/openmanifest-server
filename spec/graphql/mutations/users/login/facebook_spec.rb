@@ -9,9 +9,9 @@ RSpec.describe Mutations::Users::Login::Facebook do
       to_return(
         headers: { "Content-Type" => "application/json" },
         body: {
-          "id": "427773",
-          "email": "user@rspec.com",
-          "name": "Rspec User",
+          id: "427773",
+          email: "user@rspec.com",
+          name: "Rspec User",
         }.to_json
       )
   end

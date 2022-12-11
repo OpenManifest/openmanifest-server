@@ -18,17 +18,23 @@
 #
 require "rails_helper"
 
-RSpec.describe JumpType, type: :model do
+RSpec.describe JumpType do
   let!(:federation) { Federation.find_by(slug: :apf) }
   let!(:dropzone) { create(:dropzone) }
   let!(:user1) { create(:user) }
-  let!(:certificate_e_user) { create(:dropzone_user, dropzone: dropzone, user: user1, license: federation.licenses.find_by(name: "Certificate E")) }
+  let!(:certificate_e_user) do
+    create(:dropzone_user, dropzone: dropzone, user: user1, license: federation.licenses.find_by(name: "Certificate E"))
+  end
 
   let!(:user2) { create(:user) }
-  let!(:certificate_a_user) { create(:dropzone_user, dropzone: dropzone, user: user2, license: federation.licenses.find_by(name: "Certificate A")) }
+  let!(:certificate_a_user) do
+    create(:dropzone_user, dropzone: dropzone, user: user2, license: federation.licenses.find_by(name: "Certificate A"))
+  end
 
   let!(:user3) { create(:user) }
-  let!(:certificate_c_user) { create(:dropzone_user, dropzone: dropzone, user: user3, license: federation.licenses.find_by(name: "Certificate C")) }
+  let!(:certificate_c_user) do
+    create(:dropzone_user, dropzone: dropzone, user: user3, license: federation.licenses.find_by(name: "Certificate C"))
+  end
 
   it "E license user is allowed for any jump" do
     expect(

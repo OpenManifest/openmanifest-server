@@ -24,8 +24,12 @@ module Mutations::Manifest
 
     def authorized?(attributes: nil)
       dropzone = attributes[:load].plane.dropzone
-      contains_current_user = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] == context[:current_resource].id }
-      contains_others = attributes[:user_group] && attributes[:user_group].any? { |member| member[:id] != context[:current_resource].id }
+      contains_current_user = attributes[:user_group] && attributes[:user_group].any? do |member|
+        member[:id] == context[:current_resource].id
+      end
+      contains_others = attributes[:user_group] && attributes[:user_group].any? do |member|
+        member[:id] != context[:current_resource].id
+      end
 
       # Check if we're manifesting tandems
       manifesting_tandems = attributes[:ticket_type].is_tandem?

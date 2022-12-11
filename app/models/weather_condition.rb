@@ -32,9 +32,9 @@ class WeatherCondition < ApplicationRecord
     # Average wind direction from 4000ft
     canopy_winds = JSON.parse(winds).filter_map { |wind| wind if wind["altitude"].to_i < 5000 }
 
-    avg_direction = canopy_winds.map { |wind| wind["direction"].to_i }.sum / canopy_winds.count
+    avg_direction = canopy_winds.sum { |wind| wind["direction"].to_i } / canopy_winds.count
     # Average wind speed from 4000ft
-    avg_speed_knots = canopy_winds.map { |wind| wind["speed"].to_i }.sum / canopy_winds.count
+    avg_speed_knots = canopy_winds.sum { |wind| wind["speed"].to_i } / canopy_winds.count
 
     avg_speed_miles = avg_speed_knots * 1.15078
 
@@ -46,9 +46,9 @@ class WeatherCondition < ApplicationRecord
     # Calculate freefall drift
     freefall_winds = JSON.parse(winds).filter_map { |wind| wind if wind["altitude"].to_i > 4000 }
 
-    avg_fall_direction = freefall_winds.map { |wind| wind["direction"].to_i }.sum / freefall_winds.count
+    avg_fall_direction = freefall_winds.sum { |wind| wind["direction"].to_i } / freefall_winds.count
     # Average wind speed from 4000ft
-    avg_fall_speed_knots = freefall_winds.map { |wind| wind["speed"].to_i }.sum / freefall_winds.count
+    avg_fall_speed_knots = freefall_winds.sum { |wind| wind["speed"].to_i } / freefall_winds.count
 
     avg_fall_speed_miles = avg_fall_speed_knots * 1.15078
 

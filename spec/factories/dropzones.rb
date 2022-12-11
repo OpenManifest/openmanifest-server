@@ -36,7 +36,7 @@ FactoryBot.define do
     federation { Federation.first }
 
     after(:create) do |dropzone|
-      ::Setup::Dropzones::Access::CreateDefaults.run!(dropzone: dropzone)
+      Setup::Dropzones::Access::CreateDefaults.run!(dropzone: dropzone)
     end
 
     factory :dropzone_with_loads do

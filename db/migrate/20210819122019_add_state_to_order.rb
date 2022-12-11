@@ -2,6 +2,7 @@
 
 class AddStateToOrder < ActiveRecord::Migration[6.1]
   def change
-    add_column :orders, :state, :integer, index: true
+    add_column :orders, :state, :integer
+    add_index :orders, :state
   end
 end

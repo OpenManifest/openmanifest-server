@@ -3,10 +3,10 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.6"
+ruby "3.1.3"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 6.1.3", ">= 6.1.3.1"
+gem "rails", "~> 7.0.4"
 
 # Heroku database
 gem "pg"
@@ -61,6 +61,8 @@ gem "state_machines"
 # Apple login
 gem "jwt"
 
+gem "sprockets"
+
 # Bulk import
 gem "activerecord-import"
 
@@ -106,8 +108,8 @@ group :development do
   gem "fasterer"
 
   gem "rubocop"
+  gem "rubocop-rails"
   gem "rubocop-performance"
-  gem "rubocop-airbnb"
   gem "rubocop-graphql"
   gem "rubocop-rspec"
 

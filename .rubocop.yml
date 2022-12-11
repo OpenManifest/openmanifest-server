@@ -1,7 +1,9 @@
-inherit_from: .rubocop_todo.yml
+inherit_from:
+  - .rubocop_todo.yml
+  - config/rubocop/default.yml
 require:
-  - rubocop-airbnb
   - rubocop-performance
+  - rubocop-rails
 AllCops:
   NewCops: enable
   TargetRubyVersion: 2.7.6
@@ -14,3 +16,6 @@ AllCops:
     - "log/**/*"
     - "public/**/*"
     - "db/schema.rb"
+Layout/LineLength:
+  Max: 130
+  AllowURI: true

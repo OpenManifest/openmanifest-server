@@ -2,6 +2,6 @@
 
 require "rails_helper"
 
-RSpec.describe UserFederationQualification, type: :model do
+RSpec.describe UserFederationQualification do
   pending "add some examples to (or delete) #{__FILE__}"
 end

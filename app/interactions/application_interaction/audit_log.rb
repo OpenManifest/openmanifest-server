@@ -18,11 +18,11 @@ module ApplicationInteraction::AuditLog
 
   class_methods do
     def success(&block)
-      define_method(:success, -> { instance_eval(&block) }) if block_given?
+      define_method(:success, -> { instance_eval(&block) }) if block
     end
 
     def error(&block)
-      define_method(:error, -> { instance_eval(&block) }) if block_given?
+      define_method(:error, -> { instance_eval(&block) }) if block
     end
   end
 end

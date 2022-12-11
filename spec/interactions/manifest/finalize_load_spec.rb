@@ -39,13 +39,13 @@ RSpec.describe Manifest::FinalizeLoad do
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :updateLoad
-    ::ApplicationInteraction::AccessContext.new(u)
+    ApplicationInteraction::AccessContext.new(u)
   end
   let!(:outcome) { Manifest::FinalizeLoad.run(load: plane_load, access_context: access_context) }
 
   describe "Marking a load as landed" do
     it {
-      expect(plane_load.reload.slots.map(&:order).reject(&:blank?).count).to eq 6
+      expect(plane_load.reload.slots.map(&:order).compact_blank.count).to eq 6
     }
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }

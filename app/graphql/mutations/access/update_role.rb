@@ -51,7 +51,9 @@ module Mutations::Access
     def authorized?(id: nil, attributes: nil, permission: nil, enabled: nil)
       role = UserRole.find(id)
 
-      if !context[:current_resource].can?("updatePermissions", dropzone_id: role.dropzone_id)
+      if context[:current_resource].can?("updatePermissions", dropzone_id: role.dropzone_id)
+        true
+      else
         [
           false, {
             errors: [
@@ -59,8 +61,6 @@ module Mutations::Access
             ],
           },
         ]
-      else
-        true
       end
     end
   end

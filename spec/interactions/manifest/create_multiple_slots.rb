@@ -24,7 +24,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createUserSlot
     u.grant! :createSlot
-    ::ApplicationInteraction::AccessContext.new(u)
+    ApplicationInteraction::AccessContext.new(u)
   end
 
   describe "Manifesting on a load" do
@@ -42,7 +42,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
       it { expect(outcome.result).to be_a Load }
       it { expect(outcome.valid?).to be true }
       it { expect(outcome.errors).to be_empty }
-      it { expect(outcome.result.slots.map(&:order).reject(&:blank?).count).to eq dropzone_users.count }
+      it { expect(outcome.result.slots.map(&:order).compact_blank.count).to eq dropzone_users.count }
     end
 
     context "when the user doesnt have enough credits" do
@@ -104,7 +104,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
       it { expect(outcome.result).to be_a Load }
       it { expect(outcome.valid?).to be true }
       it { expect(outcome.errors).to be_empty }
-      it { expect(outcome.result.slots.map(&:order).reject(&:blank?).count).to eq 2 }
+      it { expect(outcome.result.slots.map(&:order).compact_blank.count).to eq 2 }
     end
   end
 end

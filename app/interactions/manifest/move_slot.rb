@@ -4,6 +4,7 @@ require "active_interaction"
 
 class Manifest::MoveSlot < ApplicationInteraction
   attr_accessor :model
+
   record :source_slot, class: Slot
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil

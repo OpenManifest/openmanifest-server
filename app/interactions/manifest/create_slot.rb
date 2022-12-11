@@ -4,6 +4,7 @@ require "active_interaction"
 
 class Manifest::CreateSlot < ApplicationInteraction
   attr_accessor :model
+
   record :load
   record :dropzone_user
   record :ticket_type
@@ -132,20 +133,20 @@ class Manifest::CreateSlot < ApplicationInteraction
     end
 
     if dropzone.loads_today.active.where(dropzone_user: dropzone_user)
-      resource = if dropzone_user.id != access_context.subject.id
-                   "UserSlot"
-                 else
+      resource = if dropzone_user.id == access_context.subject.id
                    "Slot"
-      end
+                 else
+                   "UserSlot"
+                 end
 
       return true if access_context.subject.can?("#{action}#{resource}")
       raise PermissionDenied, "You don't have permissions to manifest other users (missing #{"#{action}#{resource}"})"
     else
-      resource = if dropzone_user.id != access_context.subject.id
-                   "UserDoubleSlot"
-                 else
+      resource = if dropzone_user.id == access_context.subject.id
                    "DoubleSlot"
-      end
+                 else
+                   "UserDoubleSlot"
+                 end
 
       return true if access_context.can?("#{action}#{resource}")
       raise PermissionDenied, "You don't have permissions to double-manifest (missing #{"#{action}#{resource}"})"

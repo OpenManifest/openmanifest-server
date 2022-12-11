@@ -44,7 +44,9 @@ module Mutations::Users
     def authorized?(id: nil, attributes: nil)
       notification = Notification.find(id)
 
-      if notification.received_by.user.id != context[:current_resource].id
+      if notification.received_by.user.id == context[:current_resource].id
+        true
+      else
         [
           false, {
             errors: [
@@ -52,8 +54,6 @@ module Mutations::Users
             ],
           },
         ]
-      else
-        true
       end
     end
   end

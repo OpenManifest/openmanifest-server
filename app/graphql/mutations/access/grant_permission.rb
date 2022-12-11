@@ -11,7 +11,9 @@ module Mutations::Access
              prepare: -> (value, ctx) { ::Permission.find_by(name: value) }
 
     argument :dropzone_user, ID, required: false,
-                                 prepare: -> (value, ctx) { DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value) }
+                                 prepare: -> (value, ctx) {
+                                            DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value)
+                                          }
 
     def resolve(permission:, dropzone_user: nil)
       mutate(

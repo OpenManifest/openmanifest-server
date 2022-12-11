@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe DropzoneUser, type: :model do
+RSpec.describe DropzoneUser do
   let!(:federation) { Federation.find_by(slug: :apf) }
   let!(:dropzone) { create(:dropzone) }
   let!(:dropzone_users) { create_list(:dropzone_user, 5, dropzone: dropzone) }

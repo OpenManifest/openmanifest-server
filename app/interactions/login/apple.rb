@@ -67,8 +67,8 @@ class Login::Apple < ActiveInteraction::Base
         uid: token_data["sub"],
       )
 
-      if existing = User.find_by(email: token_data["email"])
-        errors.add(:base, "You need to login with #{existing.provider}") if existing.provider != user.provider
+      if (existing = User.find_by(email: token_data["email"])) && (existing.provider != user.provider)
+        errors.add(:base, "You need to login with #{existing.provider}")
       end
 
       if user.new_record?
