@@ -1,0 +1,92 @@
+upstream puma {
+	server localhost:5000 max_fails=3 fail_timeout=60s;
+}
+
+server {
+	# Nginx should listen on port 80 for requests to localhost
+	listen *:3000;
+	listen [::]:3000;
+
+	# define the public application rootsc
+	# server_name
+	root /opt/app/public;
+
+	# # Canonical rewrite for www and non www requests
+	# # rewrite ^/(.*)$ https://www.$host/$1 permanent;
+
+	# server_name _;
+	# return 301 https://www.$host$request_uri;
+
+	# Disable these because we can never access these
+	# in the containers anyway
+	access_log off;
+	error_log off;
+
+	client_max_body_size 50M;
+	large_client_header_buffers 4 50M;
+
+	brotli on;
+	brotli_comp_level 6;
+	brotli_static on;
+	brotli_types application/atom+xml application/javascript application/json application/rss+xml
+							application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype
+							application/x-font-ttf application/x-javascript application/xhtml+xml application/xml
+							font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon
+							image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
+
+	# This extracts subdomain and domain to variables $sub and $domain:
+	server_name   ~^(?<sub>\.)?(?<domain>.+)$;
+
+	location ~* ^.+\.(rb|log)$ {
+		deny all;
+	}
+
+	# serve static (compiled) assets directly if they exist (for rails production)
+	location ~ ^/(assets|packs|images|javascripts|stylesheets|swfs|system)/ {
+		root /opt/app/public/;
+		try_files $uri @puma;
+		access_log on;
+		brotli on;
+		brotli_comp_level 6;
+		brotli_static on;
+		brotli_types application/atom+xml application/javascript application/json application/rss+xml
+								application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype
+								application/x-font-ttf application/x-javascript application/xhtml+xml application/xml
+								font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon
+								image/x-icon image/x-win-bitmap text/css text/javascript text/plain text/xml;
+		gzip on;
+		gzip_comp_level 6;
+		gzip_min_length 1024;
+		gzip_static on;
+		expires max;
+		add_header Cache-Control public;
+		add_header ETag "";
+		add_header Access-Control-Allow-Origin *;
+		add_header Access-Control-Request-Method *;
+		break;
+	}
+
+	location /subscriptions {
+					proxy_pass http://puma;
+					proxy_http_version 1.1;
+					proxy_set_header Upgrade $http_upgrade;
+					proxy_set_header Connection "upgrade";
+					proxy_set_header Host $host;
+	}
+
+	# send non-static file requests to the app server
+	location / {
+		try_files $uri @puma;
+	}
+
+	location @puma {
+					proxy_pass http://puma;
+					proxy_set_header X-Real-IP $remote_addr;
+					proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+					proxy_next_upstream error timeout invalid_header http_502;
+					proxy_set_header X-Forwarded-Proto https;
+					proxy_set_header Host $http_host;
+					proxy_redirect off;
+
+	}
+}
