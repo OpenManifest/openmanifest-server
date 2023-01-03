@@ -25,6 +25,9 @@ gem "dotenv-rails", groups: %i(development test), require: "dotenv/rails-now"
 # Soft delete records
 gem "discard", "~> 1.2"
 
+# Multiprocess serving
+gem "foreman"
+
 # GraphQL queries
 gem "graphql"
 gem "graphql_devise"

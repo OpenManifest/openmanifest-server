@@ -151,6 +151,7 @@ GEM
       colorize (~> 0.7)
       ruby_parser (>= 3.19.1)
     ffi (1.15.5)
+    foreman (0.87.2)
     formatador (1.1.0)
     geokit (1.13.1)
     geokit-rails (2.3.2)
@@ -459,6 +460,7 @@ DEPENDENCIES
   factory_bot_rails
   faker
   fasterer
+  foreman
   geokit-rails
   globalid
   graphiql-rails
