@@ -35,6 +35,10 @@ class Rig < ApplicationRecord
 
   enum rig_type: { :student => 0, :sport => 1, :tandem => 2 }
 
+  scope :with_inspection_at, -> (dz) { includes(rig_inspections: :inspected_by).where(rig_inspections: { dropzone_users: { dropzone_id: dz } }) }
+  scope :inspected_at, -> (dz) { with_inspection_at(dz).where(rig_inspections: { is_ok: true }) }
+  scope :not_inspected_at, -> (dz) { with_inspection_at(dz).where.not(rig_inspections: { is_ok: true }) }
+
   before_save do
     assign_attributes(rig_type: :sport) if rig_type.blank?
   end
