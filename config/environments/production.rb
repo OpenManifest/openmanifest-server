@@ -69,8 +69,8 @@ Rails.application.configure do
 
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = {
-    host: "openmanifest.org",
-    protocol: "https",
+    host: URI.parse(ENV.fetch('FRONTEND_URL', nil)).host,
+    protocol: URI.parse(ENV.fetch('FRONTEND_URL', nil)).scheme,
   }
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
