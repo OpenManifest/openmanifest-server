@@ -12,13 +12,6 @@ class Resolvers::Dropzones < Resolvers::Base
   )
     lookahead = lookahead.selection(:edges).selection(:node)
 
-    # If the user is not a moderator, only show public dropzones
-    if context[:current_resource].is_moderator?
-      state ||= Dropzone.state_machine.states.keys
-    else
-      state = ["public"]
-    end
-
     query = scope
     query = query.includes(:user_roles)     if lookahead.selects?(:user_roles)
     query = query.includes(:dropzone_users) if lookahead.selects?(:dropzone_users)
