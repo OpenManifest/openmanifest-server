@@ -86,47 +86,18 @@ module Types
     end
 
     def current_user
-      unless dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-        dz_user = object.dropzone_users.find_or_create_by(
-          user: context[:current_resource],
-          user_role: object.user_roles.first
-        )
-      end
-
-      # If the user has a rig, has set up exit weight, and
-      # has a license, the user should be set to fun jumper
-      # if the user is anything less
-      if dz_user.user.rigs.present? && dz_user.license.present? && dz_user.user.exit_weight.present?
-        if dz_user.user_role_id == object.user_roles.first.id
-          dz_user.update(user_role: object.user_roles.find_by(name: :fun_jumper))
-        end
-
-        # If the user has no rigs inspected at this dropzone,
-        # notify a staff member if no previous notifications
-        unless RigInspection.exists?(dropzone_user: dz_user)
-          RequestRigInspectionJob.perform_now(dz_user.rigs.find { |rig| !rig.inspected_at?(object) }, dz_user)
-        end
-      end
-
-      dz_user
+      DropzoneUser.for(dropzone, user)
     end
 
     def rigs
-      if context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
-        object.rigs.order(rig_type: :asc)
-      else
-        []
-      end
+      return [] unless context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
+      object.rigs.order(rig_type: :asc)
     end
 
     def roles(selectable: nil)
       query = object.user_roles
 
-      if selectable
-        dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-        query = query.where("id < ?", dz_user.user_role_id)
-      end
-
+      query = query.where("id < ?", DropzoneUser.for(context[:current_resource]).user_role_id) if selectable
       query.order(id: :asc)
     end
 

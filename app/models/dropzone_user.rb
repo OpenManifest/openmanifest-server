@@ -42,6 +42,7 @@ class DropzoneUser < ApplicationRecord
   has_many :jump_types, through: :licensed_jump_types, source: :jump_type
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
+  has_many :rigs, through: :user
   scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
   scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_passenger student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
@@ -50,6 +51,9 @@ class DropzoneUser < ApplicationRecord
   # a given federation
   scope :in_federation, -> (federation) { includes(:dropzone).where(dropzone: { federation: federation }) }
   scope :with_license, -> (record_or_id) { where(license: record_or_id) }
+
+  # All dropzone users for the given user
+  scope :for_user, -> (u) { where(user: u) }
 
   # Gets dropzone users without a specific license,
   # e.g nil, or another license than the given one.
@@ -64,13 +68,16 @@ class DropzoneUser < ApplicationRecord
   validates :user_id, uniqueness: { scope: :dropzone_id }
 
   counter_culture :dropzone, column_name: :users_count
-  delegate :exit_weight, :name, :email, :nickname, :rigs, to: :user
+  delegate :exit_weight,
+           :name,
+           :email,
+           :nickname,
+           to: :user
 
   after_initialize :set_defaults
 
-  after_create do
-    Appsignal.set_gauge("dropzone.users.count", dropzone.dropzone_users.count, dropzone: dropzone.name)
-  end
+  after_create :set_appsignal_gauge,
+               :request_rig_inspection
 
   search_scope :search do
     attributes name: "user.name"
@@ -185,5 +192,19 @@ class DropzoneUser < ApplicationRecord
     return unless license_from_federation
     # Find any existing UserFederations this user has for the same Federation
     assign_attributes(license: license_from_federation)
+  end
+
+  def set_appsignal_gauge
+    Appsignal.set_gauge("dropzone.users.count", dropzone.dropzone_users.count, dropzone: dropzone.name)
+  end
+
+  def request_rig_inspection
+    return unless user.rigs.any?
+    return unless user.exit_weight
+    return unless license_id
+    return if rig_inspections.any?
+    rig = rigs.not_inspected_at(dropzone).first
+    return unless rig
+    RequestRigInspectionJob.perform_now(rig, self)
   end
 end
