@@ -19,7 +19,7 @@ class Resolvers::Dropzones < Resolvers::Base
       state = ["public"]
     end
 
-    query = Dropzone.kept
+    query = scope
     query = query.includes(:user_roles)     if lookahead.selects?(:user_roles)
     query = query.includes(:dropzone_users) if lookahead.selects?(:dropzone_users)
     query = query.includes(:ticket_types)   if lookahead.selects?(:ticket_types)
@@ -28,12 +28,11 @@ class Resolvers::Dropzones < Resolvers::Base
     query = query.includes(:planes)         if lookahead.selects?(:planes)
     query = query.includes(loads: :slots)   if lookahead.selects?(:loads)
     query = query.includes(:roles)          if lookahead.selects?(:roles)
-    query = query.where(state: state).or(
-      query.where(
-        id: context[:current_resource].dropzone_users.staff.pluck(:dropzone_id)
-      )
-    )
 
     query.distinct.order(id: :asc)
+  end
+
+  def scope
+    Dropzone.for(context[:current_resource])
   end
 end
