@@ -40,6 +40,7 @@ gem "rack-cors"
 
 # Store base64 images
 gem "active_storage_base64"
+gem "google-cloud-storage"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", ">= 1.4.4", require: false
