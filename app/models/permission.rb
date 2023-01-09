@@ -10,6 +10,7 @@
 #  name       :string
 #
 class Permission < ApplicationRecord
+  include Config::Yaml::Permissions
   scope :without_acting, -> { where("name NOT LIKE (?)", "actAs%") }
   scope :only_acting, -> { where("name LIKE (?)", "actAs%") }
 
@@ -17,26 +18,4 @@ class Permission < ApplicationRecord
   validates_uniqueness_of :name
   has_many :user_role_permissions, dependent: :destroy
   has_many :user_permissions, dependent: :destroy
-
-  class << self
-    def default_acting
-      @default_acting ||= config[:acting].map(&:to_sym)
-    end
-
-    def default_crud
-      @default_crud ||= config[:crud].values.flatten.uniq.map(&:to_sym)
-    end
-
-    def slugs
-      Permission.default_acting + Permission.default_crud
-    end
-
-    def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/access.yml"),
-        symbolize_names: true,
-        aliases: true
-      )[:permissions]
-    end
-  end
 end

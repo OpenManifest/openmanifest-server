@@ -11,36 +11,20 @@
 #  dropzone_id :bigint           not null
 #
 class UserRole < ApplicationRecord
+  include Config::Yaml::Roles
+  DEFAULT = :student
+  DEFAULT_LICENSED = :fun_jumper
+
   belongs_to :dropzone
   has_many :dropzone_users, dependent: :nullify
   has_many :user_role_permissions, dependent: :destroy
   has_many :permissions, through: :user_role_permissions
 
+  scope :admin, -> { find_by(name: :admin) }
+  scope :default, -> { find_by(name: DEFAULT) }
+  scope :default_licensed, -> { find_by(name: DEFAULT_LICENSED) }
+
   validates_uniqueness_of :name, scope: :dropzone_id
-
-  class << self
-    # Parse YAML config for default configuration
-    #
-    # @return [Hash<Symbol, Array<String>>]
-    def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/access.yml"),
-        symbolize_names: true,
-        aliases: true
-      )[:roles]
-    end
-
-    # Get all default role slugs
-    #
-    # @return [Hash<Symbol, Array<String>>]
-    def slugs
-      config.keys
-    end
-  end
-
-  def yaml_permission_slugs
-    self.class.config[name.to_sym] || []
-  end
 
   def grant!(permission_name)
     unless permissions.includes(:permissions).exists?(permissions: { name: permission_name })
