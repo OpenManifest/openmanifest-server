@@ -10,24 +10,16 @@ class UserFederation < ApplicationRecord
 
   validates_uniqueness_of :user_id, scope: :federation_id
 
-  after_save do
+  after_save :update_other_dropzone_users_for_user
+
+  private
+
+  def update_other_dropzone_users_for_user
     # We have to do this because of
     # how postgres/rails handles nil values,
     # when doing a not-query nil values are ignored
-    dropzone_users_in_same_federation = dropzone_users.includes(:dropzone).where(
-      dropzone: { federation_id: federation_id }
-    )
-    next if dropzone_users_in_same_federation.where.not(
-      license_id: license_id
-    ).or(
-      dropzone_users_in_same_federation.where(
-        license_id: nil
-      )
-    ).empty?
-    dropzone_users.includes(:dropzone).where(
-      dropzone: {
-        federation_id: federation.id,
-      }
-    ).update_all(license_id: license_id)
+    return unless dropzone_users.in_federation(federation_id).without_license(license_id).exists?
+
+    dropzone_users.in_federation(federation_id).update_all(license_id: license_id)
   end
 end

@@ -46,14 +46,27 @@ class DropzoneUser < ApplicationRecord
   scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_passenger student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
 
+  # Finds DropzoneUsers belonging to a dropzone in
+  # a given federation
+  scope :in_federation, -> (federation) { includes(:dropzone).where(dropzone: { federation: federation }) }
+  scope :with_license, -> (record_or_id) { where(license: record_or_id) }
+
+  # Gets dropzone users without a specific license,
+  # e.g nil, or another license than the given one.
+  # If none is given, get all DropzoneUsers without any license
+  scope :without_license, -> (specific_license = nil) do
+    next where(license: nil) unless specific_license
+    without_license.or(
+      where.not(license: specific_license)
+    )
+  end
+
   validates :user_id, uniqueness: { scope: :dropzone_id }
 
   counter_culture :dropzone, column_name: :users_count
   delegate :exit_weight, :name, :email, :nickname, :rigs, to: :user
 
-  after_initialize do
-    assign_attributes(user_role: dropzone.user_roles.second) if user_role.nil? && !dropzone.nil?
-  end
+  after_initialize :set_defaults
 
   after_create do
     Appsignal.set_gauge("dropzone.users.count", dropzone.dropzone_users.count, dropzone: dropzone.name)
@@ -116,11 +129,61 @@ class DropzoneUser < ApplicationRecord
     ).destroy_all
   end
 
+  # Get a dropzone user for any user, either find the existing one
+  # or create one
+  #
+  # @param [User] user
+  # @return [DropzoneUser]
+  def self.for(dropzone, user)
+    dz_user = dropzone.dropzone_users.find_or_initialize_by(user: user)
+    dz_user.save if dz_user.new_record?
+    dz_user
+  end
+
   def all_permissions
     Permission.where(
       id: permissions.pluck(:id)
     ).or(
       Permission.where(id: role_permissions.pluck(:id))
     )
+  end
+
+  private
+
+  # Set up default role for new users when the DropzoneUser is initialized
+  def set_defaults
+    set_default_license
+    set_default_role
+  end
+
+  # Sets the default role for a DropzoneUser when initializing,
+  # which defaults to UserRole::DEFAULT for users that have
+  # no license in the dropzone's federation, and no exit weight
+  # or rig defined, and to UserRole::DEFAULT_LICENSED if license
+  # exists or exit weight and rig are defined
+  def set_default_role
+    return unless dropzone
+    return if user_role_id.present?
+
+    # Role defaults to admin if the user has moderator role
+    role ||= dropzone.user_roles.admin if user.is_moderator?
+
+    # Role is fun jumper if the user has a rig and has set up exit weight
+    role ||= dropzone.user_roles.default_licensed if license
+    role ||= dropzone.user_roles.default_licensed if user.rigs.any? && user.exit_weight.present?
+
+    # Default role is Student
+    role ||= dropzone.user_roles.default
+
+    assign_attributes(user_role: role)
+  end
+
+  def set_default_license
+    return if license_id.present?
+    return unless user
+    license_from_federation, = user.licenses.for_federation(dropzone.federation_id)
+    return unless license_from_federation
+    # Find any existing UserFederations this user has for the same Federation
+    assign_attributes(license: license_from_federation)
   end
 end

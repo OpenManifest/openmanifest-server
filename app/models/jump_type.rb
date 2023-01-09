@@ -11,20 +11,11 @@
 #  updated_at :datetime         not null
 #
 class JumpType < ApplicationRecord
+  include Config::Yaml::JumpTypes
   has_many :licensed_jump_types
   has_many :licenses, through: :licensed_jump_types
 
   class << self
-    # Parse YAML config for default configuration
-    #
-    # @return [Hash<Symbol, Array<String>>]
-    def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/global.yml"),
-        symbolize_names: true
-      )[:jump_types]
-    end
-
     # Find the intersection of jump types allowed for a set of users
     #
     # @param [Array<DropzoneUser>] dropzone_users

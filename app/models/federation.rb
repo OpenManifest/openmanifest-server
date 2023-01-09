@@ -11,22 +11,11 @@
 #  updated_at :datetime         not null
 #
 class Federation < ApplicationRecord
+  include Config::Yaml::Federations
   has_many :licenses
   has_many :users, through: :licenses
   has_many :dropzones, -> { kept }
 
   validates_presence_of :slug, on: :create, message: "must be defined"
   validates_presence_of :name, on: :create, message: "must be defined"
-
-  class << self
-    # Parse YAML config for default configuration
-    #
-    # @return [Hash<Symbol, Array<String>>]
-    def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/global.yml"),
-        symbolize_names: true
-      )[:federations]
-    end
-  end
 end

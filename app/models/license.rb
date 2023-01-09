@@ -14,4 +14,6 @@ class License < ApplicationRecord
   belongs_to :federation, inverse_of: :licenses
   has_many :users
   has_many :licensed_jump_types
+
+  scope :for_federation, -> (federation) { includes(:federation).where(federation: federation) }
 end

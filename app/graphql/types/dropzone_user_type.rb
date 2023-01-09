@@ -26,6 +26,7 @@ module Types
 
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
+    # TODO: Remove and move to top level query
     field :available_rigs, [Types::RigType], null: true,
                                              description: "Get user rigs that have been inspected and marked as OK + dropzone rigs" do
       argument :is_tandem, Boolean, required: false
@@ -55,15 +56,20 @@ module Types
     field :user, Types::UserType, null: false
     field :user_federation, Types::UserFederationType, null: true
     def user_federation
-      ::UserFederation.find_by(user_id: object.user, federation_id: object.dropzone.federation_id)
+      ::UserFederation.find_by(
+        user_id: object.user,
+        federation_id: object.dropzone.federation_id
+      )
     end
 
     def slots
+      # TODO: Lookahead
       object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)
     end
 
     def unseen_notifications
-      object.notifications.where(is_seen: false).count
+      # TODO: Counter culture
+      object.notifications.unseen.count
     end
 
     def notifications
@@ -82,15 +88,18 @@ module Types
     end
 
     def has_rig_inspection
-      object.rig_inspections && object.rig_inspections.any?(&:is_ok?)
+      # TODO: N+1
+      object.rig_inspections.exists?(is_ok: true)
     end
 
     def has_membership
-      !!object.expires_at && object.expires_at > DateTime.now
+      return false unless object.expires_at
+      object.expires_at > DateTime.now
     end
 
     def has_credits
-      !!object.credits
+      return object.credits > 0 if object.credits.present?
+      false
     end
 
     def has_exit_weight
@@ -104,7 +113,7 @@ module Types
     end
 
     def has_license
-      object.license.present?
+      object.license_id.present?
     end
 
     def permissions
