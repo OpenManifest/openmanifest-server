@@ -98,8 +98,8 @@ module Types
     end
 
     def has_credits
-      return false unless object.credits.present?
-      object.credits > 0
+      return object.credits > 0 if object.credits.present?
+      false
     end
 
     def has_exit_weight

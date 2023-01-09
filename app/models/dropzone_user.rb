@@ -135,14 +135,9 @@ class DropzoneUser < ApplicationRecord
   # @param [User] user
   # @return [DropzoneUser]
   def self.for(dropzone, user)
-    dropzone_user = dropzone.dropzone_users.find_or_initialize_by(user: user)
-
-    if dz_user = object.dropzone_users.find_by(user_id: context[:current_resource].id)
-      dz_user = object.dropzone_users.find_or_create_by(
-        user: context[:current_resource],
-        user_role: object.user_roles.first
-      )
-    end
+    dz_user = dropzone.dropzone_users.find_or_initialize_by(user: user)
+    dz_user.save if dz_user.new_record?
+    dz_user
   end
 
   def all_permissions
