@@ -203,7 +203,8 @@ class DropzoneUser < ApplicationRecord
     return unless user.exit_weight
     return unless license_id
     return if rig_inspections.any?
-    return unless rig = rigs.not_inspected_at(dropzone).first
+    rig = rigs.not_inspected_at(dropzone).first
+    return unless rig
     RequestRigInspectionJob.perform_now(rig, self)
   end
 end
