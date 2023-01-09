@@ -79,7 +79,12 @@ class Dropzone < ApplicationRecord
     )
   end
 
+  # Finding a dropzone for a user:
+  # - All dropzones the user is at least Staff at
+  # - All public dropzones
+  # - All dropzones if the users moderation role is at least moderator
   scope :for, -> (user) {
+    return kept if user.is_moderator?
     kept.with_user(user, :staff).or(
       kept.includes(:dropzone_users).visibility(:public)
     )
