@@ -13,5 +13,5 @@ flyio:
 google:
   service: GCS
   project: <%= ENV['GOOGLE_PROJECT'] %>
-  credentials: <%= Base64.decode64(ENV['GOOGLE_BUCKET_CREDENTIALS']).to_json %>
+  credentials: <%= Base64.decode64(ENV['GOOGLE_BUCKET_CREDENTIALS']).as_json %>
   bucket: <%= ENV['GOOGLE_BUCKET'] %>
