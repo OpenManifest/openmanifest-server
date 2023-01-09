@@ -69,6 +69,22 @@ class Dropzone < ApplicationRecord
   resize_attached_image :banner, size: '1280x720'
   after_create :set_appsignal_gauge
 
+  scope :visibility, -> (visibility) { where(state: visibility) }
+
+  scope :with_user, -> (user, user_scope = nil) do
+    dz_users = user.dropzone_users
+    dz_users = dz_users.send(user_scope) if user_scope
+    includes(:dropzone_users).where(
+      dropzone_users: dz_users
+    )
+  end
+
+  scope :for, -> (user) {
+    kept.with_user(user, :staff).or(
+      kept.includes(:dropzone_users).visibility(:public)
+    )
+  }
+
   before_destroy do
     template = rig_inspection_template
     update(rig_inspection_template: nil)
