@@ -142,6 +142,7 @@ class DropzoneUser < ApplicationRecord
   # @param [User] user
   # @return [DropzoneUser]
   def self.for(dropzone, user)
+    dropzone = Dropzone.find(dropzone) if dropzone.is_a?(Integer)
     dz_user = dropzone.dropzone_users.find_or_initialize_by(user: user)
     dz_user.save if dz_user.new_record?
     dz_user
