@@ -59,7 +59,7 @@ class User < ApplicationRecord
   end
 
   has_one_base64_attached :avatar
-  resize_attached_image :avatar, size: '500x500'
+  resize_attached_image :avatar, size: [500, 500]
 
   has_many :rigs, -> { kept }
   has_many :packs

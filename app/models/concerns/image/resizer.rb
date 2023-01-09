@@ -5,12 +5,12 @@ module Image::Resizer
     include Rails.application.routes.url_helpers
   end
   class_methods do
-    def resize_attached_image(name, size: '500x500')
+    def resize_attached_image(name, size: [500, 500])
       define_method "#{name}_url" do
         return unless send(name).attached?
 
         begin
-          rails_representation_url(send(name).variant(resize: size).processed)
+          rails_representation_url(send(name).variant(resize_to_limit: size).processed)
         rescue => e
           Appsignal.set_error(e)
           nil
