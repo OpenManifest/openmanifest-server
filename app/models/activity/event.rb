@@ -2,6 +2,7 @@
 
 class Activity::Event < ApplicationRecord
   self.table_name = "events"
+
   belongs_to :resource, polymorphic: true, optional: true
   belongs_to :created_by, foreign_key: :dropzone_user_id, optional: true, class_name: "DropzoneUser"
   belongs_to :dropzone
