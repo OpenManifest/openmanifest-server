@@ -18,6 +18,7 @@
 #
 class Plane < ApplicationRecord
   include Discard::Model
+  include MasterLogEntry::Aircraft
   has_many :loads, dependent: :destroy
   has_many :pilots, through: :loads
   belongs_to :dropzone

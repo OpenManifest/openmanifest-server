@@ -16,6 +16,7 @@
 #
 class DropzoneUser < ApplicationRecord
   include Discard::Model
+  include MasterLogEntry::DropzoneUser
   belongs_to :user, optional: true
   belongs_to :dropzone
   belongs_to :user_role
@@ -54,6 +55,9 @@ class DropzoneUser < ApplicationRecord
 
   # All dropzone users for the given user
   scope :for_user, -> (u) { where(user: u) }
+
+  # Users manifested on a load
+  scope :manifested_on, -> (load) { includes(:slots).where(slots: { load: load }) }
 
   # Gets dropzone users without a specific license,
   # e.g nil, or another license than the given one.

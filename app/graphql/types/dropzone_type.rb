@@ -101,7 +101,7 @@ module Types
     end
 
     def master_log(date: nil)
-      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date))
+      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date).to_datetime.all_day)
 
       # Creating log record if none exists
       log.save! if log.new_record?

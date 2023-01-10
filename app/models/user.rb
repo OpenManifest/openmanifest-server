@@ -37,6 +37,7 @@
 #  dropzone_count         :integer          default(0), not null
 #  plane_count            :integer          default(0), not null
 #
+require "open-uri"
 class User < ApplicationRecord
   include ActiveStorageSupport::SupportForBase64
   include Image::Resizer
@@ -90,9 +91,9 @@ class User < ApplicationRecord
   end
 
   def self.create_fake(count: 1)
-    random_user_url = URI("https://randomuser.me/api/?results=#{count}")
+    random_user_url = URI.open("https://randomuser.me/api/?results=#{count}")
     random_users = JSON.parse(
-      random_user_url.open.read,
+      random_user_url.read,
       symbolize_names: true
     )[:results]
 
