@@ -19,7 +19,9 @@ module Mutations
           post "/graphql",
                params: { query: query_str },
                headers: dropzone_user.user.create_new_auth_token
-          JSON.parse(response.body, symbolize_names: true)
+          x = JSON.parse(response.body, symbolize_names: true)
+          puts x
+          x
         end
 
         let(:query_str) do

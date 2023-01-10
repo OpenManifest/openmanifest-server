@@ -8,6 +8,8 @@ ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
 require "#{Rails.root}/spec/support/factory_bot.rb"
 require "#{Rails.root}/spec/support/contexts/mock_apf_call.rb"
+require "#{Rails.root}/spec/support/contexts/dropzone.rb"
+require "#{Rails.root}/spec/support/graphql_client.rb"
 require "#{Rails.root}/spec/support/shared_examples/graphql.rb"
 require "#{Rails.root}/spec/support/graphql/client.rb"
 
@@ -58,6 +60,12 @@ RSpec.configure do |config|
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
     Setup::Global::Seeds.run!
+  end
+
+  config.around(:suite) do |example|
+    Time.use_zone('Australia/Brisbane') do
+      example.run
+    end
   end
 
   config.before(:each) do

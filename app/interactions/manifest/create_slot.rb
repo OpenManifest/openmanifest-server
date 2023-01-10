@@ -130,9 +130,9 @@ class Manifest::CreateSlot < ApplicationInteraction
                "update"
              else
                "create"
-    end
+             end
 
-    if dropzone.loads_today.active.where(dropzone_user: dropzone_user)
+    if dropzone.loads.today.active.where(dropzone_user: dropzone_user)
       resource = if dropzone_user.id == access_context.subject.id
                    "Slot"
                  else

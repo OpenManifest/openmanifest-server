@@ -76,8 +76,12 @@ class User < ApplicationRecord
   has_many :user_federation_qualifications, through: :user_federations
   has_many :qualifications, through: :user_federation_qualifications
 
+  def at(dropzone)
+    DropzoneUser.for(dropzone, self)
+  end
+
   def can?(permission_name, dropzone_id:)
-    DropzoneUser.for(dropzone_id, self).can?(permission_name)
+    at(dropzone_id).can?(permission_name)
   end
 
   # Compare moderation levels to get user access level

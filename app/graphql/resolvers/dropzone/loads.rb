@@ -12,8 +12,8 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
   def resolve(dropzone: nil, earliest_timestamp: nil, lookahead: nil, date: nil)
     return nil unless dropzone
     lookahead = lookahead.selection(:edges).selection(:node)
+    query = dropzone.loads
     Time.use_zone(dropzone.time_zone) do
-      query = dropzone.loads
       query = query.includes(slots: :dropzone_user)      if lookahead.selects?(:slots)
       query = query.includes(:gca)                       if lookahead.selects?(:gca)
       query = query.includes(:load_master)               if lookahead.selects?(:load_master)

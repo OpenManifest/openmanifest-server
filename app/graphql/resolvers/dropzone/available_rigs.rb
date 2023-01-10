@@ -17,6 +17,8 @@ class Resolvers::Dropzone::AvailableRigs < Resolvers::Base
   )
     return dropzone_user.dropzone.tandem_rigs if is_tandem
 
-    dropzone_user.available_rigs(load_id: load_id)
+    Rig.available_for(dropzone_user).where.not(
+      id: dropzone_user.dropzone.rigs.occupied
+    )
   end
 end
