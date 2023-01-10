@@ -16,3 +16,5 @@ AllCops:
     - "log/**/*"
     - "public/**/*"
     - "db/schema.rb"
+Naming/BlockForwarding:
+  Enabled: false
