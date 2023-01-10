@@ -86,18 +86,17 @@ module Types
     end
 
     def current_user
-      DropzoneUser.for(object, context[:current_resource])
+      context[:current_resource].at(object)
     end
 
     def rigs
-      return [] unless context[:current_resource].can?(:readDropzoneRig, dropzone_id: object.id)
+      return [] unless current_user.can?(:readDropzoneRig)
       object.rigs.order(rig_type: :asc)
     end
 
     def roles(selectable: nil)
       query = object.user_roles
-
-      query = query.where("id < ?", current_user.user_role_id) if selectable
+      query = query.below(current_user.user_role) if selectable
       query.order(id: :asc)
     end
 

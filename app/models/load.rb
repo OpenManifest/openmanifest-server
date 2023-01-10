@@ -44,6 +44,8 @@ class Load < ApplicationRecord
              :change_state!,
              :update_counters!
 
+  scope :today, -> { where(created_at: DateTime.current.all_day) }
+
   enum state: { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
 
   # Changes the state of the load, which affects whether
@@ -108,7 +110,7 @@ class Load < ApplicationRecord
 
   def set_load_number
     Time.use_zone(dropzone.time_zone) do
-      assign_attributes(load_number: plane.dropzone.loads_today.count + 1)
+      assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
     end
   end
 

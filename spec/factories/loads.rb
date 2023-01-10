@@ -32,7 +32,7 @@ FactoryBot.define do
     gca { nil }
     pilot { nil }
 
-    before(:validation) do |instance, evaluator|
+    before(:create) do |instance, evaluator|
       instance.assign_attributes(
         gca: instance.gca || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),
         pilot: instance.pilot || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),

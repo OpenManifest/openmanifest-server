@@ -23,6 +23,8 @@ class UserRole < ApplicationRecord
   scope :admin, -> { find_by(name: :admin) }
   scope :default, -> { find_by(name: DEFAULT) }
   scope :default_licensed, -> { find_by(name: DEFAULT_LICENSED) }
+  scope :below, -> (other_role) { where("user_roles.id < ?", other_role.id) }
+  scope :above, -> (other_role) { where("user_roles.id > ?", other_role.id) }
 
   validates_uniqueness_of :name, scope: :dropzone_id
 

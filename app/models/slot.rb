@@ -123,10 +123,7 @@ class Slot < ApplicationRecord
     return if is_passenger?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    return unless Slot.where.not(id: id).exists?(
-      load: dropzone.loads_today.active,
-      dropzone_user: dropzone_user
-    )
+    return unless dropzone_user.slots.where(load: dropzone.loads.today.active).where.not(id: id).exists?
     return if created_by.can?(:createDoubleSlot)
     errors.add(:base, "Double-manifesting is not allowed")
   end
