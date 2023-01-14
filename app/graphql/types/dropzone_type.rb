@@ -1,38 +1,37 @@
 # frozen_string_literal: true
 
 module Types
-  class DropzoneType < Types::BaseObject
-    implements Types::AnyResourceType
-    implements Types::WalletType
+  class DropzoneType < Types::Base::Object
+    implements Types::Interfaces::Polymorphic
+    implements Types::Interfaces::Wallet
+
+    lookahead do |scope|
+      scope = scope.includes(:user_roles)     if selects?(:user_roles) || selects?(:roles)
+      scope = scope.includes(:ticket_types)   if selects?(:ticket_types)
+      scope = scope.includes(:extras)         if selects?(:extras)
+      scope = scope.includes(:rigs)           if selects?(:rigs)
+      scope = scope.includes(:planes)         if selects?(:planes)
+      scope = scope.includes(loads: :slots)   if selects?(:loads)
+      scope = scope.includes(:dropzone_users) if selects?(:dropzone_users)
+      scope
+    end
+    timestamp_fields
+
     field :id, GraphQL::Types::ID, null: false
-
     field :name, String, null: true
-
     field :state, Types::Dropzone::State, null: false
 
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-
     field :lat, Float, null: true
-
     field :lng, Float, null: true
-
-    field :federation, FederationType, null: false
-
     field :primary_color, String, null: true
-
     field :secondary_color, String, null: true
-
-    field :rig_inspection_template, Types::FormTemplateType, null: true
-
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
+    field :current_user, Types::Users::DropzoneUser, null: false
+    field :user_roles, [Types::Access::UserRole], null: false
+    async_field :federation, Types::Meta::Federation, null: false
+    async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 
-    field :current_user, Types::DropzoneUserType, null: false
-
-    field :user_roles, [Types::UserRoleType], null: false
-
-    field :allowed_jump_types, [Types::JumpTypeType], null: false do
+    field :allowed_jump_types, [Types::Meta::JumpType], null: false do
       argument :user_id, [Int], required: true
     end
 
@@ -41,9 +40,9 @@ module Types
       JumpType.allowed_for(object.dropzone_users.where(id: user_id))
     end
 
-    field :current_conditions, Types::WeatherConditionType, null: false
+    field :current_conditions, Types::Dropzone::Weather::Condition, null: false
 
-    field :dropzone_user, Types::DropzoneUserType, null: true do
+    field :dropzone_user, Types::Users::DropzoneUser, null: true do
       argument :id, Int, required: false
       argument :user_id, Int, required: false
     end
@@ -52,7 +51,7 @@ module Types
       object.dropzone_users.find_by({ id: id, user_id: user_id }.compact)
     end
 
-    field :ticket_types, [Types::TicketTypeType], null: false do
+    field :ticket_types, [Types::Dropzone::Ticket], null: false do
       argument :is_public, Boolean, required: false
     end
 
@@ -61,14 +60,14 @@ module Types
       object.ticket_types
     end
 
-    field :extras, [Types::ExtraType], null: false
+    field :extras, [Types::Dropzone::Tickets::Addon], null: false
 
-    field :rigs, [Types::RigType], null: true,
-                                   description: "Get rigs for dropzone"
+    field :rigs, [Types::Equipment::Rig], null: true,
+                                          description: "Get rigs for dropzone"
 
-    field :planes, [Types::PlaneType], null: false, method: :planes
+    field :planes, [Types::Dropzone::Aircraft], null: false, method: :planes
 
-    field :roles, [Types::UserRoleType], null: false do
+    field :roles, [Types::Access::UserRole], null: false do
       argument :selectable, Boolean, required: false
     end
 
@@ -101,7 +100,7 @@ module Types
     end
 
     def master_log(date: nil)
-      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date))
+      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date).to_datetime.all_day)
 
       # Creating log record if none exists
       log.save! if log.new_record?

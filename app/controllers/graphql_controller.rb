@@ -22,7 +22,7 @@ class GraphqlController < ApplicationController
                    query: param[:query],
                    operation_name: param[:operationName],
                    variables: prepare_variables(param[:variables]),
-                   context: gql_devise_context(User),
+                   context: context,
                  }
                end
                DzSchema.multiplex(queries)
@@ -31,9 +31,9 @@ class GraphqlController < ApplicationController
                  params[:query],
                  operation_name: params[:operationName],
                  variables: prepare_variables(params[:variables]),
-                 context: gql_devise_context(User),
+                 context: context,
                )
-    end
+             end
 
     render json: result, root: false unless performed?
   rescue => e
@@ -42,6 +42,14 @@ class GraphqlController < ApplicationController
   end
 
   private
+
+  def context
+    devise_context = gql_devise_context(User)
+    return devise_context unless devise_context[:current_resource]
+    devise_context.merge(
+      access_context: AccessContext::CurrentUser.for(devise_context[:current_resource])
+    )
+  end
 
   # Handle variables in form data, JSON body, or a blank value
   def prepare_variables(variables_param)

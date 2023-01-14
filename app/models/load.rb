@@ -22,10 +22,10 @@
 class Load < ApplicationRecord
   include Discard::Model
   include StateMachines::LoadState
+  include MasterLogEntry::Load
 
   belongs_to :plane
   has_one :dropzone, through: :plane
-  scope :active, -> { where(dispatch_at: nil) }
 
   belongs_to :load_master, class_name: "DropzoneUser", optional: true
   belongs_to :gca, class_name: "DropzoneUser", optional: true
@@ -44,7 +44,9 @@ class Load < ApplicationRecord
              :change_state!,
              :update_counters!
 
+  scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
+  scope :finalized, -> { where.not(state: %i(cancelled open)) }
 
   enum state: { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
 

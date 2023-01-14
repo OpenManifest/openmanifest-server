@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class WeatherConditionInput < Types::BaseInputObject
+    class WeatherConditionInput < Types::Base::Input
       argument :winds, String, required: false
       argument :temperature, Int, required: false
       argument :jump_run, Int, required: false

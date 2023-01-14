@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class MutationType < Types::BaseObject
+  class MutationType < Types::Base::Object
     field_class GraphqlDevise::Types::BaseField
     # Access
     field :revoke_permission,           mutation: Mutations::Access::RevokePermission

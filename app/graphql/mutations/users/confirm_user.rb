@@ -4,9 +4,9 @@ module Mutations::Users
   class ConfirmUser < ::Mutations::BaseMutation
     argument :token, String, required: false
 
-    field :authenticatable, Types::UserType, null: true
+    field :authenticatable, Types::Users::User, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     def resolve(token:)
       user = User.confirm_by_token(token)

@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class SlotUser < Types::BaseInputObject
+    class SlotUser < Types::Base::Input
       argument :id, Int, required: true
       argument :exit_weight, Float, required: true
       argument :rig, GraphQL::Types::ID, required: false,

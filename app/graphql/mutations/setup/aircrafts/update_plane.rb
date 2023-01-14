@@ -3,8 +3,8 @@
 module Mutations::Setup::Aircrafts
   class UpdatePlane < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :plane, Types::PlaneType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :plane, Types::Dropzone::Aircraft, null: true
 
     argument :attributes, Types::Input::PlaneInput, required: true
     argument :id, Int, required: true

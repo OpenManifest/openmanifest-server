@@ -3,8 +3,8 @@
 module Mutations::Setup::RigInspections
   class UpdateFormTemplate < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :form_template, Types::FormTemplateType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :form_template, Types::Equipment::RigInspectionTemplate, null: true
 
     argument :attributes, Types::Input::FormTemplateInput, required: true
     argument :id, Int, required: false

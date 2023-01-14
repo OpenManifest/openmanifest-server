@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Users::DropzoneUsers < Resolvers::Base
-  type Types::DropzoneUserType.connection_type, null: true
+  type Types::Users::DropzoneUser.connection_type, null: true
   description "Search users at a dropzone"
 
   argument :dropzone, ::GraphQL::Types::ID, required: true,
@@ -13,13 +13,7 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
   def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)
     lookahead = lookahead.selection(:edges).selection(:node)
     return nil unless dropzone
-    query = dropzone.dropzone_users
-    query = query.includes(:user_role)  if lookahead.selects?(:role)
-    query = query.includes(:dropzone)   if lookahead.selects?(:dropzone)
-    query = query.includes(:jump_types) if lookahead.selects?(:jump_type)
-    query = query.includes(:slots)      if lookahead.selects?(:slots)
-    query = query.includes(:user)       if lookahead.selects?(:user)
-    query = query.includes(:license)    if lookahead.selects?(:license)
+    query = apply_lookaheads(lookahead, dropzone.dropzone_users)
     query = query.includes(user_permissions: :permission) if permissions.present?
 
     query = query.where.not(license_id: nil) if licensed

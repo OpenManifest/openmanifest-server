@@ -8,9 +8,9 @@ module Mutations::Users
     argument :phone, String, required: true
     argument :push_token, String, required: false
 
-    field :authenticatable, Types::UserType, null: true
+    field :authenticatable, Types::Users::User, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     # Override devises initializer to allow
     # signing up on an existing user if the user

@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class OrderInput < Types::BaseInputObject
+    class OrderInput < Types::Base::Input
       argument :title, String, required: false
       argument :seller, ID,
                required: true,

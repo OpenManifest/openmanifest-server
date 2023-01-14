@@ -12,8 +12,14 @@
 #  updated_at  :datetime         not null
 #
 class MasterLog < ApplicationRecord
-  belongs_to :dzso, optional: true, class_name: "DropzoneUser"
+  belongs_to :dzso, optional: true,
+                    class_name: "DropzoneUser"
   belongs_to :dropzone
+  has_one_attached :json
+
+  after_create :store!
+
+  scope :at, -> (date) { find_or_create_by(date: date.to_date) }
 
   # 12.3.3 Master Log Contents
   # The DZSO is responsible for ensuring that the master log contains:
@@ -27,15 +33,18 @@ class MasterLog < ApplicationRecord
   # (h) exit height of each descent;
   # (i) type of descent, i.e. Tandem, AFF, SLD, IAD or experienced; and
   # (j) date of descent.
-  def loads
-    # FIXME: This is gonna have timezone issues with servers in
-    # different timezones
-    Load.includes(:slots).where(
-      plane_id: dropzone.planes.pluck(:id)
-    ).where(
-      "loads.created_at > ?", created_at
-    ).where(
-      "loads.created_at < ?", created_at + 24.hours,
-    ).order(created_at: :desc)
+  def generate_json
+    dropzone.to_master_log(date).merge(
+      dzso: dzso&.to_master_log || 'No DZSO',
+      date: date.iso8601,
+    )
+  end
+
+  def store!
+    json.attach(
+      io: StringIO.new(generate_json.to_json),
+      filename: "master-log-#{created_at.to_date.iso8601}.json",
+      content_type: 'application/json'
+    )
   end
 end

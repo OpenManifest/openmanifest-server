@@ -4,7 +4,7 @@ module Mutations::Setup::Dropzones
   class DeleteDropzone < Mutations::BaseMutation
     field :dropzone, Types::DropzoneType, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :id, Int, required: true
 

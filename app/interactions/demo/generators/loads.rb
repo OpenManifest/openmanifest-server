@@ -60,18 +60,21 @@ class Demo::Generators::Loads < ApplicationInteraction
 
     # Manifest user groups
     taken_slots = 0
-    while taken_slots < plane_load.max_slots
+    while taken_slots < plane_load.reload.available_slots
       group_size = Random.rand(4) + 1
       taken_slots += group_size
-      break if taken_slots > plane_load.max_slots
-      dz_users = access_context.dropzone.dropzone_users.where.not(id: plane_load.slots.pluck(:dropzone_user_id)).take(group_size)
+      break if taken_slots > plane_load.reload.available_slots
+      break if group_size > plane_load.reload.available_slots
+      dz_users = access_context.dropzone.dropzone_users.where.not(
+        id: access_context.dropzone.dropzone_users.manifested_on(plane_load)
+      ).take(group_size)
       jump_type = JumpType.allowed_for(dz_users).sample
       ticket_type = access_context.dropzone.ticket_types.find_by(name: "Height")
+      next if dz_users.empty?
       group_leader = dz_users.first
       group_leader.grant! :createUserSlotWithSelf
 
-      compose(
-        ::Manifest::CreateMultipleSlots,
+      ::Manifest::CreateMultipleSlots.run(
         access_context: ::ApplicationInteraction::AccessContext.new(group_leader),
         ticket_type: ticket_type,
         jump_type: jump_type,

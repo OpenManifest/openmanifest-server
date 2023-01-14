@@ -2,11 +2,11 @@
 
 module Mutations::Manifest
   class FinalizeLoad < Mutations::BaseMutation
-    include Types::InteractionMutationInterface
-    field :load, Types::LoadType, null: true
+    include Types::Interfaces::ActiveInteraction
+    field :load, Types::Manifest::Load, null: true
 
     argument :id, Int, required: true
-    argument :state, Types::LoadStateType, required: true
+    argument :state, Types::Manifest::LoadState, required: true
 
     def resolve(state:, id:)
       case state

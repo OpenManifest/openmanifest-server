@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class PlaneInput < Types::BaseInputObject
+    class PlaneInput < Types::Base::Input
       argument :name, String, required: false
       argument :min_slots, Int, required: false
       argument :max_slots, Int, required: false

@@ -2,18 +2,18 @@
 
 class Resolvers::Dropzone::Activity < Resolvers::Base
   max_page_size 50
-  type Types::Events::EventType.connection_type, null: false
+  type Types::System::Events::Event.connection_type, null: false
   description "Get all Activity Events for a dropzone (or all dropzones)"
 
-  argument :access_levels, [Types::Events::EventAccessLevelType], required: false
-  argument :actions, [Types::Events::EventActionType], required: false
+  argument :access_levels, [Types::System::Events::EventAccessLevel], required: false
+  argument :actions, [Types::System::Events::EventAction], required: false
   argument :created_by, [GraphQL::Types::ID], required: false,
                                               description: "Filter by who created the event",
                                               prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
   argument :dropzone, [GraphQL::Types::ID], required: false,
                                             description: "Filter by Dropzone",
                                             prepare: -> (value, ctx) { Dropzone.where(id: value) }
-  argument :levels, [Types::Events::EventLevelType], required: false
+  argument :levels, [Types::System::Events::EventLevel], required: false
   argument :time_range, Types::Input::TimeRangeInput, required: false
   def resolve(
     dropzone: nil,
@@ -24,10 +24,8 @@ class Resolvers::Dropzone::Activity < Resolvers::Base
     time_range: nil,
     lookahead: nil
   )
-    lookahead = lookahead.selection(:edges).selection(:node)
+    query = apply_lookaheads(lookahead, ::Activity::Event.all)
 
-    query = ::Activity::Event
-    query = query.includes(:created_by) if lookahead.selects?(:created_by)
     query = query.where(dropzone: dropzone)                 if dropzone
     query = query.where(level: levels)                      if levels
     query = query.where(access_level: access_levels)        if access_levels

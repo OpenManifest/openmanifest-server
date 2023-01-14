@@ -12,6 +12,7 @@ class DzSchema < GraphQL::Schema
       }),
     ]
   )
+  use(GraphQL::Dataloader)
   use(GraphQL::Tracing::AppsignalTracing)
   mutation(Types::MutationType)
   query(Types::QueryType)
@@ -20,28 +21,28 @@ class DzSchema < GraphQL::Schema
     def model_type_map
       @model_class_map ||= {
         ::Dropzone => ::Types::DropzoneType,
-        ::DropzoneUser => ::Types::DropzoneUserType,
-        ::Extra => ::Types::ExtraType,
-        ::Federation => ::Types::FederationType,
-        ::FormTemplate => ::Types::FormTemplateType,
-        ::License => ::Types::LicenseType,
-        ::LicensedJumpType => ::Types::LicensedJumpTypeType,
-        ::Load => ::Types::LoadType,
-        ::Notification => ::Types::NotificationType,
-        ::Order => ::Types::OrderType,
+        ::DropzoneUser => ::Types::Users::DropzoneUser,
+        ::Extra => ::Types::Dropzone::Tickets::Addon,
+        ::Federation => ::Types::Meta::Federation,
+        ::FormTemplate => ::Types::Equipment::RigInspectionTemplate,
+        ::License => ::Types::Meta::License,
+        ::LicensedJumpType => ::Types::Meta::LicensedJumpType,
+        ::Load => ::Types::Manifest::Load,
+        ::Notification => ::Types::System::Notification,
+        ::Order => ::Types::Payments::Order,
         ::Permission => ::Types::Access::PermissionType,
-        ::Plane => ::Types::PlaneType,
-        ::Receipt => ::Types::ReceiptType,
-        ::Rig => ::Types::RigType,
-        ::RigInspection => ::Types::RigInspectionType,
-        ::Slot => ::Types::SlotType,
-        ::TicketType => ::Types::TicketTypeType,
-        ::Transaction => ::Types::TransactionType,
-        ::User => ::Types::UserType,
-        ::UserRole => ::Types::UserRoleType,
-        ::UserFederation => ::Types::UserFederationType,
-        ::WeatherCondition => ::Types::WeatherConditionType,
-        nil => ::Types::BaseObject,
+        ::Plane => ::Types::Dropzone::Aircraft,
+        ::Receipt => ::Types::Payments::Receipt,
+        ::Rig => ::Types::Equipment::Rig,
+        ::RigInspection => ::Types::Equipment::RigInspection,
+        ::Slot => ::Types::Manifest::Slot,
+        ::TicketType => ::Types::Dropzone::Ticket,
+        ::Transaction => ::Types::Payments::Transaction,
+        ::User => ::Types::Users::User,
+        ::UserRole => ::Types::Access::UserRole,
+        ::UserFederation => ::Types::Users::UserFederation,
+        ::WeatherCondition => ::Types::Dropzone::Weather::Condition,
+        nil => ::Types::Base::Object,
       }
     end
 

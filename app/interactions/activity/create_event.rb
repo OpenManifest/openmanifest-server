@@ -27,8 +27,12 @@ class Activity::CreateEvent < ApplicationInteraction
       details: details,
       created_at: created_at,
       dropzone: access_context.dropzone,
+    )
+    return @event unless access_context.subject.is_a?(DropzoneUser)
+    @event.assign_attributes(
       created_by: access_context.subject
     )
+    @event
   end
 
   def save_event

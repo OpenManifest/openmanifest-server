@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class TicketTypeInput < Types::BaseInputObject
+    class TicketTypeInput < Types::Base::Input
       argument :currency, String, required: false
       argument :cost, Float, required: false
       argument :name, String, required: false

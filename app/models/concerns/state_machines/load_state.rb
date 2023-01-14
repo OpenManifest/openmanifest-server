@@ -34,7 +34,7 @@ module StateMachines::LoadState
         end
       end
 
-      event :dispatch do
+      event :dispatch do |record, time|
         transition open: :boarding_call
       end
 

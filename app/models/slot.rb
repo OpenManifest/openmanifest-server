@@ -20,6 +20,7 @@
 #  dropzone_user_id  :bigint
 #
 class Slot < ApplicationRecord
+  include MasterLogEntry::Slot
   delegate :user, to: :dropzone_user, allow_nil: true
 
   belongs_to :dropzone_user, optional: true

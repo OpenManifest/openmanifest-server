@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class UserFederationInput < Types::BaseInputObject
+    class UserFederationInput < Types::Base::Input
       argument :federation, GraphQL::Types::ID, required: true,
                                                 prepare: -> (value, ctx) { ::Federation.find_by(id: value) }
       argument :uid, String, required: false,

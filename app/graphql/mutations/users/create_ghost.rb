@@ -3,8 +3,8 @@
 module Mutations::Users
   class CreateGhost < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :user, Types::UserType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :user, Types::Users::User, null: true
 
     argument :attributes, Types::Input::GhostInput, required: true
 

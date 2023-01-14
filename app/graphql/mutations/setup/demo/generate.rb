@@ -4,7 +4,7 @@ module Mutations::Setup::Demo
   class Generate < Mutations::BaseMutation
     field :dropzone, Types::DropzoneType, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::DemoDataInput, required: true
     argument :dropzone, ID, required: true,

@@ -3,8 +3,8 @@
 module Mutations::Setup::Dropzones
   class ReloadWeatherCondition < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :weather_condition, Types::WeatherConditionType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :weather_condition, Types::Dropzone::Weather::Condition, null: true
 
     argument :dropzone_id, Int, required: false
     argument :id, Int, required: false

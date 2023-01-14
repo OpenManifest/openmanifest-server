@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class DropzoneInput < Types::BaseInputObject
+    class DropzoneInput < Types::Base::Input
       argument :name, String, required: true
       argument :banner, String, required: false
       argument :federation, Int, required: true,

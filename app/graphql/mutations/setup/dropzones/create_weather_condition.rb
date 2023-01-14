@@ -3,8 +3,8 @@
 module Mutations::Setup::Dropzones
   class CreateWeatherCondition < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :weather_condition, Types::WeatherConditionType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :weather_condition, Types::Dropzone::Weather::Condition, null: true
 
     argument :attributes, Types::Input::WeatherConditionInput, required: true
     argument :id, Int, required: false
