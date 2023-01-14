@@ -3,10 +3,13 @@
 module Types::Meta
   class License < Types::Base::Object
     implements Types::Interfaces::Polymorphic
+    lookahead do |query|
+      query = query.includes(:federation) if selects?(:federation)
+      query
+    end
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
-    field :federation, Types::Meta::Federation, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    async_field :federation, Types::Meta::Federation, null: true
+    timestamp_fields
   end
 end

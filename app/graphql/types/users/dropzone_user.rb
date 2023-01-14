@@ -4,27 +4,26 @@ module Types::Users
   class DropzoneUser < Types::Base::Object
     implements Types::Interfaces::Polymorphic
     implements Types::Interfaces::Wallet
+    timestamp_fields
+    lookahead do |query|
+      query = query.includes(:dropzone)   if selects?(:dropzone)
+      query = query.includes(:jump_types) if selects?(:jump_type)
+      query = query.includes(:slots)      if selects?(:slots)
+      query = query.includes(:user)       if selects?(:user)
+      query = query.includes(:license)    if selects?(:license)
+      query = query.includes(:user_role)  if selects?(:role)
+      query
+    end
+
     field :id, GraphQL::Types::ID, null: false
-
     field :slots, Types::Manifest::Slot.connection_type, null: true
-
     field :unseen_notifications, Int, null: false
-
     field :notifications, Types::System::Notification.connection_type, null: true
-
     field :expires_at, Int, null: true
-
     field :rig_inspections, [Types::Equipment::RigInspection], null: true
-
     field :credits, Int, null: true
-
     field :purchases, Types::Payments::Order.connection_type, null: true
-
     field :sales, Types::Payments::Order.connection_type, null: true
-
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
     # TODO: Remove and move to top level query
     field :available_rigs, [Types::Equipment::Rig], null: true,
@@ -35,25 +34,21 @@ module Types::Users
     end
 
     field :has_rig_inspection, Boolean, null: false
-
     field :has_membership, Boolean, null: false
-
     field :has_credits, Boolean, null: false
-
     field :has_exit_weight, Boolean, null: false
-
     field :has_reserve_in_date, Boolean, null: false
-
     field :has_license, Boolean, null: false
 
-    field :role, Types::Access::UserRole, null: true, method: :user_role
+    async_field :role, Types::Access::UserRole, null: true, method: :user_role
 
     field :permissions, [Types::Access::PermissionType], null: true
 
-    field :dropzone, Types::DropzoneType, null: false
+    async_field :dropzone, Types::DropzoneType, null: false
+    async_field :license, Types::Meta::License, null: true
+    async_field :user, Types::Users::User, null: false
+
     field :jump_types, [Types::Meta::JumpType], null: true
-    field :license, Types::Meta::License, null: true
-    field :user, Types::Users::User, null: false
     field :user_federation, Types::Users::UserFederation, null: true
     def user_federation
       ::UserFederation.find_by(

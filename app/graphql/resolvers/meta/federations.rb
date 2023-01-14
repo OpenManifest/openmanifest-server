@@ -5,8 +5,7 @@ class Resolvers::Meta::Federations < Resolvers::Base
   description "Get all available federations"
 
   def resolve(lookahead: nil)
-    query = Federation.all
-    query = query.includes(:licenses) if lookahead.selects?(:licenses)
+    query = apply_lookaheads(lookahead, Federation.all)
     query.order(name: :asc)
   end
 end

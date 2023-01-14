@@ -1,8 +1,7 @@
 class AccessContext::CurrentUser
   include Singleton
   attr_accessor :user,
-                :dropzone,
-                :dropzones
+                :dropzone
 
   # Sets up an access context for a user
   # to check permissions against that user

@@ -5,15 +5,18 @@ module Types::Dropzone::Tickets
     graphql_name 'Extra'
     implements Types::Interfaces::SellableItem
     implements Types::Interfaces::Polymorphic
+    lookahead do |query|
+      query = query.includes(ticket_type_extras: :ticket_type) if selects?(:ticket_types)
+      query
+    end
     def title
       object.name
     end
     field :cost, Float, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :dropzone, Types::DropzoneType, null: false
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :ticket_types, [Types::Dropzone::Ticket], null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    async_field :dropzone, Types::DropzoneType, null: false
+    timestamp_fields
   end
 end

@@ -1,11 +1,11 @@
 module Support::Lookahead::Resolver
   extend ActiveSupport::Concern
 
+  class MissingScope < StandardError; end
+
+  class MissingLookahead < StandardError; end
+
   included do
-    class MissingScope < StandardError; end
-
-    class MissingLookahead < StandardError; end
-
     # Initializes a query from a lookahead
     # and the given scope
     #
@@ -48,8 +48,8 @@ module Support::Lookahead::Resolver
     #
     # @return [GraphQL::Schema::Object]
     def unwrap(field_type)
-      return unwrap(field_type&.first) if field_type&.is_a?(Array)
-      return unwrap(field_type&.of_type) if field_type&.respond_to?(:of_type)
+      return unwrap(field_type&.first) if field_type.is_a?(Array)
+      return unwrap(field_type&.of_type) if field_type.respond_to?(:of_type)
       return unwrap(field_type&.fields['nodes']&.type) if field_type&.ancestors&.include?(Types::Base::Connection)
       field_type
     end

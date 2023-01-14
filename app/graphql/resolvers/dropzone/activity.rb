@@ -24,10 +24,8 @@ class Resolvers::Dropzone::Activity < Resolvers::Base
     time_range: nil,
     lookahead: nil
   )
-    lookahead = lookahead.selection(:edges).selection(:node)
+    query = apply_lookaheads(lookahead, ::Activity::Event.all)
 
-    query = ::Activity::Event
-    query = query.includes(:created_by) if lookahead.selects?(:created_by)
     query = query.where(dropzone: dropzone)                 if dropzone
     query = query.where(level: levels)                      if levels
     query = query.where(access_level: access_levels)        if access_levels

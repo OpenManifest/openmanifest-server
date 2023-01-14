@@ -5,9 +5,8 @@ module Types::Payments
     implements Types::Interfaces::Polymorphic
     field :id, GraphQL::Types::ID, null: false
     field :amount_cents, Integer, null: true
-    field :order, Types::Payments::Order, null: false
     field :transactions, [Types::Payments::Transaction], null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    async_field :order, Types::Payments::Order, null: false
+    timestamp_fields
   end
 end

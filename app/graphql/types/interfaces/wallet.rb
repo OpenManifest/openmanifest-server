@@ -13,20 +13,14 @@ module Types::Interfaces
       argument :start_date, Integer, required: false
     end
     def orders(start_date: nil)
-      is_self = if object.is_a?(DropzoneUser)
-                  context[:current_resource].id == object.user.id
-                else
-                  context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id)
-      end
+      is_self = context[:current_resource].id == object.user.id if object.is_a?(DropzoneUser)
+      is_self ||= context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id)
 
       can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.try(:dropzone_id) || object.id)
-      if can_see_others || is_self
-        query = Order.where(buyer: object).or(Order.where(seller: object)).where.not(state: :cancelled)
-        query.where!("created_at > ?", Time.at(start_date)) if start_date
-        query.order(created_at: :desc)
-      else
-        []
-      end
+      return [] unless can_see_others || is_self
+      query = Order.where(buyer: object).or(Order.where(seller: object)).where.not(state: :cancelled)
+      query.where!("created_at > ?", Time.at(start_date)) if start_date
+      query.order(created_at: :desc)
     end
 
     field :purchases, Types::Payments::Order.connection_type, null: true

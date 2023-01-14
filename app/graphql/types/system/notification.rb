@@ -6,11 +6,10 @@ module Types::System
     field :message, String, null: true
     field :is_seen, Boolean, null: false
     field :notification_type, Types::System::NotificationType, null: true
-    field :resource, Types::Interfaces::Polymorphic, null: true
 
-    field :received_by, Types::Users::DropzoneUser, null: false
-    field :sent_by, Types::Users::DropzoneUser, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    polymorphic_field :resource
+    async_field :received_by, Types::Users::DropzoneUser, null: false
+    async_field :sent_by, Types::Users::DropzoneUser, null: true
+    timestamp_fields
   end
 end

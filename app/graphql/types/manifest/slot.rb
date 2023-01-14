@@ -8,23 +8,22 @@ module Types::Manifest
     def title
       "Slot on Load #{object.load.load_number}"
     end
+    timestamp_fields
     field :id, GraphQL::Types::ID, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :exit_weight, Integer, null: false
     def exit_weight
       object.exit_weight.to_i
     end
     field :group_number, Integer, null: false
 
-    field :dropzone_user, Types::Users::DropzoneUser, null: true
+    async_field :dropzone_user, Types::Users::DropzoneUser, null: true
     field :cost, Float, null: false
 
-    field :ticket_type, Types::Dropzone::Ticket, null: true
-    field :load, Types::Manifest::Load, null: false
-    field :rig, Types::Equipment::Rig, null: true
-    field :jump_type, Types::Meta::JumpType, null: true
-    field :order, Types::Payments::Order, null: true
+    async_field :ticket_type, Types::Dropzone::Ticket, null: true
+    async_field :load, Types::Manifest::Load, null: false
+    async_field :rig, Types::Equipment::Rig, null: true
+    async_field :jump_type, Types::Meta::JumpType, null: true
+    async_field :order, Types::Payments::Order, null: true
     field :wing_loading, Float, null: true
 
     field :passenger_name, String, null: true

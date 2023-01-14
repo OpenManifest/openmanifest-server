@@ -4,13 +4,13 @@ class ApplicationInteraction::SystemContext < ApplicationInteraction::AccessCont
   end
 
   def subject
-    OpenStruct.new(
+    Struct.new(
       user: user
     )
   end
 
   def user
-    OpenStruct.new(
+    Struct.new(
       name: 'System'
     )
   end

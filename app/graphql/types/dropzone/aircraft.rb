@@ -15,8 +15,7 @@ module Types::Dropzone
     field :hours, Int, null: true
     field :next_maintenance_hours, Int, null: true
     field :registration, String, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :dropzone, Types::DropzoneType, null: false
+    async_field :dropzone, Types::DropzoneType, null: false
+    timestamp_fields
   end
 end

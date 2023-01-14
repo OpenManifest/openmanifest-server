@@ -1,7 +1,7 @@
 class Sources::Model < GraphQL::Dataloader::Source
   attr_accessor :klass,
-                :column,
-                :cache_store
+                :column
+  attr_writer :cache_store
 
   def initialize(model, column: :id)
     self.klass = model
@@ -24,7 +24,7 @@ class Sources::Model < GraphQL::Dataloader::Source
   end
 
   def get_records(ids)
-    @model_class.where(@column => ids)
+    klass.where(@column => ids)
   end
 
   def cache_store

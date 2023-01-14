@@ -3,12 +3,19 @@
 module Types::Manifest
   class Load < Types::Base::Object
     implements Types::Interfaces::Polymorphic
+    lookahead do |query|
+      query = query.includes(slots: :dropzone_user)  if selects?(:slots)
+      query = query.includes(:gca)                   if selects?(:gca)
+      query = query.includes(:load_master)           if selects?(:load_master)
+      query = query.includes(:pilot)                 if selects?(:pilot)
+      query = query.includes(:plane)                 if selects?(:plane)
+      query
+    end
 
     field :id, GraphQL::Types::ID, null: false
     field :dispatch_at, Int, null: true
     field :name, String, null: true
     field :has_landed, Boolean, null: true
-    field :pilot, Types::Users::DropzoneUser, null: true
     field :weight, Integer, null: false
     def weight
       pilot_weight = object.pilot.try(:user).try(:exit_weight) || 0
@@ -32,11 +39,12 @@ module Types::Manifest
       object.slots.where.not(dropzone_user: nil)
     end
 
-    field :plane, Types::Dropzone::Aircraft, null: false
-    field :load_master, Types::Users::DropzoneUser, null: true
+    async_field :pilot, Types::Users::DropzoneUser, null: true
+    async_field :plane, Types::Dropzone::Aircraft, null: false
+    async_field :load_master, Types::Users::DropzoneUser, null: true
+    async_field :state, Types::Manifest::LoadState, null: false
+    async_field :gca, Types::Users::DropzoneUser, null: true
     field :load_number, Int, null: false
-    field :state, Types::Manifest::LoadState, null: false
-    field :gca, Types::Users::DropzoneUser, null: true
 
     field :is_ready, Boolean, null: false
     def is_ready

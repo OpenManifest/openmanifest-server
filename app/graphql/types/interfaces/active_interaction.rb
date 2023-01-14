@@ -9,17 +9,9 @@ module Types::Interfaces
     def mutate(interaction, field_name, on_success: nil, **opts)
       # If we need an access context, but don't have one, try to infer it
       # To infer it we need the user and a dropzone or a dropzone ID
-      if interaction.filters.key?(:access_context) && !opts.key?(:access_context) && dropzone_or_dropzone_id = opts[:dropzone] || opts[:dropzone_id]
-        case dropzone_or_dropzone_id
-        when ApplicationRecord
-          opts[:access_context] = access_context_for(
-            dropzone_or_dropzone_id
-          )
-        when Integer
-          opts[:access_context] = access_context_for(
-            dropzone_or_dropzone_id
-          )
-        end
+      dropzone_or_dropzone_id = opts[:dropzone] || opts[:dropzone_id]
+      if interaction.filters.key?(:access_context) && !opts.key?(:access_context) && dropzone_or_dropzone_id
+        opts[:access_context] = access_context_for(dropzone_or_dropzone_id)
       end
       outcome = interaction.run(**opts)
 

@@ -3,6 +3,11 @@
 module Types::Equipment
   class Rig < Types::Base::Object
     implements Types::Interfaces::Polymorphic
+    lookahead do |scope|
+      scope = scope.includes(:dropzone) if selects?(:dropzone)
+      scope = scope.includes(:rig_inspections) if selects?(:rig_inspections)
+      scope
+    end
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :make, String, null: true
@@ -14,10 +19,9 @@ module Types::Equipment
     field :repack_expires_at, Int, null: true
     field :maintained_at, Int, null: true
     field :is_public, Boolean, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :dropzone, Types::DropzoneType, null: true
-    field :owner, Types::Users::User, null: true, method: :user
+    timestamp_fields
+    async_field :dropzone, Types::DropzoneType, null: true
+    async_field :owner, Types::Users::User, null: true, method: :user
     field :packing_card, String, null: true
     def packing_card
       return nil unless object.packing_card.attached?

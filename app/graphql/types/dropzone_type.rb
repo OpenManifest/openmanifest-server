@@ -23,13 +23,13 @@ module Types
 
     field :lat, Float, null: true
     field :lng, Float, null: true
-    field :federation, Types::Meta::Federation, null: false
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
-    field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
     field :current_user, Types::Users::DropzoneUser, null: false
     field :user_roles, [Types::Access::UserRole], null: false
+    async_field :federation, Types::Meta::Federation, null: false
+    async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 
     field :allowed_jump_types, [Types::Meta::JumpType], null: false do
       argument :user_id, [Int], required: true

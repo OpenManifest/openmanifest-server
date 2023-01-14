@@ -14,7 +14,6 @@ module Types::Dropzone::Weather
     field :exit_spot_miles, Int, null: true
     field :offset_miles, Int, null: true
     field :offset_direction, Int, null: true
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    timestamp_fields
   end
 end
