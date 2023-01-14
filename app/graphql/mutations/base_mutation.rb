@@ -2,11 +2,11 @@
 
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
-    include Types::InteractionMutationInterface
-    argument_class Types::BaseArgument
-    field_class Types::BaseField
-    input_object_class Types::BaseInputObject
-    object_class Types::BaseObject
+    include Types::Interfaces::ActiveInteraction
+    argument_class Types::Base::Argument
+    field_class Types::Base::Field
+    input_object_class Types::Base::Input
+    object_class Types::Base::Object
 
     # Creates an AccessContext for the current_resource
     # to be used for permission checking in interactions

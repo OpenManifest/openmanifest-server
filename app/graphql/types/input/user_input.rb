@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class UserInput < Types::BaseInputObject
+    class UserInput < Types::Base::Input
       argument :name, String, required: false
       argument :nickname, String, required: false
       argument :push_token, String, required: false

@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class ExtraInput < Types::BaseInputObject
+    class ExtraInput < Types::Base::Input
       argument :name, String, required: false
       argument :cost, Float, required: false
       argument :dropzone_id, Int, required: false

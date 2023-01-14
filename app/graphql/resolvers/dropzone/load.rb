@@ -2,7 +2,7 @@
 
 class Resolvers::Dropzone::Load < Resolvers::Base
   description "Get load by id"
-  type Types::LoadType, null: true
+  type Types::Manifest::Load, null: true
   argument :id, GraphQL::Types::ID, required: true
 
   def resolve(

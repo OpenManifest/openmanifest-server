@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Dropzone::Aircrafts < Resolvers::Base
-  type [Types::PlaneType], null: true
+  type [Types::Dropzone::Aircraft], null: true
   description "Get Aircrafts for a dropzone"
   argument :dropzone, GraphQL::Types::ID, required: true,
                                           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }

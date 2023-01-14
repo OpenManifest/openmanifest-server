@@ -3,8 +3,8 @@
 module Mutations::Setup::RigInspections
   class UpdateRigInspection < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :rig_inspection, Types::RigInspectionType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :rig_inspection, Types::Equipment::RigInspection, null: true
 
     argument :attributes, Types::Input::RigInspectionInput, required: true
     argument :id, Int, required: false

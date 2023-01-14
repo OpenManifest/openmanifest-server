@@ -2,7 +2,7 @@
 
 class Resolvers::Dropzone::AvailableRigs < Resolvers::Base
   description "Get user rigs that have been inspected and marked as OK + dropzone rigs"
-  type [Types::RigType], null: true
+  type [Types::Equipment::Rig], null: true
   argument  :dropzone_user,    Integer, required: true,
                                         description: "Dropzone User to get rigs for",
                                         prepare: -> (value, ctx) { ::DropzoneUser.find_by(id: value) }

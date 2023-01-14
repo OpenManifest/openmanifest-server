@@ -3,8 +3,8 @@
 module Mutations::Access
   class UpdateRole < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :role, Types::UserRoleType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :role, Types::Access::UserRole, null: true
 
     argument :enabled, Boolean, required: true
     argument :id, Int, required: false

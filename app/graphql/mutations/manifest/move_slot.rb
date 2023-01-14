@@ -3,8 +3,8 @@
 module Mutations::Manifest
   class MoveSlot < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :loads, [Types::LoadType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :loads, [Types::Manifest::Load], null: true
 
     argument :source_slot, Integer, required: true,
                                     prepare: -> (value, ctx) { Slot.find_by(id: value) }

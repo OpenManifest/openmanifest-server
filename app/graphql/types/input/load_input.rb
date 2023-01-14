@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class LoadInput < Types::BaseInputObject
+    class LoadInput < Types::Base::Input
       argument :name, String, required: false
       argument :max_slots, Int, required: false
       argument :pilot, Int, required: false,
@@ -15,7 +15,7 @@ module Types
                           prepare: -> (value, ctx) { ::DropzoneUser.find_by(id: value) }
       argument :load_master, Int, required: false,
                                   prepare: -> (value, ctx) { ::DropzoneUser.find_by(id: value) }
-      argument :state, Types::LoadStateType, required: false
+      argument :state, Types::Manifest::LoadState, required: false
     end
   end
 end

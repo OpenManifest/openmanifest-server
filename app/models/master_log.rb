@@ -12,11 +12,14 @@
 #  updated_at  :datetime         not null
 #
 class MasterLog < ApplicationRecord
-  belongs_to :dzso, optional: true, class_name: "DropzoneUser"
+  belongs_to :dzso, optional: true,
+                    class_name: "DropzoneUser"
   belongs_to :dropzone
   has_one_attached :json
 
   after_create :store!
+
+  scope :at, -> (date) { find_or_create_by(date: date.to_date) }
 
   # 12.3.3 Master Log Contents
   # The DZSO is responsible for ensuring that the master log contains:
@@ -31,9 +34,9 @@ class MasterLog < ApplicationRecord
   # (i) type of descent, i.e. Tandem, AFF, SLD, IAD or experienced; and
   # (j) date of descent.
   def generate_json
-    dropzone.to_master_log(created_at).merge(
+    dropzone.to_master_log(date).merge(
       dzso: dzso&.to_master_log || 'No DZSO',
-      date: created_at.to_date.iso8601,
+      date: date.iso8601,
     )
   end
 

@@ -3,8 +3,8 @@
 module Mutations::Users
   class UpdateNotification < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :notification, Types::NotificationType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :notification, Types::System::Notification, null: true
 
     argument :attributes, Types::Input::NotificationInput, required: true
     argument :id, Int, required: false

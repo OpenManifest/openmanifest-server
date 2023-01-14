@@ -5,7 +5,6 @@ require "rails_helper"
 module Mutations
   RSpec.describe Resolvers::Dropzones, type: :request do
     include_context "dropzone"
-    include GraphqlClient
     let!(:student) { create(:dropzone_user, credits: 100, dropzone: dropzone, user: create(:user), user_role: dropzone.user_roles.default_licensed) }
     let!(:tandem_rig) { create(:rig, rig_type: :tandem, dropzone: dropzone) }
     let!(:student_rig) { create(:rig, rig_type: :student, is_public: true, dropzone: dropzone) }

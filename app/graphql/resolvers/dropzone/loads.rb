@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Dropzone::Loads < Resolvers::Base
-  type Types::LoadType.connection_type, null: false
+  type Types::Manifest::Load.connection_type, null: false
   description "Get all loads"
 
   argument :date, GraphQL::Types::ISO8601Date, required: false,

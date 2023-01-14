@@ -3,8 +3,8 @@
 module Mutations::Manifest
   class UpdateSlot < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :slot, Types::SlotType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :slot, Types::Manifest::Slot, null: true
 
     argument :attributes, Types::Input::SlotInput, required: true
     argument :id, Int, required: true

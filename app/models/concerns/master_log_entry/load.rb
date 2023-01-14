@@ -7,7 +7,7 @@ module MasterLogEntry::Load
     #
     # @return [Hash]
     def to_master_log
-      slice(:load_number, :name).merge(
+      slice(:load_number, :name, :id).merge(
         dispatch_at: dispatch_at&.iso8601,
         gca: gca&.to_master_log,
         load_master: load_master&.to_master_log,

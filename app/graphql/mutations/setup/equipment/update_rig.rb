@@ -3,8 +3,8 @@
 module Mutations::Setup::Equipment
   class UpdateRig < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :rig, Types::RigType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :rig, Types::Equipment::Rig, null: true
 
     argument :attributes, Types::Input::RigInput, required: true
     argument :id, Int, required: false

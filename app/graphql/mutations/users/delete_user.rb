@@ -2,9 +2,9 @@
 
 module Mutations::Users
   class DeleteUser < Mutations::BaseMutation
-    field :dropzone_user, Types::DropzoneUserType, null: true
+    field :dropzone_user, Types::Users::DropzoneUser, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :id, Int, required: true,
                        description: "The ID of the dropzone user to delete"

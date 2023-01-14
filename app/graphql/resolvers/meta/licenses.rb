@@ -2,7 +2,7 @@
 
 class Resolvers::Meta::Licenses < Resolvers::Base
   description "Get all licenses for a federation"
-  type [Types::LicenseType], null: false
+  type [Types::Meta::License], null: false
   argument :federation_id, Int, required: false
 
   def resolve(federation_id: nil, lookahead: nil)

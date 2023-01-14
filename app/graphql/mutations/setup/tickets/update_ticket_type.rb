@@ -3,8 +3,8 @@
 module Mutations::Setup::Tickets
   class UpdateTicketType < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :ticket_type, Types::TicketTypeType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :ticket_type, Types::Dropzone::Ticket, null: true
 
     argument :attributes, Types::Input::TicketTypeInput, required: true
     argument :id, Int, required: true

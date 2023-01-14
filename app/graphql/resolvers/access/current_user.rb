@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Access::CurrentUser < Resolvers::Base
-  type Types::UserType, null: true
+  type Types::Users::User, null: true
   description "Currently authenticated user"
 
   def resolve

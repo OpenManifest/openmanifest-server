@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Resolvers::Users::DropzoneUsers < Resolvers::Base
-  type Types::DropzoneUserType.connection_type, null: true
+  type Types::Users::DropzoneUser.connection_type, null: true
   description "Search users at a dropzone"
 
   argument :dropzone, ::GraphQL::Types::ID, required: true,

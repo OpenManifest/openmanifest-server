@@ -2,7 +2,7 @@
 
 class Resolvers::Dropzone::TicketAddons < Resolvers::Base
   description "Get all ticket type extras"
-  type [Types::ExtraType], null: false
+  type [Types::Dropzone::Tickets::Addon], null: false
   argument :dropzone, GraphQL::Types::ID, required: false,
                                           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   argument :ticket_type, GraphQL::Types::ID, required: false,

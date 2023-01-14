@@ -2,9 +2,9 @@
 
 module Mutations::Users
   class UpdateDropzoneUser < Mutations::BaseMutation
-    field :dropzone_user, Types::DropzoneUserType, null: true
+    field :dropzone_user, Types::Users::DropzoneUser, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::DropzoneUserInput, required: true
     argument :dropzone_user, ID, required: false,

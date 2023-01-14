@@ -8,6 +8,7 @@ module MasterLogEntry::Aircraft
     # @return [Hash]
     def to_master_log
       slice(
+        :id,
         :name,
         :registration
       )

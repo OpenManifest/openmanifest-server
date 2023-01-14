@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class NotificationInput < Types::BaseInputObject
+    class NotificationInput < Types::Base::Input
       argument :is_seen, Boolean, required: true
     end
   end

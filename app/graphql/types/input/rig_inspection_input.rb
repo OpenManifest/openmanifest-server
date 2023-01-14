@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class RigInspectionInput < Types::BaseInputObject
+    class RigInspectionInput < Types::Base::Input
       argument :dropzone, GraphQL::Types::ID, required: false,
                                               prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
       argument :rig, GraphQL::Types::ID, required: false,

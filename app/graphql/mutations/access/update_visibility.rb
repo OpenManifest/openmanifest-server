@@ -4,7 +4,7 @@ module Mutations::Access
   class UpdateVisibility < Mutations::BaseMutation
     field :dropzone, Types::DropzoneType, null: true
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :dropzone, GraphQL::Types::ID, required: true,
                                             prepare: -> (id, ctx) { Dropzone.find_by(id: id) }

@@ -3,13 +3,13 @@
 class Mutations::Users::Register::Base < GraphqlDevise::Mutations::Base
   argument :confirm_url, String, required: false, description: "Used to create the redirect URL"
 
-  field :authenticatable, Types::UserType, null: true
+  field :authenticatable, Types::Users::User, null: true
   field :credentials,
         GraphqlDevise::Types::CredentialType,
         null: true,
         description: "Authentication credentials. Null if after signUp resource is not active for authentication (e.g. Email confirmation required)."
   field :errors, [String], null: true
-  field :field_errors, [Types::FieldErrorType], null: true
+  field :field_errors, [Types::System::FieldError], null: true
 
   def resource_class
     User

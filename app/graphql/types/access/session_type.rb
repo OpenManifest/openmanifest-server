@@ -1,7 +1,7 @@
-class Types::Access::SessionType < Types::BaseObject
-  field :current_user, Types::UserType, null: true
+class Types::Access::SessionType < Types::Base::Object
+  field :current_user, Types::Users::User, null: true
   field :permissions, [Types::Access::PermissionType], null: true
-  field :current_dropzone_user, Types::DropzoneUserType, null: true
+  field :current_dropzone_user, Types::Users::DropzoneUser, null: true
   field :current_dropzone, Types::DropzoneType, null: true
 
   def current_dropzone

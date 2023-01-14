@@ -3,8 +3,8 @@
 module Mutations::Setup::Tickets
   class UpdateExtra < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :extra, Types::ExtraType, null: true
-    field :field_errors, [Types::FieldErrorType], null: true
+    field :extra, Types::Dropzone::Tickets::Addon, null: true
+    field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::ExtraInput, required: true
     argument :id, Int, required: false

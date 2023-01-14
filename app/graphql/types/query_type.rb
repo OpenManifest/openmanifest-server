@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class QueryType < Types::BaseObject
+  class QueryType < Types::Base::Object
     include GraphQL::Types::Relay::HasNodeField
     include GraphQL::Types::Relay::HasNodesField
     include Geokit::Geocoders
@@ -13,6 +13,7 @@ module Types
     field :current_user,    extras: [:lookahead],   resolver: Resolvers::Access::CurrentUser
     field :dropzone_user,   extras: [:lookahead],   resolver: Resolvers::Users::DropzoneUser
     field :dropzone_users,  extras: [:lookahead],   resolver: Resolvers::Users::DropzoneUsers
+    field :master_log,      extras: [:lookahead],   resolver: Resolvers::Dropzone::MasterLog
 
     field :dropzones,       extras: [:lookahead],   resolver: Resolvers::Dropzones
     field :dropzone,        extras: [:lookahead],   resolver: Resolvers::Dropzone
@@ -24,8 +25,8 @@ module Types
     field :available_rigs,  extras: [:lookahead],   resolver: Resolvers::Dropzone::AvailableRigs
     field :activity,        extras: [:lookahead],   resolver: Resolvers::Dropzone::Activity
 
-    field :geocode, Types::GeocodedLocationType, null: true,
-                                                 description: "Find location by searching" do
+    field :geocode, Types::Dropzone::GeocodedLocation, null: true,
+                                                       description: "Find location by searching" do
       argument :search, String, required: true
     end
     def geocode(search: "")

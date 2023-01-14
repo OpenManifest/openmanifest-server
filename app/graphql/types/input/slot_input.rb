@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class SlotInput < Types::BaseInputObject
+    class SlotInput < Types::Base::Input
       argument :dropzone_user, GraphQL::Types::ID, required: false,
                                                    prepare: -> (value, ctx) { ::DropzoneUser.find_by(id: value) }
       argument :ticket_type, GraphQL::Types::ID, required: false,

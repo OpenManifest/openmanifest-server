@@ -6,13 +6,9 @@ require "rspec/json_expectations"
 
 ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../config/environment", __dir__)
-require "#{Rails.root}/spec/support/factory_bot.rb"
-require "#{Rails.root}/spec/support/contexts/mock_apf_call.rb"
-require "#{Rails.root}/spec/support/contexts/dropzone.rb"
-require "#{Rails.root}/spec/support/graphql_client.rb"
-require "#{Rails.root}/spec/support/shared_examples/graphql.rb"
-require "#{Rails.root}/spec/support/graphql/client.rb"
-
+Dir.glob("#{Rails.root}/spec/support/**/*.rb").each do |f|
+  require f
+end
 # Prevent database truncation if the environment is production
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "rspec/rails"
@@ -45,6 +41,7 @@ end
 
 RSpec.configure do |config|
   config.include RSpec::JsonExpectations::Matchers
+  config.include GraphqlClient
   config.example_status_persistence_file_path = "tmp/rspec_examples.txt"
   config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures

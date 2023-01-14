@@ -2,8 +2,8 @@
 
 module Mutations::Payments
   class CreateOrder < Mutations::BaseMutation
-    include Types::InteractionMutationInterface
-    field :order, Types::OrderType, null: true
+    include Types::Interfaces::ActiveInteraction
+    field :order, Types::Payments::Order, null: true
     argument :attributes, Types::Input::OrderInput, required: true
 
     def resolve(attributes:, id: nil)

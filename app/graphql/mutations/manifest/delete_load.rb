@@ -3,8 +3,8 @@
 module Mutations::Manifest
   class DeleteLoad < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :field_errors, [Types::FieldErrorType], null: true
-    field :load, Types::LoadType, null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :load, Types::Manifest::Load, null: true
 
     argument :id, Int, required: true
 

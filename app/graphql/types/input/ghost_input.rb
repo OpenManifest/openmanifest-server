@@ -2,7 +2,7 @@
 
 module Types
   module Input
-    class GhostInput < Types::BaseInputObject
+    class GhostInput < Types::Base::Input
       argument :name, String, required: true
       argument :email, String, required: true
       argument :phone, String, required: false

@@ -2,7 +2,7 @@
 
 class Resolvers::Dropzone::TicketTypes < Resolvers::Base
   description "Get ticket types for a dropzone"
-  type [Types::TicketTypeType], null: true
+  type [Types::Dropzone::Ticket], null: true
   argument :allow_manifesting_self, Boolean, required: false
   argument :dropzone, GraphQL::Types::ID, required: true,
                                           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
