@@ -20,6 +20,7 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
         is_expected.to include_json(
           masterLog: {
             date: Date.today.iso8601,
+            downloadUrl: /\w+/,
             loads: [
               {
                 id: load.id.to_s,
@@ -51,6 +52,10 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
       query {
         masterLog(dropzone: "#{dropzone}", date: "#{date}") {
           date
+          dzso {
+            name
+          }
+          downloadUrl
           loads {
             id
             dispatchAt

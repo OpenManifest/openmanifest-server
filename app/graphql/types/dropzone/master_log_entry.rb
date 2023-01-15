@@ -4,4 +4,5 @@ class Types::Dropzone::MasterLogEntry < Types::Base::Object
   field :notes, String, null: true
   field :location, Types::Dropzone::GeocodedLocation, null: true
   field :loads, [Types::Dropzone::MasterLog::Load], null: true
+  field :download_url, String, null: true
 end

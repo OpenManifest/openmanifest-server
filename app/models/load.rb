@@ -109,6 +109,18 @@ class Load < ApplicationRecord
     slots.maximum(:group_number) || 0
   end
 
+  # Push an update to graphql subscriptions over websockets
+  def broadcast_subscription
+    DzSchema.subscriptions.trigger(
+      # Field name
+      :load_updated,
+      # Arguments
+      { load_id: id },
+      # Object
+      reload
+    )
+  end
+
   private
 
   def set_load_number
@@ -147,17 +159,5 @@ class Load < ApplicationRecord
         User.update_counters(user_ids, jump_count: -1)
       end
     end
-  end
-
-  # Push an update to graphql subscriptions over websockets
-  def broadcast_subscription
-    DzSchema.subscriptions.trigger(
-      # Field name
-      :load_updated,
-      # Arguments
-      { load_id: id },
-      # Object
-      reload
-    )
   end
 end

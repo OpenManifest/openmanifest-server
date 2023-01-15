@@ -16,6 +16,10 @@ class Resolvers::Dropzone::MasterLog < Resolvers::Base
     lookahead: nil
   )
     return nil unless dropzone
-    dropzone.master_logs.at(date).generate_json
+    entry = dropzone.master_logs.at(date)
+    return nil unless entry
+    entry.generate_json.merge(
+      download_url: entry.download_url
+    )
   end
 end

@@ -35,9 +35,16 @@ class MasterLog < ApplicationRecord
   # (j) date of descent.
   def generate_json
     dropzone.to_master_log(date).merge(
-      dzso: dzso&.to_master_log || 'No DZSO',
+      dzso: dzso&.to_master_log || {
+        name: 'No DZSO',
+      },
       date: date.iso8601,
+      notes: notes,
     )
+  end
+
+  def download_url
+    Rails.application.routes.url_helpers.rails_blob_url(json)
   end
 
   def store!
