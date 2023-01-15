@@ -9,6 +9,7 @@ module Types
     field :update_notification,         mutation: Mutations::Users::UpdateNotification
     field :update_role,                 mutation: Mutations::Access::UpdateRole
     field :update_visibility,           mutation: Mutations::Access::UpdateVisibility
+    field :update_master_log,           mutation: Mutations::Dropzone::UpdateMasterLog
 
     # Users
     field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false
