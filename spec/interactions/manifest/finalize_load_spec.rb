@@ -3,12 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Manifest::FinalizeLoad do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
+  include_context 'dropzone_with_load'
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:slots) do
     dropzone_users = [
       create(:dropzone_user, dropzone: dropzone, credits: ticket_type.cost * 2),
@@ -25,7 +21,7 @@ RSpec.describe Manifest::FinalizeLoad do
         ticket_type: ticket_type,
         dropzone_user: dz_user,
         jump_type: JumpType.allowed_for([dz_user]).sample,
-        load: plane_load,
+        load: load,
         exit_weight: dz_user.exit_weight
       )
 
@@ -41,11 +37,11 @@ RSpec.describe Manifest::FinalizeLoad do
     u.grant! :updateLoad
     ApplicationInteraction::AccessContext.new(u)
   end
-  let!(:outcome) { Manifest::FinalizeLoad.run(load: plane_load, access_context: access_context) }
+  let!(:outcome) { Manifest::FinalizeLoad.run(load: load, access_context: access_context) }
 
   describe "Marking a load as landed" do
     it {
-      expect(plane_load.reload.slots.map(&:order).compact_blank.count).to eq 6
+      expect(load.reload.slots.map(&:order).compact_blank.count).to eq 6
     }
     it { expect(outcome.result).to be_a Load }
     it { expect(outcome.valid?).to be true }
