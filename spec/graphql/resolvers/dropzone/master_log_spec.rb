@@ -25,6 +25,7 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
               {
                 id: load.id.to_s,
                 dispatchAt: load.dispatch_at.iso8601,
+                pilot: { name: load.pilot.name },
                 slots: load.slots.map do |slot|
                          { id: slot.id.to_s, name: slot.dropzone_user.name, jumpType: slot.jump_type.name, altitude: slot.ticket_type.altitude }
                        end,
@@ -59,6 +60,9 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
           loads {
             id
             dispatchAt
+            pilot {
+              name
+            }
             slots {
               id
               name
