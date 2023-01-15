@@ -1,27 +1,16 @@
 class GraphqlChannel < ApplicationCable::Channel
-  include GraphqlDevise::SetUserByToken
-
   def subscribed
     # Store all GraphQL subscriptions the consumer is listening for on this channel
     @subscription_ids = []
-  end
-
-  def context
-    devise_context = gql_devise_context(User)
-    return devise_context unless devise_context[:current_resource]
-    devise_context.merge(
-      access_context: AccessContext::CurrentUser.for(devise_context[:current_resource])
-    )
   end
 
   def execute(data)
     query = data["query"]
     variables = ensure_hash(data["variables"])
     operation_name = data["operationName"]
-    context = {
-      channel: self,
-      context: context,
-    }
+
+    puts "###### ActionCable ######"
+    puts "Current Resource #{context[:current_resource].id}"
 
     result = DzSchema.execute(
       query: query,
@@ -49,6 +38,29 @@ class GraphqlChannel < ApplicationCable::Channel
   end
 
   private
+
+  def current_resource
+    client = params["client"]
+    uid = params["uid"]
+    access_token = params["access-token"]
+    user = User.find_by(email: uid)
+
+    return nil unless user.valid_token?(access_token, client)
+    user
+  end
+
+  def access_context
+    return nil unless current_resource
+    AccessContext::CurrentUser.for(current_resource)
+  end
+
+  def context
+    @context ||= {
+      channel: self,
+      access_context: access_context,
+      current_resource: current_resource,
+    }
+  end
 
   def ensure_hash(ambiguous_param)
     case ambiguous_param
