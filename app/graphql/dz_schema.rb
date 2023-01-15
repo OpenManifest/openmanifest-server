@@ -7,15 +7,19 @@ class DzSchema < GraphQL::Schema
     mutation: Types::MutationType,
     public_introspection: true,
     resource_loaders: [
-      GraphqlDevise::ResourceLoader.new(User, operations: {
-        register: Mutations::Users::SignUp,
-      }),
+      GraphqlDevise::ResourceLoader.new(
+        User,
+        operations: { register: Mutations::Users::SignUp },
+        authenticatable_type: Types::Users::User,
+      ),
     ]
   )
   use(GraphQL::Dataloader)
   use(GraphQL::Tracing::AppsignalTracing)
+  use(GraphQL::Subscriptions::ActionCableSubscriptions, broadcast: true)
   mutation(Types::MutationType)
   query(Types::QueryType)
+  subscription(Types::SubscriptionType)
 
   class << self
     def model_type_map

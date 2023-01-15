@@ -42,8 +42,9 @@ class Load < ApplicationRecord
   before_create :set_load_number
   after_save :notify!,
              :change_state!,
+             :broadcast_subscription,
              :update_counters!
-
+  after_commit :broadcast_subscription
   scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
@@ -146,5 +147,17 @@ class Load < ApplicationRecord
         User.update_counters(user_ids, jump_count: -1)
       end
     end
+  end
+
+  # Push an update to graphql subscriptions over websockets
+  def broadcast_subscription
+    DzSchema.subscriptions.trigger(
+      # Field name
+      :load_updated,
+      # Arguments
+      { load_id: id },
+      # Object
+      reload
+    )
   end
 end

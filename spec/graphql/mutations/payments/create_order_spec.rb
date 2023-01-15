@@ -2,14 +2,8 @@
 
 require "rails_helper"
 
-RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+RSpec.describe Mutations::Payments::CreateOrder, type: :request do
+  include_context 'dropzone_with_load'
 
   describe ".resolve" do
     context "successfully" do
@@ -98,19 +92,16 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
     end
   end
 
-  def query(dropzone_user:, ticket_type:, plane_load:, exit_weight:, passenger_name: nil, passenger_exit_weight: nil)
+  create_query(:title, :seller, :buyer, :amount, :dropzone) do
     <<~GQL
       mutation {
-        createSlot(
+        createOrder(
           input: {
             attributes: {
-              dropzoneUser: "#{dropzone_user.id}"
-              ticketType: "#{ticket_type.id}"
-              jumpType: #{JumpType.allowed_for([dropzone_user]).sample.id}
-              load: "#{plane_load.id}"
-              exitWeight: #{exit_weight}
-              passengerExitWeight: #{passenger_exit_weight || 'null'}
-              passengerName: #{passenger_name || 'null'}
+              seller: "#{seller.id}"
+              buyer: "#{buyer.id}"
+              amount: #{amount}
+              dropzone: "#{dropzone.id}"
             }
           }
         ) {
@@ -119,76 +110,65 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
             field
             message
           }
-          slot {
+          order {
             id
-            exitWeight
-            dropzoneUser {
-              id
-              user {
+            title
+            buyer {
+              ...on DropzoneUser {
+                id
+                user {
+                  id
+                  name
+                }
+              }
+              ...on Dropzone {
                 id
                 name
               }
             }
-            cost
-            order {
-              id
-              buyer {
-                ...on DropzoneUser {
-                  id
-                  user {
-                    id
-                    name
-                  }
-                }
-                ...on Dropzone {
-                  id
-                  name
-                }
-              }
-              seller {
-                ...on DropzoneUser {
-                  id
-                  user {
-                    id
-                    name
-                  }
-                }
-                ...on Dropzone {
-                  id
-                  name
-                }
-              }
-              receipts {
+            seller {
+              ...on DropzoneUser {
                 id
-                transactions {
+                user {
                   id
-                  transactionType
-                  status
-                  sender {
-                    ...on DropzoneUser {
-                      id
-                      user {
-                        id
-                        name
-                      }
-                    }
-                    ...on Dropzone {
+                  name
+                }
+              }
+              ...on Dropzone {
+                id
+                name
+              }
+            }
+            receipts {
+              id
+              transactions {
+                id
+                transactionType
+                status
+                sender {
+                  ...on DropzoneUser {
+                    id
+                    user {
                       id
                       name
                     }
                   }
-                  receiver {
-                    ...on DropzoneUser {
-                      id
-                      user {
-                        id
-                        name
-                      }
-                    }
-                    ...on Dropzone {
+                  ...on Dropzone {
+                    id
+                    name
+                  }
+                }
+                receiver {
+                  ...on DropzoneUser {
+                    id
+                    user {
                       id
                       name
                     }
+                  }
+                  ...on Dropzone {
+                    id
+                    name
                   }
                 }
               }

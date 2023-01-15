@@ -5,6 +5,7 @@ module Mutations::Users
     argument :token, String, required: false
 
     field :authenticatable, Types::Users::User, null: true
+    field :credentials, Types::Users::User, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 

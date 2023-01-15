@@ -11,7 +11,6 @@ class Resolvers::Dropzone::Loads < Resolvers::Base
                                           prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
   def resolve(dropzone: nil, earliest_timestamp: nil, lookahead: nil, date: nil)
     return nil unless dropzone
-    lookahead = lookahead.selection(:edges).selection(:node)
     query = apply_lookaheads(lookahead, dropzone.loads)
     Time.use_zone(dropzone.time_zone) do
       query = query.where(loads: { created_at: date.all_day }) unless date.nil?

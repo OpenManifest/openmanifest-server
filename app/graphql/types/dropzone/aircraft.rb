@@ -4,6 +4,10 @@ module Types::Dropzone
   class Aircraft < Types::Base::Object
     graphql_name 'Plane'
     implements Types::Interfaces::Polymorphic
+    lookahead do |query|
+      query = query.includes(:dropzone) if selects?(:dropzone)
+      query
+    end
 
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true

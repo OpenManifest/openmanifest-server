@@ -14,6 +14,7 @@ class Manifest::MoveSlot < ApplicationInteraction
         :validate,
         :update_order,
         :save,
+        :broadcast_subscription,
         # Return value
         :affected_loads
 
@@ -56,6 +57,13 @@ class Manifest::MoveSlot < ApplicationInteraction
       jump_type: target_slot&.jump_type || source_slot.jump_type,
       group_number: target_slot&.group_numner || source_slot.group_number
     )
+  end
+
+  # Push update to GraphQL
+  def broadcast_subscription
+    source_slot.load.broadcast_subscription if source_slot
+    target_slot.load.broadcast_subscription if target_slot
+    target_load.broadcast_subscription if target_load
   end
 
   def affordable?

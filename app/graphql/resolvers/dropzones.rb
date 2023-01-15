@@ -10,8 +10,6 @@ class Resolvers::Dropzones < Resolvers::Base
     state: nil,
     lookahead: nil
   )
-    lookahead = lookahead.selection(:edges).selection(:node)
-
     apply_lookaheads(
       lookahead,
       context[:access_context].dropzones
