@@ -223,10 +223,7 @@ class DropzoneUser < ApplicationRecord
       # Arguments
       { dropzone_user_id: id },
       # Object
-      self,
-      # This corresponds to `context[:current_organization_id]`
-      # in the original subscription:
-      dropzone_id: dropzone_id
+      self
     )
   end
 end
