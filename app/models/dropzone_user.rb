@@ -82,6 +82,8 @@ class DropzoneUser < ApplicationRecord
 
   after_create :set_appsignal_gauge,
                :request_rig_inspection
+  after_update :broadcast_subscription
+  after_commit :broadcast_subscription
 
   search_scope :search do
     attributes name: "user.name"
@@ -211,5 +213,20 @@ class DropzoneUser < ApplicationRecord
     rig = rigs.not_inspected_at(dropzone).first
     return unless rig
     RequestRigInspectionJob.perform_now(rig, self)
+  end
+
+  # Push an update to graphql subscriptions over websockets
+  def broadcast_subscription
+    DzSchema.subscriptions.trigger(
+      # Field name
+      :user_updated,
+      # Arguments
+      { dropzone_user_id: id },
+      # Object
+      self,
+      # This corresponds to `context[:current_organization_id]`
+      # in the original subscription:
+      dropzone_id: dropzone_id
+    )
   end
 end

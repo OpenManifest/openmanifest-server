@@ -3,19 +3,19 @@
 module Types::Users
   class User < Types::Base::Object
     lookahead do |query|
-      query = query.includes(:rigs) if lookahead.selects?(:rigs)
-      if lookahead.selects?(:dropzone_users)
-        if lookahead.selection(:dropzone_users).selects?(:dropzone)
+      query = query.includes(:rigs) if selects?(:rigs)
+      if selects?(:dropzone_users)
+        if selection(:dropzone_users).selects?(:dropzone)
           query = query.includes(dropzone_users: :dropzone)
         else
           query = query.includes(:dropzone_users)
         end
       end
 
-      if lookahead.selects?(:user_federations)
+      if selects?(:user_federations)
         subselections = []
-        subselections << :license if lookahead.selection(:user_federations).selects?(:license)
-        subselections << :federation if lookahead.selection(:user_federations).selects?(:federation)
+        subselections << :license if selection(:user_federations).selects?(:license)
+        subselections << :federation if selection(:user_federations).selects?(:federation)
 
         if subselections.empty?
           query = query.includes(:user_federations)

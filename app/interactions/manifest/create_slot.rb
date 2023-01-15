@@ -27,6 +27,7 @@ class Manifest::CreateSlot < ApplicationInteraction
         :validate,
         :create_order,
         :save,
+        :broadcast_subscription,
         # Return value
         :model
 
@@ -120,6 +121,11 @@ class Manifest::CreateSlot < ApplicationInteraction
       purchasable: model,
       access_context: access_context
     )
+  end
+
+  # Push update to GraphQL
+  def broadcast_subscription
+    load.broadcast_subscription
   end
 
   private

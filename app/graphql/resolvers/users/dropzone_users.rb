@@ -11,7 +11,6 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
   argument :search, String, required: false
 
   def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)
-    lookahead = lookahead.selection(:edges).selection(:node)
     return nil unless dropzone
     query = apply_lookaheads(lookahead, dropzone.dropzone_users)
     query = query.includes(user_permissions: :permission) if permissions.present?

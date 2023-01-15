@@ -7,6 +7,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
         :remove_passenger_slot,
         :refund_transactions,
         :cancel_order,
+        :broadcast_subscription,
         :delete_slot
 
   # Create events
@@ -65,6 +66,11 @@ class Manifest::DeleteSlot < ApplicationInteraction
   def delete_slot
     slot.destroy
     slot
+  end
+
+  # Push update to GraphQL
+  def broadcast_subscription
+    slot.load.broadcast_subscription
   end
 
   def is_self?

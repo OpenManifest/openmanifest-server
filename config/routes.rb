@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   get "/confirm", to: "application#index"
   get "/", to: "application#index"
   get "/index.html", to: "application#index"
+
+  mount ActionCable.server, at: "/subscriptions"
   # get '*path', to: 'application#index', constraints: ->(request) do
   #  !request.xhr? && !request.format.html?
   # end

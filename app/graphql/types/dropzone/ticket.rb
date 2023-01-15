@@ -6,7 +6,7 @@ module Types::Dropzone
     implements Types::Interfaces::Polymorphic
     implements Types::Interfaces::SellableItem
     lookahead do |query|
-      query = query.includes(ticket_type_extras: :extra) if lookahead.selects?(:extras)
+      query = query.includes(ticket_type_extras: :extra) if selects?(:extras)
       query
     end
     def title

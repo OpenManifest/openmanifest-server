@@ -3,13 +3,12 @@
 class Resolvers::Dropzone::Aircrafts < Resolvers::Base
   type [Types::Dropzone::Aircraft], null: true
   description "Get Aircrafts for a dropzone"
-  argument :dropzone, GraphQL::Types::ID, required: true,
-                                          prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
+  dropzone :dropzone, required: true
 
   def resolve(dropzone: nil, lookahead: nil)
     return nil unless dropzone
-    query = dropzone.planes.kept
-    query = query.includes(:dropzone) if lookahead.selects?(:dropzone)
+    query = apply_lookaheads(lookahead, dropzone.planes.kept)
+
     query.order(name: :asc)
   end
 end
