@@ -12,6 +12,7 @@ module MasterLogEntry::Load
         gca: gca&.to_master_log,
         load_master: load_master&.to_master_log,
         aircraft: plane&.to_master_log,
+        pilot: pilot&.to_master_log,
         slots: slots.map(&:to_master_log),
       )
     end
