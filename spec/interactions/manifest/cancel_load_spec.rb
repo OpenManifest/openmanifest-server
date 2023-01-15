@@ -3,29 +3,24 @@
 require "rails_helper"
 
 RSpec.describe Manifest::FinalizeLoad do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
+  include_context 'dropzone_with_load'
   let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:access_context) do
-    u = create(:dropzone_user, dropzone: dropzone)
-    u.grant! :deleteLoad
-    u.grant! :createSlot
-    u.grant! :createUserSlot
-    ApplicationInteraction::AccessContext.new(u)
+    instructor.grant! :deleteLoad
+    instructor.grant! :createSlot
+    instructor.grant! :createUserSlot
+    ApplicationInteraction::AccessContext.new(instructor)
   end
   let!(:slots) do
     create_list(:dropzone_user, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|
-      Manifest::CreateSlot.run(
+      Manifest::CreateSlot.run!(
         access_context: access_context,
         ticket_type: ticket_type,
         dropzone_user: dz_user,
         jump_type: JumpType.allowed_for([dz_user]).sample,
-        load: plane_load,
+        load: load,
         exit_weight: dz_user.exit_weight
-      ).result
+      )
     end
   end
 
@@ -33,7 +28,7 @@ RSpec.describe Manifest::FinalizeLoad do
     let!(:outcome) do
       Manifest::CancelLoad.run(
         access_context: access_context,
-        load: plane_load
+        load: load
       )
     end
 
