@@ -47,8 +47,8 @@ module Mutations
             expect(user.reload.purchases.count).to eq 1
           end
         end
-        it { expect { post_request }.to change { Dropzone.find(dropzone.id).credits }.by ticket_type.cost * dropzone_users.count }
-        it { expect { post_request }.to change { Dropzone.find(dropzone.id).sales.count }.by dropzone_users.count }
+        it { expect { post_request }.to change { ::Dropzone.find(dropzone.id).credits }.by ticket_type.cost * dropzone_users.count }
+        it { expect { post_request }.to change { ::Dropzone.find(dropzone.id).sales.count }.by dropzone_users.count }
         it { expect(post_request["data"]["createSlots"]["errors"]).to be nil }
       end
 
@@ -75,9 +75,9 @@ module Mutations
 
         it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by dropzone_users.count * 2 }
         it do
-          expect { post_request }.to change { Slot.where(load_id: plane_load.id, dropzone_user: dropzone_user).count }.by 1
-          expect { post_request }.not_to change { DropzoneUser.find(dropzone_user.id).credits }
-          expect { post_request }.not_to change { Dropzone.find(dropzone.id).credits }
+          expect { post_request }.to change { ::Slot.where(load_id: plane_load.id, dropzone_user: dropzone_user).count }.by 1
+          expect { post_request }.not_to change { ::DropzoneUser.find(dropzone_user.id).credits }
+          expect { post_request }.not_to change { ::Dropzone.find(dropzone.id).credits }
         end
         it { expect { post_request }.to change { Order.where(seller: dropzone).count }.by dropzone_users.count }
         it { expect(post_request["data"]["createSlots"]["errors"]).to be nil }
