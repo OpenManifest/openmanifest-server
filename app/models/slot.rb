@@ -56,8 +56,9 @@ class Slot < ApplicationRecord
 
   validate :available?,
            :double_manifest?,
-           :allowed_jump_type?
-  validate :affordable?, on: :create
+           :allowed_jump_type?,
+           :affordable?,
+           on: :create
 
   after_create do
     Notification.create(
