@@ -7,7 +7,7 @@ module MasterLogEntry::DropzoneUser
     #
     # @return [Hash]
     def to_master_log
-      user.slice(:id, :name, :nickname, :phone, :email)
+      slice(:id).merge(user.slice(:name, :nickname, :phone, :email))
     end
   end
 end
