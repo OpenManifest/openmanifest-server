@@ -9,20 +9,24 @@ module Mutations::Manifest
     argument :attributes, Types::Input::LoadInput, required: true
 
     def resolve(attributes:)
-      mutate(
-        ::Manifest::CreateLoad,
-        :load,
-        access_context: access_context_for(attributes[:plane].dropzone),
-        **attributes.to_h.slice(
-          :name,
-          :plane,
-          :pilot,
-          :gca,
-          :load_master,
-          :state,
-          :max_slots
+      dropzone = attributes[:plane].dropzone
+
+      Time.use_zone(dropzone.time_zone) do
+        mutate(
+          ::Manifest::CreateLoad,
+          :load,
+          access_context: access_context_for(dropzone),
+          **attributes.to_h.slice(
+            :name,
+            :plane,
+            :pilot,
+            :gca,
+            :load_master,
+            :state,
+            :max_slots
+          )
         )
-      )
+      end
     end
   end
 
