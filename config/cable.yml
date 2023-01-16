@@ -1,8 +1,12 @@
 development:
-  adapter: postgresql
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
+  channel_prefix: openmanifest_development
 
 test:
   adapter: test
 
 production:
-  adapter: postgresql
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
+  channel_prefix: openmanifest_production
