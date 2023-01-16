@@ -9,7 +9,7 @@ class Subscriptions::Manifest::LoadUpdated < Types::Base::Subscription
     { load: load }
   end
 
-  def update(room:)
+  def update(load:)
     { load: load.reload }
   end
 end

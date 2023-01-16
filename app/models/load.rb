@@ -40,11 +40,13 @@ class Load < ApplicationRecord
   counter_culture :dropzone
 
   before_create :set_load_number
+  after_create :broadcast_create
+  after_update :broadcast_update
   after_save :notify!,
              :change_state!,
-             :broadcast_subscription,
              :update_counters!
-  after_commit :broadcast_subscription
+  after_commit :broadcast_update, on: :update
+
   scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
@@ -110,14 +112,25 @@ class Load < ApplicationRecord
   end
 
   # Push an update to graphql subscriptions over websockets
-  def broadcast_subscription
+  def broadcast_update
     DzSchema.subscriptions.trigger(
       # Field name
       :load_updated,
       # Arguments
       { load_id: id },
       # Object
-      reload
+      { load: reload }
+    )
+  end
+
+  def broadcast_create
+    DzSchema.subscriptions.trigger(
+      # Field name
+      :load_created,
+      # Arguments
+      { dropzone_id: plane.dropzone_id },
+      # Object
+      { load: reload }
     )
   end
 

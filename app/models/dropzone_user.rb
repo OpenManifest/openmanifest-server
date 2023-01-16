@@ -223,7 +223,7 @@ class DropzoneUser < ApplicationRecord
       # Arguments
       { dropzone_user_id: id },
       # Object
-      self
+      { dropzone_user: self }
     )
   end
 end
