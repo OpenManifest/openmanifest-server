@@ -130,7 +130,7 @@ class Load < ApplicationRecord
       # Arguments
       { dropzone_id: plane.dropzone_id.to_s },
       # Object
-      load
+      { load: reload }
     )
   end
 
