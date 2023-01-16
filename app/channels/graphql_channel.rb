@@ -44,7 +44,7 @@ class GraphqlChannel < ApplicationCable::Channel
     uid = params["uid"]
     access_token = params["access-token"]
     user = User.find_by(email: uid)
-
+    return nil unless user
     return nil unless user.valid_token?(access_token, client)
     user
   end
