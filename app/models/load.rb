@@ -117,7 +117,7 @@ class Load < ApplicationRecord
       # Field name
       :load_updated,
       # Arguments
-      { load_id: id },
+      { load_id: id.to_s },
       # Object
       { load: reload }
     )
@@ -128,9 +128,9 @@ class Load < ApplicationRecord
       # Field name
       :load_created,
       # Arguments
-      { dropzone_id: plane.dropzone_id },
+      { dropzone_id: plane.dropzone_id.to_s },
       # Object
-      { load: reload }
+      load
     )
   end
 
