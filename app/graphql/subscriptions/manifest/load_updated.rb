@@ -10,6 +10,6 @@ class Subscriptions::Manifest::LoadUpdated < Types::Base::Subscription
   end
 
   def update(load:)
-    { load: load.reload }
+    super
   end
 end
