@@ -70,7 +70,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
 
   # Push update to GraphQL
   def broadcast_subscription
-    slot.load.broadcast_subscription
+    slot.load.broadcast_update
   end
 
   def is_self?

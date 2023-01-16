@@ -113,14 +113,11 @@ class Load < ApplicationRecord
 
   # Push an update to graphql subscriptions over websockets
   def broadcast_update
-    DzSchema.subscriptions.trigger(
-      # Field name
-      :load_updated,
-      # Arguments
-      { load_id: id.to_s },
-      # Object
-      { load: reload }
-    )
+    DzSchema.subscriptions.trigger(:load_updated,
+                                   # Arguments
+                                   { load_id: Load.last.id.to_s },
+                                   # Object
+                                   { load: Load.last })
   end
 
   def broadcast_create

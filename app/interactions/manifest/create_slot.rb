@@ -125,7 +125,7 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   # Push update to GraphQL
   def broadcast_subscription
-    load.broadcast_subscription
+    load.broadcast_update
   end
 
   private
