@@ -16,7 +16,13 @@ class DzSchema < GraphQL::Schema
   )
   use(GraphQL::Dataloader)
   use(GraphQL::Tracing::AppsignalTracing)
-  use(GraphQL::Subscriptions::ActionCableSubscriptions, broadcast: true)
+
+  # Fields are broadcastable unless broadcastable: false,
+  # which pretty much only applies to Session since nothing
+  # else is sensitive data
+  use(GraphQL::Subscriptions::ActionCableSubscriptions,
+      broadcast: true,
+      default_broadcastable: true)
   mutation(Types::MutationType)
   query(Types::QueryType)
   subscription(Types::SubscriptionType)

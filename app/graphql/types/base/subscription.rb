@@ -4,7 +4,7 @@ class Types::Base::Subscription < GraphQL::Schema::Subscription
   field_class Types::Base::Field
   argument_class Types::Base::Argument
 
-  def authorized?
+  def authorized?(**kwargs)
     return true if context[:current_resource].present?
     raise GraphQL::ExecutionError, "You must be logged in to subscribe"
   end
