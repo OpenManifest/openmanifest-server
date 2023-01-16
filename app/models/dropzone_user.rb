@@ -221,7 +221,7 @@ class DropzoneUser < ApplicationRecord
       # Field name
       :user_updated,
       # Arguments
-      { dropzone_user_id: id },
+      { dropzone_user_id: id.to_s },
       # Object
       { dropzone_user: self }
     )
