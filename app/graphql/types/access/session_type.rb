@@ -1,8 +1,8 @@
 class Types::Access::SessionType < Types::Base::Object
-  field :current_user, Types::Users::User, null: true
-  field :permissions, [Types::Access::PermissionType], null: true
-  field :current_dropzone_user, Types::Users::DropzoneUser, null: true
-  field :current_dropzone, Types::DropzoneType, null: true
+  field :current_user,          Types::Users::User,               null: true, broadcastable: false
+  field :permissions,           [Types::Access::PermissionType],  null: true, broadcastable: false
+  field :current_dropzone_user, Types::Users::DropzoneUser,       null: true, broadcastable: false
+  field :current_dropzone,      Types::DropzoneType,              null: true, broadcastable: false
 
   def current_dropzone
     object

@@ -33,8 +33,8 @@ module Types::Users
     field :push_token, String, null: true
     field :exit_weight, String, null: true
     field :nickname, String, null: true
-    field :email, String, null: true
-    field :phone, String, null: true
+    field :email, String, null: true, broadcastable: false
+    field :phone, String, null: true, broadcastable: false
     field :apf_number, String, null: true
     field :rigs, [Types::Equipment::Rig], null: true
     field :licenses, [Types::Meta::License], null: true
