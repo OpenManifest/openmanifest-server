@@ -42,13 +42,13 @@ module Mutations::Manifest
     end
 
     def authorized?(id: nil, attributes: nil)
-      slot = Slot.find(id)
+      slot = Slot.find_by(id: id)
 
-      is_current_user = context[:current_resource].id == slot.user_id
+      is_current_user = context[:current_resource].id == slot&.user_id
 
       if context[:current_resource].can?(
         is_current_user ? "updateSlot" : "updateUserSlot",
-        dropzone_id: Slot.find(id).load.plane.dropzone_id
+        dropzone_id: Slot.find_by(id: id).load.plane.dropzone_id
       )
         true
       else

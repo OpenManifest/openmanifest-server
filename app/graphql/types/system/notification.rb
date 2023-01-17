@@ -7,7 +7,7 @@ module Types::System
     field :is_seen, Boolean, null: false
     field :notification_type, Types::System::NotificationType, null: true
 
-    polymorphic_field :resource
+    polymorphic_field :resource, null: true
     async_field :received_by, Types::Users::DropzoneUser, null: false
     async_field :sent_by, Types::Users::DropzoneUser, null: true
     timestamp_fields

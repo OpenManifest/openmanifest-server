@@ -20,7 +20,7 @@ module Mutations::Manifest
     end
 
     def slot_by_id(id)
-      @slot_by_id ||= Slot.find(id)
+      @slot_by_id ||= Slot.find_by(id: id)
     end
   end
 end
