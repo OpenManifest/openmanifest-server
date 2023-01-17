@@ -9,7 +9,7 @@ class Sources::Model < GraphQL::Dataloader::Source
   end
 
   def fetch(ids)
-    unless (ids - record_cache.keys).empty?
+    unless (ids.compact - record_cache.keys).empty?
       record_cache.merge!(
         get_records(ids).index_by(&column)
       )
@@ -24,7 +24,7 @@ class Sources::Model < GraphQL::Dataloader::Source
   end
 
   def get_records(ids)
-    klass.where(@column => ids)
+    klass.where(column => ids)
   end
 
   def cache_store

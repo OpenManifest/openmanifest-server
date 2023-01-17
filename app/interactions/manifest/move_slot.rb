@@ -61,9 +61,9 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   # Push update to GraphQL
   def broadcast_subscription
-    source_slot.load.broadcast_subscription if source_slot
-    target_slot.load.broadcast_subscription if target_slot
-    target_load.broadcast_subscription if target_load
+    source_slot.load.broadcast_update if source_slot
+    target_slot.load.broadcast_update if target_slot
+    target_load.broadcast_update if target_load
   end
 
   def affordable?

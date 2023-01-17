@@ -7,7 +7,7 @@ module Mutations::Manifest
     field :load, Types::Manifest::Load, null: true
 
     argument :attributes, Types::Input::LoadInput, required: true
-    argument :id, Int, required: true
+    argument :id, ID, required: true
 
     def resolve(attributes:, id:)
       mutate(

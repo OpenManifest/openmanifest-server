@@ -19,7 +19,7 @@ module Support::Objects::Fields
         class_name = object.send(reflection.foreign_type)
         return nil unless class_name
         return nil unless type_class.resolve_type(object.send(name), context)
-
+        return unless object.send(reflection.foreign_key)
         requested = dataloader.with(::Sources::Model, class_name.constantize).request(object.send(reflection.foreign_key))
 
         loaded = requested.load
