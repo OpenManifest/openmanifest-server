@@ -1,15 +1,22 @@
 class Subscriptions::Manifest::LoadUpdated < Types::Base::Subscription
-  # `load_id` loads a `load`
-  argument :load_id, ID, as: :load,
-                         prepare: -> (value, ctx) { ::Load.find_by(id: value) }
+  argument :load_id, ID, required: true
   field :load, Types::Manifest::Load, null: true
 
-  # It's passed to other methods as `load`
-  def subscribe(load:)
-    { load: load }
+  extras [:lookahead]
+
+  def subscribe(load_id:, lookahead: nil)
+    query = ::Types::Manifest::Load.apply_lookaheads(
+      lookahead,
+      ::Load.all
+    )
+    { load: query.find_by(id: load_id) }
   end
 
-  def update(load:)
-    super
+  def update(load_id:, lookahead: nil)
+    query = ::Types::Manifest::Load.apply_lookaheads(
+      lookahead,
+      ::Load.all
+    )
+    { load: query.find_by(id: load_id) }
   end
 end

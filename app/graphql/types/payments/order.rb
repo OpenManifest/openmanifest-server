@@ -11,8 +11,8 @@ module Types::Payments
     field :amount, Float, null: false
     async_field :dropzone, Types::DropzoneType, null: false
     polymorphic_field :item, Types::Interfaces::SellableItem, null: true
-    polymorphic_field :buyer, Types::Interfaces::Wallet, null: false
-    polymorphic_field :seller, Types::Interfaces::Wallet, null: false
+    polymorphic_field :buyer, Types::Interfaces::Wallet, null: true
+    polymorphic_field :seller, Types::Interfaces::Wallet, null: true
     timestamp_fields
   end
 end

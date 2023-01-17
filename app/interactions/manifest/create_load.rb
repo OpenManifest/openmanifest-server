@@ -59,6 +59,7 @@ class Manifest::CreateLoad < ApplicationInteraction
 
   def save
     errors.merge!(@load.errors) unless @load.save
+    @load.broadcast_create
     @load
   end
 end

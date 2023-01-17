@@ -46,6 +46,7 @@ class Load < ApplicationRecord
              :change_state!,
              :update_counters!
   after_commit :broadcast_update, on: :update
+  after_commit :broadcast_create, on: :create
 
   scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
@@ -119,7 +120,7 @@ class Load < ApplicationRecord
       # Arguments
       { load_id: id.to_s },
       # Object
-      { load: reload }
+      { load_id: id.to_s }
     )
   end
 
@@ -130,7 +131,7 @@ class Load < ApplicationRecord
       # Arguments
       { dropzone_id: plane.dropzone_id.to_s },
       # Object
-      { load: reload }
+      { load_id: id.to_s }
     )
   end
 
