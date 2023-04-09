@@ -29,6 +29,7 @@ class Dropzone < ApplicationRecord
   include StateMachines::DropzoneState
   include Image::Resizer
   include MasterLogEntry::Dropzone
+  include Dropzones::Configuration
   acts_as_mappable default_units: :kms,
                    default_formula: :sphere,
                    distance_field_name: :distance,

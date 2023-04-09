@@ -122,16 +122,19 @@ class Slot < ApplicationRecord
   end
 
   def double_manifest?
+    return if dropzone.allow_double_manifesting?
     return if is_passenger?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    return unless dropzone_user.slots.where(load: dropzone.loads.today.active).where.not(id: id).exists?
+    return unless dropzone_user.slots.where(load: dropzone_user.dropzone.loads.today.active).where.not(id: id).exists?
     return if created_by.can?(:createDoubleSlot)
     errors.add(:base, "Double-manifesting is not allowed")
   end
 
   def affordable?
     return true if is_passenger?
+    return if dropzone.allow_negative_credits?
+    return unless dropzone.require_credits?
     return unless dropzone.is_credit_system_enabled?
     credits = dropzone_user.credits || 0
     errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
@@ -140,6 +143,7 @@ class Slot < ApplicationRecord
   def allowed_jump_type?
     return true if is_passenger? && ticket_type.is_tandem?
     return if jump_type.allowed_for?(dropzone_user)
+    return unless dropzone.require_license?
     errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
   end
 end

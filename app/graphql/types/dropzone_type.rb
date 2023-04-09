@@ -28,6 +28,7 @@ module Types
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
     field :current_user, Types::Users::DropzoneUser, null: false
     field :user_roles, [Types::Access::UserRole], null: false
+    field :settings, Types::Dropzone::Settings, null: true
     async_field :federation, Types::Meta::Federation, null: false
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 

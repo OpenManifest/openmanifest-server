@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
+ActiveRecord::Schema[7.0].define(version: 2023_04_09_034757) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -116,6 +116,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
     t.boolean "request_publication", default: false
     t.datetime "discarded_at", precision: nil
     t.string "state", default: "private"
+    t.jsonb "settings", default: {}
     t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
@@ -227,6 +228,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
     t.index ["plane_id"], name: "index_loads_on_plane_id"
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
+    t.index ["state"], name: "index_loads_on_state"
   end
 
   create_table "master_logs", force: :cascade do |t|
@@ -273,6 +275,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
     t.index ["dropzone_id"], name: "index_orders_on_dropzone_id"
     t.index ["item_type", "item_id"], name: "index_orders_on_item"
     t.index ["seller_type", "seller_id"], name: "index_orders_on_seller"
+    t.index ["state"], name: "index_orders_on_state"
   end
 
   create_table "packs", force: :cascade do |t|
@@ -367,6 +370,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
     t.datetime "discarded_at", precision: nil
     t.index ["discarded_at"], name: "index_rigs_on_discarded_at"
     t.index ["dropzone_id"], name: "index_rigs_on_dropzone_id"
+    t.index ["rig_type"], name: "index_rigs_on_rig_type"
     t.index ["user_id"], name: "index_rigs_on_user_id"
   end
 
@@ -446,6 +450,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_14_014051) do
     t.index ["receiver_type", "receiver_id"], name: "index_transactions_on_receiver"
     t.index ["sender_type", "sender_id"], name: "index_transactions_on_sender"
     t.index ["status"], name: "index_transactions_on_status"
+    t.index ["transaction_type"], name: "index_transactions_on_transaction_type"
   end
 
   create_table "user_federation_qualifications", force: :cascade do |t|
