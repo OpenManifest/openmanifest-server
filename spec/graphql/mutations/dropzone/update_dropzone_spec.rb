@@ -20,7 +20,7 @@ RSpec.describe Mutations::Setup::Dropzones::UpdateDropzone, type: :request do
       )
     end
 
-    it { is_expected.to include_json(updateDropzone: { dropzone: { id: dropzone.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireLicense: false, requireRigInspection: false, requireCredits: false, requireMembership: false }}}) }
+    it { is_expected.to include_json(updateDropzone: { dropzone: { id: dropzone.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireLicense: false, requireRigInspection: false, requireCredits: false, requireMembership: false } } }) }
   end
 
   create_query(:id, :name, :allow_negative_credits, :allow_manifest_bypass, :require_license, :require_rig_inspection, :require_credits, :require_membership) do

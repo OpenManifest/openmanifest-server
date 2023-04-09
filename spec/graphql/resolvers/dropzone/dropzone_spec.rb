@@ -11,7 +11,7 @@ module Mutations
         execute_query(id: dropzone.id.to_s)
       end
 
-      it { is_expected.to include_json(dropzone: { settings: { requireRigInspection: true, requireLicense: true, requireCredits: true, allowManifestBypass: false, allowNegativeCredits: false }}) }
+      it { is_expected.to include_json(dropzone: { settings: { requireRigInspection: true, requireLicense: true, requireCredits: true, allowManifestBypass: false, allowNegativeCredits: false } }) }
     end
 
     create_query(:id) do

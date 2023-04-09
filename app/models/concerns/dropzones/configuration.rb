@@ -5,7 +5,7 @@ module Dropzones
     included do
       default_settings.each do |key, value|
         method_name = key.to_s
-        method_name += "?" if [true, false].include?(value)
+        method_name += "?" if value.is_a?(TrueClass) || value.is_a?(FalseClass)
 
         define_method(method_name) { settings[key.to_s] }
       end
