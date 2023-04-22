@@ -13,7 +13,7 @@ module Mutations::Setup::Equipment
                 User.find(attributes[:user_id]).rigs.new
               else
                 Dropzone.find(attributes[:dropzone_id]).rigs.new
-      end
+              end
 
       attrs = attributes.to_h.except(:packing_card)
 
