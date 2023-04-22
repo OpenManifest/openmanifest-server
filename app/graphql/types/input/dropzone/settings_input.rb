@@ -13,9 +13,9 @@ class Types::Input::Dropzone::SettingsInput < Types::Base::Input
                                             description: 'Allow manifest to bypass all rules?'
 
   argument :require_reserve_in_date, Boolean, required: false,
-           description: 'When this is enabled, users cannot manifest if their reserve is out of date'
+                                              description: 'When this is enabled, users cannot manifest if their reserve is out of date'
   argument :require_equipment, Boolean, required: false,
-           description: 'When this is enabled, users cannot manifest if they have no equipment'
+                                        description: 'When this is enabled, users cannot manifest if they have no equipment'
   argument :allow_double_manifesting, Boolean, required: false,
-           description: 'Allow users to double-manifest'
+                                               description: 'Allow users to double-manifest'
 end

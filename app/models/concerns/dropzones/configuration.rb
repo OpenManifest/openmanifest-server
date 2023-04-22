@@ -41,7 +41,7 @@ module Dropzones
           require_equipment: true,
 
           # Allow manifesting without reserve in date?
-          require_reserve_in_date: true
+          require_reserve_in_date: true,
         }
       end
     end
