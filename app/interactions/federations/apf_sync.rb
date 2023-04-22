@@ -43,7 +43,8 @@ class Federations::ApfSync < ApplicationInteraction
   end
 
   def save!
-    errors.merge!(user_federation.errors) unless user_federation.save
+    user_federation.save
+    errors.merge!(user_federation.errors) if user_federation.errors.any?
     user_federation
   end
 
@@ -107,7 +108,7 @@ class Federations::ApfSync < ApplicationInteraction
     @qualifications = user_info["Qualifications"].filter_map do |license_or_crest|
       next if /Certificate/i.match?(license_or_crest["Qualification"])
 
-      UserFederationQualification.find_or_create_by({
+      attrs = {
         qualification: Qualification.find_by(
           name: license_or_crest["Qualification"],
           federation: user_federation.federation,
@@ -119,8 +120,9 @@ class Federations::ApfSync < ApplicationInteraction
                       DateTime.parse(license_or_crest["ExpiryDate"])
                     else
                       nil
-                    end
-      ))
+                    end,
+      )
+      UserFederationQualification.find_or_create_by(attrs)
     end
   rescue
     nil
@@ -144,7 +146,7 @@ class Federations::ApfSync < ApplicationInteraction
     if license = user_federation.federation.licenses.where(name: @licenses.keys).order(id: :desc).first
       user_federation.assign_attributes(
         license: license,
-        license_number: @licenses[license.name]["SerialNumber"]
+        license_number: @licenses.dig(license.name, "SerialNumber") || ''
       )
       errors.merge!(user_federation.errors) unless user_federation.save
     end

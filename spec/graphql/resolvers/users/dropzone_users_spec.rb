@@ -19,7 +19,7 @@ module Mutations
       end
 
       it { expect(subject[:dropzoneUsers][:edges].size).to eq(4) }
-      it { is_expected.to include_json(dropzoneUsers: { edges: [{ node: { id: fun_jumper.id.to_s }}, { node: { id: instructor.id.to_s }}, { node: { id: student.id.to_s }}, { node: { id: ghost.id.to_s } }] }) }
+      it { is_expected.to include_json(dropzoneUsers: { edges: [{ node: { id: fun_jumper.id.to_s } }, { node: { id: instructor.id.to_s } }, { node: { id: student.id.to_s } }, { node: { id: ghost.id.to_s } }] }) }
     end
 
     create_query(:dropzone_id) do

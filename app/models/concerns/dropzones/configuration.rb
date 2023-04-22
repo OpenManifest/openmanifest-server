@@ -37,6 +37,11 @@ module Dropzones
           allow_manifest_bypass: false,
           # Allow double-manifesting?
           allow_double_manifesting: false,
+          # Allow manifesting without equipment?
+          require_equipment: true,
+
+          # Allow manifesting without reserve in date?
+          require_reserve_in_date: true,
         }
       end
     end

@@ -10,15 +10,13 @@ module Mutations::Users
     argument :dropzone_user, ID, required: false,
                                  prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
-    def resolve(attributes:, id: nil)
-      model = DropzoneUser.find(id)
-
+    def resolve(dropzone_user:, attributes: nil)
       attrs = attributes.to_h
       if attrs[:expires_at]
         attrs[:expires_at] = Time.at(attributes[:expires_at])
       end
-      model.assign_attributes(attrs)
-      model.save!
+      dropzone_user.assign_attributes(attrs)
+      dropzone_user.save!
 
       {
         dropzone_user: model,
@@ -47,15 +45,14 @@ module Mutations::Users
       }
     end
 
-    def authorized?(id: nil, attributes: nil)
-      dropzone_user = DropzoneUser.find(id)
+    def authorized?(dropzone_user: nil, attributes: nil)
       current_dz_user = context[:current_resource].dropzone_users.find_by(
         dropzone: dropzone_user.dropzone
       )
 
       allowed_to_update_others = current_dz_user.can?(:updateUser)
       is_role_changed = attributes[:user_role_id] && attributes[:user_role_id] != dropzone_user.user_role_id
-      is_allowed_to_change_role = current_dz_user.can?(:grantPermission) && attributes[:user_role_id] < current_dz_user.user_role_id
+      is_allowed_to_change_role = !is_role_changed || (current_dz_user.can?(:grantPermission) && attributes[:user_role_id] < current_dz_user.user_role_id)
 
       # Check if the user is trying to change the UserRole:
       if allowed_to_update_others && is_role_changed && !is_allowed_to_change_role

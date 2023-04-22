@@ -2,9 +2,9 @@
 
 class Federations::AssignUser < ApplicationInteraction
   record :federation
-  record :license, default: nil
+  record :license, default: -> { federation.licenses.first }
   record :user
-  string :uid, default: nil
+  string :uid, default: ''
   validates :federation, :user, presence: true
 
   steps :assign_user_to_federation,
@@ -46,25 +46,24 @@ class Federations::AssignUser < ApplicationInteraction
   end
 
   def manually_assign_license
-    return unless license
     @user_federation.assign_attributes(
-      license: license
+      license: license || federation.licenses.first,
+      license_number: ''
     )
+    errors.merge!(@user_federation.errors) unless @user_federation.save
   end
 
   def assign_user_to_federation
-    @user_federation = UserFederation.find_or_initialize_by(
+    @user_federation ||= UserFederation.find_or_initialize_by(
       federation: federation,
       user: user
     )
   end
 
   def assign_user_federation_uid
-    return if uid.nil?
     @user_federation.assign_attributes(
-      uid: uid
+      uid: uid || ' '
     )
-    errors.merge!(@user_federation.errors) unless @user_federation.save
   end
 
   def synchronize_qualifications
