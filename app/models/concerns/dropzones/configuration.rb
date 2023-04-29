@@ -15,6 +15,11 @@ module Dropzones
         next if self.class.default_settings.keys.all? { |key| settings.key?(key) }
         assign_attributes(settings: self.class.default_settings.merge(settings || {}))
       end
+
+      def settings=(new_settings)
+        current_settings = self.class.default_settings.merge(settings || {})
+        super(current_settings.merge(new_settings.transform_keys(&:to_s)))
+      end
     end
 
     class_methods do

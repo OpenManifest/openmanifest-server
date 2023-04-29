@@ -57,6 +57,7 @@ class Slot < ApplicationRecord
   validate :available?,
            :double_manifest?,
            :allowed_jump_type?,
+           :membership_in_date?,
            :affordable?,
            on: :create
 
@@ -121,13 +122,21 @@ class Slot < ApplicationRecord
     errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
   end
 
+  def membership_in_date?
+    return if is_passenger?
+    return if (dropzone_user.expires_at || 1.second.ago) > DateTime.current
+    return unless dropzone.require_membership?
+    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
+    errors.add(:base, "#{dropzone_user.user.name}'s membership has expired")
+  end
+
   def double_manifest?
     return if dropzone.allow_double_manifesting?
     return if is_passenger?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
     return unless dropzone_user.slots.where(load: dropzone_user.dropzone.loads.today.active).where.not(id: id).exists?
-    return if created_by.can?(:createDoubleSlot)
+    return if created_by.can?(:createDoubleSlot) && dropzone.allow_manifest_bypass?
     errors.add(:base, "Double-manifesting is not allowed")
   end
 
@@ -135,7 +144,7 @@ class Slot < ApplicationRecord
     return true if is_passenger?
     return if dropzone.allow_negative_credits?
     return unless dropzone.require_credits?
-    return unless dropzone.is_credit_system_enabled?
+    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
     credits = dropzone_user.credits || 0
     errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
   end
@@ -144,6 +153,7 @@ class Slot < ApplicationRecord
     return true if is_passenger? && ticket_type.is_tandem?
     return if jump_type.allowed_for?(dropzone_user)
     return unless dropzone.require_license?
+    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
     errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
   end
 end
