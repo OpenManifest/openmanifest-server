@@ -67,7 +67,7 @@ module Mutations::Setup::Dropzones
             "You cant modify the publication state of this dropzone",
           ],
         }
-        end
+      end
 
       if context[:current_resource].can?(
         "updateDropzone",

@@ -14,7 +14,7 @@ module Types::Interfaces
     end
     def orders(start_date: nil)
       is_self = context[:current_resource].id == object.user.id if object.is_a?(DropzoneUser)
-      is_self ||= context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id)
+      is_self ||= context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id) if object.is_a?(Dropzone)
 
       can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.try(:dropzone_id) || object.id)
       return [] unless can_see_others || is_self
