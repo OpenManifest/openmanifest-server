@@ -7,6 +7,8 @@ module Types
 
     field :image,           resolver: Resolvers::Image
     field :federations,     extras: [:lookahead],   resolver: Resolvers::Meta::Federations
+    field :location,                                resolver: Resolvers::Meta::Location
+    field :locations,                               resolver: Resolvers::Meta::Locations
     field :jump_types,      extras: [:lookahead],   resolver: Resolvers::Meta::JumpTypes
     field :licenses,        extras: [:lookahead],   resolver: Resolvers::Meta::Licenses
     field :current_user,    extras: [:lookahead],   resolver: Resolvers::Access::CurrentUser

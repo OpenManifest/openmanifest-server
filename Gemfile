@@ -19,6 +19,7 @@ gem "bcrypt", "~> 3.1.7"
 
 # Coordinate based location
 gem "geokit-rails"
+gem 'geocoder'
 gem 'rexml'
 gem "dotenv-rails", groups: %i(development test), require: "dotenv/rails-now"
 

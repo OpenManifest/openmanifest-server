@@ -59,6 +59,7 @@ class Dropzone < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
+  belongs_to :location, optional: true
   belongs_to :federation
   belongs_to :rig_inspection_template,
              class_name: "FormTemplate",

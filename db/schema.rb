@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_04_09_034757) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_15_082959) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -117,8 +117,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_04_09_034757) do
     t.datetime "discarded_at", precision: nil
     t.string "state", default: "private"
     t.jsonb "settings", default: {}
+    t.bigint "location_id"
     t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
+    t.index ["location_id"], name: "index_dropzones_on_location_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
     t.index ["state"], name: "index_dropzones_on_state"
   end
@@ -229,6 +231,22 @@ ActiveRecord::Schema[7.0].define(version: 2023_04_09_034757) do
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
     t.index ["state"], name: "index_loads_on_state"
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.string "street_address"
+    t.text "full_address"
+    t.string "place_id"
+    t.string "state"
+    t.string "country"
+    t.string "city"
+    t.string "post_code"
+    t.float "lat"
+    t.float "lng"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["lat"], name: "index_locations_on_lat"
+    t.index ["lng"], name: "index_locations_on_lng"
   end
 
   create_table "master_logs", force: :cascade do |t|
@@ -568,6 +586,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_04_09_034757) do
   add_foreign_key "dropzone_users", "user_roles"
   add_foreign_key "dropzone_users", "users"
   add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"
+  add_foreign_key "dropzones", "locations"
   add_foreign_key "events", "dropzone_users"
   add_foreign_key "events", "dropzones"
   add_foreign_key "extras", "dropzones"

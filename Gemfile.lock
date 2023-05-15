@@ -160,6 +160,7 @@ GEM
     ffi (1.15.5)
     foreman (0.87.2)
     formatador (1.1.0)
+    geocoder (1.8.1)
     geokit (1.13.1)
     geokit-rails (2.3.2)
       geokit (~> 1.5)
@@ -519,6 +520,7 @@ DEPENDENCIES
   faker
   fasterer
   foreman
+  geocoder
   geokit-rails
   globalid
   google-cloud-storage
