@@ -1,8 +1,7 @@
 name: Heroku Staging Deployment
 on:
   push:
-    branches:
-      - staging
+    branches: []
 jobs:
   build:
     runs-on: ubuntu-latest
