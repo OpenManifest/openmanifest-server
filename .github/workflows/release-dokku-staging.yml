@@ -1,0 +1,19 @@
+---
+name: VPS Staging Deployment
+on:
+  push:
+    branches:
+      - staging
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloning repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Push to dokku
+        uses: dokku/github-action@master
+        with:
+          git_remote_url: ssh://dokku@dangertechnologies.com:22/openmanifest-stg
+          ssh_private_key: ${{ secrets.DOKKU_DEPLOY_KEY }}
