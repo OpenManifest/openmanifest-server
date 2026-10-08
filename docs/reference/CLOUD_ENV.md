@@ -106,7 +106,7 @@ Reachable already (verified): `github.com`, `raw.githubusercontent.com`, `rubyge
 | `SENTRYCLI_SKIP_DOWNLOAD` | `1` | `yarn install` fails otherwise (sentry-cli binary host blocked) |
 | `DISABLE_SPRING` | `1` | Spring forks a background server that confuses repeated runs |
 | `PGHOST` / `PGUSER` / `PGPASSWORD` | `localhost` / `root` / `root` | local throwaway Postgres role created by the setup script (not a secret) |
-| `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes) |
+| `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes); `bundle exec rspec` needs it too (the master-log specs build blob URLs and fail with "Missing host to link to" without it; CI sets `http://localhost:5000/`) |
 | `WEB_CONCURRENCY` | `0` | single-process Puma in the VM |
 | `EXPO_NO_TELEMETRY` | `1` | avoid blocked telemetry calls |
 | `CI` | `1` | non-interactive Expo/Jest |
@@ -164,8 +164,12 @@ Serving the web build and running the smoke script (both added by P0.8):
 
 ```bash
 python3 scripts/serve-web-build.py web-build 19006 &      # SPA server with index.html fallback
-node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
+TZ=Australia/Brisbane node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
 ```
+
+Run the smoke test with `TZ=Australia/Brisbane`: the board asks for loads for the *device's* date (BUG-068) while the
+seeded dropzone lives in Brisbane, so a browser in UTC sees "No loads so far today" for several hours of every day and
+the smoke test fails at the load step.
 
 Headless Chromium must bypass the agent proxy for the API host, otherwise the websocket gets 403:
 `--proxy-bypass-list=local.openmanifest.org,localhost` (the smoke script passes it).
