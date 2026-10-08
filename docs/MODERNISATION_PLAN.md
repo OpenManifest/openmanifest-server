@@ -748,7 +748,7 @@ Size: M
 Fixes: none
 
 ### P1.2 — Cover dropzone and access operations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-2-spec-dropzones
@@ -2692,7 +2692,9 @@ Steps:
      dropzone, `readActivity` (or the closest existing permission name) otherwise.
   4. Remove the `image` query field and resolver (BUG-004); the schema dump (P1.8) and contract check (P1.9) must stay
      green because the client does not use it.
-  5. Un-pend the P1.7 specs for these resolvers; they must now pass.
+  5. `Resolvers::Dropzones`: apply the `state` argument (`context[:access_context].dropzones.where(state: state)` when
+     given) (BUG-090); un-pend its example in `spec/requests/client_operations/dropzones_spec.rb`.
+  6. Un-pend the P1.7 specs for these resolvers; they must now pass.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; `bundle exec rails graphql:schema:dump` diff only removes `image`;
     client `check:graphql` (P1.9) passes against the new schema.
@@ -2701,7 +2703,7 @@ Acceptance criteria (owner, real device):
 Out of scope: user/member queries (P6.3).
 Risk / rollback: over-restricting breaks screens; P1 client-operation specs catch it. Revert.
 Size: L
-Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004
+Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090
 
 ### P6.3 — Add tenant checks to user queries and protect personal data
 Status: todo
@@ -2752,7 +2754,10 @@ Steps:
   3. client: add `app/api/mutations/JoinDropzone.gql`, run codegen; in dropzone selection, when the selected dropzone's
      `currentUser` is null, call `joinDropzone` then refetch. Handle `currentUser: null` everywhere it is read
      (`yarn check:types` shows them).
-  4. Specs: `can?` on a non-member creates no rows (`expect { … }.not_to change(DropzoneUser, :count)`); join is
+  4. `Setup::Dropzones::UpdateVisibility`: decide moderator rights from `access_context.user` instead of the membership
+     (BUG-089: today it raises `NoMethodError` for a moderator who is not a member, which this task makes reachable);
+     un-pend that example in `spec/requests/client_operations/dropzones_spec.rb`.
+  5. Specs: `can?` on a non-member creates no rows (`expect { … }.not_to change(DropzoneUser, :count)`); join is
      idempotent; joining a private dropzone fails. Client test: selecting an unjoined dropzone calls `joinDropzone`.
 Acceptance criteria (cloud VM):
   - Backend: `bundle exec rspec` green; schema dump updated. Client: client checks, `check:graphql`, web export and web
@@ -2762,7 +2767,7 @@ Acceptance criteria (owner, real device):
 Out of scope: dropzone invitations.
 Risk / rollback: changes onboarding flow. Merge backend first; client PR must merge before any deploy. Revert both.
 Size: L
-Fixes: BUG-005
+Fixes: BUG-005, BUG-089
 
 ### P6.5 — Enforce manifest permissions
 Status: todo

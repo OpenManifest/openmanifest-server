@@ -20,9 +20,9 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 |---|---|
 | critical | 7 |
 | high | 29 |
-| medium | 37 |
-| low | 15 |
-| **total** | **88** |
+| medium | 38 |
+| low | 16 |
+| **total** | **90** |
 
 ## Android / mobile layout: shared root causes
 
@@ -133,3 +133,5 @@ in headless Chromium at 360×640 and 1280×800. They group into these root cause
 | BUG-086 | medium | suspected | users | client | `app/forms/create_user/*` | GitHub issue client#126 "Create Ghost (user) doesn't fire submit button". | Issue report only. | Characterise in P1.13; fix in P6.26. |
 | BUG-087 | low | confirmed | theming | client | `configuration/ticket_types/TicketTypesScreen.tsx:62`; `configuration/rigs/DropzoneRigsScreen.tsx:46`; `configuration/aircrafts/AircraftsScreen.tsx` | Hard-coded `backgroundColor: 'white'` on configuration screens breaks dark mode. | Code reading. | Theme colours. |
 | BUG-088 | low | confirmed | release config | client | `app.json` (`version: 1.3.0`, `ios.buildNumber: 44`, `android.versionCode: 15`) vs `package.json` (`version: 1.1.60`), `build/constants.ts` | Two version sources; `app.config.ts` overrides `app.json` from `package.json`, so `app.json` values are misleading. | File contents. | Single source in Phase 8 (EAS `appVersionSource: remote`). |
+| BUG-089 | medium | confirmed | dropzones | backend | `app/interactions/setup/dropzones/update_visibility.rb:57-59` | `updateVisibility` raises `NoMethodError` (`access_context.subject` is nil) when the caller has no membership in the dropzone, so a moderator who is not a member cannot publish or archive it. Today this is masked because reading `dropzone { currentUser }` silently joins the caller (BUG-005); fixing BUG-005 makes it live. | `spec/requests/client_operations/dropzones_spec.rb` (pending example). | Check moderator rights from `access_context.user`, not the membership (P6.4). |
+| BUG-090 | low | confirmed | dropzones | backend | `app/graphql/resolvers/dropzones.rb:8-18` | The `state` argument of `dropzones` is accepted and ignored: `Dropzones(state: [...])` returns every visible dropzone. | `spec/requests/client_operations/dropzones_spec.rb` (pending example). | Filter by `state` in the resolver (P6.2). |
