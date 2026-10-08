@@ -630,7 +630,7 @@ iOS: Larger Accessibility Sizes). Until EAS builds exist (Phase 3, decision D2),
 ```
 
 ### P0.10 — Verify Phase 0
-Status: todo
+Status: owner-check (merge both Phase 0 stacks and confirm CI green on staging; run SMOKE_TEST Web/Login/Manifest on phones — see docs/verification/phase-0.md)
 Repo: both
 Depends on: P0.1, P0.2, P0.3, P0.4, P0.5, P0.6, P0.7, P0.8, P0.9
 Branch: modernise/p0-10-verify
