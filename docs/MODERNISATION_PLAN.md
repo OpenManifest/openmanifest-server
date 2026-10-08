@@ -1165,7 +1165,7 @@ Size: M
 Fixes: BUG-059
 
 ### P2.2 — Update to Rails 7.0.10 and patch-level security releases
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.1
 Branch: modernise/p2-2-rails-7-0-10
@@ -1333,21 +1333,22 @@ Branch: modernise/p2-8-runtime-gems
 Goal: Every runtime gem is on its current major version.
 Context: Targets (RubyGems 2026-10-08): puma 8.0.2, pg 1.7.0, redis 6.0.0 (ActionCable's adapter allows `< 7`),
 devise 5.0.4, appsignal 5.0.2, jwt 3.3.0 (used in `app/interactions/login/apple.rb`: `JWT::JWK.import`, `JWT.decode`),
-discard 2.0.0, state_machines-activerecord 0.200.0 (requires activerecord ≥ 7.2), counter_culture 3.14.0,
-active_interaction 5.5.0, active_interaction-extras 1.1.0, active_storage_base64 3.0.1, image_processing 2.2.0,
+discard 2.0.0, state_machines-activerecord 0.200.0 (requires activerecord ≥ 7.2), active_interaction 5.5.0, active_interaction-extras 1.1.0, active_storage_base64 3.0.1, image_processing 2.2.0,
 rack-cors 3.0.0, dotenv-rails 3.2.0, activerecord-import 2.3.0, geokit-rails 2.5.0, httparty 0.24.3, search_cop 1.6.0,
-google-cloud-storage 1.62.1, bootsnap 1.26.0, graphiql-rails 1.10.5, faker 3.8.0.
+google-cloud-storage 1.62.1, bootsnap 1.26.0, graphiql-rails 1.10.5, faker 3.8.0. `counter_culture` is deliberately
+left at 3.3.0 (pinned in P2.2): 3.14.0 makes the double counting of BUG-019 fail three-tandem group manifests, so P6.10
+fixes the counters and then moves the gem to 3.14.0.
 Steps:
   1. Remove version constraints for these gems in `Gemfile` where a constraint blocks the target (e.g. `puma "~> 6.0"`,
      `redis "~> 4.0"`, `discard "~> 1.2"`). Upgrade in this order, running `bundle exec rspec` after each:
      (a) `bundle update puma pg redis bootsnap`; (b) `bundle update devise devise_token_auth`; (c) `bundle update jwt`
      (adapt `Login::Apple` to jwt 3: `JWT::JWK.import(key).verify_key` / `JWT.decode(token, nil, true, algorithms: [alg], jwks: …)`
-     as the jwt 3 upgrade guide in the gem's `UPGRADING.md` describes); (d) `bundle update state_machines state_machines-activerecord discard counter_culture`;
+     as the jwt 3 upgrade guide in the gem's `UPGRADING.md` describes); (d) `bundle update state_machines state_machines-activerecord discard`;
      (e) `bundle update active_interaction active_interaction-extras active_storage_base64 image_processing activerecord-import`;
      (f) `bundle update rack-cors dotenv-rails geokit-rails httparty search_cop google-cloud-storage graphiql-rails faker appsignal`.
   2. Update `config/puma.rb` for Puma 8 if it warns about removed options.
 Acceptance criteria (cloud VM):
-  - `bundle outdated --only-explicit --strict` lists only gems handled in P2.10 (development/test group).
+  - `bundle outdated --only-explicit --strict` lists only gems handled in P2.10 (development/test group) and `counter_culture` (P6.10).
   - Specs, rubocop, schema check and web smoke test pass. `bundle-audit check --update` lists no advisories, or the PR
     lists each remaining one with the reason.
 Acceptance criteria (owner, real device):
@@ -2931,6 +2932,10 @@ Context: BUG-019 (`models/slot.rb:48-55` counter_culture without `column_name:`)
 `create_multiple_slots.rb:47-54` capacity read-then-insert), BUG-021 (no unique `slots(load_id, dropzone_user_id)`),
 BUG-023 (`slot.rb:143-150`, `purchase.rb:70-73` credit check without lock). Pass-1 dev DB showed `slots_count=4` for 2 slots.
 Steps:
+  0. Remove the `counter_culture` pin from `Gemfile` (P2.2 pinned 3.3.0, see the comment there) and
+     `bundle update counter_culture` (3.14.0) in the same commit as step 1; the tandem group-manifest example in
+     `spec/graphql/mutations/manifest/create_slots_spec.rb` ("successfully with tandem") fails on 3.14.0 until the
+     counters are fixed.
   1. `counter_culture :load` (plain `slots_count`) and a second
      `counter_culture :load, column_name: proc { |s| s.ready? ? "ready_slots_count" : nil }, column_names: { Slot.ready => :ready_slots_count }`.
   2. Data migration `FixLoadSlotCounters`: `Slot.counter_culture_fix_counts` (prints fixes).
