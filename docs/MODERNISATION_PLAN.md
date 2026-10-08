@@ -1326,7 +1326,7 @@ Size: M
 Fixes: none
 
 ### P2.8 — Upgrade the remaining runtime gems to current majors
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.7
 Branch: modernise/p2-8-runtime-gems
@@ -1357,7 +1357,7 @@ Out of scope: dev/test gems; Ruby 4.
 Risk / rollback: Apple login (jwt 3) is covered only by stubbed specs. The owner re-tests Apple login on a device in
 Phase 3 verification. Revert per gem group.
 Size: L
-Fixes: none
+Fixes: BUG-097
 
 ### P2.9 — Upgrade Ruby 3.4.11 → 4.0.7
 Status: todo
@@ -3205,6 +3205,8 @@ Steps:
      `weather_conditions.date` column (backfilled) keyed by the dropzone's local date.
   4. client: `ReloadWeather.gql` unchanged if step 1 keeps `id`; add a test that reload succeeds against the mock.
   5. Specs: Brisbane dropzone at 23:00 UTC (09:00 local next day) → today's loads/weather are the local day.
+  6. BUG-098: `spec/rails_helper.rb` uses `config.around(:suite)`, which RSpec ignores; run the examples inside
+     `Time.use_zone("Australia/Brisbane")` with `config.around(:each)` and fix whatever then fails.
 Acceptance criteria (cloud VM):
   - Backend `bundle exec rspec` green; client checks and `check:graphql` pass.
 Acceptance criteria (owner, real device):
@@ -3212,7 +3214,7 @@ Acceptance criteria (owner, real device):
 Out of scope: client time zone handling (P6.20).
 Risk / rollback: revert both.
 Size: L
-Fixes: BUG-040, BUG-045, BUG-046, BUG-047
+Fixes: BUG-040, BUG-045, BUG-046, BUG-047, BUG-098
 
 ### P6.20 — Use the dropzone time zone in the client
 Status: todo

@@ -17,7 +17,7 @@ module Dropzones
       end
 
       def settings=(new_settings)
-        current_settings = self.class.default_settings.merge(settings || {})
+        current_settings = self.class.default_settings.stringify_keys.merge(settings || {})
         super(current_settings.merge(new_settings.transform_keys(&:to_s)))
       end
     end
