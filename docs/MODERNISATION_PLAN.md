@@ -775,7 +775,7 @@ Size: M
 Fixes: none
 
 ### P1.3 — Cover manifest operations and subscription triggers
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-3-spec-manifest
@@ -2784,7 +2784,8 @@ Steps:
   1. `CreateSlot`: call `authorize` as a step; self-manifest requires `createSlot`, manifesting another member requires
      `createUserSlot`; the load and the member must belong to the same dropzone as the context.
   2. `MoveSlot`: require `updateSlot` (others) or `updateUserSlot` (own slot); source and target load must share the
-     dropzone; target load must be open.
+     dropzone; target load must be open and have capacity for the slot (BUG-092: validations run only on create today;
+     un-pend "keeps the slot when the target load is full" in `manifest_spec.rb`).
   3. `CreateSlots#authorized?`: rewrite using membership ids: all members == caller's membership → `createSlot`;
      includes others → `createUserSlot`; remove dead branches.
   4. Specs for each permission combination (student self, student other → forbidden; manifest staff other → ok;
@@ -2796,7 +2797,7 @@ Acceptance criteria (owner, real device):
 Out of scope: crash fixes in the same interactions (P6.11).
 Risk / rollback: staff with odd role setups lose abilities; seeds define default roles. Revert.
 Size: M
-Fixes: BUG-006, BUG-007, BUG-062
+Fixes: BUG-006, BUG-007, BUG-062, BUG-092
 
 ### P6.6 — Restrict createOrder to same-dropzone staff purchases
 Status: todo
@@ -2962,7 +2963,10 @@ Steps:
   3. Finalize: skip receipts for slots without an order; auto-finalize uses the same interaction.
   4. Move: fix typo, `credits.to_f`, use `slot.load` in messages. Delete: guard nil order (no refund), fix messages.
   5. Slot validations: `created_by&.can?(...)`.
-  6. Specs for each bug; the pass-1 failing spec files for finalize and available rigs pass without `pending`.
+  6. `Sources::Model#fetch` returns `ids.map { |id| record_cache[id] }` so nil and missing keys keep their position
+     (BUG-091: with a nil `load_master`, `slots { dropzoneUser }` resolves to null); un-pend its example in
+     `spec/requests/client_operations/manifest_spec.rb`.
+  7. Specs for each bug; the pass-1 failing spec files for finalize and available rigs pass without `pending`.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; `grep -rn "pending \"BUG-0\(25\|29\|30\|31\|32\|34\)" spec` prints nothing.
 Acceptance criteria (owner, real device):
@@ -2970,7 +2974,7 @@ Acceptance criteria (owner, real device):
 Out of scope: load state rules (P6.12).
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034
+Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034, BUG-091
 
 ### P6.12 — Enforce load state transitions and fix jump counts
 Status: todo

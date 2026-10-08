@@ -19,10 +19,10 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 | Severity | Count |
 |---|---|
 | critical | 7 |
-| high | 29 |
-| medium | 38 |
+| high | 30 |
+| medium | 39 |
 | low | 16 |
-| **total** | **90** |
+| **total** | **92** |
 
 ## Android / mobile layout: shared root causes
 
@@ -135,3 +135,5 @@ in headless Chromium at 360×640 and 1280×800. They group into these root cause
 | BUG-088 | low | confirmed | release config | client | `app.json` (`version: 1.3.0`, `ios.buildNumber: 44`, `android.versionCode: 15`) vs `package.json` (`version: 1.1.60`), `build/constants.ts` | Two version sources; `app.config.ts` overrides `app.json` from `package.json`, so `app.json` values are misleading. | File contents. | Single source in Phase 8 (EAS `appVersionSource: remote`). |
 | BUG-089 | medium | confirmed | dropzones | backend | `app/interactions/setup/dropzones/update_visibility.rb:57-59` | `updateVisibility` raises `NoMethodError` (`access_context.subject` is nil) when the caller has no membership in the dropzone, so a moderator who is not a member cannot publish or archive it. Today this is masked because reading `dropzone { currentUser }` silently joins the caller (BUG-005); fixing BUG-005 makes it live. | `spec/requests/client_operations/dropzones_spec.rb` (pending example). | Check moderator rights from `access_context.user`, not the membership (P6.4). |
 | BUG-090 | low | confirmed | dropzones | backend | `app/graphql/resolvers/dropzones.rb:8-18` | The `state` argument of `dropzones` is accepted and ignored: `Dropzones(state: [...])` returns every visible dropzone. | `spec/requests/client_operations/dropzones_spec.rb` (pending example). | Filter by `state` in the resolver (P6.2). |
+| BUG-091 | high | confirmed | GraphQL / data loading | backend | `app/graphql/sources/model.rb:11-17`; `app/graphql/support/objects/fields.rb:37-49` | `Sources::Model#fetch` returns `record_cache.slice(*ids).values`, which drops nil and unknown keys, so the batch result no longer lines up with the keys. A load without a load master (`load_master_id` nil, which the client's `CreateLoad` does not set) makes `slots { dropzoneUser }` resolve to `null` or to another member for the batched `DropzoneUser` lookups on the load screen. | `manifest_spec.rb` "returns the jumpers of a load that has no load master" (pending): `Load` returns `dropzoneUser: null` for a slot whose member exists; with a load master it resolves. | Return `ids.map { \|id\| record_cache[id] }` (P6.11). |
+| BUG-092 | medium | confirmed | manifesting | backend | `app/interactions/manifest/move_slot.rb:53-59`; `app/models/slot.rb:57-62` | `moveSlot` never checks the target load: slot validations (capacity, double manifest, jump type) run `on: :create` only, so a slot can be moved onto a full or closed load. | `manifest_spec.rb` "keeps the slot when the target load is full" (pending). | Validate capacity and that the target load is open in `MoveSlot` (P6.5). |
