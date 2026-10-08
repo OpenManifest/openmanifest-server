@@ -1,11 +1,7 @@
+# Disabled for automatic runs during modernisation (P0.1). Re-enabled in P8.6.
 name: Deploy to Staging
 on:
-  push:
-    branches:
-      - staging
   workflow_dispatch:
-    branches:
-      - staging
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 jobs:

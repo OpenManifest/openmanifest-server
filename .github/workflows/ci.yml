@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [staging, main]
+  pull_request:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      RAILS_ENV: test
+      PGHOST: 127.0.0.1
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      BACKEND_URL: http://localhost:5000/
+      DISABLE_SPRING: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq libpq-dev libvips42
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - run: echo "SECRET_KEY_BASE=$(openssl rand -hex 64)" >> "$GITHUB_ENV"
+      - run: bin/rails db:create db:schema:load
+      - run: bundle exec rubocop --parallel
+      - run: bundle exec rspec
+  audit:
+    runs-on: ubuntu-24.04
+    continue-on-error: true   # made blocking in P2.11
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with: { ruby-version: .ruby-version }
+      - run: gem install bundler-audit && bundle-audit check --update
