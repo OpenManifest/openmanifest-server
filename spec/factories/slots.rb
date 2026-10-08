@@ -37,5 +37,6 @@ FactoryBot.define do
     exit_weight { dropzone_user.user.exit_weight }
     jump_type { dropzone_user.user.license.licensed_jump_types.sample.jump_type }
     rig { dropzone_user.user.rigs.sample }
+    created_by { dropzone_user }
   end
 end

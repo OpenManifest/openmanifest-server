@@ -3,8 +3,7 @@
 ![Rails](https://img.shields.io/badge/rails-%23CC0000.svg?style=for-the-badge&logo=ruby-on-rails&logoColor=white)
 
 # OpenManifest API
-![CircleCI](https://circleci.com/gh/OpenManifest/openmanifest-server/tree/main.svg?style=shield)
-![Linting](https://github.com/openmanifest/openmanifest-server/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/OpenManifest/openmanifest-server/actions/workflows/ci.yml/badge.svg)
 ![Release](https://github.com/openmanifest/openmanifest-server/actions/workflows/release.yml/badge.svg)
 ![Production](https://github.com/openmanifest/openmanifest-server/actions/workflows/release-production.yml/badge.svg)
 
@@ -48,6 +47,12 @@ Now you should be able to run the tests>
 $ bundle exec rspec spec
 ```
 
+
+## Development data
+
+`bin/rails db:seed db:seed:dev_baseline` creates an offline demo dropzone ("Demo Dropzone") with staff, jumpers, an
+aircraft, ticket types and two loads. It needs no network access and can be run repeatedly. Log in as
+`owner@example.com` / `Password1!` (all seeded users share this password).
 
 ## Start the server locally
 

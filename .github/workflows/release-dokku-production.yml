@@ -1,9 +1,8 @@
+# Disabled for automatic runs during modernisation (P0.1). Re-enabled in P8.6.
 ---
   name: VPS Staging Deployment
   on:
-    push:
-      branches:
-        - main
+    workflow_dispatch:
   jobs:
     deploy:
       runs-on: ubuntu-latest
