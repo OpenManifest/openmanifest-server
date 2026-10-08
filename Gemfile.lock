@@ -86,27 +86,14 @@ GEM
       rack
     ast (2.4.2)
     awesome_print (1.9.2)
-    backport (1.2.0)
     bcrypt (3.1.18)
-    benchmark (0.2.1)
     bindex (0.8.1)
     bootsnap (1.15.0)
       msgpack (~> 1.2)
     brakeman (5.4.0)
     builder (3.2.4)
     byebug (11.1.3)
-    capybara (3.38.0)
-      addressable
-      matrix
-      mini_mime (>= 0.1.3)
-      nokogiri (~> 1.8)
-      rack (>= 1.6.0)
-      rack-test (>= 0.6.3)
-      regexp_parser (>= 1.5, < 3.0)
-      xpath (~> 3.2)
-    choice (0.2.0)
     coderay (1.1.3)
-    colorize (0.8.1)
     concurrent-ruby (1.1.10)
     counter_culture (3.3.0)
       activerecord (>= 4.2)
@@ -141,7 +128,6 @@ GEM
     dotenv-rails (2.8.1)
       dotenv (= 2.8.1)
       railties (>= 3.2)
-    e2mmap (0.1.0)
     erubi (1.12.0)
     factory_bot (6.2.1)
       activesupport (>= 5.0.0)
@@ -154,12 +140,8 @@ GEM
       faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (3.0.2)
-    fasterer (0.10.0)
-      colorize (~> 0.7)
-      ruby_parser (>= 3.19.1)
     ffi (1.15.5)
     foreman (0.87.2)
-    formatador (1.1.0)
     geokit (1.13.1)
     geokit-rails (2.3.2)
       geokit (~> 1.5)
@@ -210,20 +192,6 @@ GEM
       graphql (>= 1.8, < 2.1)
       rails (>= 4.2, < 7.1)
       zeitwerk
-    guard (2.18.0)
-      formatador (>= 0.2.4)
-      listen (>= 2.7, < 4.0)
-      lumberjack (>= 1.0.12, < 2.0)
-      nenv (~> 0.1)
-      notiffany (~> 0.0)
-      pry (>= 0.13.0)
-      shellany (~> 0.0)
-      thor (>= 0.18.1)
-    guard-compat (1.2.1)
-    guard-rspec (4.7.3)
-      guard (~> 2.1)
-      guard-compat (~> 1.1)
-      rspec (>= 2.99.0, < 4.0)
     hashdiff (1.0.1)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
@@ -234,28 +202,20 @@ GEM
     image_processing (1.12.2)
       mini_magick (>= 4.9.5, < 5)
       ruby-vips (>= 2.0.17, < 3)
-    jaro_winkler (1.5.4)
     json (2.6.3)
     jwt (2.6.0)
-    kramdown (2.4.0)
-      rexml
-    kramdown-parser-gfm (1.1.0)
-      kramdown (~> 2.0)
-    kwalify (0.7.2)
     listen (3.8.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    lumberjack (1.2.8)
     mail (2.8.0.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
       net-smtp
     marcel (1.0.2)
-    matrix (0.4.2)
     memoist (0.16.2)
     method_source (1.0.0)
     mini_magick (4.12.0)
@@ -265,7 +225,6 @@ GEM
     msgpack (1.6.0)
     multi_json (1.15.0)
     multi_xml (0.6.0)
-    nenv (0.3.0)
     net-imap (0.3.4)
       date
       net-protocol
@@ -279,9 +238,6 @@ GEM
     nokogiri (1.14.3)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
-    notiffany (0.1.3)
-      nenv (~> 0.1)
-      shellany (~> 0.0)
     orm_adapter (0.5.0)
     os (1.1.4)
     parallel (1.23.0)
@@ -305,7 +261,6 @@ GEM
       rack (>= 1.2.0)
     rack-test (2.0.2)
       rack (>= 1.3)
-    railroady (1.6.0)
     rails (7.0.4)
       actioncable (= 7.0.4)
       actionmailbox (= 7.0.4)
@@ -323,11 +278,6 @@ GEM
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-erd (1.7.2)
-      activerecord (>= 4.2)
-      activesupport (>= 4.2)
-      choice (~> 0.2.0)
-      ruby-graphviz (~> 1.2)
     rails-html-sanitizer (1.4.4)
       loofah (~> 2.19, >= 2.19.1)
     railties (7.0.4)
@@ -342,12 +292,7 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rbs (2.8.4)
     redis (4.8.0)
-    reek (6.1.4)
-      kwalify (~> 0.7.0)
-      parser (~> 3.2.0)
-      rainbow (>= 2.0, < 4.0)
     regexp_parser (2.8.0)
     representable (3.2.0)
       declarative (< 0.1.0)
@@ -357,13 +302,7 @@ GEM
       actionpack (>= 5.0)
       railties (>= 5.0)
     retriable (3.1.2)
-    reverse_markdown (2.1.1)
-      nokogiri
     rexml (3.2.5)
-    rspec (3.12.0)
-      rspec-core (~> 3.12.0)
-      rspec-expectations (~> 3.12.0)
-      rspec-mocks (~> 3.12.0)
     rspec-core (3.12.0)
       rspec-support (~> 3.12.0)
     rspec-expectations (3.12.2)
@@ -407,44 +346,17 @@ GEM
       rubocop (>= 1.33.0, < 2.0)
     rubocop-rspec (2.17.0)
       rubocop (~> 1.33)
-    ruby-graphviz (1.2.5)
-      rexml
     ruby-progressbar (1.13.0)
     ruby-vips (2.1.4)
       ffi (~> 1.12)
     ruby2_keywords (0.0.5)
-    ruby_parser (3.19.2)
-      sexp_processor (~> 4.16)
-    rubyzip (2.3.2)
     search_cop (1.2.3)
       treetop
-    selenium-webdriver (4.7.1)
-      rexml (~> 3.2, >= 3.2.5)
-      rubyzip (>= 1.2.2, < 3.0)
-      websocket (~> 1.0)
-    sexp_processor (4.16.1)
-    shellany (0.0.1)
     signet (0.17.0)
       addressable (~> 2.8)
       faraday (>= 0.17.5, < 3.a)
       jwt (>= 1.5, < 3.0)
       multi_json (~> 1.10)
-    solargraph (0.49.0)
-      backport (~> 1.2)
-      benchmark
-      bundler (~> 2.0)
-      diff-lcs (~> 1.4)
-      e2mmap
-      jaro_winkler (~> 1.5)
-      kramdown (~> 2.3)
-      kramdown-parser-gfm (~> 1.1)
-      parser (~> 3.0)
-      rbs (~> 2.0)
-      reverse_markdown (~> 2.0)
-      rubocop (~> 1.38)
-      thor (~> 1.0)
-      tilt (~> 2.0)
-      yard (~> 0.9, >= 0.9.24)
     spring (4.1.1)
     sprockets (4.2.0)
       concurrent-ruby (~> 1.0)
@@ -461,7 +373,6 @@ GEM
       activerecord (>= 5.1)
       state_machines-activemodel (>= 0.8.0)
     thor (1.2.1)
-    tilt (2.1.0)
     timeout (0.3.1)
     trailblazer-option (0.1.2)
     treetop (1.6.12)
@@ -477,22 +388,14 @@ GEM
       activemodel (>= 6.0.0)
       bindex (>= 0.4.0)
       railties (>= 6.0.0)
-    webdrivers (5.2.0)
-      nokogiri (~> 1.6)
-      rubyzip (>= 1.3.0)
-      selenium-webdriver (~> 4.0)
     webmock (3.18.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     webrick (1.7.0)
-    websocket (1.2.9)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    xpath (3.2.0)
-      nokogiri (~> 1.8)
-    yard (0.9.24)
     zeitwerk (2.6.6)
 
 PLATFORMS
@@ -510,14 +413,12 @@ DEPENDENCIES
   bootsnap (>= 1.4.4)
   brakeman
   byebug
-  capybara (>= 3.26)
   counter_culture
   database_cleaner
   discard (~> 1.2)
   dotenv-rails
   factory_bot_rails
   faker
-  fasterer
   foreman
   geokit-rails
   globalid
@@ -526,8 +427,6 @@ DEPENDENCIES
   graphql
   graphql-rails-generators
   graphql_devise
-  guard
-  guard-rspec
   httparty
   image_processing
   jwt
@@ -538,11 +437,8 @@ DEPENDENCIES
   puma (~> 6.0)
   rack-cors
   rack-mini-profiler (~> 2.0)
-  railroady
   rails (~> 7.0.4)
-  rails-erd
   redis (~> 4.0)
-  reek
   rexml
   rspec-json_expectations
   rspec-rails (~> 5.0)
@@ -553,17 +449,13 @@ DEPENDENCIES
   rubocop-rails
   rubocop-rspec
   search_cop
-  selenium-webdriver
-  solargraph
   spring
   sprockets
   state_machines
   state_machines-activerecord
   tzinfo-data
   web-console (>= 4.1.0)
-  webdrivers
   webmock
-  yard (= 0.9.24)
 
 RUBY VERSION
    ruby 3.1.6p260

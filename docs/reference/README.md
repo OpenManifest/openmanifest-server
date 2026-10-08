@@ -89,7 +89,7 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
 | File storage | ActiveStorage; base64 uploads via `active_storage_base64`; images resized via `image_processing` (vips); services `local`, `test`, `flyio` (`/data`), `google` (GCS) | `config/storage.yml`, `app/models/concerns/image/resizer.rb` |
 | Payments | Internal credit ledger only (Order → Receipt → 2 Transactions). **No external payment provider.** | `app/interactions/transactions/*` |
 | Third-party services | AppSignal (APM, both repos), Google Geocoding (`geocode` query), markschulze.net winds aloft API (`WeatherCondition#from_coordinates`), APF member API (`Federations::ApfSync`), randomuser.me / picsum.photos (demo seeds only) | |
-| Static web app | The API also serves a **stale 2021 web build** at `/` (`app/views/web-build/index.html`, `public/static/js/*`) | `app/controllers/application_controller.rb:7-9` |
+| Static web app | The API also serves a **stale 2021 web build** at `/` (`app/views/web-build/index.html`, `public/static/js/*`) | `app/controllers/application_controller.rb:7-9` (removed in P2.1) |
 
 ### How the two repos interact
 
@@ -440,7 +440,7 @@ are summarised, not exhaustively checked.
 | factory_bot_rails | 6.2.0 | 6.5.1 | minor | — | | yes |
 | rubocop | 1.50.2 | 1.91.0 | minor | — | | yes |
 | yard | 0.9.24 (pinned) | — | — | high + 2 medium | dev only; remove | partial |
-| selenium-webdriver, webdrivers, capybara | locked | — | — | selenium high | no system specs exist; remove | partial |
+| selenium-webdriver, webdrivers, capybara | locked | — | — | selenium high | no system specs exist; removed in P2.1 | partial |
 
 ### Client packages
 
@@ -453,4 +453,4 @@ Headline numbers:
 | react-native | 0.70.8 | 0.86.3 (pinned by SDK 57) | 16 minors | yes |
 | react | 18.1.0 | 19.2.3 (pinned by SDK 57) | 1 major | yes |
 | @apollo/client | 3.7.11 | 4.3.2 | 1 major | yes |
-| yarn audit | 715 advisories (61 critical, 452 high, 161 moderate, 41 low) in 2078 packages | | | yes |
+| yarn audit | 715 advisories (61 critical, 452 high, 161 moderate, 41 low) in 2078 packages | | | yes (historical: the backend's `package.json`/`yarn.lock` were removed in P2.1) |
