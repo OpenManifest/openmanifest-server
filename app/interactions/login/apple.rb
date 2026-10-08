@@ -4,6 +4,7 @@ require "active_interaction"
 
 class Login::Apple < ActiveInteraction::Base
   include ActiveInteraction::Extras::All
+
   APPLE_PEM_URL = "https://appleid.apple.com/auth/keys"
   run_in_transaction!
   string :token

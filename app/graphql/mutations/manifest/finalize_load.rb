@@ -3,6 +3,7 @@
 module Mutations::Manifest
   class FinalizeLoad < Mutations::BaseMutation
     include Types::Interfaces::ActiveInteraction
+
     field :load, Types::Manifest::Load, null: true
 
     argument :id, Int, required: true

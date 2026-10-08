@@ -1,6 +1,7 @@
 class Subscriptions::Manifest::LoadCreated < Types::Base::Subscription
   # `load_id` loads a `load`
   include Support::DropzoneContext
+
   argument :dropzone_id, ID, required: true
   field :load, Types::Manifest::Load, null: true
 

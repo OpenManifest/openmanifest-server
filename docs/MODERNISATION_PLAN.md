@@ -1360,7 +1360,7 @@ Size: L
 Fixes: BUG-097
 
 ### P2.9 — Upgrade Ruby 3.4.11 → 4.0.7
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.8
 Branch: modernise/p2-9-ruby-4
@@ -1382,7 +1382,7 @@ Size: M
 Fixes: none
 
 ### P2.10 — Upgrade development and test tooling
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.9
 Branch: modernise/p2-10-dev-gems

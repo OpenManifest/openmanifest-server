@@ -3,6 +3,7 @@
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
     include Types::Interfaces::ActiveInteraction
+
     argument_class Types::Base::Argument
     field_class Types::Base::Field
     input_object_class Types::Base::Input

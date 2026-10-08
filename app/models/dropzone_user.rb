@@ -17,6 +17,7 @@
 class DropzoneUser < ApplicationRecord
   include Discard::Model
   include MasterLogEntry::DropzoneUser
+
   belongs_to :user, optional: true
   belongs_to :dropzone
   belongs_to :user_role

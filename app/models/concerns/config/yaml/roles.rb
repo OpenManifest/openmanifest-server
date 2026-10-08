@@ -6,11 +6,8 @@ module Config::Yaml::Roles
     #
     # @return [Hash<Symbol, Array<String>>]
     def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/access.yml"),
-        symbolize_names: true,
-        aliases: true
-      )[:roles]
+      @config ||= YAML.safe_load_file("config/seed/access.yml", symbolize_names: true,
+                                                                aliases: true)[:roles]
     end
 
     # Get all default role slugs

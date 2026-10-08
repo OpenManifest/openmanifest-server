@@ -12,6 +12,7 @@
 #
 class JumpType < ApplicationRecord
   include Config::Yaml::JumpTypes
+
   has_many :licensed_jump_types
   has_many :licenses, through: :licensed_jump_types
 

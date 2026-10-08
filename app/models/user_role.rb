@@ -12,6 +12,7 @@
 #
 class UserRole < ApplicationRecord
   include Config::Yaml::Roles
+
   DEFAULT = :student
   DEFAULT_LICENSED = :fun_jumper
 
