@@ -1046,7 +1046,7 @@ Size: L
 Fixes: none
 
 ### P1.13 — Add client tests for users, credits and setup forms
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-13-tests-users-setup
@@ -3365,13 +3365,16 @@ Goal: Pull-to-refresh refreshes loads; manifest staff can create loads without t
 a ghost user submits.
 Context: BUG-065 (`ManifestScreen.tsx:289` calls the dropzone query's `fetchMore`), BUG-067 (`app/forms/load/useForm.tsx:77-108`
 runs the staff member's own `canManifest()`; server base errors not shown), BUG-086 (client#126, `app/forms/create_user/*`
-submit button does nothing).
+submit button does nothing; P1.13 found the cause: `RoleSelect` / `FederationSelect` drop the `error` prop), BUG-096 (aircraft and
+ticket dialogs pass `undefined` for untouched fields, overriding the form defaults).
 Steps:
   1. `onRefresh={loads.refetch}`, `refreshing={loads.networkStatus === NetworkStatus.refetch}`.
   2. Remove the `canManifest()` gate from load creation; show `errors` from the `createLoad` payload in the form.
   3. Create ghost: un-skip `app/__tests__/users/CreateGhost.test.tsx` from P1.13 (or write it if P1.13 found it passing); fix the cause (wiring of
-     `handleSubmit` / button `onPress`); close client#126 in the PR body.
-  4. Tests for each.
+     `handleSubmit` / button `onPress`; P1.13: forward `error` through `RoleSelect` and `FederationSelect`); close client#126 in the PR body.
+  4. BUG-096: un-skip the tests in `app/__tests__/setup/{AircraftForm,TicketTypeForm}.test.tsx`; stop the aircraft and ticket
+     dialogs from overriding form defaults with `undefined`.
+  5. Tests for each.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (create a ghost user, create a load as a staff user without
     membership) pass.
@@ -3380,7 +3383,7 @@ Acceptance criteria (owner, real device):
 Out of scope: none.
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-065, BUG-067, BUG-086
+Fixes: BUG-065, BUG-067, BUG-086, BUG-096
 
 ### P6.27 — Verify Phase 6
 Status: todo
