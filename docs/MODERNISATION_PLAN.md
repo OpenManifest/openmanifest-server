@@ -151,7 +151,7 @@ Goal of the phase: both apps install, boot, lint and test reproducibly in the VM
 there is an offline seed dataset and a manual smoke checklist. No application behaviour changes.
 
 ### P0.1 — Disable push-triggered deploy workflows
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/p0-1-disable-deploys
@@ -185,7 +185,7 @@ Size: S
 Fixes: BUG-057
 
 ### P0.2 — Pin the backend to Ruby 3.1.6 and document local configuration
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.1
 Branch: modernise/p0-2-ruby-316
@@ -226,7 +226,7 @@ Size: S
 Fixes: none
 
 ### P0.3 — Make the backend spec suite a green baseline
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.2
 Branch: modernise/p0-3-green-specs
