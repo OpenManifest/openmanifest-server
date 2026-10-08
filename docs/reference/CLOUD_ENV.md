@@ -103,7 +103,7 @@ Reachable already (verified): `github.com`, `raw.githubusercontent.com`, `rubyge
 |---|---|---|
 | `BASH_DEFAULT_TIMEOUT_MS` | `300000` | yarn installs, web exports and spec runs exceed the 2-minute default |
 | `BASH_MAX_TIMEOUT_MS` | `600000` | allow 10-minute foreground commands |
-| `SENTRYCLI_SKIP_DOWNLOAD` | `1` | `yarn install` fails otherwise (sentry-cli binary host blocked) |
+| `SENTRYCLI_SKIP_DOWNLOAD` | `1` | only needed until P3.2 removed `sentry-expo` (its postinstall downloaded a binary from a blocked host); harmless afterwards |
 | `DISABLE_SPRING` | `1` | Spring forks a background server that confuses repeated runs |
 | `PGHOST` / `PGUSER` / `PGPASSWORD` | `localhost` / `root` / `root` | local throwaway Postgres role created by the setup script (not a secret) |
 | `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes); `bundle exec rspec` needs it too (the master-log specs build blob URLs and fail with "Missing host to link to" without it; CI sets `http://localhost:5000/`) |
