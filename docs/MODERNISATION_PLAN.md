@@ -932,7 +932,7 @@ Size: S
 Fixes: none
 
 ### P1.9 — Replace the client's broken GraphQL check with an offline contract check
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.8
 Branch: modernise/p1-9-contract-check
