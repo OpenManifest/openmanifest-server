@@ -1570,7 +1570,7 @@ Size: M
 Fixes: BUG-084
 
 ### P3.4 — Replace libraries built on the Reanimated 1 API
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.2
 Branch: modernise/p3-4-replace-reanimated1-libs
@@ -1591,8 +1591,9 @@ Steps:
   3. `yarn remove react-native-skeleton-content react-native-animated-nav-tab-bar styled-components`.
   4. Add a render test `app/__tests__/components/Skeleton.test.tsx` (loading shows N blocks, loaded shows children).
 Acceptance criteria (cloud VM):
-  - Client checks pass; the web export log no longer contains `interpolate' is not exported`; web smoke test passes and
-    the screenshots show the tab bar.
+  - Client checks pass; web smoke test passes and the screenshots show the tab bar. (The `interpolate' is not exported`
+    line in the web export log does not come from these libraries: it comes from `@react-navigation/drawer`'s legacy
+    overlay and goes away in P3.9, whose criteria now include it.)
 Acceptance criteria (owner, real device):
   - none (checked in P3.22)
 Out of scope: visual redesign.
@@ -1723,6 +1724,7 @@ Steps:
      `Configuration.AircraftScreen`, `Unauthenticated.SignUpWizard`) or register them (BUG-083).
   4. Update `app/__mocks__/@react-navigation/core.js` (rename/move to `native.js` if imports changed).
 Acceptance criteria (cloud VM):
+  - The web export log does not contain `interpolate' is not exported` (left over from P3.4: `@react-navigation/drawer` legacy overlay).
   - Client checks and web smoke test pass. Deep links `/dropzone/manifest` and `/dropzone/load/1` open the right screens
     in the web build (smoke test visits both URLs directly).
 Acceptance criteria (owner, real device):
