@@ -3,7 +3,7 @@
 require "rails_helper"
 
 # The API no longer serves the stale 2021 web build (BUG-059, P2.1); the web app is hosted separately.
-RSpec.describe "Static routes", type: :request do
+RSpec.describe "Static routes" do
   ["/", "/index.html", "/confirm"].each do |path|
     it "does not route GET #{path}" do
       expect { get path }.to raise_error(ActionController::RoutingError)
