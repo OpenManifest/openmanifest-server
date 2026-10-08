@@ -151,7 +151,7 @@ Goal of the phase: both apps install, boot, lint and test reproducibly in the VM
 there is an offline seed dataset and a manual smoke checklist. No application behaviour changes.
 
 ### P0.1 — Disable push-triggered deploy workflows
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/p0-1-disable-deploys
