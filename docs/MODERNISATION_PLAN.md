@@ -522,7 +522,7 @@ Size: S
 Fixes: none
 
 ### P0.8 — Add a web smoke-test script for the client
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.6, P0.5
 Branch: modernise/p0-8-web-smoke
@@ -571,7 +571,7 @@ Size: M
 Fixes: none
 
 ### P0.9 — Correct the READMEs and add the owner smoke checklist
-Status: todo
+Status: done
 Repo: both
 Depends on: P0.5, P0.8
 Branch: modernise/p0-9-readmes
