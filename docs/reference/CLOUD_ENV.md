@@ -152,7 +152,7 @@ Login for seeded data (after P0.5): `owner@example.com` / `Password1!`.
 
 ```bash
 cd /home/user/openmanifest
-export PATH=/opt/node20/bin:$PATH              # Phases 0-2. From P3.15: /opt/node24/bin
+export PATH=/opt/node24/bin:$PATH              # since P3.15 (Phases 0-2 and P3.1-P3.14 used /opt/node20/bin); yarn 1 is preinstalled for node24
 yarn install --frozen-lockfile                 # ~1 min
 yarn check:types && yarn check:linting
 npx jest --ci                                  # after P0.6: yarn check:testing
