@@ -226,7 +226,7 @@ Size: S
 Fixes: none
 
 ### P0.3 — Make the backend spec suite a green baseline
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.2
 Branch: modernise/p0-3-green-specs

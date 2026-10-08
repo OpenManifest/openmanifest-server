@@ -22,6 +22,7 @@ FactoryBot.define do
     user
     dropzone { nil }
     credits { nil }
+    expires_at { 1.year.from_now }
     user_role do
       dropzone.user_roles.reload.third
     end
