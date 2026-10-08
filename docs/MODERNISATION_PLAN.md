@@ -673,7 +673,7 @@ Client operations to cover (from `client:app/api/{queries,mutations,subscription
 | Payments, activity, meta (P1.6) | `CreateOrder`, `DropzoneTransactions`, `Activity`, `ActivityDetails`, `Federations`, `Licenses`, `JumpTypes`, `AllowedJumpTypes`, `AddressToLocation` |
 
 ### P1.1 — Build the client-operation request-spec harness and cover auth operations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.10
 Branch: modernise/p1-1-operation-harness

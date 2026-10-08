@@ -1,0 +1,12 @@
+mutation MoveSlot($sourceSlot: Int!, $targetSlot: Int, $targetLoad: Int!) {
+  moveSlot(input: { sourceSlot: $sourceSlot, targetSlot: $targetSlot, targetLoad: $targetLoad }) {
+    loads {
+      ...loadDetails
+    }
+    errors
+    fieldErrors {
+      field
+      message
+    }
+  }
+}

@@ -1,0 +1,57 @@
+fragment dropzoneUserEssentials on DropzoneUser {
+  id
+  walletId
+  expiresAt
+  hasCredits
+  hasMembership
+  hasLicense
+  hasExitWeight
+  role {
+    ...roleEssentials
+  }
+  license {
+    ...licenseEssentials
+  }
+  user {
+    ...userEssentials
+  }
+}
+
+fragment dropzoneUserDetails on DropzoneUser {
+  ...dropzoneUserEssentials
+  credits
+  license {
+    ...licenseDetails
+  }
+  user {
+    ...userDetailed
+  }
+  availableRigs {
+    ...rigEssentials
+  }
+}
+
+fragment dropzoneUserProfile on DropzoneUser {
+  ...dropzoneUserDetails
+  permissions
+
+  rigInspections {
+    ...rigInspectionEssentials
+  }
+
+  orders {
+    edges {
+      node {
+        ...orderEssentials
+      }
+    }
+  }
+
+  slots {
+    edges {
+      node {
+        ...userSlotDetails
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+#import "./slot.gql"
+
+fragment loadEssentials on Load {
+  id
+  name
+  createdAt
+  dispatchAt
+  hasLanded
+  loadNumber
+  isFull
+  state
+  isOpen
+  weight
+  maxSlots
+  availableSlots
+  occupiedSlots
+}
+
+fragment loadDetails on Load {
+  ...loadEssentials
+  plane {
+    ...planeEssentials
+  }
+  gca {
+    ...dropzoneUserEssentials
+  }
+  pilot {
+    ...dropzoneUserEssentials
+  }
+  loadMaster {
+    ...dropzoneUserEssentials
+  }
+  slots {
+    ...slotDetails
+  }
+}

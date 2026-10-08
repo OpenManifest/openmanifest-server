@@ -1,0 +1,20 @@
+mutation UpdateTicketAddon(
+  $id: Int!
+  $attributes: ExtraInput!
+) {
+  updateExtra(
+    input: {
+      id: $id
+      attributes: $attributes
+    }
+  ) {
+    errors
+    fieldErrors {
+      message
+      field
+    }
+    extra {
+      ...ticketTypeExtraDetailed
+    }
+  }
+}

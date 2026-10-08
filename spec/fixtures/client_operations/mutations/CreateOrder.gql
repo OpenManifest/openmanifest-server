@@ -1,0 +1,29 @@
+#import "../fragments/orders.fragments.gql"
+mutation CreateOrder(
+  $buyer: ID!
+  $seller: ID!
+  $dropzone: ID!
+  $title: String
+  $amount: Float!
+) {
+  createOrder(
+    input: {
+      attributes: {
+        dropzone: $dropzone
+        title: $title
+        buyer: $buyer
+        seller: $seller
+        amount: $amount
+      }
+    }
+  ) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    order {
+      ...orderEssentials
+    }
+  }
+}

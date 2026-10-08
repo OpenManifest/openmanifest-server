@@ -1,0 +1,8 @@
+query AddressToLocation($search: String!) {
+  geocode(search: $search) {
+    formattedString
+    id
+    lat
+    lng
+  }
+}

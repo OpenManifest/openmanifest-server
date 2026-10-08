@@ -1,0 +1,34 @@
+mutation CreateGhost(
+  $name: String!
+  $phone: String
+  $email: String!
+  $federationNumber: String
+  $role: Int!
+  $license: Int
+  $dropzone: Int!
+  $exitWeight: Float!
+) {
+  createGhost(
+    input: {
+      attributes: {
+        role: $role
+        federationNumber: $federationNumber
+        name: $name
+        phone: $phone
+        email: $email
+        dropzone: $dropzone
+        license: $license
+        exitWeight: $exitWeight
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    user {
+      ...userDetailed
+    }
+  }
+}

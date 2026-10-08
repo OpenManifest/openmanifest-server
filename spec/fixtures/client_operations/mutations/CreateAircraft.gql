@@ -1,0 +1,25 @@
+mutation CreateAircraft(
+  $attributes: PlaneInput!
+) {
+  createPlane(
+    input: {
+      attributes: $attributes
+    }
+  ) {
+    plane {
+      ...planeEssentials
+
+      dropzone {
+        id
+        planes {
+          ...planeEssentials
+        }
+      }
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

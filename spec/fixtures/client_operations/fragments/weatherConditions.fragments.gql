@@ -1,0 +1,15 @@
+fragment weatherConditionEssentials on WeatherCondition {
+  id
+  jumpRun
+  temperature
+  offsetDirection
+  offsetMiles
+  createdAt
+  exitSpotMiles
+  winds {
+    temperature
+    altitude
+    speed
+    direction
+  }
+}

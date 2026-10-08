@@ -1,0 +1,14 @@
+mutation UpdateRole($roleId: Int!, $permissionName: String!, $enabled: Boolean!) {
+  updateRole(input: { id: $roleId, permission: $permissionName, enabled: $enabled }) {
+    role {
+      id
+      name
+      permissions
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

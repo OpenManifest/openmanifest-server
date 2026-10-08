@@ -1,0 +1,9 @@
+query Dropzones($state: [DropzoneState!]) {
+  dropzones(state: $state) {
+    edges {
+      node {
+        ...dropzoneEssentials
+      }
+    }
+  }
+}

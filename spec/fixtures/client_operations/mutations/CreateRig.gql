@@ -1,0 +1,38 @@
+#import "../fragments/rigs.fragments.gql"
+
+mutation CreateRig(
+  $make: String
+  $name: String
+  $model: String
+  $serial: String
+  $rigType: String
+  $canopySize: Int
+  $repackExpiresAt: Int
+  $userId: Int
+  $dropzoneId: Int
+) {
+  createRig(
+    input: {
+      attributes: {
+        name: $name
+        make: $make
+        model: $model
+        serial: $serial
+        repackExpiresAt: $repackExpiresAt
+        dropzoneId: $dropzoneId
+        userId: $userId
+        canopySize: $canopySize
+        rigType: $rigType
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    rig {
+      ...userRigDetailed
+    }
+  }
+}

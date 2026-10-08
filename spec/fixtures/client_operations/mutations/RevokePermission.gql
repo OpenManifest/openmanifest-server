@@ -1,0 +1,18 @@
+mutation RevokePermission($dropzoneUserId: ID!, $permissionName: Permission!) {
+  revokePermission(input: { dropzoneUser: $dropzoneUserId, permission: $permissionName }) {
+    fieldErrors {
+        message
+        field
+      }
+    errors
+    dropzoneUser {
+      ...dropzoneUserEssentials
+      permissions
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}
