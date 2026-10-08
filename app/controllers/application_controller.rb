@@ -4,10 +4,6 @@ class ApplicationController < ActionController::Base
   include GraphqlDevise::SetUserByToken
   before_action :set_appsignal_tags
 
-  def index
-    render file: "app/views/web-build/index.html", cache: false
-  end
-
   def set_appsignal_tags
     return if Rails.env.test?
     if current_user
