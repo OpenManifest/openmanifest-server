@@ -1,0 +1,42 @@
+mutation UserSignUp(
+  $email: String!
+  $password: String!
+  $passwordConfirmation: String!
+  $name: String!
+  $phone: String!
+  $pushToken: String
+  $exitWeight: Float!
+  $licenseId: Int
+) {
+  userRegister(
+    email: $email
+    password: $password
+    passwordConfirmation: $passwordConfirmation
+    exitWeight: $exitWeight
+    name: $name
+    phone: $phone
+    pushToken: $pushToken
+    licenseId: $licenseId
+    confirmUrl: "https://openmanifest.org/confirm/"
+  ) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    authenticatable {
+      createdAt
+      email
+      id
+      name
+      phone
+    }
+    credentials {
+      accessToken
+      tokenType
+      client
+      expiry
+      uid
+    }
+  }
+}

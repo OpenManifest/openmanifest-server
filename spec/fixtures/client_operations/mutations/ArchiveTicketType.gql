@@ -1,0 +1,12 @@
+mutation ArchiveTicketType($id: Int!) {
+  archiveTicketType(input: { id: $id  }) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    ticketType {
+      ...ticketTypeEssentials
+    }
+  }
+}

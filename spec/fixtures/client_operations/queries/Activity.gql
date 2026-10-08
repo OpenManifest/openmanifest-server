@@ -1,0 +1,38 @@
+query Activity(
+  $dropzone: [ID!],
+  $levels: [EventLevel!],
+  $actions: [EventAction!],
+  $accessLevels: [EventAccessLevel!],
+  $timeRange: TimeRangeInput
+  $createdBy: [ID!]
+) {
+  activity(dropzone: $dropzone, timeRange: $timeRange, accessLevels: $accessLevels, levels: $levels, actions: $actions, createdBy: $createdBy) {
+    edges {
+      node {
+        ...activityEssentials
+      }
+    }
+  }
+}
+
+query ActivityDetails(
+  $dropzone: [ID!],
+  $levels: [EventLevel!],
+  $actions: [EventAction!],
+  $accessLevels: [EventAccessLevel!],
+  $timeRange: TimeRangeInput
+  $createdBy: [ID!]
+  $after: String
+) {
+  activity(dropzone: $dropzone, timeRange: $timeRange, accessLevels: $accessLevels, levels: $levels, actions: $actions, createdBy: $createdBy, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      node {
+        ...activityDetails
+      }
+    }
+  }
+}

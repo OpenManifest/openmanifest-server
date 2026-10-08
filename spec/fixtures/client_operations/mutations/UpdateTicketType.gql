@@ -1,0 +1,38 @@
+mutation UpdateTicketType(
+  $id: Int!
+  $attributes: TicketTypeInput!
+) {
+  updateTicketType(
+    input: {
+      id: $id
+      attributes: $attributes
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    ticketType {
+      ...ticketTypeEssentials
+      id
+      name
+      altitude
+      cost
+      allowManifestingSelf
+      extras {
+        id
+        name
+        cost
+      }
+
+      dropzone {
+        ...dropzoneEssentials
+
+        ticketTypes {
+          ...ticketTypeEssentials
+        }
+      }
+    }
+  }
+}

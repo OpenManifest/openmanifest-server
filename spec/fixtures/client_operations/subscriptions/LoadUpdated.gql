@@ -1,0 +1,7 @@
+subscription LoadUpdated($id: ID!) {
+  loadUpdated(loadId: $id) {
+    load {
+      ...loadDetails
+    }
+  }
+}

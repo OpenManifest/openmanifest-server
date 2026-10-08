@@ -1,0 +1,7 @@
+subscription UserUpdated($id: ID!) {
+  userUpdated(dropzoneUserId: $id) {
+    dropzoneUser {
+      ...dropzoneUserDetails
+    }
+  }
+}

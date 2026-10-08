@@ -1,0 +1,34 @@
+fragment transactionEssentials on Transaction {
+  id
+  transactionType
+  amount
+  status
+  createdAt
+  message
+  sender {
+    ... on DropzoneUser {
+      id
+      user {
+        id
+        name
+      }
+    }
+    ... on Dropzone {
+      id
+      name
+    }
+  }
+  receiver {
+    ... on DropzoneUser {
+      id
+      user {
+        id
+        name
+      }
+    }
+    ... on Dropzone {
+      id
+      name
+    }
+  }
+}

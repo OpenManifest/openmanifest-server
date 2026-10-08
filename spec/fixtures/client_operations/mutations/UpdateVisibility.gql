@@ -1,0 +1,12 @@
+mutation UpdateVisibility($dropzone: ID!, $event: DropzoneStateEvent!) {
+  updateVisibility(input: { dropzone: $dropzone, event: $event }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    dropzone {
+      ...dropzoneDetailed
+    }
+  }
+}

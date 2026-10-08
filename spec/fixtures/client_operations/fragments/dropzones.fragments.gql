@@ -1,0 +1,78 @@
+#import "./currentuser.fragments.gql";
+fragment dropzoneEssentials on Dropzone {
+  id
+  walletId
+  lat
+  lng
+  name
+  status: state
+  primaryColor
+  secondaryColor
+  banner
+  isCreditSystemEnabled
+  createdAt
+
+  settings {
+    allowManifestBypass
+    allowNegativeCredits
+    allowDoubleManifesting
+    requireCredits
+    requireLicense
+    requireMembership
+    requireRigInspection
+    requireEquipment
+    requireReserveInDate
+  }
+}
+
+fragment dropzoneStatisticsEssentials on Statistics {
+  id
+  activeUserCount
+  totalUserCount
+  slotsByJumpType(timeRange: $timeRange) {
+    name
+    count
+  }
+  slotsCount(timeRange: $timeRange)
+  cancelledLoadsCount(timeRange: $timeRange)
+  dzsoCount
+  finalizedLoadsCount(timeRange: $timeRange)
+  gcaCount
+  pilotCount
+  inactiveUserCount
+  loadsCount(timeRange: $timeRange)
+  loadCountByDay(timeRange: $timeRange) {
+    date
+    count
+  }
+  revenueCentsCount(timeRange: $timeRange)
+  rigInspectorCount
+}
+
+fragment dropzoneStatistics on Dropzone {
+  ...dropzoneEssentials
+  statistics {
+    ...dropzoneStatisticsEssentials
+  }
+}
+fragment dropzoneDetailed on Dropzone {
+  ...dropzoneEssentials,
+
+  federation {
+    id
+    name
+    slug
+  }
+
+  currentConditions {
+    ...weatherConditionEssentials
+  }
+}
+
+fragment dropzoneExtensive on Dropzone {
+  ...dropzoneDetailed
+
+  currentUser {
+    ...currentUserDetailed
+  }
+}

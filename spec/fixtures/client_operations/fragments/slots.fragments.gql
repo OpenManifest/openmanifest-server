@@ -1,0 +1,50 @@
+fragment slotEssentials on Slot {
+  id
+  createdAt
+  exitWeight
+  passengerName
+  passengerExitWeight
+  wingLoading
+  groupNumber
+  cost
+  ticketType {
+    ...ticketTypeDetails
+  }
+  jumpType {
+    ...jumpTypeEssentials
+  }
+  extras {
+    id
+    name
+  }
+}
+
+fragment slotDetails on Slot {
+  ...slotEssentials
+  rig {
+    ...rigEssentials
+  }
+  dropzoneUser {
+    ...dropzoneUserEssentials
+  }
+}
+
+fragment userSlotDetails on Slot {
+  ...slotDetails,
+  load {
+    ...loadEssentials
+  }
+}
+
+fragment slotExhaustive on Slot {
+  ...slotDetails
+  dropzoneUser {
+    ...dropzoneUserDetails
+  }
+  load {
+    ...loadDetails
+  }
+  rig {
+    ...rigEssentials
+  }
+}

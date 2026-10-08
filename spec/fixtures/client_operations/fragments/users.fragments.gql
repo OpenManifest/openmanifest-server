@@ -1,0 +1,29 @@
+fragment userEssentials on User {
+  id
+  name
+  nickname
+  phone
+  email
+  exitWeight
+  moderationRole
+  image
+  apfNumber
+}
+
+fragment userDetailed on User {
+  ...userEssentials
+  userFederations {
+    ...userFederationEssentials
+  }
+  rigs {
+    ...userRigDetailed
+  }
+}
+
+fragment currentUser on User {
+  ...userDetailed
+  dropzoneUsers {
+    ...dropzoneUserDetails
+  }
+  pushToken
+}

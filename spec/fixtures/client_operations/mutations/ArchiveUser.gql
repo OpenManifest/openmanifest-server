@@ -1,0 +1,12 @@
+mutation ArchiveUser($id: Int!) {
+  deleteUser(input: { id: $id  }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    dropzoneUser {
+      ...dropzoneUserEssentials
+    }
+  }
+}

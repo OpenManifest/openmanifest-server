@@ -1,0 +1,31 @@
+mutation ManifestGroup(
+  $jumpType: ID
+  $extras: [ID!]
+  $load: ID
+  $ticketType: ID
+  $groupNumber: Int
+  $userGroup: [SlotUser!]!
+) {
+  createSlots(
+    input: {
+      attributes: {
+        jumpType: $jumpType
+        groupNumber: $groupNumber
+        extras: $extras
+        load: $load
+        ticketType: $ticketType
+        userGroup: $userGroup
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+
+    load {
+      ...loadDetails
+    }
+  }
+}

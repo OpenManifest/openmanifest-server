@@ -1,0 +1,47 @@
+#import "./orders.fragments.gql"
+#import "./transactions.fragments.gql"
+#import "./users.fragments.gql"
+
+fragment currentUserEssentials on DropzoneUser {
+  id
+  walletId
+  credits
+  hasCredits
+  hasExitWeight
+  hasMembership
+  hasReserveInDate
+  hasRigInspection
+  hasLicense
+  permissions
+  expiresAt
+
+  role {
+    ...roleEssentials
+  }
+}
+
+fragment currentUserDetailed on DropzoneUser {
+  ...currentUserEssentials,
+
+  rigInspections {
+    ...rigInspectionEssentials
+  }
+
+  orders {
+    edges {
+      node {
+        ...orderEssentials
+      }
+    }
+  }
+  availableRigs {
+    ...rigEssentials
+  }
+  license {
+    ...licenseDetails
+  }
+
+  user {
+    ...currentUser
+  }
+}

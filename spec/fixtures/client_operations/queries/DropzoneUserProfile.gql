@@ -1,0 +1,6 @@
+#import "../fragments/dropzoneUsers.fragments.gql"
+query DropzoneUserProfile($id: ID!) {
+  dropzoneUser(id: $id) {
+    ...dropzoneUserProfile
+  }
+}
