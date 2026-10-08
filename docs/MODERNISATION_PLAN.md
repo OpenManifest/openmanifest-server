@@ -1785,7 +1785,7 @@ Size: L
 Fixes: none
 
 ### P3.12 — Upgrade react-native-paper 4 → 5 (screens)
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.11
 Branch: modernise/p3-12-paper-5-screens
@@ -1806,7 +1806,7 @@ Acceptance criteria (owner, real device):
 Out of scope: redesign.
 Risk / rollback: revert together with P3.11.
 Size: L
-Fixes: none
+Fixes: BUG-099
 
 ### P3.13 — Replace remaining unmaintained UI libraries
 Status: todo
@@ -3872,3 +3872,4 @@ Bugs not in any task's `Fixes:` line, with the reason.
 | Bug | Reason | Where it is handled |
 |---|---|---|
 | BUG-085 | Suspected only (client#127, maps not loading on web/Android); cannot be confirmed without valid `GOOGLE_MAPS_*` keys, which the VM does not have. | Owner checks maps in P3.22. If confirmed, the executor adds a task after P5.10 (replace `react-native-maps` web shim / configure keys via EAS secrets) with `Fixes: BUG-085`. |
+| BUG-100 | Cold loads of permission-gated tab URLs (`/users`, `/user/<id>`) end on `/`. The fix needs a decision: always register the tabs and show a no-access state, or hold the navigator until permissions are loaded. | The executor adds a task after P4.8 (when the session store makes permissions available before navigation mounts); until then the smoke test only deep-links ungated routes. |
