@@ -464,7 +464,7 @@ Size: S
 Fixes: none
 
 ### P0.7 — Add client CI on GitHub Actions
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.6
 Branch: modernise/p0-7-client-ci
