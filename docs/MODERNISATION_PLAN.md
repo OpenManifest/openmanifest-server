@@ -1809,7 +1809,7 @@ Size: L
 Fixes: BUG-099
 
 ### P3.13 — Replace remaining unmaintained UI libraries
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.12
 Branch: modernise/p3-13-replace-unmaintained-libs
