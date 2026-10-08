@@ -1939,7 +1939,7 @@ Size: M
 Fixes: none
 
 ### P3.18 — Upgrade to Expo SDK 57
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.17
 Branch: modernise/p3-18-expo-57
