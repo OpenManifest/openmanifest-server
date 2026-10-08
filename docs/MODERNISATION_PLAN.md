@@ -424,7 +424,7 @@ Size: S
 Fixes: none
 
 ### P0.6 — Make the client toolchain reproducible
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.1
 Branch: modernise/p0-6-client-toolchain
