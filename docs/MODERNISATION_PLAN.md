@@ -1647,7 +1647,7 @@ Size: M
 Fixes: none
 
 ### P3.7 — Upgrade to Expo SDK 50 and move web builds to Metro
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.6
 Branch: modernise/p3-7-expo-50-metro-web
