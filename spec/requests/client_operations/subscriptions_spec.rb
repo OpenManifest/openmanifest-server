@@ -17,13 +17,23 @@ RSpec.describe "Client operations: subscription triggers" do
   before { ActionCable.server.pubsub.clear }
 
   describe "subscription documents" do
-    %w(LoadCreated LoadUpdated).each do |name|
-      it "validates #{name} against the schema" do
-        query = GraphQL::Query.new(DzSchema, ClientOperations.document(name))
+    def validation_errors(document)
+      query = GraphQL::Query.new(DzSchema, document)
+      GraphQL::StaticValidation::Validator.new(schema: DzSchema).validate(query)[:errors]
+    end
 
-        expect(GraphQL::StaticValidation::Validator.new(schema: DzSchema).validate(query)[:errors]).to be_empty
-        expect(query.document.definitions.first.operation_type).to eq("subscription")
-      end
+    it "validates LoadCreated against the schema" do
+      document = ClientOperations.document("LoadCreated")
+
+      expect(validation_errors(document)).to be_empty
+      expect(document).to start_with("subscription LoadCreated")
+    end
+
+    it "validates LoadUpdated against the schema" do
+      document = ClientOperations.document("LoadUpdated")
+
+      expect(validation_errors(document)).to be_empty
+      expect(document).to start_with("subscription LoadUpdated")
     end
   end
 
