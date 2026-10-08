@@ -264,7 +264,7 @@ Size: M
 Fixes: BUG-058
 
 ### P0.4 — Add backend CI on GitHub Actions
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.3
 Branch: modernise/p0-4-backend-ci
