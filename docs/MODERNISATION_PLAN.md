@@ -1702,7 +1702,7 @@ Size: M
 Fixes: none
 
 ### P3.9 — Upgrade React Navigation 6 → 7
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.8
 Branch: modernise/p3-9-react-navigation-7
@@ -1740,7 +1740,7 @@ Repo: client
 Depends on: P3.9
 Branch: modernise/p3-10-expo-52
 Goal: The client runs on Expo SDK 52 (RN 0.76.9, React 18.3.1).
-Context: SDK step procedure with N = 52. `react-native-screens` moves to 4.x. Keep the legacy architecture explicitly for
+Context: SDK step procedure with N = 52. `react-native-screens` moves to 4.x (React Navigation 7, installed in P3.9, declares it as a peer `>= 4.0.0`; until this task yarn prints three peer warnings and the native behaviour with screens 3.31 is untested). Keep the legacy architecture explicitly for
 this step (`"newArchEnabled": false` in `app.json` under `expo`) so that the New Architecture switch happens alone in P3.14.
 Steps:
   1. SDK step procedure (N = 52), with `react-test-renderer@18.3.1`.
@@ -1987,7 +1987,7 @@ Repo: client
 Depends on: P3.19
 Branch: modernise/p3-20-ts-eslint
 Goal: TypeScript 5.9.3 and ESLint 9-style flat config (`eslint-config-expo` for SDK 57) replace the old toolchain; Rome (unmaintained, last release 2024) is removed in favour of Prettier.
-Context: `typescript` ^4.6.3 (4.9.4 installed), `.eslintrc.js` (only react-hooks rules), `rome.json`, `.prettierrc`.
+Context: `typescript` is already 5.9.3 and `ts-node` 10.9.2 since P3.9 (React Navigation 7's types need TS 5), so step 1 only adds the ESLint/Prettier packages; `.eslintrc.js` (only react-hooks rules), `rome.json`, `.prettierrc`.
 TypeScript 7.0 exists but is a new native compiler; use 5.9.3, the newest 5.x, for compatibility with Expo tooling.
 Steps:
   1. `yarn add -D typescript@5.9.3 eslint@^9 eslint-config-expo@~57 prettier@latest eslint-config-prettier@latest`.
