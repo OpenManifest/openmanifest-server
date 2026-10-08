@@ -353,7 +353,7 @@ Environment variables (names only):
 
 See the client reference. Summary: `yarn` 1, Expo CLI via `npx expo`, `EXPO_ENV` ∈ {`local`,`staging`,`production`}
 chooses the API URL; EAS Build profiles `development`/`staging`/`production` (`eas.json`); EAS Update channel per
-environment; web built with `expo export:web` (webpack) and pushed to GitHub Pages repos
+environment; web built with `expo export --platform web` (Metro, since P3.7; webpack before) and pushed to GitHub Pages repos
 `OpenManifest/openmanifest-web` / `openmanifest-web-staging` (`.github/workflows/publish.yml`).
 
 ---
