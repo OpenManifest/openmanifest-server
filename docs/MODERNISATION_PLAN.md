@@ -151,7 +151,7 @@ Goal of the phase: both apps install, boot, lint and test reproducibly in the VM
 there is an offline seed dataset and a manual smoke checklist. No application behaviour changes.
 
 ### P0.1 — Disable push-triggered deploy workflows
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/p0-1-disable-deploys
@@ -185,7 +185,7 @@ Size: S
 Fixes: BUG-057
 
 ### P0.2 — Pin the backend to Ruby 3.1.6 and document local configuration
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.1
 Branch: modernise/p0-2-ruby-316
@@ -226,7 +226,7 @@ Size: S
 Fixes: none
 
 ### P0.3 — Make the backend spec suite a green baseline
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.2
 Branch: modernise/p0-3-green-specs
@@ -264,7 +264,7 @@ Size: M
 Fixes: BUG-058
 
 ### P0.4 — Add backend CI on GitHub Actions
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.3
 Branch: modernise/p0-4-backend-ci
@@ -337,7 +337,7 @@ Size: S
 Fixes: BUG-058, BUG-014 (committed secret part)
 
 ### P0.5 — Add an offline development seed dataset
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.2
 Branch: modernise/p0-5-dev-seed
@@ -418,13 +418,13 @@ Acceptance criteria (cloud VM):
     `curl -s -X POST http://local.openmanifest.org:5000/graphql -H 'Content-Type: application/json' -d '{"query":"mutation { userLogin(email: \"owner@example.com\", password: \"Password1!\") { credentials { accessToken } } }"}'`
 Acceptance criteria (owner, real device):
   - none
-Out of scope: changing `db/seeds/demo.rb`; fixing the double-counted `slots_count` this dataset will show (BUG-019, P6.9).
+Out of scope: changing `db/seeds/demo.rb`; fixing the double-counted `slots_count` this dataset will show (BUG-019, P6.10).
 Risk / rollback: development data only; the file refuses to run in production. Revert the commit.
 Size: S
 Fixes: none
 
 ### P0.6 — Make the client toolchain reproducible
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.1
 Branch: modernise/p0-6-client-toolchain
@@ -464,7 +464,7 @@ Size: S
 Fixes: none
 
 ### P0.7 — Add client CI on GitHub Actions
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.6
 Branch: modernise/p0-7-client-ci
@@ -522,7 +522,7 @@ Size: S
 Fixes: none
 
 ### P0.8 — Add a web smoke-test script for the client
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.6, P0.5
 Branch: modernise/p0-8-web-smoke
@@ -571,7 +571,7 @@ Size: M
 Fixes: none
 
 ### P0.9 — Correct the READMEs and add the owner smoke checklist
-Status: todo
+Status: done
 Repo: both
 Depends on: P0.5, P0.8
 Branch: modernise/p0-9-readmes
