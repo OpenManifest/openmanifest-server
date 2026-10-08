@@ -1073,7 +1073,7 @@ Size: M
 Fixes: none
 
 ### P1.14 — Verify Phase 1
-Status: todo
+Status: done
 Repo: both
 Depends on: P1.1, P1.2, P1.3, P1.4, P1.5, P1.6, P1.7, P1.8, P1.9, P1.10, P1.11, P1.12, P1.13
 Branch: modernise/p1-14-verify
