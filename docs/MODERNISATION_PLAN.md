@@ -990,7 +990,7 @@ Size: S
 Fixes: BUG-081
 
 ### P1.11 — Add client tests for login, logout and dropzone selection
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-11-tests-auth
