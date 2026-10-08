@@ -21,6 +21,11 @@
 #
 class Load < ApplicationRecord
   include Discard::Model
+
+  # Must be declared before the state machine: state_machines-activerecord 0.200 only integrates with an enum that
+  # already exists (otherwise new loads have a nil state and every event raises "nil is not a known state value").
+  enum :state, { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
+
   include StateMachines::LoadState
   include MasterLogEntry::Load
 
@@ -51,8 +56,6 @@ class Load < ApplicationRecord
   scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
-
-  enum :state, { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
 
   # Changes the state of the load, which affects whether
   # users get charged credits or not, and what notifications
