@@ -15,7 +15,7 @@ class DzSchema < GraphQL::Schema
     ]
   )
   use(GraphQL::Dataloader)
-  use(GraphQL::Tracing::AppsignalTracing)
+  trace_with(GraphQL::Tracing::AppsignalTrace)
 
   # Fields are broadcastable unless broadcastable: false,
   # which pretty much only applies to Session since nothing
