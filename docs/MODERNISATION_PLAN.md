@@ -1755,7 +1755,7 @@ Size: M
 Fixes: none
 
 ### P3.11 — Upgrade react-native-paper 4 → 5 (infrastructure and shared components)
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.10
 Branch: modernise/p3-11-paper-5-core
@@ -1790,7 +1790,11 @@ Repo: client
 Depends on: P3.11
 Branch: modernise/p3-12-paper-5-screens
 Goal: The whole app compiles and runs with Paper 5.
-Context: The remaining type errors from P3.11 are under `app/screens/`.
+Context: The remaining type errors from P3.11 are under `app/screens/` (28: 21× `theme.colors.text` → use `useAppTheme()`
+from `app/hooks/useAppTheme`, 3× dialog-opener `onPress` signatures, 2× `Tabs` (wrap in `TabsProvider`; drop the `theme` prop),
+1× `IconButton color` → `iconColor`, 1× `Appbar.Content title`). Paper 5's `ProgressBar` fills its parent's height on web;
+P3.11 added `app/components/ProgressBar.tsx` (a 4 px wrapper) and used it outside `app/screens/`. Replace the Paper `ProgressBar`
+imports in `app/screens/` (`grep -rln "ProgressBar" app/screens`) with it, otherwise the manifest board renders empty on web.
 Steps:
   1. Fix all remaining Paper 5 type errors and runtime warnings under `app/screens/`.
   2. Run the web smoke test and compare its screenshots with the Phase 2 ones; fix any obviously broken layout (missing
