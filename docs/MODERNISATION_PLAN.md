@@ -1227,7 +1227,7 @@ Size: L
 Fixes: none
 
 ### P2.4 — Upgrade Rails 7.1 → 7.2
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.3
 Branch: modernise/p2-4-rails-7-2

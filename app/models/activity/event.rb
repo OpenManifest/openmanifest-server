@@ -7,11 +7,11 @@ class Activity::Event < ApplicationRecord
   belongs_to :created_by, foreign_key: :dropzone_user_id, optional: true, class_name: "DropzoneUser"
   belongs_to :dropzone
 
-  enum level: { :debug => 0, :info => 1, :error => 2 }
+  enum :level, { :debug => 0, :info => 1, :error => 2 }
 
-  enum access_level: { :user => 0, :admin => 1, :system => 2 }
+  enum :access_level, { :user => 0, :admin => 1, :system => 2 }
 
-  enum action: { :assigned => 0, :created => 1, :updated => 2, :confirmed => 3, :deleted => 4 }
+  enum :action, { :assigned => 0, :created => 1, :updated => 2, :confirmed => 3, :deleted => 4 }
 
   # Default to info if no level is set
   before_validation do
