@@ -1681,7 +1681,7 @@ Size: L
 Fixes: none
 
 ### P3.8 — Upgrade to Expo SDK 51
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.7
 Branch: modernise/p3-8-expo-51
