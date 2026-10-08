@@ -1988,7 +1988,7 @@ Size: M
 Fixes: none
 
 ### P3.20 — Upgrade TypeScript and linting; drop Rome
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.19
 Branch: modernise/p3-20-ts-eslint
