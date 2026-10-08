@@ -185,7 +185,7 @@ Size: S
 Fixes: BUG-057
 
 ### P0.2 — Pin the backend to Ruby 3.1.6 and document local configuration
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.1
 Branch: modernise/p0-2-ruby-316
