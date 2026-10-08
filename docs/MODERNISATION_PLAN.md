@@ -337,7 +337,7 @@ Size: S
 Fixes: BUG-058, BUG-014 (committed secret part)
 
 ### P0.5 — Add an offline development seed dataset
-Status: todo
+Status: done
 Repo: backend
 Depends on: P0.2
 Branch: modernise/p0-5-dev-seed
@@ -418,7 +418,7 @@ Acceptance criteria (cloud VM):
     `curl -s -X POST http://local.openmanifest.org:5000/graphql -H 'Content-Type: application/json' -d '{"query":"mutation { userLogin(email: \"owner@example.com\", password: \"Password1!\") { credentials { accessToken } } }"}'`
 Acceptance criteria (owner, real device):
   - none
-Out of scope: changing `db/seeds/demo.rb`; fixing the double-counted `slots_count` this dataset will show (BUG-019, P6.9).
+Out of scope: changing `db/seeds/demo.rb`; fixing the double-counted `slots_count` this dataset will show (BUG-019, P6.10).
 Risk / rollback: development data only; the file refuses to run in production. Revert the commit.
 Size: S
 Fixes: none

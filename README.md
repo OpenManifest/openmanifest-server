@@ -48,6 +48,12 @@ $ bundle exec rspec spec
 ```
 
 
+## Development data
+
+`bin/rails db:seed db:seed:dev_baseline` creates an offline demo dropzone ("Demo Dropzone") with staff, jumpers, an
+aircraft, ticket types and two loads. It needs no network access and can be run repeatedly. Log in as
+`owner@example.com` / `Password1!` (all seeded users share this password).
+
 ## Start the server locally
 
 ```
