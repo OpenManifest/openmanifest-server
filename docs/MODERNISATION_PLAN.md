@@ -1305,7 +1305,7 @@ Size: L
 Fixes: none
 
 ### P2.7 — Upgrade Rails 8.0 → 8.1
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.6
 Branch: modernise/p2-7-rails-8-1
