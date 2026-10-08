@@ -1842,7 +1842,7 @@ Size: L
 Fixes: none
 
 ### P3.14 — Upgrade to Expo SDK 53, React 19 and the New Architecture
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.13
 Branch: modernise/p3-14-expo-53-new-arch
