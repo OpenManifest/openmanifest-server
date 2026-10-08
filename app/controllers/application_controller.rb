@@ -2,6 +2,7 @@
 
 class ApplicationController < ActionController::Base
   include GraphqlDevise::SetUserByToken
+
   before_action :set_appsignal_tags
 
   def set_appsignal_tags

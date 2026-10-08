@@ -3,6 +3,7 @@
 module Mutations::Users
   class JoinFederation < Mutations::BaseMutation
     include Types::Interfaces::ActiveInteraction
+
     field :user_federation, Types::Users::UserFederation, null: true
     argument :attributes, Types::Input::UserFederationInput, required: true
 

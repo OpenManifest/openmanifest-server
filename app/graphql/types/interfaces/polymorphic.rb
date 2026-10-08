@@ -3,6 +3,7 @@
 module Types::Interfaces
   module Polymorphic
     include Types::Base::Interface
+
     graphql_name 'AnyResource'
     field :id, ID, null: false
     field :guid, ID, null: false

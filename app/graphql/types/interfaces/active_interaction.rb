@@ -3,6 +3,7 @@
 module Types::Interfaces
   module ActiveInteraction
     include Types::Base::Interface
+
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 

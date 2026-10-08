@@ -85,8 +85,8 @@ gem "awesome_print"
 gem 'image_processing'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem "byebug", platforms: %i(mri windows)
+  # Call `debugger` anywhere in the code to stop execution and get a debugger console
+  gem "debug", platforms: %i(mri windows), require: "debug/prelude"
   gem "factory_bot_rails"
   gem "rspec-json_expectations"
 
@@ -98,18 +98,16 @@ end
 
 group :development do
   # Annotate with database schema
-  gem "annotate"
+  gem "annotaterb"
 
   gem "web-console", ">= 4.1.0"
 
-  # rubocop 1.50 loads these, which are no longer default gems in Ruby 4.0; P2.10 upgrades rubocop and drops them
-  gem "benchmark"
-  gem "ostruct"
   gem "rubocop"
   gem "rubocop-rails"
   gem "rubocop-performance"
   gem "rubocop-graphql"
   gem "rubocop-rspec"
+  gem "rubocop-factory_bot"
 
   # Security
   gem "brakeman"
@@ -119,10 +117,8 @@ group :development do
 
   # Display performance information such as SQL time and flame graphs for each request in your browser.
   # Can be configured to work on production as well see: https://github.com/MiniProfiler/rack-mini-profiler/blob/master/README.md
-  gem "listen", "~> 3.3"
-  gem "rack-mini-profiler", "~> 2.0"
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem "spring"
+  gem "listen"
+  gem "rack-mini-profiler"
 end
 
 group :test do

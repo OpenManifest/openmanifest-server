@@ -3,6 +3,7 @@
 module Mutations::Payments
   class CreateOrder < Mutations::BaseMutation
     include Types::Interfaces::ActiveInteraction
+
     field :order, Types::Payments::Order, null: true
     argument :attributes, Types::Input::OrderInput, required: true
 

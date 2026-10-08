@@ -2,6 +2,7 @@
 
 class GraphqlController < ApplicationController
   include GraphqlDevise::SetUserByToken
+
   protect_from_forgery with: :null_session, except: [:index, :execute]
 
   def index

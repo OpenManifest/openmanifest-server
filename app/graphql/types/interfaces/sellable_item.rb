@@ -3,6 +3,7 @@
 module Types::Interfaces
   module SellableItem
     include Types::Base::Interface
+
     field :cost, Float, null: true
     field :title, String, null: true
 

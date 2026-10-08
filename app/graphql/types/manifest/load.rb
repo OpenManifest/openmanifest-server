@@ -53,7 +53,7 @@ module Types::Manifest
 
     field :is_full, Boolean, null: false
     def is_full
-      !!((object.dispatch_at && object.dispatch_at < DateTime.now) && (object.slots.count >= object.max_slots))
+      !!(object.dispatch_at && object.dispatch_at < DateTime.now && (object.slots.count >= object.max_slots))
     end
   end
 end

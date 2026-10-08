@@ -6,10 +6,7 @@ module Config::Yaml::JumpTypes
     #
     # @return [Hash<Symbol, Array<String>>]
     def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/global.yml"),
-        symbolize_names: true
-      )[:jump_types]
+      @config ||= YAML.safe_load_file("config/seed/global.yml", symbolize_names: true)[:jump_types]
     end
   end
 end

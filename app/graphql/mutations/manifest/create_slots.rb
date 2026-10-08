@@ -3,6 +3,7 @@
 module Mutations::Manifest
   class CreateSlots < Mutations::BaseMutation
     include Types::Interfaces::ActiveInteraction
+
     field :load, Types::Manifest::Load, null: true
 
     argument :attributes, Types::Input::SlotInput, required: true

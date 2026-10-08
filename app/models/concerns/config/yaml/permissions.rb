@@ -27,11 +27,8 @@ module Config::Yaml::Permissions
     #
     # @return [Hash<Symbol, Array<String>>]
     def config
-      @config ||= YAML.safe_load(
-        File.read("config/seed/access.yml"),
-        symbolize_names: true,
-        aliases: true
-      )[:permissions]
+      @config ||= YAML.safe_load_file("config/seed/access.yml", symbolize_names: true,
+                                                                aliases: true)[:permissions]
     end
   end
 end

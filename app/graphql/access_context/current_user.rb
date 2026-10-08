@@ -1,5 +1,6 @@
 class AccessContext::CurrentUser
   include Singleton
+
   attr_accessor :user,
                 :dropzone
 

@@ -6,6 +6,7 @@ module Specs
     class Client
       class QueryNotExecutedError < StandardError; end
       include RSpec::JsonExpectations::Matchers
+
       attr_accessor :query_document,
                     :query_string,
                     :variables,
@@ -39,7 +40,7 @@ module Specs
       def execute
         self.result = DzSchema.execute(
           query_string,
-          operation_name: operation_name.to_s.to_s.camelize(:upper),
+          operation_name: operation_name.to_s.camelize(:upper),
           variables: {},
           context: {
             current_resource: @actor,

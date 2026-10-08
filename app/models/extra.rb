@@ -14,6 +14,7 @@
 #
 class Extra < ApplicationRecord
   include Discard::Model
+
   belongs_to :dropzone
 
   has_many :ticket_type_extras

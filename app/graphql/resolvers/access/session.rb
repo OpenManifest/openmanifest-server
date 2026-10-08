@@ -17,6 +17,6 @@ class Resolvers::Access::Session < Resolvers::Base
   end
 
   def authorized?
-    return false unless context[:current_user]
+    false unless context[:current_user]
   end
 end

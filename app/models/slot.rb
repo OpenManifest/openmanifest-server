@@ -21,6 +21,7 @@
 #
 class Slot < ApplicationRecord
   include MasterLogEntry::Slot
+
   delegate :user, to: :dropzone_user, allow_nil: true
 
   belongs_to :dropzone_user, optional: true
@@ -89,14 +90,14 @@ class Slot < ApplicationRecord
     return false if ticket_type.blank?
     return false if load.blank?
     return false if jump_type.blank?
-    (passenger.present? || dropzone_user.present?)
+    passenger.present? || dropzone_user.present?
   end
 
   def wing_loading
     return unless rig.try(:canopy_size)
     return unless exit_weight
     weight = exit_weight
-    weight += (passenger_slot.exit_weight || 0) if has_passenger?
+    weight += passenger_slot.exit_weight || 0 if has_passenger?
 
     weight_in_lbs = weight * 2.20462
     weight_in_lbs /= rig.canopy_size

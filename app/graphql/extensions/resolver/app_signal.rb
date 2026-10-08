@@ -8,7 +8,7 @@ module Extensions::Resolver::AppSignal
     # any subclasses of this class
     def inherited(child_class)
       # Must call super to not alter rails default behaviour
-      super(child_class)
+      super
       child_class.include ::Extensions::Resolver::AppSignal
     end
 
