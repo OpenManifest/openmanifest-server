@@ -174,5 +174,49 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.result.order.receipts.count).to eq 2 }
       it { expect(outcome.result.order.transactions.where(status: :completed).count).to eq 4 }
     end
+
+    context "when the database refuses a second slot for the same person on the load (BUG-021)" do
+      let(:outcome) do
+        Manifest::CreateSlot.run(
+          access_context: access_context,
+          ticket_type: ticket_type,
+          dropzone_user: dropzone_user,
+          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          load: plane_load,
+          exit_weight: dropzone_user.exit_weight
+        )
+      end
+
+      before do
+        allow_any_instance_of(Slot).to receive(:save).and_raise(ActiveRecord::RecordNotUnique)
+      end
+
+      it "reports an error instead of raising" do
+        expect { outcome }.not_to raise_error
+        expect(outcome.valid?).to be false
+        expect(outcome.errors.full_messages).to include("Already manifested on this load")
+      end
+
+      it "does not charge the member" do
+        expect { outcome }.not_to(change { dropzone_user.reload.credits })
+      end
+    end
+  end
+
+  describe "the unique index on (load, person)" do
+    it "refuses two slots for the same person on one load" do
+      slot = create(:slot, load: plane_load, dropzone: dropzone, dropzone_user: dropzone_user, jump_type: JumpType.allowed_for([dropzone_user]).first)
+
+      duplicate = slot.dup
+      expect { duplicate.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
+
+    it "does not constrain passenger slots, which have no member" do
+      passenger = Passenger.create!(name: "Pat", exit_weight: 70, dropzone: dropzone)
+      ticket = create(:ticket_type, dropzone: dropzone, is_tandem: true)
+      slots = Array.new(2) { Slot.create!(load: plane_load, passenger: passenger, ticket_type: ticket, jump_type: JumpType.first, exit_weight: 70) }
+
+      expect(slots.map(&:dropzone_user_id)).to eq([nil, nil])
+    end
   end
 end
