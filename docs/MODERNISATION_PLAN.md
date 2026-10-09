@@ -3102,7 +3102,7 @@ Size: M
 Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056, BUG-094
 
 ### P6.16 — Add database constraints, loads.dropzone_id and safe load numbers
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.15
 Branch: modernise/p6-16-constraints

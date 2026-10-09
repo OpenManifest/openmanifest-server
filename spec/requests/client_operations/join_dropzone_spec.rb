@@ -83,6 +83,34 @@ RSpec.describe "Joining a dropzone" do
       expect { join(private_dropzone, as: user) }.not_to change(DropzoneUser, :count)
     end
 
+    context "after the membership was archived" do
+      let!(:previous) do
+        create(:dropzone_user, dropzone: dropzone, user: user, user_role: dropzone.user_roles.find_by(name: "admin"), credits: 75).tap do |member|
+          member.grant!(:actAsPilot)
+          member.discard
+        end
+      end
+
+      it "restores the membership instead of creating a second one" do
+        json = nil
+        expect { json = join(dropzone, as: user) }.not_to change(DropzoneUser, :count)
+
+        expect(json.dig(:data, :joinDropzone, :errors)).to be_nil
+        expect(previous.reload).not_to be_discarded
+        expect(json.dig(:data, :joinDropzone, :dropzoneUser, :id)).to eq(previous.id.to_s)
+      end
+
+      it "gives the default role back and drops the permissions granted to the member, but keeps the credits" do
+        join(dropzone, as: user)
+
+        previous.reload
+        expect(previous.user_role.name).to eq(DropzoneUser.new(dropzone: dropzone, user: user).user_role.name)
+        expect(previous.user_role.name).not_to eq("admin")
+        expect(previous.permissions).to be_empty
+        expect(previous.credits).to eq(75)
+      end
+    end
+
     it "answers an unknown dropzone with an error" do
       json = client_operation("JoinDropzone", variables: { dropzone: 0 }, as: user)
 

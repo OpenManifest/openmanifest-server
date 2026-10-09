@@ -44,7 +44,7 @@ class Dropzone < ApplicationRecord
   has_many :events, class_name: "Activity::Event"
 
   has_many :planes, -> { kept }, dependent: :destroy
-  has_many :loads, -> { kept }, through: :planes
+  has_many :loads, -> { kept }
 
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy
