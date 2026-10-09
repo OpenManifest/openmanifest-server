@@ -11,13 +11,8 @@ module Mutations::Setup::Equipment
     def resolve(id:)
       model = Rig.find(id)
 
-      # Flag as deleted if any slots use this rig
-      # or if this rig has been inspected
-      if model.slots.empty? && model.rig_inspections.empty?
-        model.destroy
-      else
-        model.discard
-      end
+      # Archive rather than destroy: slots and inspections keep pointing at the rig
+      model.discard
 
       {
         rig: model.reload,
@@ -47,14 +42,23 @@ module Mutations::Setup::Equipment
     end
 
     def authorized?(id: nil, attributes: nil)
-      rig = Rig.find(id)
-      dropzone_ids = rig.user.dropzone_users.pluck(:dropzone_id)
+      rig = Rig.find_by(id: id)
+      return [false, { errors: ["Rig not found"] }] unless rig
 
-      return true if rig.user_id == context[:current_user].id
-      return true if dropzone_ids.count == 1 && context[:current_resource].can?(
-        :deleteUserRig,
-        dropzone_id: dropzone_ids.first
-      )
+      # A dropzone rig is deleted by staff of its dropzone
+      if rig.dropzone_id
+        return true if context[:current_resource].can?(:deleteDropzoneRig, dropzone_id: rig.dropzone_id)
+      else
+        return true if rig.user_id == context[:current_resource].id
+
+        # Staff of the one dropzone the owner belongs to may archive it too (jumpers hold deleteRig as well, but
+        # only for their own rigs, which the ownership check above covers)
+        dropzone_ids = rig.user.dropzone_users.pluck(:dropzone_id)
+        return true if dropzone_ids.count == 1 && context[:current_resource].can?(
+          :deleteDropzoneRig,
+          dropzone_id: dropzone_ids.first
+        )
+      end
 
       [
         false, {

@@ -2872,7 +2872,7 @@ Size: M
 Fixes: BUG-008 (peer-to-peer policy)
 
 ### P6.8 — Fix IDOR, tenant moves and broken setup mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.6
 Branch: modernise/p6-8-setup-mutations
