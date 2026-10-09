@@ -3282,7 +3282,7 @@ Size: M
 Fixes: BUG-041
 
 ### P6.22 — Add optimistic locking to loads and slots
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.21
 Branch: modernise/p6-22-optimistic-locking
