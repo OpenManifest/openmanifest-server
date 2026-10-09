@@ -2570,7 +2570,7 @@ Size: M
 Fixes: BUG-078, BUG-070 (weather), BUG-073 (weather)
 
 ### P5.8 — Support large font scales
-Status: todo
+Status: owner-check (Android at font scale 2.0 and iOS at the largest accessibility text size: board, load, profile, login are readable without clipped text in rows)
 Repo: client
 Depends on: P5.7
 Branch: modernise/p5-8-font-scale
@@ -2582,7 +2582,7 @@ Steps:
      `minHeight` with vertical padding; remove `numberOfLines={1}` on names where it truncates essential data, or add
      `ellipsizeMode="tail"` plus an accessibility label with the full text.
   2. Set `maxFontSizeMultiplier={1.6}` on tab bar labels and FAB labels only (navigation chrome).
-  3. Web smoke: run the board and a load at `html { font-size: 200% }` and check `checkLayout`.
+  3. Web smoke: run the board and a load with every font size doubled (react-native-web writes px, so `html { font-size: 200% }` changes nothing; the script scales each element's computed font size) and check `checkLayout`.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (with the 200% run) pass.
 Acceptance criteria (owner, real device):
