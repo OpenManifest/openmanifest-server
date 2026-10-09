@@ -44,6 +44,11 @@ module Types
 
     field :current_conditions, Types::Dropzone::Weather::Condition, null: false
 
+    field :time_zone, String, null: false, description: "The dropzone's time zone (IANA name): its days, and the times of its loads, are in it"
+    def time_zone
+      object.timezone
+    end
+
     field :dropzone_user, Types::Users::DropzoneUser, null: true do
       argument :id, Int, required: false
       argument :user_id, Int, required: false

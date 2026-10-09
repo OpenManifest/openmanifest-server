@@ -11,6 +11,7 @@ fragment dropzoneEssentials on Dropzone {
   banner
   isCreditSystemEnabled
   createdAt
+  timeZone
 
   settings {
     allowManifestBypass
