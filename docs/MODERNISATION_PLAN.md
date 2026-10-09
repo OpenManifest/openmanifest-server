@@ -2594,7 +2594,7 @@ Size: M
 Fixes: BUG-077
 
 ### P5.9 — Add a lint guard against the layout root causes
-Status: todo
+Status: done
 Repo: client
 Depends on: P5.8
 Branch: modernise/p5-9-layout-lint
