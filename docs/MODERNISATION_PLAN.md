@@ -2496,7 +2496,7 @@ Size: L
 Fixes: BUG-073 (sheets)
 
 ### P5.5 — Fix the manifest board and load screen
-Status: todo
+Status: owner-check (small Android phone: board scrolls to the last load above the tab bar; load screen scrolls to the last jumper; FABs float above the gesture bar)
 Repo: client
 Depends on: P5.4
 Branch: modernise/p5-5-manifest-layout
