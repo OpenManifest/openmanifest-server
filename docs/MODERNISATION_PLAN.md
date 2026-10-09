@@ -2384,7 +2384,7 @@ The web smoke test (P0.8) gains a layout check in P5.1 that every later task ext
 can be scrolled into view and clicked.
 
 ### P5.1 — Add layout primitives and the layout smoke check
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.9
 Branch: modernise/p5-1-layout-primitives
