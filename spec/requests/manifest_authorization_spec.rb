@@ -25,15 +25,19 @@ RSpec.describe "Manifest authorization" do
 
   def manifest(member, as:, load: manifest_load, **extra)
     client_operation("ManifestUser",
-                     variables: { load: load.id, dropzoneUser: member.id, ticketType: ticket_type.id,
-                                  jumpType: JumpType.allowed_for([member]).first.id, exitWeight: 80 }.merge(extra),
+                     variables: {
+                       load: load.id, dropzoneUser: member.id, ticketType: ticket_type.id,
+                       jumpType: JumpType.allowed_for([member]).first.id, exitWeight: 80,
+                     }.merge(extra),
                      as: as)
   end
 
   def manifest_group(members, as:)
     client_operation("ManifestGroup",
-                     variables: { load: manifest_load.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for(members).first.id,
-                                  userGroup: members.map { |member| { id: member.id, exitWeight: 80 } } },
+                     variables: {
+                       load: manifest_load.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for(members).first.id,
+                       userGroup: members.map { |member| { id: member.id, exitWeight: 80 } },
+                     },
                      as: as)
   end
 
