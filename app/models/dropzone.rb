@@ -96,10 +96,17 @@ class Dropzone < ApplicationRecord
     template.destroy unless template.nil?
   end
 
+  # Today's date where the dropzone is (the server runs in UTC, the dropzone is not)
+  def today
+    Time.current.in_time_zone(timezone).to_date
+  end
+
+  # The weather of the dropzone's current day, created when it is first asked for
   def current_conditions
-    weather_conditions.find_or_create_by(
-      created_at: DateTime.now.beginning_of_day
-    )
+    weather_conditions.find_or_create_by!(date: today)
+  rescue ActiveRecord::RecordNotUnique
+    # Another request created it first
+    weather_conditions.find_by!(date: today)
   end
 
   def timezone

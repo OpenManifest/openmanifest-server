@@ -2272,8 +2272,12 @@ input ReloadWeatherConditionInput {
   A unique identifier for the client performing the mutation.
   """
   clientMutationId: String
+
+  """
+  Not needed, the weather condition belongs to its dropzone
+  """
   dropzoneId: Int
-  id: Int
+  id: Int!
 }
 
 """
@@ -3264,11 +3268,11 @@ interface Wallet {
 
 type WeatherCondition {
   createdAt: ISO8601DateTime!
-  exitSpotMiles: Int
+  exitSpotMiles: Float
   id: ID!
   jumpRun: Int
   offsetDirection: Int
-  offsetMiles: Int
+  offsetMiles: Float
   temperature: Int
   updatedAt: ISO8601DateTime!
   winds: [Wind!]
@@ -3276,10 +3280,10 @@ type WeatherCondition {
 
 input WeatherConditionInput {
   dropzoneId: Int!
-  exitSpotMiles: Int
+  exitSpotMiles: Float
   jumpRun: Int
   offsetDirection: String
-  offsetMiles: Int
+  offsetMiles: Float
   temperature: Int
   winds: String
 }

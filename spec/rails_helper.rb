@@ -60,10 +60,9 @@ RSpec.configure do |config|
     Setup::Global::Seeds.run!
   end
 
-  config.around(:suite) do |example|
-    Time.use_zone('Australia/Brisbane') do
-      example.run
-    end
+  # The dropzone default zone: examples about days run in it (an `around(:suite)` hook is not supported by RSpec, BUG-098)
+  config.around(:each) do |example|
+    Time.use_zone("Australia/Brisbane") { example.run }
   end
 
   config.before(:each) do

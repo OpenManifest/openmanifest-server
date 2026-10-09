@@ -51,7 +51,9 @@ class Load < ApplicationRecord
   after_update_commit :broadcast_update
 
   scope :active, -> { where(dispatch_at: nil) }
-  scope :today, -> { where(created_at: DateTime.current.all_day) }
+  # The loads of a day at a dropzone: its own day, whatever the zone of the server is
+  scope :on, ->(date) { where(load_date: date) }
+  scope :today_at, ->(dropzone) { where(dropzone_id: dropzone.id, load_date: dropzone.today) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
 
   def ready?

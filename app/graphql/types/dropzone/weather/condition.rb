@@ -11,8 +11,8 @@ module Types::Dropzone::Weather
 
     field :temperature, Int, null: true
     field :jump_run, Int, null: true
-    field :exit_spot_miles, Int, null: true
-    field :offset_miles, Int, null: true
+    field :exit_spot_miles, Float, null: true
+    field :offset_miles, Float, null: true
     field :offset_direction, Int, null: true
     timestamp_fields
   end

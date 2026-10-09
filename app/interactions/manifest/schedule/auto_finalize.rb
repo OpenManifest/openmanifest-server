@@ -9,26 +9,14 @@ class Manifest::Schedule::AutoFinalize < ApplicationInteraction
   # FIXME: Decide whether or not to auto-cancel all loads
   # that are not finalized
   def auto_finalize
-    Dropzone.all.each do |dropzone|
-      Time.use_zone(dropzone.time_zone) do
-        dropzone.loads.where.not(
-          state: %i(cancelled landed)
-        ).where(
-          created_at: ..DateTime.current.beginning_of_day
-        ).each do |load|
-          if load.dispatch_at
-            compose(
-              ::Manifest::FinalizeLoad,
-              access_context: ApplicationInteraction::SystemContext.new(dropzone),
-              load: load,
-            )
-          else
-            compose(
-              ::Manifest::CancelLoad,
-              access_context: ApplicationInteraction::SystemContext.new(dropzone),
-              load: load,
-            )
-          end
+    Dropzone.find_each do |dropzone|
+      context = ApplicationInteraction::SystemContext.new(dropzone)
+      # Loads of days before the dropzone's today (its own day, not the server's)
+      dropzone.loads.where.not(state: %i(cancelled landed)).where(load_date: ...dropzone.today).each do |load|
+        if load.dispatch_at
+          compose(::Manifest::FinalizeLoad, access_context: context, load: load)
+        else
+          compose(::Manifest::CancelLoad, access_context: context, load: load)
         end
       end
     end
