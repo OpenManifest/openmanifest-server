@@ -112,7 +112,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-005: authorization checks must not write" do
     it "does not create a membership in B when A's owner updates B's plane" do
-      pending "BUG-005"
       expect { client_operation("UpdateAircraft", variables: { id: plane_b.id, attributes: { name: "Hijacked" } }, as: owner_user) }.
         not_to(change { dropzone_b.dropzone_users.where(user: owner_user).count })
     end

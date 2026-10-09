@@ -2755,7 +2755,7 @@ Size: M
 Fixes: BUG-002 (member resolvers), BUG-013, BUG-093
 
 ### P6.4 — Stop creating memberships during permission checks; add joinDropzone
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.3
 Branch: modernise/p6-4-explicit-membership

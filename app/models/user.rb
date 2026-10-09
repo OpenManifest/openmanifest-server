@@ -77,12 +77,14 @@ class User < ApplicationRecord
   has_many :user_federation_qualifications, through: :user_federations
   has_many :qualifications, through: :user_federation_qualifications
 
+  # @return [DropzoneUser, nil] the membership at the dropzone, nil for a user who has not joined it
   def at(dropzone)
-    DropzoneUser.for(dropzone, self)
+    DropzoneUser.membership(dropzone, self)
   end
 
+  # False for a user who is not a member of the dropzone
   def can?(permission_name, dropzone_id:)
-    at(dropzone_id).can?(permission_name)
+    at(dropzone_id)&.can?(permission_name) || false
   end
 
   # Compare moderation levels to get user access level
