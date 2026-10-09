@@ -3357,7 +3357,7 @@ Size: M
 Fixes: BUG-012, BUG-014 (CORS)
 
 ### P6.25 — Remove N+1 queries on the manifest board
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.24
 Branch: modernise/p6-25-n-plus-one

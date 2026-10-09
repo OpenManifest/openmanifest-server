@@ -28,6 +28,9 @@ module Types::Dropzone
     field :allow_manifesting_self, Boolean, null: true
     field :is_tandem, Boolean, null: true
     field :extras, [Types::Dropzone::Tickets::Addon], null: false
+    def extras
+      dataloader.with(::Sources::AssociationLoader, [:extras]).load(object).extras
+    end
     async_field :dropzone, Types::DropzoneType, null: true
     timestamp_fields
   end

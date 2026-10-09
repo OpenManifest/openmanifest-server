@@ -124,6 +124,9 @@ end
 
 group :test do
   gem "webmock"
+  # Fails request specs that run N+1 queries (spec/requests/n_plus_one_spec.rb)
+  gem "prosopite", "~> 2.2"
+  gem "pg_query"
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

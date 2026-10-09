@@ -21,6 +21,10 @@ module Types::Users
     field :notifications, Types::System::Notification.connection_type, null: true
     field :expires_at, Int, null: true
     field :rig_inspections, [Types::Equipment::RigInspection], null: true
+    def rig_inspections
+      preload(:rig_inspections).rig_inspections
+    end
+
     field :credits_cents, Int, null: true, description: "The member's credits in cents"
     field :credits, Float, null: true, deprecation_reason: "Use creditsCents, an integer number of cents"
     field :purchases, Types::Payments::Order.connection_type, null: true
@@ -64,8 +68,7 @@ module Types::Users
     end
 
     def unseen_notifications
-      # TODO: Counter culture
-      object.notifications.unseen.count
+      dataloader.with(::Sources::UnseenNotificationCount).load(object.id)
     end
 
     def notifications
@@ -84,8 +87,7 @@ module Types::Users
     end
 
     def has_rig_inspection
-      # TODO: N+1
-      object.rig_inspections.exists?(is_ok: true)
+      preload(:rig_inspections).rig_inspections.any?(&:is_ok)
     end
 
     def has_membership
@@ -99,11 +101,11 @@ module Types::Users
     end
 
     def has_exit_weight
-      !!object.user.exit_weight
+      !!preload(:user).user.exit_weight
     end
 
     def has_reserve_in_date
-      object.rig_inspections && object.rig_inspections.any? do |inspection|
+      preload(rig_inspections: :rig).rig_inspections.any? do |inspection|
         inspection.rig && inspection.rig.repack_expires_at && inspection.rig.repack_expires_at > DateTime.now
       end
     end
@@ -113,7 +115,15 @@ module Types::Users
     end
 
     def permissions
-      object.all_permissions.pluck(:name)
+      preload(:permissions, :role_permissions).permission_names
+    end
+
+    private
+
+    # Loads the associations of this member together with those of the other members of the response, and gives the
+    # member back (BUG-049)
+    def preload(*associations)
+      dataloader.with(::Sources::AssociationLoader, associations).load(object)
     end
   end
 end
