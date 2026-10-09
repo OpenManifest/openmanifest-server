@@ -20,9 +20,9 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 |---|---|
 | critical | 7 |
 | high | 31 |
-| medium | 43 |
+| medium | 44 |
 | low | 19 |
-| **total** | **100** |
+| **total** | **101** |
 
 ## Android / mobile layout: shared root causes
 
