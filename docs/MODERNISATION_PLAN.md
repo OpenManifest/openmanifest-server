@@ -2326,7 +2326,7 @@ Size: L
 Fixes: BUG-063, BUG-064, BUG-069
 
 ### P4.9 — Verify Phase 4
-Status: todo
+Status: owner-check (merge the Phase 0–4 stacks in order and confirm CI on staging; run SMOKE_TEST Login and Manifest on an iPhone and an Android phone, including logging in as a second user without restarting the app — see docs/verification/phase-4.md)
 Repo: both
 Depends on: P4.1, P4.2, P4.3, P4.4, P4.5, P4.6, P4.7, P4.8
 Branch: modernise/p4-9-verify
