@@ -87,8 +87,9 @@ That is 20 distinct advisories on 6 packages; `yarn audit` reports 46 because it
 | [#190](https://github.com/OpenManifest/openmanifest/actions/runs/37856873170) | P3.15 | success | success |
 | [#196](https://github.com/OpenManifest/openmanifest/actions/runs/37862258885) | P3.21 | success | success |
 
-The P3.14 lockfile was fixed in a commit on that branch and carried up the stack by merge commits (P3.15 … P3.21, each merge was clean);
-CI on those pushes is pending at the time of writing. DeepSource still reports a failure on most client PRs (it flags `scripts/**`, see the
+The P3.14 lockfile was fixed in a commit on that branch and carried up the stack by merge commits (P3.15 … P3.21, each merge was clean).
+After the fix `checks` and `web-export` are green on [#189](https://github.com/OpenManifest/openmanifest/actions/runs/37862814815) and
+[#195](https://github.com/OpenManifest/openmanifest/actions/runs/37862885813). DeepSource still reports a failure on most client PRs (it flags `scripts/**`, see the
 Phase 1 report). CI on `staging` itself runs once the stacks are merged (owner check below).
 
 ## Tasks
