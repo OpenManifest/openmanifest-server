@@ -23,7 +23,11 @@ module Mutations::Users
     end
 
     def resolve(email:, **attrs)
-      original_payload = super
+      original_payload = super do |resource|
+        # The caller is this user from here on, like after the gem's login: it lets the payload show their own email,
+        # phone and push token (Types::Users::User only reveals those to the user themselves and to staff)
+        context[:current_resource] = resource if context[:current_resource].nil?
+      end
 
       original_payload.merge(
         authenticatable: original_payload[:authenticatable],

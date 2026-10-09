@@ -12,18 +12,18 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
 
   def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)
     return nil unless dropzone
+
+    authorize_dropzone!(dropzone, :readUser)
     query = apply_lookaheads(lookahead, dropzone.dropzone_users)
     query = query.includes(user_permissions: :permission) if permissions.present?
 
     query = query.where.not(license_id: nil) if licensed
 
     if permissions.present?
-      query = query.where(
-        user_role: UserRolePermission.includes(:permission, :user_role).where(
-          permission: { name: permissions },
-          user_role: { dropzone: dropzone }
-        )
-      ).or(
+      # Roles of this dropzone that grant any of the permissions (BUG-093: this used to compare role ids with
+      # UserRolePermission ids)
+      roles = UserRole.where(dropzone: dropzone, id: UserRolePermission.joins(:permission).where(permissions: { name: permissions }).select(:user_role_id))
+      query = query.where(user_role_id: roles.select(:id)).or(
         query.where(
           user_permissions: {
             permissions: { name: permissions },

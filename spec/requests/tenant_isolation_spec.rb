@@ -59,12 +59,10 @@ RSpec.describe "Tenant isolation" do
     end
 
     it "refuses dropzoneUser(id:) of a member of B" do
-      pending "BUG-002"
       expect(refused?(client_operation("DropzoneUser", variables: { id: member_b.id }, as: member_user), :dropzoneUser)).to be(true)
     end
 
     it "refuses dropzoneUsers(dropzone:) for B" do
-      pending "BUG-002"
       expect(client_operation("DropzoneUsers", variables: { dropzoneId: dropzone_b.id }, as: member_user).dig(:data, :dropzoneUsers, :edges).to_a).to be_empty
     end
 
@@ -187,7 +185,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-013: personal data of members of other dropzones" do
     it "hides email, phone and pushToken of a member of B" do
-      pending "BUG-013"
       member_b.user.update!(push_token: "ExponentPushToken[secret]")
       json = graphql("query($id: ID!) { dropzoneUser(id: $id) { user { email phone pushToken } } }", variables: { id: member_b.id }, as: member_user)
       user_data = json.dig(:data, :dropzoneUser, :user)

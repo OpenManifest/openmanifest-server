@@ -47,8 +47,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "filters by a permission granted through the member's role" do
-      pending "BUG-093: the role branch of the permissions filter compares user_role_id with UserRolePermission ids"
-
       json = client_operation("DropzoneUsers", variables: { dropzoneId: dropzone.id, permissions: ["createSlot"] }, as: owner_user)
 
       expect(member_ids(json)).to include(fun_jumper.id.to_s)
@@ -84,7 +82,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "does not expose a member of another dropzone to a stranger" do
-      pending "BUG-002: dropzoneUser(id:) does not check that the caller belongs to the member's dropzone"
       stranger = create(:user)
 
       json = client_operation("DropzoneUser", variables: { id: fun_jumper.id }, as: stranger)
@@ -117,7 +114,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "does not expose the push token of another user" do
-      pending "BUG-013: pushToken, email and phone are readable by anyone who can reach a User"
       user.update!(push_token: "ExponentPushToken[secret]")
 
       # No client document selects another user's pushToken, so this uses an ad-hoc query
