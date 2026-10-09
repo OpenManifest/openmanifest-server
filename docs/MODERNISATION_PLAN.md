@@ -2445,7 +2445,7 @@ Size: L
 Fixes: BUG-070, BUG-073 (wizards)
 
 ### P5.3 — Fix login, sign-up entry and dropzone selection
-Status: todo
+Status: owner-check (small Android phone and iPhone with notch: login with keyboard open, Apple button and "Sign up" reachable; dropzone list not under the status bar)
 Repo: client
 Depends on: P5.2
 Branch: modernise/p5-3-login-limbo
