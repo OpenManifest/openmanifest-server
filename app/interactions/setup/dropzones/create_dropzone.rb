@@ -68,8 +68,10 @@ class Setup::Dropzones::CreateDropzone < ApplicationInteraction
 
   def attach_banner
     return if banner.blank?
-    @dropzone.banner.attach(data: banner)
-    @dropzone.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
+
+    Support::ImageUpload.attach(@dropzone.banner, banner, name: "banner")
+  rescue Support::ImageUpload::Invalid => e
+    errors.add(:banner, e.message)
   end
 
   def save!

@@ -12,22 +12,13 @@ module Mutations::Setup::Dropzones
     def resolve(attributes:, id:)
       model = Dropzone.find(id)
       attrs = attributes.to_h.except(:banner)
-      if attributes[:banner]
-        dropzone_user.banner.attach(data: image)
-        # Resize image
-        dropzone_user.banner.variant(resize_to_fill: [1280, 720], gravity: 'north')
-      end
-      if attrs[:request_publication] && !model.is_public
-        # Send a notification to administrators
-        User.where(moderation_role: "administrator").each do |user|
-          Notification.create(
-            received_by: user,
-            message: "Dropzone #{model.name} has requested publication",
-            notification_type: :publication_requested,
-            resource: model,
-            sent_by: model.dropzone_users.find_by(user_id: context[:current_resource].id)
-          )
-        end
+      Support::ImageUpload.attach(model.banner, attributes[:banner], name: "banner") if attributes[:banner]
+      # The state machine's event has the name of the request_publication column and takes over its accessors, so the
+      # request is made through the event; a private dropzone moves to in_review and the moderators are told, once
+      if attrs.delete(:request_publication) && model.state == "private"
+        announce_publication_request(model)
+        model.fire_state_event(:request_publication)
+        model[:request_publication] = true
       end
       model.update!(attrs)
 
@@ -36,6 +27,8 @@ module Mutations::Setup::Dropzones
         errors: nil,
         field_errors: nil,
       }
+    rescue Support::ImageUpload::Invalid => e
+      { dropzone: nil, field_errors: [{ field: "banner", message: e.message }], errors: [e.message] }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
@@ -56,6 +49,27 @@ module Mutations::Setup::Dropzones
         field_errors: nil,
         errors: [error.message],
       }
+    end
+
+    # The platform's moderators are told, in the dropzones they are members of (a notification belongs to a member), and
+    # the dropzone's own log shows the request
+    def announce_publication_request(model)
+      moderators = DropzoneUser.kept.where(dropzone: model, user: User.where(moderation_role: %w(moderator administrator)))
+      sender = DropzoneUser.membership(model, context[:current_resource])
+      moderators.find_each do |moderator|
+        Notification.create!(
+          received_by: moderator,
+          message: "Dropzone #{model.name} has requested publication",
+          notification_type: :publication_requested,
+          resource: model,
+          sent_by: sender
+        )
+      end
+
+      Activity::Event.create!(
+        dropzone: model, resource: model, action: :updated, level: :info, access_level: :admin, created_by: sender,
+        message: "#{context[:current_resource].name} requested publication of #{model.name}"
+      )
     end
 
     def authorized?(id: nil, attributes: nil)

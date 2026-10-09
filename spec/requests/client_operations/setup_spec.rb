@@ -290,18 +290,40 @@ RSpec.describe "Client operations: setup" do
       expect { client_operation("CreateRig", variables: variables.merge(userId: staff_user.id), as: user) }.not_to change(Rig, :count)
     end
 
-    it "stores a packing card image" do
-      pending "BUG-041: rig packing card upload raises"
-      card = "data:image/png;base64,#{Base64.strict_encode64(Rails.public_path.join('favicon.ico').binread)}"
+    # The app sends the packing card with UpdateRig; createRig takes it too
+    def create_rig_with_card(card)
+      query = "mutation($attributes: RigInput!) { createRig(input: { attributes: $attributes }) { errors fieldErrors { field message } rig { id } } }"
+      post "/graphql",
+           params: { query: query, variables: { attributes: { make: "Vector", model: "v310", serial: "1", rigType: "sport", canopySize: 129, userId: user.id, packingCard: card } }.to_json },
+           headers: user.create_new_auth_token
+      response.parsed_body.with_indifferent_access
+    end
 
-      json = client_operation("UpdateRig", variables: { id: create(:rig, user: user).id, packingCard: card }, as: user)
+    it "stores a packing card image when the rig is created" do
+      json = create_rig_with_card(image_data_url("jpg"))
 
-      expect(json.dig(:data, :updateRig, :errors)).to be_nil
+      expect(json.dig(:data, :createRig, :errors)).to be_nil
+      expect(Rig.find(json.dig(:data, :createRig, :rig, :id)).packing_card).to be_attached
+    end
+
+    it "refuses a packing card that is not a picture, and creates no rig" do
+      json = nil
+      expect { json = create_rig_with_card(data_url_of("not an image")) }.not_to change(Rig, :count)
+
+      expect(json.dig(:data, :createRig, :fieldErrors, 0, :field)).to eq("packing_card")
     end
   end
 
   describe "UpdateRig" do
     let!(:rig) { create(:rig, user: user, dropzone: nil) }
+
+    it "stores a packing card image" do
+      json = client_operation("UpdateRig", variables: { id: rig.id, packingCard: image_data_url("png") }, as: user)
+
+      expect(json.dig(:data, :updateRig, :errors)).to be_nil
+      expect(rig.reload.packing_card).to be_attached
+      expect(rig.packing_card.content_type).to eq("image/png")
+    end
 
     it "updates the caller's own rig" do
       json = client_operation("UpdateRig", variables: { id: rig.id, name: "Main", canopySize: 119 }, as: user)

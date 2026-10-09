@@ -140,6 +140,21 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       expect(user.reload.push_token).to eq("ExponentPushToken[abc]")
     end
 
+    it "stores a profile picture" do
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, image: image_data_url("jpg") }, as: user)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.avatar).to be_attached
+      expect(user.avatar.content_type).to eq("image/jpeg")
+    end
+
+    it "refuses a profile picture that is not a PNG, JPEG or WebP" do
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, image: image_data_url("gif") }, as: user)
+
+      expect(json.dig(:data, :updateUser, :fieldErrors, 0)).to include(field: "image", message: "The image must be a PNG, JPEG or WebP")
+      expect(user.reload.avatar).not_to be_attached
+    end
+
     it "clears the push token when it is sent as null" do
       user.update!(push_token: "ExponentPushToken[abc]")
 

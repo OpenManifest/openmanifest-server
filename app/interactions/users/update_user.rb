@@ -33,15 +33,17 @@ class Users::UpdateUser < ApplicationInteraction
     attributes[:push_token] = push_token if inputs.given?(:push_token)
     target_user.assign_attributes(attributes)
     save_user
-    if image
-      target_user.avatar.attach(data: image)
-      # Resize image
-      target_user.avatar.variant(resize_to_fill: [500, 500], gravity: 'north')
-    end
+    attach_avatar if image
   end
 
   def result
     dropzone_user
+  end
+
+  def attach_avatar
+    Support::ImageUpload.attach(target_user.avatar, image, name: "avatar")
+  rescue Support::ImageUpload::Invalid => e
+    errors.add(:image, e.message)
   end
 
   # Taking somebody else's email is a validation error, not a database exception (BUG-094)
