@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_110200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
     t.index ["discarded_at"], name: "index_dropzone_users_on_discarded_at"
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
     t.index ["license_id"], name: "index_dropzone_users_on_license_id"
+    t.index ["user_id", "dropzone_id"], name: "index_dropzone_users_on_user_id_and_dropzone_id", unique: true
     t.index ["user_id"], name: "index_dropzone_users_on_user_id"
     t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
   end
@@ -138,6 +139,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
     t.index ["access_level"], name: "index_events_on_access_level"
     t.index ["action"], name: "index_event_actions"
     t.index ["action"], name: "index_events_on_action"
+    t.index ["dropzone_id", "created_at"], name: "index_events_on_dropzone_id_and_created_at"
     t.index ["dropzone_id"], name: "index_events_on_dropzone_id"
     t.index ["dropzone_user_id"], name: "index_events_on_dropzone_user_id"
     t.index ["level"], name: "index_events_on_level"
@@ -221,7 +223,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
     t.datetime "discarded_at", precision: nil
     t.bigint "slots_count", default: 0
     t.bigint "ready_slots_count", default: 0
+    t.bigint "dropzone_id", null: false
+    t.date "load_date", null: false
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
+    t.index ["dropzone_id", "load_date", "load_number"], name: "index_loads_on_dropzone_id_and_load_date_and_load_number", unique: true
     t.index ["gca_id"], name: "index_loads_on_gca_id"
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
@@ -252,6 +257,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_seen", default: false
+    t.index ["received_by_id", "is_seen"], name: "index_notifications_on_received_by_id_and_is_seen"
     t.index ["received_by_id"], name: "index_notifications_on_received_by_id"
     t.index ["resource_type", "resource_id"], name: "index_notifications_on_resource"
     t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
@@ -272,6 +278,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
     t.float "amount"
     t.string "title"
     t.index ["buyer_type", "buyer_id"], name: "index_orders_on_buyer"
+    t.index ["dropzone_id", "order_number"], name: "index_orders_on_dropzone_id_and_order_number", unique: true
     t.index ["dropzone_id"], name: "index_orders_on_dropzone_id"
     t.index ["item_type", "item_id"], name: "index_orders_on_item"
     t.index ["seller_type", "seller_id"], name: "index_orders_on_seller"
@@ -581,6 +588,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
   add_foreign_key "loads", "dropzone_users", column: "gca_id"
   add_foreign_key "loads", "dropzone_users", column: "load_master_id"
   add_foreign_key "loads", "dropzone_users", column: "pilot_id"
+  add_foreign_key "loads", "dropzones"
   add_foreign_key "loads", "planes"
   add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
   add_foreign_key "master_logs", "dropzones"

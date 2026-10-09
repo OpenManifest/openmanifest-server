@@ -115,9 +115,9 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
   security, no Apartment-style schemas).
 - Tenant ownership is expressed through foreign keys: `planes.dropzone_id`, `ticket_types.dropzone_id`, `extras.dropzone_id`,
   `user_roles.dropzone_id`, `dropzone_users.dropzone_id`, `rigs.dropzone_id` (dropzone-owned rigs), `master_logs`,
-  `weather_conditions`, `form_templates`, `orders`, `events`. **`loads` has no `dropzone_id`**: a load belongs to a dropzone
-  only via `loads.plane_id → planes.dropzone_id` (`app/models/load.rb:27-28`). Slots reach the dropzone via
-  `slot → load → plane → dropzone`.
+  `weather_conditions`, `form_templates`, `orders`, `events`. `loads.dropzone_id` (P6.16; it was derived from the plane before) and
+  `loads.load_date` (the day in the dropzone's time zone; load numbers are unique per dropzone and day). Slots reach the
+  dropzone via `slot → load → dropzone`.
 - A `User` is global; membership is `DropzoneUser` (`user_id`, `dropzone_id`, role, credits, membership `expires_at`,
   `license_id`, `jump_count`).
 - Authorization is checked in three inconsistent places:

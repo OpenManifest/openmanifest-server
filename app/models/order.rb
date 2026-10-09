@@ -31,7 +31,10 @@ class Order < ApplicationRecord
 
   scope :at_dropzone, ->(dropzone) { where(dropzone: dropzone) }
 
+  # Order numbers count up per dropzone. The dropzone row is locked until the end of the transaction (every purchase
+  # updates it anyway), so concurrent orders get different numbers; the unique index backs this up.
   def set_order_number
+    Dropzone.where(id: dropzone_id).lock.pick(:id)
     current_max = Order.at_dropzone(dropzone).maximum(:order_number) || 0
     assign_attributes(order_number: current_max + 1)
   end
