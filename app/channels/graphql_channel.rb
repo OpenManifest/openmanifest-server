@@ -9,8 +9,7 @@ class GraphqlChannel < ApplicationCable::Channel
     variables = ensure_hash(data["variables"])
     operation_name = data["operationName"]
 
-    puts "###### ActionCable ######"
-    puts "Current Resource #{context[:current_resource].id}"
+    Rails.logger.debug { "[GraphqlChannel] #{operation_name || 'anonymous operation'} for user #{current_resource.id}" }
 
     result = DzSchema.execute(
       query: query,
@@ -39,18 +38,12 @@ class GraphqlChannel < ApplicationCable::Channel
 
   private
 
+  # The user the connection was authenticated as (ApplicationCable::Connection)
   def current_resource
-    client = params["client"]
-    uid = params["uid"]
-    access_token = params["access-token"]
-    user = User.find_by(email: uid)
-    return nil unless user
-    return nil unless user.valid_token?(access_token, client)
-    user
+    connection.current_user
   end
 
   def access_context
-    return nil unless current_resource
     AccessContext::CurrentUser.for(current_resource)
   end
 

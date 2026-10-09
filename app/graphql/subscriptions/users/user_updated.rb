@@ -4,6 +4,14 @@ class Subscriptions::Users::UserUpdated < Types::Base::Subscription
 
   extras [:lookahead]
 
+  # A member follows their own membership; anybody else's needs readUser at that dropzone (BUG-011)
+  def authorized?(dropzone_user_id:, **)
+    super
+    dropzone_user = ::DropzoneUser.find_by(id: dropzone_user_id)
+    authorize_record!(dropzone_user, dropzone_user&.user_id == current_user.id ? nil : :readUser)
+    true
+  end
+
   # It's passed to other methods as `load`
   def subscribe(dropzone_user_id:, lookahead: nil)
     query = ::Types::Users::DropzoneUser.apply_lookaheads(
