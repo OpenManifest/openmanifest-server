@@ -26,7 +26,7 @@ query Notifications($dropzoneId: ID!) {
                 }
                 ... on Transaction {
                   id
-                  amount
+                  amountCents
                   message
                   status
                 }

@@ -2,11 +2,11 @@ fragment ticketTypeExtraEssentials on Extra {
   id
   name
   createdAt
-  cost
+  costCents
 }
 
 fragment ticketTypeExtraDetailed on Extra {
-  ...ticketTypeExtraEssentials,
+  ...ticketTypeExtraEssentials
   ticketTypes {
     ...ticketTypeEssentials
   }

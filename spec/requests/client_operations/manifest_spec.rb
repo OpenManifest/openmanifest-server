@@ -264,7 +264,7 @@ RSpec.describe "Client operations: manifest" do
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
       expect(json.dig(:data, :createSlot, :slot, :dropzoneUser, :id)).to eq(fun_jumper.id.to_s)
-      expect(json.dig(:data, :createSlot, :slot, :cost)).to eq(40.0)
+      expect(json.dig(:data, :createSlot, :slot, :costCents)).to eq(4000)
       expect(fun_jumper.reload.credits).to eq(260)
     end
 

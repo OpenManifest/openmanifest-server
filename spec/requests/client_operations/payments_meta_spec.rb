@@ -10,7 +10,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
   let(:other_dropzone) { create(:dropzone, state: "public") }
 
   def order_variables(buyer:, seller:, amount: 25, **extra)
-    { buyer: buyer.to_gid_param, seller: seller.to_gid_param, dropzone: dropzone.id, title: "Funds", amount: amount }.merge(extra)
+    { buyer: buyer.to_gid_param, seller: seller.to_gid_param, dropzone: dropzone.id, title: "Funds", amountCents: (amount * 100).round }.merge(extra)
   end
 
   describe "CreateOrder" do
@@ -23,7 +23,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
       end.to change(Order, :count).by(1)
 
       expect(json.dig(:data, :createOrder, :errors)).to be_nil
-      expect(json.dig(:data, :createOrder, :order, :amount)).to eq(25.0)
+      expect(json.dig(:data, :createOrder, :order, :amountCents)).to eq(2500)
     end
 
     it "rejects a non-positive amount" do
@@ -148,7 +148,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
       json = client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone, amount: 12.5), as: owner_user)
 
-      expect(json.dig(:data, :createOrder, :order, :amount)).to eq(12.5)
+      expect(json.dig(:data, :createOrder, :order, :amountCents)).to eq(1250)
       expect(Order.last.amount_cents).to eq(1250)
       expect(fun_jumper.reload.credits_cents).to eq(8750)
       expect(dropzone.reload.credits_cents).to eq(101_250)

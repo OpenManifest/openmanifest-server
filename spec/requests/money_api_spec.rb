@@ -59,7 +59,7 @@ RSpec.describe "Money in the API" do
 
       json = client_operation("TicketTypes", variables: { dropzone: dropzone.id }, as: owner_user)
 
-      expect(json.dig(:data, :ticketTypes, 0)).to include(cost: 12.5)
+      expect(json.dig(:data, :ticketTypes, 0)).to include(costCents: 1250)
       expect(TicketType.where(dropzone: dropzone).pluck(:cost_cents)).to eq([1250])
     end
   end

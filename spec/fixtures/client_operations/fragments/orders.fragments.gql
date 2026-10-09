@@ -1,9 +1,8 @@
-
 #import "./transactions.fragments.gql'
 fragment orderEssentials on Order {
   id
   state
-  amount
+  amountCents
   title
   orderNumber
   createdAt
@@ -28,21 +27,20 @@ fragment orderEssentials on Order {
   }
   item {
     title
-    cost
-
+    costCents
     ... on Slot {
       id
 
       ticketType {
         id
         name
-        cost
+        costCents
       }
 
       extras {
         id
         name
-        cost
+        costCents
       }
     }
     ... on TicketType {

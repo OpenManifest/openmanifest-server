@@ -252,10 +252,10 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "returns the updated member" do
-      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { creditsCents: 12_300 } }, as: owner_user)
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to be_nil
-      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser, :credits)).to eq(123)
+      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser, :creditsCents)).to eq(12_300)
     end
 
     it "refuses a jumper without updateUser" do

@@ -5,6 +5,9 @@ require "rails_helper"
 RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
   include_context 'dropzone_with_manifested_loads'
 
+  # The log's day is the dropzone's, not UTC's
+  let(:today) { Time.use_zone(dropzone.time_zone) { Date.current } }
+
   before do
     # P6.2: reading the master log needs updateDropzone, the permission that writes it (the caller used to be any member)
     fun_jumper.grant!(:updateDropzone)
@@ -16,12 +19,12 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
 
   describe ".resolve" do
     context "successfully" do
-      subject { execute_query(dropzone: dropzone.id, date: Date.today.iso8601) }
+      subject { execute_query(dropzone: dropzone.id, date: today.iso8601) }
 
       it 'includes finalized loads' do
         is_expected.to include_json(
           masterLog: {
-            date: Date.today.iso8601,
+            date: today.iso8601,
             downloadUrl: /\w+/,
             loads: [
               {
@@ -40,7 +43,7 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
       it 'refuses a member without updateDropzone' do
         fun_jumper.revoke!(:updateDropzone)
 
-        expect(execute_query(dropzone: dropzone.id, date: Date.today.iso8601)&.dig(:masterLog)).to be_nil
+        expect(execute_query(dropzone: dropzone.id, date: today.iso8601)&.dig(:masterLog)).to be_nil
       end
 
       it 'does not include cancelled loads' do
