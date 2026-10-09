@@ -43,3 +43,7 @@ preload_app!
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
+
+# Run Solid Queue's supervisor inside Puma (single process deployments, e.g. fly.io). With separate job processes
+# (`bin/jobs`, see the Procfile) leave SOLID_QUEUE_IN_PUMA unset.
+plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]

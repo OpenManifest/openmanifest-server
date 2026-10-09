@@ -1,13 +1,14 @@
 namespace :dropzone do
   namespace :master_log do
+    # Scheduled by config/recurring.yml; this runs it once, now
     task :generate => :environment do
-      MasterLog::Schedule.run!
+      MasterLogsJob.perform_now
     end
   end
 
   namespace :loads do
     task :finalize => :environment do
-      Manifest::Schedule::AutoFinalize.run
+      AutoFinalizeJob.perform_now
     end
   end
 end
