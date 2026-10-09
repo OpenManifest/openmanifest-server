@@ -35,16 +35,34 @@ class Notification < ApplicationRecord
     NotifyJob.perform_later(id)
   end
 
-  def send!
-    if received_by.user.push_token.present?
-      HTTParty.post(
-        "https://exp.host/--/api/v2/push/send",
-        body: {
-          "to" => received_by.user.push_token,
-          "body" => message,
-          "title" => received_by.dropzone.name,
-        }
-      )
+  EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
+
+  # Sends the push notification through Expo (NotifyJob). Network errors and server errors are raised for the job to
+  # retry; Expo answers with a ticket per message, and a token it does not know (DeviceNotRegistered: the app was
+  # uninstalled, the token expired) is removed from the user, so nothing is sent to it again.
+  def deliver
+    token = received_by.user.push_token
+    return if token.blank?
+
+    response = HTTParty.post(
+      EXPO_PUSH_URL,
+      headers: { "Content-Type" => "application/json", "Accept" => "application/json" },
+      body: { to: token, title: received_by.dropzone.name, body: message, data: { notificationId: id, type: notification_type } }.to_json
+    )
+    raise HTTParty::ResponseError, response if response.server_error?
+
+    handle_ticket(token, response.parsed_response.is_a?(Hash) ? response.parsed_response["data"] : nil)
+  end
+
+  private
+
+  def handle_ticket(token, ticket)
+    return unless ticket.is_a?(Hash) && ticket["status"] == "error"
+
+    if ticket.dig("details", "error") == "DeviceNotRegistered"
+      User.where(push_token: token).update_all(push_token: nil)
+    else
+      Rails.logger.warn("Push notification #{id} not delivered: #{ticket['message']}")
     end
   end
 end

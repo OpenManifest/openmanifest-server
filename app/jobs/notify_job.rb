@@ -11,6 +11,6 @@ class NotifyJob < ApplicationJob
   discard_on ActiveRecord::RecordNotFound
 
   def perform(notification_id)
-    Notification.find(notification_id).send!
+    Notification.find(notification_id).deliver
   end
 end

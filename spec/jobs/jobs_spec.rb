@@ -76,7 +76,7 @@ RSpec.describe "Background jobs" do
     end
 
     it "does not hide other errors" do
-      allow_any_instance_of(Notification).to receive(:send!).and_raise(ArgumentError, "bug")
+      allow_any_instance_of(Notification).to receive(:deliver).and_raise(ArgumentError, "bug")
 
       expect { described_class.perform_now(notification.id) }.to raise_error(ArgumentError, "bug")
     end

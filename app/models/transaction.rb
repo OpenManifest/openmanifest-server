@@ -27,7 +27,7 @@ class Transaction < ApplicationRecord
 
   has_many :notifications, as: :resource
 
-  after_create :notify!
+  after_save :notify!, if: -> { saved_change_to_status? && completed? }
 
   enum :status, { :reserved => 0, :completed => 1, :cancelled => 2 }
 
@@ -37,36 +37,28 @@ class Transaction < ApplicationRecord
   scope :reserved,  -> { where(status: :reserved) }
   scope :cancelled, -> { where(status: :cancelled) }
 
+  # Tells the member whose account the money moved to or from, once the transaction is completed (a purchase is
+  # reserved when the jumper is manifested and completed when the load lands). Transactions of the dropzone itself, the
+  # other half of every sale, notify nobody.
   def notify!
-    case status
-    when "deposit"
-      Notification.create(
-        received_by: dropzone_user,
-        message: "#{amount} has been credited to your account",
-        type: :credits_updated,
-        resource: self
-      )
-    when "refunded"
-      Notification.create(
-        received_by: dropzone_user,
-        message: "#{amount} has been credited to your account",
-        type: :credits_updated,
-        resource: self
-      )
-    when "paid"
-      Notification.create(
-        received_by: dropzone_user,
-        message: "Payment of $#{amount} confirmed",
-        type: :credits_updated,
-        resource: self
-      )
-    when "withdrawal"
-      Notification.create(
-        received_by: dropzone_user,
-        message: "$#{amount} has been taken out of your account",
-        type: :credits_updated,
-        resource: self
-      )
+    return unless receiver.is_a?(DropzoneUser)
+
+    Notification.create!(
+      received_by: receiver,
+      message: notification_message,
+      notification_type: :credits_updated,
+      resource: self
+    )
+  end
+
+  private
+
+  def notification_message
+    value = format("$%.2f", amount.to_f.abs)
+    case transaction_type
+    when "purchase" then "Payment of #{value} confirmed"
+    when "withdrawal" then "#{value} has been taken out of your account"
+    else "#{value} has been credited to your account"
     end
   end
 end
