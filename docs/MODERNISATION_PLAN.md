@@ -2139,7 +2139,7 @@ Size: L
 Fixes: BUG-017
 
 ### P4.2 — Replace the Redux theme state with a theme hook
-Status: todo
+Status: owner-check (dark mode toggle in Settings → Appearance and system dark mode on one phone)
 Repo: client
 Depends on: P4.1
 Branch: modernise/p4-2-theme-hook
