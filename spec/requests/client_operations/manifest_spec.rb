@@ -197,7 +197,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "does not let a student manifest another member" do
-      pending "BUG-006: createSlot only requires createSlot; the self-versus-other check is never called"
       student = create(:user)
       create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"), credits: 100)
 
@@ -267,7 +266,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "keeps the slot when the target load is full" do
-      pending "BUG-092: moveSlot does not check the capacity of the target load (slot validations only run on create)"
       second_load.update!(max_slots: 1)
       other = create(:dropzone_user, dropzone: dropzone, credits: 300)
       client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user)
@@ -278,7 +276,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "does not let a student move someone else's slot" do
-      pending "BUG-007: moveSlot has no permission requirement"
       student = create(:user)
       create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"))
 

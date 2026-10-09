@@ -15,12 +15,15 @@ class Manifest::CreateSlot < ApplicationInteraction
   string :passenger_name, default: nil
   date_time :created_at, default: -> { DateTime.current }
   float :passenger_exit_weight, default: nil
+  # Set when the member is manifested as part of a group that includes the person manifesting
+  boolean :group_includes_self, default: false
   array :extra_ids, default: nil do
     integer
   end
 
-  # Execution
-  allow :createSlot
+  # Execution: a member needs createSlot to manifest themselves, createUserSlot to manifest somebody else (see
+  # #required_permissions); everything must belong to the dropzone the caller acts in
+  validate :same_dropzone
 
   steps :build_slot,
         :set_tandem_passenger,
@@ -42,7 +45,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} manifested #{dropzone_user.user.name} on load ##{load.load_number}"
+      message: "#{access_context.user.name} manifested #{dropzone_user.user.name} on load ##{load.load_number}"
     )
   end
 
@@ -58,7 +61,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}",
+      message: "#{access_context.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -128,34 +131,26 @@ class Manifest::CreateSlot < ApplicationInteraction
     load.broadcast_update
   end
 
+  # The permission to manifest this member: createSlot for yourself, createUserSlot for somebody else (BUG-006)
+  def required_permissions
+    return { createSlot: "You don't have permissions to manifest (missing createSlot)" } if manifesting_self?
+    if group_includes_self && access_context&.can?(:createUserSlotWithSelf)
+      return { createUserSlotWithSelf: "You don't have permissions to manifest a group (missing createUserSlotWithSelf)" }
+    end
+
+    { createUserSlot: "You don't have permissions to manifest other users (missing createUserSlot)" }
+  end
+
   private
 
-  def authorize
-    dropzone = load.plane.dropzone
-    action = if load.slots.exists?(dropzone_user: dropzone_user)
-               "update"
-             else
-               "create"
-             end
+  def manifesting_self?
+    access_context&.subject.present? && dropzone_user.id == access_context.subject.id
+  end
 
-    if dropzone.loads.today.active.where(dropzone_user: dropzone_user)
-      resource = if dropzone_user.id == access_context.subject.id
-                   "Slot"
-                 else
-                   "UserSlot"
-                 end
-
-      return true if access_context.subject.can?("#{action}#{resource}")
-      raise PermissionDenied, "You don't have permissions to manifest other users (missing #{"#{action}#{resource}"})"
-    else
-      resource = if dropzone_user.id == access_context.subject.id
-                   "DoubleSlot"
-                 else
-                   "UserDoubleSlot"
-                 end
-
-      return true if access_context.can?("#{action}#{resource}")
-      raise PermissionDenied, "You don't have permissions to double-manifest (missing #{"#{action}#{resource}"})"
-    end
+  # The load, the member and the ticket type must belong to the dropzone the caller acts in
+  def same_dropzone
+    dropzone_id = access_context&.dropzone&.id
+    belongs = [load.plane.dropzone_id, dropzone_user.dropzone_id, ticket_type.dropzone_id].all? { |id| id == dropzone_id }
+    errors.add(:base, "The load, the jumper and the ticket must belong to the same dropzone") unless belongs
   end
 end

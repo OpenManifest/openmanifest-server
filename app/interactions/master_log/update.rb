@@ -16,7 +16,7 @@ class MasterLog::Update < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} updated master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
+      message: "#{access_context.user.name} updated master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
     )
   end
 
@@ -30,7 +30,7 @@ class MasterLog::Update < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to update master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
+      message: "#{access_context.user.name} failed to update master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
       details: errors.full_messages.join(", ")
     )
   end

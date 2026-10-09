@@ -35,6 +35,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
         group_number: group_number || plane_load.next_group_number,
         access_context: access_context,
         created_at: created_at,
+        group_includes_self: group_includes_self?,
         ticket_type: ticket_type,
         jump_type: jump_type,
         load: load,
@@ -42,6 +43,10 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
       )
     end
     load.reload
+  end
+
+  def group_includes_self?
+    access_context&.subject.present? && users.any? { |user| user[:dropzone_user] == access_context.subject }
   end
 
   def check_available_slots
