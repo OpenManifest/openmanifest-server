@@ -2418,7 +2418,7 @@ Size: M
 Fixes: none
 
 ### P5.2 — Fix the wizards
-Status: todo
+Status: owner-check (small Android phone at font scale 2.0: complete sign-up and dropzone setup with the keyboard open on each field; close client#133 and client#134 if they no longer reproduce)
 Repo: client
 Depends on: P5.1
 Branch: modernise/p5-2-wizards
@@ -2432,7 +2432,7 @@ Steps:
      `variant="headlineMedium"`.
   2. `Wizard.tsx`/`HookFormWizard.tsx`: remove `KeyboardAvoidingView`; page width from `onLayout` of the container, not
      `Dimensions`; the next/back buttons go in a `KeyboardStickyView` footer inside `ScreenContainer`.
-  3. Add `testID`s `wizard-next-primary-action` and run `checkLayout` for `/signup` and `/wizards/dropzone` (with
+  3. Add `testID`s `wizard-next-primary-action` and run `checkLayout` for `/signup` and `/setup` (the dropzone wizard; with
      the dev seed's admin user) in the web smoke test.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (with the new routes) pass.
