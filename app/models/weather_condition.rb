@@ -8,8 +8,9 @@
 #  winds            :text
 #  temperature      :integer
 #  jump_run         :integer
-#  exit_spot_miles  :integer
-#  offset_miles     :integer
+#  exit_spot_miles  :decimal(6, 2)
+#  offset_miles     :decimal(6, 2)
+#  date             :date             not null
 #  offset_direction :integer
 #  dropzone_id      :bigint           not null
 #  created_at       :datetime         not null
@@ -17,7 +18,14 @@
 #
 class WeatherCondition < ApplicationRecord
   belongs_to :dropzone
+
+  WINDS_URL = "https://markschulze.net/winds/winds.php"
+  WINDS_TIMEOUT = 5 # seconds
+
+  before_validation :set_date, on: :create
   before_create :set_defaults
+  # The winds come from an external service: fetched by a job, the record exists without them until it has run
+  after_create_commit :fetch_winds_later
 
   def guesstimate_jumprun
     # https://startskydiving.com/wp-content/uploads/2016/04/CategoryE.pdf
@@ -63,41 +71,42 @@ class WeatherCondition < ApplicationRecord
     rounded_avg_dir = ((avg_dir / 5.0).round(0) * 5.0).to_i
 
     assign_attributes(jump_run: rounded_avg_dir, exit_spot_miles: avg_drift)
-  rescue
+  rescue JSON::ParserError, ZeroDivisionError, TypeError
     nil
   end
 
+  # Fetches the winds for a place and stores them with the jump run they give (it does not save). Network errors are
+  # raised: FetchWindsJob retries them.
   def from_coordinates(lat, lng)
-    response = JSON.parse(
-      HTTParty.get(
-        "https://markschulze.net/winds/winds.php?lat=#{lat}&lon=#{lng}&hourOffset=0&referrer=openmanifestorg"
-      ).body
+    response = HTTParty.get(
+      WINDS_URL,
+      query: { lat: lat, lon: lng, hourOffset: 0, referrer: "openmanifestorg" },
+      timeout: WINDS_TIMEOUT
     )
+    data = JSON.parse(response.body)
 
     winds = [0, 1000, 2000, 5000, 7000, 8000, 10000, 12000, 14000].map(&:to_s).reverse.map do |alt|
       {
         altitude: alt,
-        speed: response["speed"][alt],
-        direction: response["direction"][alt],
-        temperature: response["temp"][alt],
+        speed: data["speed"][alt],
+        direction: data["direction"][alt],
+        temperature: data["temp"][alt],
       }
     end
 
-    assign_attributes(
-      winds: winds.to_json,
-      temperature: if winds.count
-                     winds.last[:temperature] || 0
-                   else
-                     0
-                   end
-    )
+    assign_attributes(winds: winds.to_json, temperature: winds.last[:temperature] || 0)
     guesstimate_jumprun
-  rescue => e
-    puts e.message
-    nil
   end
 
   private
+
+  def set_date
+    self.date ||= dropzone&.today
+  end
+
+  def fetch_winds_later
+    FetchWindsJob.perform_later(id) if dropzone.lat.present? && dropzone.lng.present?
+  end
 
   def set_defaults
     assign_attributes(
@@ -111,9 +120,5 @@ class WeatherCondition < ApplicationRecord
       temperature: 0,
       offset_miles: 0,
     )
-
-    if dropzone.lat.present? && dropzone.lng.present?
-      from_coordinates(dropzone.lat, dropzone.lng)
-    end
   end
 end

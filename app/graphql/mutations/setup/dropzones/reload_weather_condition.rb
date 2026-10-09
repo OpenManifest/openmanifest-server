@@ -6,16 +6,17 @@ module Mutations::Setup::Dropzones
     field :field_errors, [Types::System::FieldError], null: true
     field :weather_condition, Types::Dropzone::Weather::Condition, null: true
 
-    argument :dropzone_id, Int, required: false
-    argument :id, Int, required: false
+    # `dropzone_id` is not needed any more (the weather condition knows its dropzone) and is ignored
+    argument :dropzone_id, Int, required: false, description: "Not needed, the weather condition belongs to its dropzone"
+    argument :id, Int, required: true
 
-    def resolve(dropzone_id: nil, id: nil)
-      dz = Dropzone.find(dropzone_id)
-      model = dz.weather_conditions.find(id)
+    # Fetches the winds again, now: the caller waits for them (at most the 5 second timeout of the request)
+    def resolve(id:, dropzone_id: nil)
+      model = WeatherCondition.find(id)
+      dropzone = model.dropzone
 
-      if dz.lat && dz.lng
-        model.from_coordinates(dz.lat, dz.lng)
-        model.guesstimate_jumprun
+      if dropzone.lat.present? && dropzone.lng.present?
+        model.from_coordinates(dropzone.lat, dropzone.lng)
         model.save!
       end
 
@@ -24,6 +25,8 @@ module Mutations::Setup::Dropzones
         errors: nil,
         field_errors: nil,
       }
+    rescue *FetchWindsJob::NETWORK_ERRORS
+      { weather_condition: nil, field_errors: nil, errors: ["The winds could not be fetched, try again in a moment"] }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
@@ -47,12 +50,11 @@ module Mutations::Setup::Dropzones
     end
 
     def authorized?(id:, dropzone_id: nil)
-      if !context[:current_resource].can? :updateWeatherConditions, dropzone_id: dropzone_id
-        return false, {
-          errors: [
-            "You can't update weather conditions",
-          ],
-        }
+      condition = WeatherCondition.find_by(id: id)
+      return [false, { weather_condition: nil, field_errors: nil, errors: ["Weather condition not found"] }] unless condition
+
+      unless context[:current_resource].can?(:updateWeatherConditions, dropzone_id: condition.dropzone_id)
+        return [false, { weather_condition: nil, field_errors: nil, errors: ["You can't update weather conditions"] }]
       end
       true
     end
