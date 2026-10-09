@@ -4,7 +4,7 @@ module Types
   module Input
     class DropzoneUserInput < Types::Base::Input
       argument :expires_at, Int, required: false
-      argument :credits, Float, required: false
+      money_argument :credits
       argument :user_role_id, Int, required: false
       argument :name, String, required: false
       argument :nickname, String, required: false

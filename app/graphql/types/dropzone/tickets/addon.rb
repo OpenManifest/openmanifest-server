@@ -12,7 +12,14 @@ module Types::Dropzone::Tickets
     def title
       object.name
     end
-    field :cost, Float, null: false
+    field :cost_cents, Int, null: false
+    def cost_cents
+      object.cost_cents.to_i
+    end
+    field :cost, Float, null: false, deprecation_reason: "Use costCents, an integer number of cents"
+    def cost
+      object.cost_cents.to_i / 100.0
+    end
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :ticket_types, [Types::Dropzone::Ticket], null: false

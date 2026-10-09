@@ -48,7 +48,7 @@ class Transactions::Purchase < ApplicationInteraction
       item: purchasable,
       seller: seller,
       buyer: buyer,
-      amount: total_cost,
+      amount_cents: total_cents,
       state: :pending
     )
   end
@@ -67,15 +67,16 @@ class Transactions::Purchase < ApplicationInteraction
     )
   end
 
+  # The wallets move by exactly the cents of the order
   def update_credits
-    seller.increment!(:credits, total_cost)
-    buyer.decrement!(:credits, total_cost)
+    seller.add_cents!(:credits, total_cents)
+    buyer.add_cents!(:credits, -total_cents)
   end
 
   def create_transactions
     # Create a receipt
     receipt = Receipt.create(
-      amount_cents: total_cost * 100,
+      amount_cents: total_cents,
       order: @order
     )
     errors.merge!(receipt.errors) unless receipt.valid?
@@ -83,7 +84,7 @@ class Transactions::Purchase < ApplicationInteraction
     # Create a transaction for the seller
     seller_transaction = Transaction.create(
       receipt: receipt,
-      amount: total_cost,
+      amount_cents: total_cents,
       message: "#{name_of(:buyer, buyer)} bought #{item_name}",
       sender: buyer,
       receiver: seller,
@@ -95,8 +96,8 @@ class Transactions::Purchase < ApplicationInteraction
     # Create a transaction for the buyer
     buyer_transaction = Transaction.create(
       receipt: receipt,
-      amount: -1 * total_cost,
-      message: "$#{total_cost} for #{item_name}",
+      amount_cents: -total_cents,
+      message: "#{Money.new(total_cents)} for #{item_name}",
       sender: seller,
       receiver: buyer,
       status: :reserved,
@@ -119,15 +120,13 @@ class Transactions::Purchase < ApplicationInteraction
     end
   end
 
-  def total_cost
+  def total_cents
     case purchasable
-    when Slot
-      purchasable.cost
-    when TicketType
-      purchasable.cost
+    when Slot, TicketType
+      purchasable.cost_cents.to_i
     when Pack
       # FIXME: Should be defined on the packjob
-      10
+      1000
     else
       errors.add(:purchasable, "Not a valid type")
     end

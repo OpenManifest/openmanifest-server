@@ -143,12 +143,43 @@ RSpec.describe "Client operations: payments, activity and meta" do
       end
     end
 
-    it "keeps fractional amounts" do
-      pending "BUG-048: money is stored and refunded as integers and floats; fractional amounts are truncated"
+    it "keeps fractional amounts, in exact cents" do
+      fun_jumper.update!(credits: 100)
 
       json = client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone, amount: 12.5), as: owner_user)
 
       expect(json.dig(:data, :createOrder, :order, :amount)).to eq(12.5)
+      expect(Order.last.amount_cents).to eq(1250)
+      expect(fun_jumper.reload.credits_cents).to eq(8750)
+      expect(dropzone.reload.credits_cents).to eq(101_250)
+    end
+
+    describe "in cents" do
+      before { fun_jumper.update!(credits: 100) }
+
+      def create_order(attributes, query: "mutation($attributes: OrderInput!) { createOrder(input: { attributes: $attributes }) { errors order { amount amountCents } } }")
+        post "/graphql",
+             params: { query: query, variables: { attributes: { buyer: fun_jumper.to_gid_param, seller: dropzone.to_gid_param, dropzone: dropzone.id }.merge(attributes) }.to_json },
+             headers: owner_user.create_new_auth_token
+        response.parsed_body.with_indifferent_access
+      end
+
+      it "takes the amount in cents" do
+        json = create_order({ amountCents: 1999 })
+
+        expect(json.dig(:data, :createOrder, :order)).to eq("amount" => 19.99, "amountCents" => 1999)
+        expect(fun_jumper.reload.credits_cents).to eq(8001)
+      end
+
+      it "prefers the cents when both are sent" do
+        json = create_order({ amount: 50, amountCents: 1000 })
+
+        expect(json.dig(:data, :createOrder, :order, :amountCents)).to eq(1000)
+      end
+
+      it "needs an amount" do
+        expect(create_order({}).dig(:data, :createOrder, :errors)).to eq(["An amount is needed"])
+      end
     end
   end
 
@@ -157,7 +188,6 @@ RSpec.describe "Client operations: payments, activity and meta" do
     let!(:manifest_load) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
 
     it "gives back exactly what a ticket with fractional cost charged" do
-      pending "BUG-048: Refund updates credits with amount_cents / 100 (integer division)"
       fun_jumper.update!(credits: 100)
       slot_id = client_operation("ManifestUser",
                                  variables: {

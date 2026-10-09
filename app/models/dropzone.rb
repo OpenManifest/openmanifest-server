@@ -24,6 +24,9 @@
 #  credits                    :integer
 #
 class Dropzone < ApplicationRecord
+  include MoneyAttributes
+
+  money :credits
   include ActiveStorageSupport::SupportForBase64
   include Discard::Model
   include StateMachines::DropzoneState

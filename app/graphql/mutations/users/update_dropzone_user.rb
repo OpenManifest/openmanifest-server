@@ -11,7 +11,7 @@ module Mutations::Users
                                  prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
     # What staff can change on a membership; the member's profile (name, email, ...) is updateUser's
-    UPDATABLE = %i(expires_at credits user_role_id).freeze
+    UPDATABLE = %i(expires_at credits credits_cents user_role_id).freeze
 
     def resolve(dropzone_user:, attributes: nil)
       attrs = attributes.to_h.slice(*UPDATABLE)

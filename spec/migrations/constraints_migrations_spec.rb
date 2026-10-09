@@ -5,6 +5,7 @@ require Rails.root.join("db/migrate/20261009110000_add_unique_index_to_dropzone_
 require Rails.root.join("db/migrate/20261009110100_add_dropzone_and_load_date_to_loads")
 require Rails.root.join("db/migrate/20261009110200_add_unique_order_numbers_and_indexes")
 require Rails.root.join("db/migrate/20261009130000_add_date_to_weather_conditions_and_decimal_miles")
+require Rails.root.join("db/migrate/20261009150000_add_cents_columns_for_money")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
@@ -34,7 +35,9 @@ RSpec.describe "P6.16 constraint migrations" do
       run_quietly(migration, :merge_duplicate_memberships)
 
       expect(DropzoneUser.where(id: duplicate.id)).to be_empty
-      expect(oldest.reload).to have_attributes(credits: 140, jump_count: 7)
+      # The migration of that time knows the old column of units only
+      expect(oldest.reload).to have_attributes(jump_count: 7)
+      expect(oldest.read_attribute(:credits)).to eq(140)
       expect(DropzoneUser.where(user: user, dropzone: dropzone).count).to eq(1)
     end
 
@@ -139,6 +142,52 @@ RSpec.describe "P6.16 constraint migrations" do
 
       expect(WeatherCondition.where(dropzone: dropzone).pluck(:id)).to contain_exactly(newer.id, other_day.id)
       expect(WeatherCondition.exists?(older.id)).to be(false)
+    end
+  end
+
+  describe AddCentsColumnsForMoney do
+    let(:migration) { described_class.new }
+    let(:member) { create(:dropzone_user, dropzone: dropzone) }
+
+    # Rows as they were before: the old columns only
+    def legacy(record, **columns)
+      record.class.where(id: record.id).update_all(columns)
+    end
+
+    it "backfills the cents from the old values, rounded" do
+      ticket = create(:ticket_type, dropzone: dropzone, cost: 1)
+      extra = Extra.create!(dropzone: dropzone, name: "Video", cost: 1)
+      order = Order.create!(dropzone: dropzone, seller: dropzone, buyer: member)
+      legacy(member, credits: 12.5, credits_cents: nil)
+      legacy(dropzone, credits: 1000, credits_cents: nil)
+      legacy(ticket, cost: 19.99, cost_cents: nil)
+      legacy(extra, cost: 0.1, cost_cents: nil)
+      legacy(order, amount: 12.345, amount_cents: nil)
+
+      run_quietly(migration, :backfill_cents)
+
+      expect(member.reload.credits_cents).to eq(1250)
+      expect(dropzone.reload.credits_cents).to eq(100_000)
+      expect(ticket.reload.cost_cents).to eq(1999)
+      expect(extra.reload.cost_cents).to eq(10)
+      expect(order.reload.amount_cents).to eq(1235)
+    end
+
+    it "leaves a missing value missing" do
+      legacy(member, credits: nil, credits_cents: nil)
+
+      run_quietly(migration, :backfill_cents)
+
+      expect(member.reload.credits_cents).to be_nil
+    end
+
+    it "keeps the sums of the dev seed: the cents are the old values times 100" do
+      members = create_list(:dropzone_user, 3, dropzone: dropzone)
+      members.zip([40, 12.5, 400]).each { |record, units| legacy(record, credits: units, credits_cents: nil) }
+
+      run_quietly(migration, :backfill_cents)
+
+      expect(DropzoneUser.where(id: members.map(&:id)).sum(:credits_cents)).to eq((DropzoneUser.where(id: members.map(&:id)).sum(:credits) * 100).round)
     end
   end
 end
