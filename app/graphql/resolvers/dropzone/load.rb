@@ -9,6 +9,8 @@ class Resolvers::Dropzone::Load < Resolvers::Base
     id: nil,
     lookahead: nil
   )
-    apply_lookaheads(lookahead, Load.kept).find_by(id: id)
+    load = apply_lookaheads(lookahead, Load.kept).find_by(id: id)
+    authorize_record!(load) if load
+    load
   end
 end

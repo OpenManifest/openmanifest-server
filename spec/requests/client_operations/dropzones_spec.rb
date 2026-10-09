@@ -37,7 +37,6 @@ RSpec.describe "Client operations: dropzones and access" do
     end
 
     it "filters by state" do
-      pending "BUG-090: Resolvers::Dropzones ignores the state argument"
       other_dropzone
 
       json = client_operation("Dropzones", variables: { state: ["private"] }, as: moderator)

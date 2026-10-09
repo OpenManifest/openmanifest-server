@@ -15,6 +15,7 @@ class Resolvers::Dropzone::AvailableRigs < Resolvers::Base
     load_id: nil,
     lookahead: nil
   )
+    authorize_record!(dropzone_user)
     return dropzone_user.dropzone.tandem_rigs if is_tandem
 
     Rig.available_for(dropzone_user).where.not(

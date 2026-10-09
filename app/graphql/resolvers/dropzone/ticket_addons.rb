@@ -10,6 +10,7 @@ class Resolvers::Dropzone::TicketAddons < Resolvers::Base
   def resolve(dropzone: nil, ticket_type: nil, lookahead: nil)
     return nil unless dropzone || ticket_type
     dropzone ||= ticket_type.dropzone
+    authorize_dropzone!(dropzone)
     query = apply_lookaheads(lookahead, dropzone.extras)
     query.order(name: :asc)
   end
