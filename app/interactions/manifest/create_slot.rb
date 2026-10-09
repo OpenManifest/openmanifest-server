@@ -150,7 +150,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   # The load, the member and the ticket type must belong to the dropzone the caller acts in
   def same_dropzone
     dropzone_id = access_context&.dropzone&.id
-    belongs = [load.plane.dropzone_id, dropzone_user.dropzone_id, ticket_type.dropzone_id].all? { |id| id == dropzone_id }
+    belongs = [load.plane.dropzone_id, dropzone_user.dropzone_id, ticket_type.dropzone_id].all?(dropzone_id)
     errors.add(:base, "The load, the jumper and the ticket must belong to the same dropzone") unless belongs
   end
 end
