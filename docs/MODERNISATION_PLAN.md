@@ -2290,7 +2290,7 @@ Size: L
 Fixes: BUG-066, BUG-079
 
 ### P4.8 — Remove Redux and make logout reset everything
-Status: todo
+Status: owner-check (on a phone: log out and log in as a different user without killing the app; the second user must not receive the first user's push notifications, which also needs P6.18)
 Repo: client
 Depends on: P4.7
 Branch: modernise/p4-8-remove-redux
