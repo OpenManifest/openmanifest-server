@@ -2048,7 +2048,7 @@ Size: M
 Fixes: BUG-088
 
 ### P3.22 — Verify Phase 3
-Status: todo
+Status: owner-check
 Repo: both
 Depends on: P3.1, P3.2, P3.4, P3.5, P3.6, P3.7, P3.8, P3.9, P3.10, P3.11, P3.12, P3.13, P3.14, P3.15, P3.16, P3.17, P3.18, P3.19, P3.20, P3.21
 Branch: modernise/p3-22-verify
