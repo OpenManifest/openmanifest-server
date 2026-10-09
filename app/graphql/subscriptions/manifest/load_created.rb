@@ -7,6 +7,13 @@ class Subscriptions::Manifest::LoadCreated < Types::Base::Subscription
 
   extras [:lookahead]
 
+  # Only members of the dropzone hear about its new loads (BUG-011)
+  def authorized?(dropzone_id:, **)
+    super
+    authorize_dropzone!(::Dropzone.find_by(id: dropzone_id))
+    true
+  end
+
   def update(dropzone_id:, lookahead: nil)
     query = ::Types::Manifest::Load.apply_lookaheads(
       lookahead,
