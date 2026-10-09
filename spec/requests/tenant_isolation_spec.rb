@@ -152,7 +152,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-009: client-supplied dropzone for authorization" do
     it "refuses updating B's form template with dropzoneId set to A" do
-      pending "BUG-009"
       template = create(:form_template, dropzone: dropzone_b, definition: "original")
       dropzone_b.update!(rig_inspection_template: template)
       client_operation("UpdateRigInspectionTemplate", variables: { dropzoneId: dropzone_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
@@ -162,7 +161,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-010: moving records between tenants" do
     it "refuses B's owner moving a ticket type of B into A by sending dropzoneId" do
-      pending "BUG-010"
       client_operation("UpdateTicketType", variables: { id: ticket_b.id, attributes: { dropzoneId: dropzone_a.id, cost: 1.0 } }, as: owner_b_user)
       expect(ticket_b.reload.dropzone).to eq(dropzone_b)
     end

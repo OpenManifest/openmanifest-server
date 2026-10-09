@@ -12,7 +12,8 @@ module Mutations::Setup::Aircrafts
     def resolve(attributes:, id:)
       model = Plane.find(id)
 
-      model.update!(attributes.to_h)
+      # A plane never moves to another dropzone
+      model.update!(attributes.to_h.except(:dropzone_id))
       {
         plane: model,
         errors: nil,

@@ -12,20 +12,10 @@ module Mutations::Setup::Tickets
     def resolve(attributes:, id:)
       model = TicketType.find(id)
 
-      model.update!(attributes.to_h)
-      unless attributes[:extra_ids].nil?
-        ::TicketTypeExtra.includes(:extra, :ticket_type).where(
-          extras: { dropzone_id: attributes[:dropzone_id] }
-        ).where.not(
-          extras: { id: attributes[:extra_ids] }
-        ).destroy_all
-
-        attributes[:extra_ids] - TicketTypeExtra.where(
-          extra_id: attributes[:extra_ids]
-        ).pluck(:extra_id).to_a do |i|
-          ::TicketTypeExtra.create(extra_id: i, ticket_type: model)
-        end
-      end
+      # A ticket type never moves to another dropzone, and only this dropzone's add-ons can be linked to it
+      attrs = attributes.to_h.except(:dropzone_id, :extra_ids)
+      attrs[:extra_ids] = model.dropzone.extras.where(id: attributes[:extra_ids]).pluck(:id) unless attributes[:extra_ids].nil?
+      model.update!(attrs)
 
       {
         ticket_type: model,
