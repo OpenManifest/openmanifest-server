@@ -35,6 +35,8 @@ RSpec.describe Manifest::FinalizeLoad do
   let!(:access_context) do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :updateLoad
+    # P6.5: manifesting somebody else needs createUserSlot
+    u.grant! :createUserSlot
     ApplicationInteraction::AccessContext.new(u)
   end
   let!(:outcome) { Manifest::FinalizeLoad.run(load: load, access_context: access_context) }

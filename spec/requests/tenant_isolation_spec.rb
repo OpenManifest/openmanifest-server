@@ -119,7 +119,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-006: manifesting other people" do
     it "refuses a student manifesting another member" do
-      pending "BUG-006"
       student_user = create(:user)
       create(:dropzone_user, dropzone: dropzone_a, user: student_user, user_role: dropzone_a.user_roles.find_by(name: "student"), credits: 100)
       json = client_operation("ManifestUser",
@@ -134,7 +133,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-007: moving slots between dropzones" do
     it "refuses a student of B moving another member's slot onto a load of A" do
-      pending "BUG-007"
       slot = manifest_b_member_on_load_b
       student_user = create(:user)
       create(:dropzone_user, dropzone: dropzone_b, user: student_user, user_role: dropzone_b.user_roles.find_by(name: "student"))

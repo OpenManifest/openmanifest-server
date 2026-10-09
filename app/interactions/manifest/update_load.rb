@@ -34,7 +34,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         dropzone: access_context.dropzone,
         created_by: access_context.subject,
-        message: "#{access_context.subject.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
+        message: "#{access_context.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
       )
     elsif inputs.given?(:dispatch_at)
       compose(
@@ -45,7 +45,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         dropzone: access_context.dropzone,
         created_by: access_context.subject,
-        message: "#{access_context.subject.user.name} cancelled call for load ##{load.load_number}"
+        message: "#{access_context.user.name} cancelled call for load ##{load.load_number}"
       )
     end
 
@@ -58,7 +58,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         dropzone: access_context.dropzone,
         created_by: access_context.subject,
-        message: "#{access_context.subject.user.name} changed the plane for load ##{load.load_number} to #{plane.name} (#{plane.registration})"
+        message: "#{access_context.user.name} changed the plane for load ##{load.load_number} to #{plane.name} (#{plane.registration})"
       )
     end
 
@@ -71,7 +71,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         dropzone: access_context.dropzone,
         created_by: access_context.subject,
-        message: "#{access_context.subject.user.name} changed the GCA for load ##{load.load_number} to #{gca.user.name}"
+        message: "#{access_context.user.name} changed the GCA for load ##{load.load_number} to #{gca.user.name}"
       )
     end
 
@@ -84,7 +84,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         dropzone: access_context.dropzone,
         created_by: access_context.subject,
-        message: "#{access_context.subject.user.name} changed the load master for load ##{load.load_number} to #{load_master.user.name}"
+        message: "#{access_context.user.name} changed the load master for load ##{load.load_number} to #{load_master.user.name}"
       )
     end
   end

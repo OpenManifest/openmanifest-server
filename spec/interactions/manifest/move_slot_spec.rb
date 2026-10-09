@@ -15,6 +15,8 @@ RSpec.describe Manifest::MoveSlot do
     u = create(:dropzone_user, dropzone: dropzone)
     u.grant! :createSlot
     u.grant! :createUserSlot
+    # P6.5: moving somebody else's slot needs updateUserSlot
+    u.grant! :updateUserSlot
     ApplicationInteraction::AccessContext.new(u)
   end
 
