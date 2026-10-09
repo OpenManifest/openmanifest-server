@@ -9,8 +9,10 @@ class Transactions::CreateOrder < Transactions::Purchase
   record :dropzone
 
   validates :amount, :buyer, :seller, :dropzone, presence: true
+  validate :parties_belong_to_dropzone
 
-  steps :create_order,
+  steps :check_balance,
+        :create_order,
         :create_transactions,
         :update_credits,
         :confirm_order
@@ -36,6 +38,8 @@ class Transactions::CreateOrder < Transactions::Purchase
       access_level: :system,
       level: :error,
       access_context: access_context,
+      # An event needs a resource: the failed order (if it got that far), else the dropzone
+      resource: @order || dropzone,
       action: :confirmed,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
@@ -85,5 +89,26 @@ class Transactions::CreateOrder < Transactions::Purchase
 
   def item_name
     (amount < 0 ? "Withdrawal" : "Deposit").to_s
+  end
+
+  # A member cannot pay more than they have, unless the dropzone allows negative credits. A step rather than a
+  # validation: validations run again after the interaction, when the balance has already changed.
+  def check_balance
+    return unless buyer.is_a?(::DropzoneUser) && amount.to_i.positive?
+    return if dropzone&.allow_negative_credits? || (buyer.credits || 0) >= amount
+
+    errors.add(:amount, "Not enough credits")
+  end
+
+  private
+
+  # Whoever calls this interaction: credits only move between a dropzone and its own members
+  def parties_belong_to_dropzone
+    return if dropzone.blank?
+
+    [buyer, seller].each do |party|
+      belongs = party.is_a?(::Dropzone) ? party.id == dropzone.id : party.try(:dropzone_id) == dropzone.id
+      errors.add(:base, "The buyer and the seller must be the dropzone or its members") unless belongs
+    end
   end
 end

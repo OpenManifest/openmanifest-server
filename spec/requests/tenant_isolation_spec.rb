@@ -143,7 +143,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-008: orders against another dropzone" do
     it "refuses an order that pays a member of B" do
-      pending "BUG-008"
       json = client_operation("CreateOrder",
                               variables: { buyer: member_a.to_gid_param, seller: member_b.to_gid_param, dropzone: dropzone_a.id, title: "x", amount: 100 },
                               as: member_user)
