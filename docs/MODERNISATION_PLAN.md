@@ -2548,7 +2548,7 @@ Size: M
 Fixes: BUG-075, BUG-087, BUG-074 (dropzones table)
 
 ### P5.7 — Fix the weather, wind and jump-run screens
-Status: todo
+Status: owner-check (small Android phone: edit temperature, winds and jump run with the keyboard open)
 Repo: client
 Depends on: P5.6
 Branch: modernise/p5-7-weather-layout
