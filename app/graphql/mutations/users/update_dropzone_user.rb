@@ -10,16 +10,17 @@ module Mutations::Users
     argument :dropzone_user, ID, required: false,
                                  prepare: -> (value, ctx) { DropzoneUser.find_by(id: value) }
 
+    # What staff can change on a membership; the member's profile (name, email, ...) is updateUser's
+    UPDATABLE = %i(expires_at credits user_role_id).freeze
+
     def resolve(dropzone_user:, attributes: nil)
-      attrs = attributes.to_h
-      if attrs[:expires_at]
-        attrs[:expires_at] = Time.at(attributes[:expires_at])
-      end
+      attrs = attributes.to_h.slice(*UPDATABLE)
+      attrs[:expires_at] = Time.zone.at(attrs[:expires_at]) if attrs[:expires_at]
       dropzone_user.assign_attributes(attrs)
       dropzone_user.save!
 
       {
-        dropzone_user: model,
+        dropzone_user: dropzone_user,
         errors: nil,
         field_errors: nil,
       }
@@ -45,35 +46,27 @@ module Mutations::Users
       }
     end
 
+    # Staff with updateUser at the member's dropzone. A role is changed only to a role of that dropzone below the
+    # caller's own, for a member whose own role is below the caller's too (a manager cannot demote the owner).
     def authorized?(dropzone_user: nil, attributes: nil)
-      current_dz_user = context[:current_resource].dropzone_users.find_by(
-        dropzone: dropzone_user.dropzone
-      )
+      return refuse("Member not found") unless dropzone_user
 
-      allowed_to_update_others = current_dz_user.can?(:updateUser)
-      is_role_changed = attributes[:user_role_id] && attributes[:user_role_id] != dropzone_user.user_role_id
-      is_allowed_to_change_role = !is_role_changed || (current_dz_user.can?(:grantPermission) && attributes[:user_role_id] < current_dz_user.user_role_id)
+      acting = DropzoneUser.membership(dropzone_user.dropzone, context[:current_resource])
+      return refuse("You don't have permission to update this") unless acting&.can?(:updateUser)
 
-      # Check if the user is trying to change the UserRole:
-      if allowed_to_update_others && is_role_changed && !is_allowed_to_change_role
-        [
-          false, {
-            errors: [
-              "You don't have permissions to assign this role",
-            ],
-          },
-        ]
-      elsif !allowed_to_update_others
-        [
-          false, {
-            errors: [
-              "You don't have permission to update this",
-            ],
-          },
-        ]
-      else
-        true
-      end
+      role_id = attributes&.[](:user_role_id)
+      return true if role_id.nil? || role_id == dropzone_user.user_role_id
+
+      return refuse("That role does not belong to this dropzone") unless dropzone_user.dropzone.user_roles.exists?(id: role_id)
+
+      assignable = acting.can?(:grantPermission) && role_id < acting.user_role_id && dropzone_user.user_role_id < acting.user_role_id
+      assignable ? true : refuse("You don't have permissions to assign this role")
+    end
+
+    private
+
+    def refuse(message)
+      [false, { dropzone_user: nil, field_errors: nil, errors: [message] }]
     end
   end
 end

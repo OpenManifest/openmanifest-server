@@ -13,9 +13,9 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       token: attrs[:token],
       user_identity: attrs[:user_identity]
     )
-  rescue => e
-    warn e.message
-    raise Login::Facebook::AuthenticationFailed
+  rescue StandardError => e
+    Rails.logger.warn("Apple login failed: #{e.message}")
+    raise ::Login::Apple::AuthenticationFailed
   end
 
   def resolve(**attrs)
@@ -26,7 +26,7 @@ class Mutations::Users::Login::Apple < Mutations::Users::Register::Base
       errors: nil,
       field_errors: nil,
     )
-  rescue Login::Apple::AuthenticationFailed
+  rescue ::Login::Apple::AuthenticationFailed
     {
       authenticatable: nil,
       credentials: nil,

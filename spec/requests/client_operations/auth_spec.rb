@@ -167,7 +167,6 @@ RSpec.describe "Client operations: auth and session" do
     end
 
     it "reports a failed Apple authentication to the client" do
-      pending "BUG-054: the mutation raises Login::Facebook::AuthenticationFailed but rescues the Apple class"
       allow(Login::Apple).to receive(:run!).and_raise(StandardError, "invalid token")
 
       json = client_operation("LoginWithApple", variables: variables)

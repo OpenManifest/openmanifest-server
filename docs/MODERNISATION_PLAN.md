@@ -3076,7 +3076,7 @@ Size: S
 Fixes: BUG-033
 
 ### P6.15 — Fix user mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.13
 Branch: modernise/p6-15-user-mutations

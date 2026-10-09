@@ -9,12 +9,11 @@ class Users::UpdateUser < ApplicationInteraction
   string :federation_number, default: nil
   string :phone, default: nil
   string :email, default: nil
-  integer :user_role_id, default: nil
   decimal :exit_weight, default: nil
   record :license, default: nil
-  date_time :expires_at, default: nil
 
   steps :authorize,
+        :check_email,
         :assign_attributes,
         :assign_federation,
         :dropzone_user
@@ -28,16 +27,31 @@ class Users::UpdateUser < ApplicationInteraction
         phone: phone,
         email: email,
         exit_weight: exit_weight,
-        user_role_id: user_role_id,
-        expires_at: expires_at,
       }.compact
     )
-    errors.merge!(dropzone_user.user.errors) unless dropzone_user.user.save
+    save_user
     if image
       dropzone_user.user.avatar.attach(data: image)
       # Resize image
       dropzone_user.user.avatar.variant(resize_to_fill: [500, 500], gravity: 'north')
     end
+  end
+
+  # Taking somebody else's email is a validation error, not a database exception (BUG-094)
+  def check_email
+    return if email.blank?
+    return unless User.where.not(id: dropzone_user.user_id).exists?(["LOWER(email) = ? OR LOWER(uid) = ?", email.downcase, email.downcase])
+
+    errors.add(:email, "has already been taken")
+  end
+
+  def save_user
+    user = dropzone_user.user
+    # The savepoint keeps the transaction usable if a concurrent request took the email in the meantime
+    saved = User.transaction(requires_new: true) { user.save }
+    errors.merge!(user.errors) unless saved
+  rescue ActiveRecord::RecordNotUnique
+    errors.add(:email, "has already been taken")
   end
 
   def assign_federation
@@ -55,27 +69,16 @@ class Users::UpdateUser < ApplicationInteraction
     )
   end
 
+  # Users can always update their own profile. A profile belongs to the user, not to a dropzone, so staff may edit it
+  # only while the user is a member of no other dropzone than the one the staff member acts in (updateUser there).
   def authorize
-    user_dropzone_ids = dropzone_user.user.dropzone_users.pluck(:dropzone_id)
-    if user_role_id && user_role_id != dropzone_user.user_role_id && !access_context.subject.can?(:grantPermission)
-      errors.add(:base, 'You are not authorized to change user roles')
-      return false
-    end
+    return if access_context.user&.id == dropzone_user.user_id
 
-    # Users can always update their own profile
-    if access_context.user.id == dropzone_user.user.id
-      true
-    # We can't check for dropzones since User isn't directly
-    # linked to any dropzone, but if this user only belongs to
-    # one dropzone, and you have access to :updateUser at that dropzone,
-    # then you can update the users profile. As soon as the user
-    # joins other dropzones, you can no longer edit their profile
-    elsif user_dropzone_ids.count == 1 && access_context.can?(:updateUser, dropzone_id: user_dropzone_ids.first)
-      true
-    elsif user_dropzone_ids.count > 1 && access_context.can?(:updateUser, dropzone_id: user_dropzone_ids.first)
-      errors.add(:base, "Update failed. User is a member of multiple dropzones")
-    else
+    dropzone_ids = dropzone_user.user.dropzone_users.kept.pluck(:dropzone_id)
+    if !access_context.can?(:updateUser) || dropzone_user.dropzone_id != access_context.dropzone&.id
       errors.add(:base, "You cant update other users")
+    elsif dropzone_ids.uniq.size > 1
+      errors.add(:base, "Update failed. User is a member of multiple dropzones")
     end
   end
 end
