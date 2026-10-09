@@ -3003,7 +3003,7 @@ Size: M
 Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034, BUG-091
 
 ### P6.12 — Enforce load state transitions and fix jump counts
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.11
 Branch: modernise/p6-12-load-states
