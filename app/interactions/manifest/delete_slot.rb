@@ -39,9 +39,9 @@ class Manifest::DeleteSlot < ApplicationInteraction
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: if is_self?
-                 "#{access_context.user.name} failed to take themselves off load ##{load.load_number}"
+                 "#{access_context.user.name} failed to take themselves off load ##{slot.load.load_number}"
                else
-                 "#{access_context.user.name} failed to remove a slot on load ##{load.load_number}"
+                 "#{access_context.user.name} failed to remove a slot on load ##{slot.load.load_number}"
                end,
       details: errors.full_messages.join(", ")
     )
@@ -51,7 +51,10 @@ class Manifest::DeleteSlot < ApplicationInteraction
     slot.passenger_slot.destroy if slot.has_passenger?
   end
 
+  # A slot without an order (a tandem passenger's, or one that was never paid) has nothing to refund
   def refund_transactions
+    return unless slot.order
+
     compose(
       ::Transactions::Refund,
       order: slot.order,
@@ -60,7 +63,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
   end
 
   def cancel_order
-    slot.order.update(state: :cancelled)
+    slot.order&.update(state: :cancelled)
   end
 
   def delete_slot

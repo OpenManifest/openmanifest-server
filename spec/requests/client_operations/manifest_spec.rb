@@ -63,7 +63,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "returns the jumpers of a load that has no load master" do
-      pending "BUG-091: Sources::Model#fetch drops nil keys, shifting the batched DropzoneUser results"
       no_master_load = create(:load, plane: plane, pilot: pilot, gca: owner, load_master: nil)
       manifest!(fun_jumper, load: no_master_load.id)
 
@@ -125,12 +124,38 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "changes the maximum number of slots" do
-      pending "BUG-025: check_max_slots is inverted, so any valid change of max slots is rejected"
-
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 12 } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_nil
       expect(manifest_load.reload.max_slots).to eq(12)
+    end
+
+    it "refuses fewer slots than are already manifested" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 1 } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors).join).to match(/too many manifested/i)
+      expect(manifest_load.reload.max_slots).to eq(10)
+    end
+
+    it "allows exactly as many slots as are manifested" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 2 } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.max_slots).to eq(2)
+    end
+
+    it "changes to a plane that seats exactly the manifested jumpers" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+      small_plane = create(:plane, dropzone: dropzone, max_slots: 2)
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: small_plane.id } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.plane).to eq(small_plane)
     end
 
     it "refuses a jumper" do
@@ -283,15 +308,26 @@ RSpec.describe "Client operations: manifest" do
       expect(slot.reload.load).to eq(manifest_load)
     end
 
-    it "swaps with a target slot" do
-      pending "BUG-031: moveSlot raises on the group_numner typo when a target slot is given"
+    it "moves a slot of a jumper whose credit balance is empty (nil)" do
+      fun_jumper.update_columns(credits: nil)
+
+      json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
+
+      expect(json.dig(:data, :moveSlot, :errors)).to be_nil
+      expect(slot.reload.load).to eq(second_load)
+    end
+
+    it "moves next to a target slot, into its load and group" do
       other = create(:dropzone_user, dropzone: dropzone, credits: 300)
       target = Slot.find(client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user).dig(:data, :createSlot, :slot, :id))
+      target.update_column(:group_number, 7)
 
-      client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetSlot: target.id, targetLoad: second_load.id }, as: owner_user)
+      json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetSlot: target.id, targetLoad: second_load.id }, as: owner_user)
 
+      expect(json.dig(:data, :moveSlot, :errors)).to be_nil
       expect(slot.reload.load).to eq(second_load)
-      expect(target.reload.load).to eq(manifest_load)
+      expect(slot.group_number).to eq(7)
+      expect(target.load).to eq(second_load)
     end
   end
 
@@ -322,7 +358,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "deletes a slot that has no order" do
-      pending "BUG-032: deleting a slot without an order fails with \"Order is required\""
       slot.order.destroy!
       slot.reload
 
@@ -357,7 +392,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "lands a load that has a tandem passenger" do
-      pending "BUG-030: finalising raises for slots without an order (tandem passengers)"
       instructor.update!(credits: 500)
       client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, passengerName: "Pat", passengerExitWeight: 70), as: owner_user)
 
