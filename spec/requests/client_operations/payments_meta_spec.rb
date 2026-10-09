@@ -150,7 +150,6 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
 
     it "does not return events of dropzones the caller does not belong to when no dropzone is given" do
-      pending "BUG-003: activity returns events from all dropzones unless a dropzone filter is passed"
       other_owner = create(:user)
       other_member = create(:dropzone_user, dropzone: other_dropzone, user: other_owner, user_role: other_dropzone.user_roles.find_by(name: "owner"))
       Activity::CreateEvent.run!(access_context: ApplicationInteraction::AccessContext.new(other_member), level: :info, access_level: :user,

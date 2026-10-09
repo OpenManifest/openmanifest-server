@@ -6,6 +6,8 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
   include_context 'dropzone_with_manifested_loads'
 
   before do
+    # P6.2: reading the master log needs updateDropzone, the permission that writes it (the caller used to be any member)
+    fun_jumper.grant!(:updateDropzone)
     load.update(dispatch_at: 10.minutes.from_now)
     load.mark_as_landed
 
@@ -33,6 +35,12 @@ RSpec.describe Resolvers::Dropzone::MasterLog, type: :request do
             ],
           }
         )
+      end
+
+      it 'refuses a member without updateDropzone' do
+        fun_jumper.revoke!(:updateDropzone)
+
+        expect(execute_query(dropzone: dropzone.id, date: Date.today.iso8601)&.dig(:masterLog)).to be_nil
       end
 
       it 'does not include cancelled loads' do

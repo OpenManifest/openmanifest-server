@@ -7,6 +7,8 @@ class Resolvers::Dropzone::Aircrafts < Resolvers::Base
 
   def resolve(dropzone: nil, lookahead: nil)
     return nil unless dropzone
+
+    authorize_dropzone!(dropzone)
     query = apply_lookaheads(lookahead, dropzone.planes.kept)
 
     query.order(name: :asc)

@@ -16,6 +16,9 @@ class Resolvers::Dropzone::MasterLog < Resolvers::Base
     lookahead: nil
   )
     return nil unless dropzone
+
+    # The same permission that lets a user write the master log (and that shows its menu entry in the app)
+    authorize_dropzone!(dropzone, :updateDropzone)
     dropzone.master_logs.at(date)
   end
 end
