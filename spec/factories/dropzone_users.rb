@@ -24,7 +24,7 @@ FactoryBot.define do
     credits { nil }
     expires_at { 1.year.from_now }
     user_role do
-      dropzone.user_roles.reload.third
+      dropzone.user_roles.reload.order(:id).third
     end
     license { Federation.first.licenses.where.not(name: 'No license').sample }
 

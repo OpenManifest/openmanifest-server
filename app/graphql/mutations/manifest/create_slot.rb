@@ -23,10 +23,10 @@ module Mutations::Manifest
           :rig,
           :load,
           :group_number,
-          :extras,
           :passenger_name,
           :passenger_exit_weight,
-        )
+        ),
+        extra_ids: attributes[:extras]&.pluck(:id)
       )
     end
   end
