@@ -80,6 +80,7 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
 |---|---|---|
 | API style | Single GraphQL endpoint, Relay-classic mutations, Apollo batching supported (`params[:_json]`) | `config/routes.rb:10`, `app/controllers/graphql_controller.rb` |
 | Schema | `DzSchema` with `GraphqlDevise::SchemaPlugin` (auth), `GraphQL::Dataloader`, AppSignal tracing, ActionCable subscriptions | `app/graphql/dz_schema.rb` |
+| Avoiding N+1 | `Sources::Model` (belongs_to, with attached images), `Sources::AssociationLoader` (`dataloader.with(Sources::AssociationLoader, :slots).load(record)`, then read the association), `Sources::UnseenNotificationCount`; types use them for every field that reads an association. `spec/requests/n_plus_one_spec.rb` runs Prosopite over the board and the member list | `app/graphql/sources/` |
 | Auth | `devise` + `devise_token_auth` tokens via `graphql_devise`; client sends `access-token`, `client`, `uid` headers. Facebook and Apple sign-in mutations | `app/models/user.rb:46-50`, `app/graphql/mutations/users/login/*`, `app/interactions/login/*` |
 | Business logic | `active_interaction` classes ("interactions") with a custom `steps`/`allow` DSL | `app/interactions/application_interaction*.rb` |
 | Real-time | `GraphqlChannel` over ActionCable at `/subscriptions`; subscriptions `loadCreated(dropzoneId)`, `loadUpdated(loadId)`, `userUpdated(dropzoneUserId)`; triggered from model callbacks | `app/channels/graphql_channel.rb`, `app/graphql/subscriptions/*`, `app/models/load.rb:115-136`, `app/models/dropzone_user.rb:219-228` |
