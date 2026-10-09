@@ -45,51 +45,13 @@ class Load < ApplicationRecord
   counter_culture :dropzone
 
   before_create :set_load_number
-  after_create :broadcast_create
-  after_update :broadcast_update
-  after_save :notify!,
-             :change_state!,
-             :update_counters!
-  after_commit :broadcast_update, on: :update
-  after_commit :broadcast_create, on: :create
+  # Once per change, after the transaction (BUG-036)
+  after_create_commit :broadcast_create
+  after_update_commit :broadcast_update
 
   scope :active, -> { where(dispatch_at: nil) }
   scope :today, -> { where(created_at: DateTime.current.all_day) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
-
-  # Changes the state of the load, which affects whether
-  # users get charged credits or not, and what notifications
-  # are sent to the user. The state changes when dispatch_at
-  # is changed
-  def change_state!
-    # When the plane is marked as landed, charge credits
-    if saved_change_to_has_landed? && has_landed?
-      mark_as_landed
-    # Change state to boarding call and notify everyone
-    elsif saved_change_to_dispatch_at? && dispatch_at
-      dispatch
-
-    # Change state back to open if dispatch_at is reset
-    elsif saved_change_to_dispatch_at? && dispatch_at.nil?
-      reopen
-    end
-  end
-
-  def notify!
-    return unless saved_change_to_dispatch_at?
-    return unless dispatch_at_was.nil?
-    return if dispatch_at.nil?
-    slots.each do |slot|
-      next if slot.dropzone_user.blank?
-
-      Notification.create(
-        message: "Load ##{load_number} call changed to take off at #{dispatch_at.in_time_zone(plane.dropzone.time_zone).strftime('%H:%M')}",
-        resource: self,
-        received_by: slot.dropzone_user,
-        notification_type: :boarding_call
-      )
-    end
-  end
 
   def ready?
     return false if gca.blank?
@@ -138,43 +100,26 @@ class Load < ApplicationRecord
     )
   end
 
+  # Adds `by` (1 or -1) jump to every jumper on the load, and to the jumper's dropzone count when it is their first (or,
+  # when taking it back, their only) jump at the dropzone. Called by the state machine when the load lands or a landed
+  # load is reopened.
+  def count_jumps!(by)
+    ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
+    return if ids.empty?
+
+    user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
+    dropzone_first_ids = DropzoneUser.where(id: ids, jump_count: by.positive? ? 0 : 1).pluck(:user_id)
+
+    DropzoneUser.update_counters(ids, jump_count: by)
+    User.update_counters(dropzone_first_ids, dropzone_count: by)
+    User.update_counters(user_ids, jump_count: by)
+  end
+
   private
 
   def set_load_number
     Time.use_zone(dropzone.time_zone) do
       assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
-    end
-  end
-
-  def update_counters!
-    if state_changed?
-      if state == "landed"
-        # Update counters
-        ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
-        user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
-        first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
-
-        DropzoneUser.update_counters(ids, jump_count: 1)
-        User.update_counters(first_time_ids, dropzone_count: 1)
-
-        # If this is the first jump at the dropzone, also update
-        # dropzone count
-        User.update_counters(user_ids, jump_count: 1)
-      # Reverse the counters if the load marked as
-      # not landed again
-      elsif state_was == "landed"
-        # Update counters
-        ids = slots.where.not(dropzone_user_id: nil).pluck(:dropzone_user_id)
-        user_ids = DropzoneUser.where(id: ids).pluck(:user_id)
-        first_time_ids = DropzoneUser.where(id: ids, jump_count: 0).pluck(:user_id)
-
-        DropzoneUser.update_counters(ids, jump_count: -1)
-        User.update_counters(first_time_ids, dropzone_count: -1)
-
-        # If this is the first jump at the dropzone, also update
-        # dropzone count
-        User.update_counters(user_ids, jump_count: -1)
-      end
     end
   end
 end

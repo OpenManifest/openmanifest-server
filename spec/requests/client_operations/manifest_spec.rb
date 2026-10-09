@@ -86,6 +86,12 @@ RSpec.describe "Client operations: manifest" do
       expect(json.dig(:data, :createLoad, :load, :pilot, :id)).to eq(pilot.id.to_s)
     end
 
+    it "ignores the state sent for a new load" do
+      json = client_operation("CreateLoad", variables: load_variables.merge(state: "landed"), as: owner_user)
+
+      expect(json.dig(:data, :createLoad, :load, :state)).to eq("open")
+    end
+
     it "refuses a jumper without createLoad" do
       json = nil
       expect { json = client_operation("CreateLoad", variables: load_variables, as: user) }.not_to change(Load, :count)
@@ -166,12 +172,89 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "only allows valid state transitions" do
-      pending "BUG-035: the load state is taken directly from client input"
       manifest_load.update!(state: "landed")
 
-      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
 
       expect(manifest_load.reload.state).to eq("landed")
+      expect(json.dig(:data, :updateLoad, :errors).join).to match(/can't go from landed to boarding call/)
+    end
+
+    it "starts a boarding call with a call time and the state" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding_call" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding_call")
+      expect(manifest_load.reload.dispatch_at).to be_present
+    end
+
+    it "starts a boarding call with only a call time" do
+      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601 } }, as: owner_user)
+
+      expect(manifest_load.reload.state).to eq("boarding_call")
+    end
+
+    it "refuses a boarding call without a call time" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_present
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "cancels the boarding call by clearing the call time" do
+      manifest_load.update!(dispatch_at: 10.minutes.from_now)
+      manifest_load.dispatch
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload).to have_attributes(state: "open", dispatch_at: nil)
+    end
+
+    it "accepts the state the load is already in" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "re-opens a cancelled load" do
+      manifest_load.cancel
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "lands a load through the state, settling the orders and counting the jump once" do
+      slot = manifest!(fun_jumper)
+      manifest_load.update!(dispatch_at: 10.minutes.from_now)
+      manifest_load.dispatch
+
+      expect { client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "landed" } }, as: owner_user) }.
+        to change { fun_jumper.user.reload.jump_count }.by(1)
+
+      expect(manifest_load.reload.state).to eq("landed")
+      expect(slot.reload.order.state).to eq("completed")
+    end
+
+    it "cancels a load through the state and refunds the jumpers" do
+      manifest!(fun_jumper)
+
+      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "cancelled" } }, as: owner_user)
+
+      expect(manifest_load.reload.state).to eq("cancelled")
+      expect(fun_jumper.reload.credits).to eq(300)
+    end
+
+    it "does not take off a cancelled load" do
+      manifest_load.cancel
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "in_flight" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_present
+      expect(manifest_load.reload.state).to eq("cancelled")
     end
   end
 
@@ -385,6 +468,23 @@ RSpec.describe "Client operations: manifest" do
       expect(fun_jumper.reload.credits).to eq(300)
     end
 
+    it "lands a load only once" do
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+
+      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
+        not_to(change { fun_jumper.user.reload.jump_count })
+    end
+
+    it "does not cancel a landed load" do
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+
+      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "cancelled" }, as: owner_user)
+
+      expect(json.dig(:data, :finalizeLoad, :errors).join).to match(/can't be cancelled/)
+      expect(manifest_load.reload.state).to eq("landed")
+      expect(fun_jumper.reload.credits).to eq(260)
+    end
+
     it "refuses a jumper" do
       client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: user)
 
@@ -401,8 +501,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "updates the jump counts of the jumpers when the load lands" do
-      pending "BUG-026: update_counters! checks state_changed? after the save, which is always false"
-
       expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
         to change { fun_jumper.user.reload.jump_count }.by(1)
     end

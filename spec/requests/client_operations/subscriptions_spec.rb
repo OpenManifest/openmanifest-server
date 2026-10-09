@@ -55,8 +55,6 @@ RSpec.describe "Client operations: subscription triggers" do
     end
 
     it "broadcasts loadCreated exactly once" do
-      pending "BUG-036: loadCreated is broadcast three times per created load"
-
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
       expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{dropzone.id}").size).to eq(1)
@@ -78,9 +76,23 @@ RSpec.describe "Client operations: subscription triggers" do
       expect(broadcasts("graphql-event::loadUpdated:loadId:#{other_load.id}")).to be_empty
     end
 
-    it "broadcasts loadUpdated exactly once" do
-      pending "BUG-036: loadUpdated is broadcast twice per update"
+    it "broadcasts loadUpdated once for a call with a time and a state" do
+      client_operation("UpdateLoad", variables: { id: existing_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding_call" } }, as: owner_user)
 
+      expect(broadcasts("graphql-event::loadUpdated:loadId:#{existing_load.id}").size).to eq(1)
+    end
+
+    it "broadcasts loadUpdated once when the load lands" do
+      existing_load.update!(dispatch_at: 10.minutes.from_now)
+      existing_load.dispatch
+      ActionCable.server.pubsub.clear
+
+      client_operation("FinalizeLoad", variables: { id: existing_load.id, state: "landed" }, as: owner_user)
+
+      expect(broadcasts("graphql-event::loadUpdated:loadId:#{existing_load.id}").size).to eq(1)
+    end
+
+    it "broadcasts loadUpdated exactly once" do
       client_operation("UpdateLoad", variables: { id: existing_load.id, attributes: { name: "Renamed" } }, as: owner_user)
 
       expect(broadcasts("graphql-event::loadUpdated:loadId:#{existing_load.id}").size).to eq(1)

@@ -4,9 +4,9 @@ class Manifest::FinalizeLoad < ApplicationInteraction
   record :load
   validates :load, presence: true
 
-  steps :mark_as_landed,
+  steps :check_transition,
         :finalize_orders,
-        :save,
+        :mark_as_landed,
         :load
 
   # Create events
@@ -23,12 +23,16 @@ class Manifest::FinalizeLoad < ApplicationInteraction
     )
   end
 
-  def save
-    errors.merge!(load.errors) unless load.save
+  def check_transition
+    return if load.can_mark_as_landed?
+
+    errors.add(:base, "Load ##{load.load_number} can't land, it is #{load.state.humanize.downcase}")
   end
 
+  # The state machine counts the jumps and saves the load
   def mark_as_landed
-    load.assign_attributes(state: :landed, is_open: false)
+    load.assign_attributes(is_open: false)
+    errors.merge!(load.errors) unless load.mark_as_landed
   end
 
   def finalize_orders
