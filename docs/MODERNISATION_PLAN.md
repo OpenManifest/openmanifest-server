@@ -2657,7 +2657,7 @@ Rules for every Phase 6 task:
 - Mark each fixed bug in BUGS.md as `FIXED in P6.n:` (Executor instructions, status tracking).
 
 ### P6.1 — Make the access context per request
-Status: todo
+Status: done
 Repo: backend
 Depends on: P5.10
 Branch: modernise/p6-1-request-access-context

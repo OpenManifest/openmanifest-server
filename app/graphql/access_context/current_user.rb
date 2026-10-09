@@ -1,8 +1,8 @@
+# The permissions of one user, optionally at one dropzone. An instance belongs to a single request (or cable message):
+# never keep one in a constant, a class variable or anything else that outlives it.
 class AccessContext::CurrentUser
-  include Singleton
-
-  attr_accessor :user,
-                :dropzone
+  attr_reader :user,
+              :dropzone
 
   # Sets up an access context for a user
   # to check permissions against that user
@@ -10,12 +10,11 @@ class AccessContext::CurrentUser
   #
   # @param [User] user
   def self.for(user)
-    instance.for_user(user)
+    new(user)
   end
 
-  def for_user(user)
-    self.user = user
-    self
+  def initialize(user)
+    @user = user
   end
 
   # Resolve all dropzones this user has access
@@ -32,8 +31,17 @@ class AccessContext::CurrentUser
   #
   # @return [AccessContext::User]
   def at_dropzone(dropzone)
-    self.dropzone = dropzone if dropzone.is_a?(Dropzone)
-    self.dropzone = Dropzone.find_by(id: dropzone) if dropzone.is_a?(String) || dropzone.is_a?(Integer)
+    resolved = if dropzone.is_a?(Dropzone)
+                 dropzone
+               elsif dropzone.is_a?(String) || dropzone.is_a?(Integer)
+                 Dropzone.find_by(id: dropzone)
+               else
+                 @dropzone
+               end
+
+    # The membership belongs to the dropzone it was looked up at
+    @dropzone_user = nil unless resolved == @dropzone
+    @dropzone = resolved
     self
   end
 
