@@ -2096,7 +2096,7 @@ Libraries: `zustand` 5.0.15 (`persist` middleware with `createJSONStorage`), `ex
 P4.9 records Apollo 4 as backlog.
 
 ### P4.1 — Introduce the session store and move credentials to secure storage
-Status: todo
+Status: owner-check (install the previous dev build, log in, install this build over it on iOS and Android: still logged in; log out and in works)
 Repo: client
 Depends on: P3.22
 Branch: modernise/p4-1-session-store
