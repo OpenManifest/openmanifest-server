@@ -32,10 +32,14 @@ class Manifest::FinalizeLoad < ApplicationInteraction
   end
 
   def finalize_orders
-    load.slots.each do |slot|
+    # Passenger slots have no order of their own: their jumper's order covers them
+    load.slots.includes(order: :receipts).each do |slot|
+      receipt = slot.order&.receipts&.first
+      next unless receipt
+
       compose(
         ::Transactions::Confirm,
-        receipt: slot.order.receipts.first,
+        receipt: receipt,
         access_context: access_context,
       )
     end
