@@ -20,7 +20,7 @@ RSpec.describe "Subscription authorization" do
   end
 
   def refused?(result)
-    result.to_h.dig("errors", 0, "extensions", "code") == "FORBIDDEN" || result.to_h["data"].nil? || result.to_h.dig("data").values.all?(&:nil?)
+    result.to_h.dig("errors", 0, "extensions", "code") == "FORBIDDEN" || result.to_h["data"].nil? || result.to_h["data"].values.all?(&:nil?)
   end
 
   describe "loadUpdated" do
