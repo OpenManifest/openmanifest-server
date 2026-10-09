@@ -3379,7 +3379,7 @@ Size: M
 Fixes: BUG-049
 
 ### P6.26 — Fix client manifest and user UX bugs
-Status: todo
+Status: done
 Repo: client
 Depends on: P6.25
 Branch: modernise/p6-26-client-ux
