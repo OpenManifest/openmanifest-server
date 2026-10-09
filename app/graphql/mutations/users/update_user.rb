@@ -17,7 +17,6 @@ module Mutations::Users
         access_context: access_context_for(dropzone_user.dropzone_id),
         dropzone_user: dropzone_user,
         name: attributes[:name],
-        user_role_id: attributes[:user_role_id],
         nickname: attributes[:nickname],
         push_token: attributes[:push_token],
         image: attributes[:image],
@@ -26,7 +25,6 @@ module Mutations::Users
         email: attributes[:email],
         license: attributes[:license],
         exit_weight: attributes[:exit_weight],
-        expires_at: attributes[:expires_at],
       )
     end
   end
