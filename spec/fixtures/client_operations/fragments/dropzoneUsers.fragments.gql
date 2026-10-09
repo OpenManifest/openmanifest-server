@@ -19,7 +19,7 @@ fragment dropzoneUserEssentials on DropzoneUser {
 
 fragment dropzoneUserDetails on DropzoneUser {
   ...dropzoneUserEssentials
-  credits
+  creditsCents
   license {
     ...licenseDetails
   }

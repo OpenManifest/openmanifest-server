@@ -4,7 +4,8 @@ module Types::Interfaces
   module SellableItem
     include Types::Base::Interface
 
-    field :cost, Float, null: true
+    field :cost_cents, Int, null: true
+    field :cost, Float, null: true, deprecation_reason: "Use costCents, an integer number of cents"
     field :title, String, null: true
 
     definition_methods do

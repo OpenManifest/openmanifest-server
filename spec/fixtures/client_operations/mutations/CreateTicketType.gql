@@ -1,11 +1,5 @@
-mutation CreateTicketType(
-    $attributes: TicketTypeInput!
-) {
-  createTicketType(
-    input: {
-      attributes: $attributes
-    }
-  ) {
+mutation CreateTicketType($attributes: TicketTypeInput!) {
+  createTicketType(input: { attributes: $attributes }) {
     errors
     fieldErrors {
       field
@@ -15,12 +9,12 @@ mutation CreateTicketType(
       id
       name
       altitude
-      cost
+      costCents
       allowManifestingSelf
       extras {
         id
         name
-        cost
+        costCents
       }
 
       dropzone {
@@ -30,12 +24,12 @@ mutation CreateTicketType(
           id
           name
           altitude
-          cost
+          costCents
           allowManifestingSelf
           extras {
             id
             name
-            cost
+            costCents
           }
         }
       }

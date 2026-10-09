@@ -403,7 +403,7 @@ sequenceDiagram
   API-->>C: { order }
   M->>FL: cancel load
   FL->>R: for each slot.order: Refund
-  R->>R: negative receipt, reversed transactions, buyer += amount_cents/100 (integer division, BUG-048)
+  R->>R: negative receipt, reversed transactions, buyer.credits_cents += receipt amount_cents (exact since P6.23)
 ```
 
 ## 4. Client navigation map

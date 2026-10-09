@@ -21,7 +21,8 @@ module Types::Users
     field :notifications, Types::System::Notification.connection_type, null: true
     field :expires_at, Int, null: true
     field :rig_inspections, [Types::Equipment::RigInspection], null: true
-    field :credits, Int, null: true
+    field :credits_cents, Int, null: true, description: "The member's credits in cents"
+    field :credits, Float, null: true, deprecation_reason: "Use creditsCents, an integer number of cents"
     field :purchases, Types::Payments::Order.connection_type, null: true
     field :sales, Types::Payments::Order.connection_type, null: true
 

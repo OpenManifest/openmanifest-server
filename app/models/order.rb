@@ -17,6 +17,9 @@
 #  updated_at   :datetime         not null
 #
 class Order < ApplicationRecord
+  include MoneyAttributes
+
+  money :amount
   belongs_to :dropzone
   belongs_to :seller, polymorphic: true
   belongs_to :buyer, polymorphic: true

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.integer "jump_count", default: 0, null: false
     t.datetime "discarded_at", precision: nil
     t.bigint "license_id"
+    t.bigint "credits_cents"
     t.index ["discarded_at"], name: "index_dropzone_users_on_discarded_at"
     t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
     t.index ["license_id"], name: "index_dropzone_users_on_license_id"
@@ -118,6 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.datetime "discarded_at", precision: nil
     t.string "state", default: "private"
     t.jsonb "settings", default: {}
+    t.bigint "credits_cents"
     t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
     t.index ["federation_id"], name: "index_dropzones_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
@@ -154,6 +156,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.datetime "updated_at", null: false
     t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
+    t.bigint "cost_cents"
     t.index ["discarded_at"], name: "index_extras_on_discarded_at"
     t.index ["dropzone_id"], name: "index_extras_on_dropzone_id"
   end
@@ -278,6 +281,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.integer "state"
     t.float "amount"
     t.string "title"
+    t.bigint "amount_cents"
     t.index ["buyer_type", "buyer_id"], name: "index_orders_on_buyer"
     t.index ["dropzone_id", "order_number"], name: "index_orders_on_dropzone_id_and_order_number", unique: true
     t.index ["dropzone_id"], name: "index_orders_on_dropzone_id"
@@ -590,6 +594,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.boolean "is_tandem", default: false
     t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
+    t.bigint "cost_cents"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
     t.index ["dropzone_id"], name: "index_ticket_types_on_dropzone_id"
   end
@@ -606,6 +611,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
     t.bigint "receiver_id", null: false
     t.bigint "receipt_id", null: false
     t.integer "transaction_type"
+    t.bigint "amount_cents"
     t.index ["receipt_id"], name: "index_transactions_on_receipt_id"
     t.index ["receiver_type", "receiver_id"], name: "index_transactions_on_receiver"
     t.index ["sender_type", "sender_id"], name: "index_transactions_on_sender"

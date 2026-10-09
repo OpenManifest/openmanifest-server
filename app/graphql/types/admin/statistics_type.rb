@@ -101,7 +101,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
   def revenue_cents_count(time_range: nil)
     query = object.sales.where(state: :completed)
     query = query.where(created_at: time_range.start_time..time_range.end_time) if time_range
-    query.sum(:amount)
+    query.sum(:amount_cents)
   end
 
   def load_count_by_day(time_range: nil)
