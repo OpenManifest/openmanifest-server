@@ -9,7 +9,10 @@ class DzSchema < GraphQL::Schema
     resource_loaders: [
       GraphqlDevise::ResourceLoader.new(
         User,
-        operations: { register: Mutations::Users::SignUp },
+        operations: {
+          register: Mutations::Users::SignUp,
+          confirm_registration_with_token: Mutations::Users::ConfirmRegistration,
+        },
         authenticatable_type: Types::Users::User,
       ),
     ]

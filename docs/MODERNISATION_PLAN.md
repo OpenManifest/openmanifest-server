@@ -2725,7 +2725,7 @@ Size: L
 Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090, BUG-095
 
 ### P6.3 — Add tenant checks to user queries and protect personal data
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.2
 Branch: modernise/p6-3-query-authz-2
