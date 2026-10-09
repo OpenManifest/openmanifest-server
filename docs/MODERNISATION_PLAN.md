@@ -2169,7 +2169,7 @@ Size: M
 Fixes: none
 
 ### P4.3 — Remove deprecated user and dropzone snapshots from global state
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.2
 Branch: modernise/p4-3-remove-snapshots
