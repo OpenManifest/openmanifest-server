@@ -55,6 +55,9 @@ gem "active_interaction-extras"
 # Count things
 gem "counter_culture"
 
+# Background jobs, in the primary database
+gem "solid_queue", "~> 1.7"
+
 # Debugging
 gem "appsignal"
 

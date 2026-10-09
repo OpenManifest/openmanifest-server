@@ -102,11 +102,8 @@ module Types
     end
 
     def master_log(date: nil)
-      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date).to_datetime.all_day)
-
-      # Creating log record if none exists
-      log.save! if log.new_record?
-      log
+      # The day the timestamp falls on in the dropzone's time zone
+      object.master_logs.find_or_create_by!(date: Time.zone.at(date).in_time_zone(object.time_zone).to_date)
     end
   end
 end
