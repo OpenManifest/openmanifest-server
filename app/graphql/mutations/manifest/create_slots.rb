@@ -18,6 +18,7 @@ module Mutations::Manifest
         ticket_type: attributes[:ticket_type],
         jump_type: attributes[:jump_type],
         group_number: attributes[:group_number],
+        extra_ids: attributes[:extras]&.pluck(:id),
         load: attributes[:load],
         users: attributes[:user_group].map { |h| h.to_h.except(:id).merge(dropzone_user: DropzoneUser.find_by(id: h[:id])) }
       )

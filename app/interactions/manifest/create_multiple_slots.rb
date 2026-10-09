@@ -7,6 +7,10 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :ticket_type
   record :jump_type
   integer :group_number, default: nil
+  # Add-ons bought for every member of the group
+  array :extra_ids, default: nil do
+    integer
+  end
   date_time :created_at, default: -> { DateTime.current }
   array :users do
     hash do
@@ -15,9 +19,6 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
       record :rig, default: nil
       string :passenger_name, default: nil
       float :passenger_exit_weight, default: nil
-      array :extras, default: nil do
-        object class: Extra
-      end
     end
   end
 
@@ -36,16 +37,20 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     dropzone_users.sort_by(&:id).each(&:lock!)
   end
 
+  # The whole group gets one group number (BUG-027)
   def create_slots
+    group = group_number || plane_load.next_group_number
+
     users.map do |user|
       compose(
         ::Manifest::CreateSlot,
-        group_number: group_number || plane_load.next_group_number,
+        group_number: group,
         access_context: access_context,
         created_at: created_at,
         group_includes_self: group_includes_self?,
         ticket_type: ticket_type,
         jump_type: jump_type,
+        extra_ids: extra_ids,
         load: load,
         **user
       )
@@ -68,19 +73,13 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
 
   def check_credits
     return unless dropzone.is_credit_system_enabled?
-    users.each do |user|
-      cost = ticket_type.cost
-      if user[:extra_ids]
-        cost += Extra.where(
-          dropzone: dropzone,
-          id: user[:extra_ids]
-        ).map(&:cost).reduce(&:sum)
-      end
 
-      if cost > (user[:dropzone_user].credits || 0)
-        errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
-        errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
-      end
+    cost = ticket_type.cost + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost)
+    users.each do |user|
+      next unless cost > (user[:dropzone_user].credits || 0)
+
+      errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
+      errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
     end
   end
 

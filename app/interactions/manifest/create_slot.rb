@@ -23,7 +23,7 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   # Execution: a member needs createSlot to manifest themselves, createUserSlot to manifest somebody else (see
   # #required_permissions); everything must belong to the dropzone the caller acts in
-  validate :same_dropzone
+  validate :same_dropzone, :extras_offered_with_ticket
 
   steps :lock_load_and_member,
         :build_slot,
@@ -97,6 +97,8 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_by: access_context.subject,
       exit_weight: exit_weight
     )
+    # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
+    @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end
 
   def set_tandem_passenger
@@ -160,6 +162,13 @@ class Manifest::CreateSlot < ApplicationInteraction
     Slot.transaction(requires_new: true, &)
   rescue ActiveRecord::RecordNotUnique
     errors.add(:base, "Already manifested on this load")
+  end
+
+  def extras_offered_with_ticket
+    return if extra_ids.blank?
+
+    offered = ticket_type.extras.kept.where(id: extra_ids).pluck(:id)
+    errors.add(:extras, "Not every add-on is offered with this ticket") unless offered.sort == extra_ids.uniq.sort
   end
 
   def manifesting_self?

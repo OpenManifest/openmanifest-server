@@ -319,15 +319,73 @@ RSpec.describe "Client operations: manifest" do
       expect(manifest_load.reload.slots_count).to eq(1)
     end
 
-    it "stores the selected add-ons with the slot" do
-      pending "BUG-028: extras are accepted but never stored or charged"
-      extra = create(:extra, dropzone: dropzone, cost: 5) if FactoryBot.factories.registered?(:extra)
-      extra ||= Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
-      ticket_type.extras << extra
+    context "with add-ons" do
+      let!(:video) { Extra.create!(dropzone: dropzone, name: "Video", cost: 5) }
+      let!(:coach) { Extra.create!(dropzone: dropzone, name: "Coach", cost: 12) }
+      let!(:unrelated) { Extra.create!(dropzone: dropzone, name: "Not on this ticket", cost: 1) }
 
-      slot = manifest!(fun_jumper, extras: [extra.id])
+      before { ticket_type.extras << [video, coach] }
 
-      expect(slot.reload.extras).to eq([extra])
+      it "stores the selected add-ons with the slot" do
+        slot = manifest!(fun_jumper, extras: [video.id])
+
+        expect(slot.reload.extras).to eq([video])
+      end
+
+      it "stores every selected add-on" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        expect(slot.reload.slot_extras.count).to eq(2)
+        expect(slot.extras).to match_array([video, coach])
+      end
+
+      it "charges the ticket and the add-ons in one order" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        expect(slot.reload.cost).to eq(57)
+        expect(slot.order.amount).to eq(57)
+        expect(fun_jumper.reload.credits).to eq(243)
+      end
+
+      it "refunds the add-ons with the ticket" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        client_operation("DeleteSlot", variables: { id: slot.id }, as: owner_user)
+
+        expect(fun_jumper.reload.credits).to eq(300)
+      end
+
+      it "counts the add-ons in the credit check" do
+        fun_jumper.update!(credits: 50)
+
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [video.id, coach.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+        expect(json.dig(:data, :createSlot, :fieldErrors).to_a.to_s + json.dig(:data, :createSlot, :errors).to_a.to_s).to match(/credits/i)
+      end
+
+      it "refuses an add-on that is not offered with the ticket" do
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [unrelated.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+        expect(json.dig(:data, :createSlot, :fieldErrors, 0, :field)).to eq("extras")
+        expect(Slot.where(dropzone_user: fun_jumper)).to be_empty
+      end
+
+      it "refuses an add-on of another dropzone" do
+        foreign = Extra.create!(dropzone: create(:dropzone), name: "Video", cost: 5)
+
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [foreign.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+      end
+
+      it "manifests without add-ons as before" do
+        slot = manifest!(fun_jumper)
+
+        expect(slot.reload.extras).to be_empty
+        expect(slot.order.amount).to eq(40)
+      end
     end
   end
 
@@ -354,10 +412,48 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "gives the group one group number" do
-      pending "BUG-027: the group number is recomputed per member"
       client_operation("ManifestGroup", variables: group_variables, as: owner_user)
 
       expect(manifest_load.slots.pluck(:group_number).uniq.size).to eq(1)
+    end
+
+    it "gives a group of three one group number, and the next group the next one" do
+      third = create(:dropzone_user, dropzone: dropzone, credits: 300)
+      other_group = Array.new(2) { create(:dropzone_user, dropzone: dropzone, credits: 300) }
+      [[fun_jumper, second, third], other_group].each do |members|
+        variables = group_variables.merge(jumpType: JumpType.allowed_for(members).first.id, userGroup: members.map { |member| { id: member.id, exitWeight: 80 } })
+        expect(client_operation("ManifestGroup", variables: variables, as: owner_user).dig(:data, :createSlots, :errors)).to be_blank
+      end
+
+      groups = manifest_load.slots.group_by(&:group_number).values.map { |slots| slots.map(&:dropzone_user) }
+      expect(groups).to match_array([match_array([fun_jumper, second, third]), match_array(other_group)])
+    end
+
+    it "uses the group number the client gives" do
+      client_operation("ManifestGroup", variables: group_variables.merge(groupNumber: 7), as: owner_user)
+
+      expect(manifest_load.slots.pluck(:group_number)).to eq([7, 7])
+    end
+
+    it "charges the add-ons to every member of the group" do
+      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      ticket_type.extras << video
+
+      client_operation("ManifestGroup", variables: group_variables.merge(extras: [video.id]), as: owner_user)
+
+      expect(manifest_load.slots.map { |slot| slot.extras.to_a }).to all(eq([video]))
+      expect([fun_jumper, second].map { |member| member.reload.credits }).to eq([255, 255])
+    end
+
+    it "counts the add-ons in the credit check of the group" do
+      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      ticket_type.extras << video
+      second.update!(credits: 42)
+
+      json = client_operation("ManifestGroup", variables: group_variables.merge(extras: [video.id]), as: owner_user)
+
+      expect(json.dig(:data, :createSlots, :fieldErrors, 0)).to include(field: "credits")
+      expect(manifest_load.slots).to be_empty
     end
   end
 
