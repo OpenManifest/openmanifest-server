@@ -23,10 +23,18 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
 
   validates :ticket_type, :jump_type, :users, presence: true
 
-  steps :check_available_slots,
+  steps :lock_load_and_members,
+        :check_available_slots,
         :check_allowed_jump_type,
         :check_credits,
         :create_slots
+
+  # Capacity and credits are checked against rows nobody else can change until this transaction ends (BUG-020,
+  # BUG-023). Lock order: the load, then the members by id.
+  def lock_load_and_members
+    load.lock!
+    dropzone_users.sort_by(&:id).each(&:lock!)
+  end
 
   def create_slots
     users.map do |user|

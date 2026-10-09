@@ -2937,7 +2937,7 @@ Size: L
 Fixes: BUG-011, BUG-060, BUG-053
 
 ### P6.10 — Count slots correctly and lock capacity and credits
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.9
 Branch: modernise/p6-10-counters-locking

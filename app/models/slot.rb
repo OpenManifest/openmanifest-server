@@ -47,13 +47,12 @@ class Slot < ApplicationRecord
                 }
 
   counter_culture %i(load plane dropzone), column_name: :slots_count
-  counter_culture :load, column_name: :slots_count
+  # The load's counters: every slot counts in slots_count, only the ready ones in ready_slots_count. The second counter
+  # needs its own column_name, without it counter_culture also increments slots_count (BUG-019).
+  counter_culture :load
   counter_culture :load,
-                  column_names: -> {
-                                  {
-                                    Slot.ready => "ready_slots_count",
-                                  }
-                                }
+                  column_name: proc { |slot| slot.ready? ? "ready_slots_count" : nil },
+                  column_names: -> { { Slot.ready => "ready_slots_count" } }
 
   validate :available?,
            :double_manifest?,
