@@ -15,6 +15,7 @@ module Types
     field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false
     field :login_with_apple,            mutation: Mutations::Users::Login::Apple, authenticate: false
     field :create_ghost,                mutation: Mutations::Users::CreateGhost
+    field :join_dropzone,               mutation: Mutations::Users::JoinDropzone
     field :update_dropzone_user,        mutation: Mutations::Users::UpdateDropzoneUser
     field :update_user,                 mutation: Mutations::Users::UpdateUser
     field :delete_user,                 mutation: Mutations::Users::DeleteUser

@@ -26,7 +26,8 @@ module Types
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
-    field :current_user, Types::Users::DropzoneUser, null: false
+    field :current_user, Types::Users::DropzoneUser, null: true,
+                                                     description: "The caller's membership of this dropzone, or null if they have not joined it (see joinDropzone)"
     field :user_roles, [Types::Access::UserRole], null: false
     field :settings, Types::Dropzone::Settings, null: true
     async_field :federation, Types::Meta::Federation, null: false
@@ -90,13 +91,13 @@ module Types
     end
 
     def rigs
-      return [] unless current_user.can?(:readDropzoneRig)
+      return [] unless current_user&.can?(:readDropzoneRig)
       object.rigs.order(rig_type: :asc)
     end
 
     def roles(selectable: nil)
       query = object.user_roles
-      query = query.below(current_user.user_role) if selectable
+      query = (current_user ? query.below(current_user.user_role) : query.none) if selectable
       query.order(id: :asc)
     end
 
