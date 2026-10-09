@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_145126) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -401,6 +401,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_145126) do
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
+    t.index ["load_id", "dropzone_user_id"], name: "index_slots_on_load_id_and_dropzone_user_id", unique: true, where: "(dropzone_user_id IS NOT NULL)"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["passenger_id"], name: "index_slots_on_passenger_id"
     t.index ["passenger_slot_id"], name: "index_slots_on_passenger_slot_id"

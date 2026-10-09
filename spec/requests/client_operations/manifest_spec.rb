@@ -206,7 +206,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "counts each slot once on the load" do
-      pending "BUG-019: counter_culture increments slots_count twice per slot"
       manifest!(fun_jumper)
 
       expect(manifest_load.reload.slots_count).to eq(1)
