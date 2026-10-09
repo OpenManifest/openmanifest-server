@@ -135,6 +135,6 @@ RSpec.describe "Setup authorization" do
   end
 
   it "has no context[:current_user] left (graphql_devise never sets it)" do
-    expect(Dir[Rails.root.join("app/**/*.rb")].select { |file| File.read(file).include?("context[:current_user]") }).to be_empty
+    expect(Rails.root.glob("app/**/*.rb").select { |file| File.read(file).include?("context[:current_user]") }).to be_empty
   end
 end
