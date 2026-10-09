@@ -1,29 +1,28 @@
 # frozen_string_literal: true
 
+# Asks the rig inspectors of a dropzone to inspect a member's rig, once per inspector and rig
 class RequestRigInspectionJob < ApplicationJob
   queue_as :default
 
-  def perform(rig_id, dropzone_user_id)
-    if dz_user = DropzoneUser.find(dropzone_user_id)
-      rig = Rig.find(rig_id)
+  # The rig or the member was removed in the meantime
+  discard_on ActiveRecord::RecordNotFound
 
-      # Find all users at this dropzone with permissions to perform
-      # rig inspections
-      dz_user.dropzone.dropzone_users.with_acting_permission(:actAsRigInspector).each do |inspector|
-        # Only send once
-        unless Notification.exists?(received_by: inspector, type: :rig_inspection_requested, resource: rig)
-          ::Notification.create(
-            received_by: inspector,
-            message: "#{rig.user.name} needs a rig inspection",
-            type: :rig_inspection_requested,
-            resource: rig,
-            sent_by: dz_user
-          )
-        end
-      end
+  def perform(rig_id, dropzone_user_id)
+    dz_user = DropzoneUser.find(dropzone_user_id)
+    rig = Rig.find(rig_id)
+
+    # Everyone at this dropzone who may inspect rigs, through their role or granted to them
+    inspectors = dz_user.dropzone.dropzone_users.kept.includes(:user_role, :permissions).select { |member| member.can?(:actAsRigInspector) }
+    inspectors.each do |inspector|
+      next if Notification.exists?(received_by: inspector, notification_type: :rig_inspection_requested, resource: rig)
+
+      Notification.create!(
+        received_by: inspector,
+        message: "#{rig.user.name} needs a rig inspection",
+        notification_type: :rig_inspection_requested,
+        resource: rig,
+        sent_by: dz_user
+      )
     end
-  rescue
-    # TODO: Handle these errors
-    # Ignore if notification is removed before sending
   end
 end

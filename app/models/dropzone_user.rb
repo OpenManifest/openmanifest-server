@@ -212,7 +212,7 @@ class DropzoneUser < ApplicationRecord
     return if rig_inspections.any?
     rig = rigs.not_inspected_at(dropzone).first
     return unless rig
-    RequestRigInspectionJob.perform_now(rig, self)
+    RequestRigInspectionJob.perform_later(rig.id, id)
   end
 
   # Push an update to graphql subscriptions over websockets

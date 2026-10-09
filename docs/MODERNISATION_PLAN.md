@@ -3169,7 +3169,7 @@ Size: L
 Fixes: BUG-052, BUG-044
 
 ### P6.18 — Fix notifications and push tokens
-Status: todo
+Status: owner-check (on a phone: request a rig inspection and receive the push; log out, then trigger a notification for that user and no push arrives on the device)
 Repo: backend
 Depends on: P6.17
 Branch: modernise/p6-18-notifications
