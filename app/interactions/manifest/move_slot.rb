@@ -124,7 +124,14 @@ class Manifest::MoveSlot < ApplicationInteraction
   # Moving someone else's slot needs updateUserSlot, your own updateSlot (BUG-007)
   def required_permissions
     own = access_context&.subject.present? && access_context.subject == source_slot.dropzone_user
-    return { updateSlot: "You don't have permissions to move your slot (missing updateSlot)" } if own
+    if own
+      message = if access_context.subject.manifest_desk_only?(:updateSlot)
+                  DropzoneUser::MANIFEST_DESK_MESSAGE
+                else
+                  "You don't have permissions to move your slot (missing updateSlot)"
+                end
+      return { updateSlot: message }
+    end
 
     { updateUserSlot: "You don't have permissions to move other users (missing updateUserSlot)" }
   end

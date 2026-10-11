@@ -342,7 +342,7 @@ RSpec.describe "Client operations: manifest" do
       it "charges the ticket and the add-ons in one order" do
         slot = manifest!(fun_jumper, extras: [video.id, coach.id])
 
-        expect(slot.reload.cost).to eq(57)
+        expect(slot.reload.cost_cents).to eq(5700)
         expect(slot.order.amount).to eq(57)
         expect(fun_jumper.reload.credits).to eq(243)
       end
@@ -488,7 +488,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "moves a slot of a jumper whose credit balance is empty (nil)" do
-      fun_jumper.update_columns(credits: nil)
+      fun_jumper.update_columns(credits_cents: nil)
 
       json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
 

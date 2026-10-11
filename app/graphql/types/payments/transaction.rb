@@ -11,10 +11,6 @@ module Types::Payments
     def amount_cents
       object.amount_cents.to_i
     end
-    field :amount, Float, null: false, deprecation_reason: "Use amountCents, an integer number of cents"
-    def amount
-      object.amount_cents.to_i / 100.0
-    end
 
     polymorphic_field :sender, Types::Interfaces::Wallet, null: true
     polymorphic_field :receiver, Types::Interfaces::Wallet, null: true

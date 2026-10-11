@@ -157,7 +157,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
     describe "in cents" do
       before { fun_jumper.update!(credits: 100) }
 
-      def create_order(attributes, query: "mutation($attributes: OrderInput!) { createOrder(input: { attributes: $attributes }) { errors order { amount amountCents } } }")
+      def create_order(attributes, query: "mutation($attributes: OrderInput!) { createOrder(input: { attributes: $attributes }) { errors order { amountCents } } }")
         post "/graphql",
              params: { query: query, variables: { attributes: { buyer: fun_jumper.to_gid_param, seller: dropzone.to_gid_param, dropzone: dropzone.id }.merge(attributes) }.to_json },
              headers: owner_user.create_new_auth_token
@@ -167,14 +167,8 @@ RSpec.describe "Client operations: payments, activity and meta" do
       it "takes the amount in cents" do
         json = create_order({ amountCents: 1999 })
 
-        expect(json.dig(:data, :createOrder, :order)).to eq("amount" => 19.99, "amountCents" => 1999)
+        expect(json.dig(:data, :createOrder, :order)).to eq("amountCents" => 1999)
         expect(fun_jumper.reload.credits_cents).to eq(8001)
-      end
-
-      it "prefers the cents when both are sent" do
-        json = create_order({ amount: 50, amountCents: 1000 })
-
-        expect(json.dig(:data, :createOrder, :order, :amountCents)).to eq(1000)
       end
 
       it "needs an amount" do

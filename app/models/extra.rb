@@ -5,12 +5,10 @@
 # Table name: extras
 #
 #  id          :bigint           not null, primary key
-#  cost        :float
 #  name        :string
 #  dropzone_id :bigint           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  is_deleted  :boolean          default(FALSE)
 #
 class Extra < ApplicationRecord
   include MoneyAttributes

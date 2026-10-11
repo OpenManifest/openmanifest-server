@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -80,7 +80,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   create_table "dropzone_users", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "dropzone_id", null: false
-    t.float "credits"
     t.datetime "expires_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -114,7 +113,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.integer "users_count", default: 0, null: false
     t.integer "slots_count", default: 0, null: false
     t.integer "loads_count", default: 0, null: false
-    t.integer "credits"
     t.boolean "request_publication", default: false
     t.datetime "discarded_at", precision: nil
     t.string "state", default: "private"
@@ -149,12 +147,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   end
 
   create_table "extras", force: :cascade do |t|
-    t.float "cost"
     t.string "name"
     t.bigint "dropzone_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
     t.index ["discarded_at"], name: "index_extras_on_discarded_at"
@@ -279,7 +275,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "state"
-    t.float "amount"
     t.string "title"
     t.bigint "amount_cents"
     t.index ["buyer_type", "buyer_id"], name: "index_orders_on_buyer"
@@ -325,7 +320,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "dropzone_id", null: false
-    t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
     t.index ["discarded_at"], name: "index_planes_on_discarded_at"
     t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
@@ -603,7 +597,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   end
 
   create_table "ticket_types", force: :cascade do |t|
-    t.float "cost"
     t.string "currency"
     t.string "name"
     t.bigint "dropzone_id", null: false
@@ -612,7 +605,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_tandem", default: false
-    t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
@@ -621,7 +613,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
 
   create_table "transactions", force: :cascade do |t|
     t.integer "status"
-    t.float "amount"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "message"

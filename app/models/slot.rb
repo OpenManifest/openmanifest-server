@@ -84,11 +84,6 @@ class Slot < ApplicationRecord
     extras.sum { |extra| extra.cost_cents || 0 } + (ticket_type.cost_cents || 0)
   end
 
-  # The same in whole units, for older clients
-  def cost
-    cost_cents / 100.0
-  end
-
   def ready?
     return false if ticket_type.blank?
     return false if load.blank?

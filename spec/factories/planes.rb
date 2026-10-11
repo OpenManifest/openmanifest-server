@@ -14,14 +14,12 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  dropzone_id            :bigint           not null
-#  is_deleted             :boolean          default(FALSE)
 #
 FactoryBot.define do
   factory :plane do
     dropzone { nil }
     name { Faker::Color.color_name }
     registration { Faker::Name.first_name }
-    is_deleted { false }
     max_slots { Faker::Number.between(from: 4, to: 20) }
 
     factory :plane_with_loads do

@@ -6,7 +6,6 @@
 #
 #  id               :bigint           not null, primary key
 #  status           :integer
-#  amount           :float
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  message          :string

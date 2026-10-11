@@ -719,7 +719,6 @@ type DropzoneUser implements AnyResource & Wallet {
     loadId: Int
   ): [Rig!]
   createdAt: ISO8601DateTime!
-  credits: Float @deprecated(reason: "Use creditsCents, an integer number of cents")
 
   """
   The member's credits in cents
@@ -890,11 +889,6 @@ type DropzoneUserEdge {
 
 input DropzoneUserInput {
   """
-  In whole units, use creditsCents
-  """
-  credits: Float
-
-  """
   In cents
   """
   creditsCents: Int
@@ -1020,7 +1014,6 @@ enum EventLevel {
 }
 
 type Extra implements AnyResource & SellableItem {
-  cost: Float! @deprecated(reason: "Use costCents, an integer number of cents")
   costCents: Int!
   createdAt: ISO8601DateTime!
   dropzone: Dropzone!
@@ -1033,11 +1026,6 @@ type Extra implements AnyResource & SellableItem {
 }
 
 input ExtraInput {
-  """
-  In whole units, use costCents
-  """
-  cost: Float
-
   """
   In cents
   """
@@ -1619,7 +1607,7 @@ type Mutation {
     confirmUrl: String
     pushToken: String
     token: String!
-  ): FacebookPayload
+  ): FacebookPayload @deprecated(reason: "Facebook login removed (D4)")
   moveSlot(
     """
     Parameters for MoveSlot
@@ -1861,7 +1849,6 @@ enum NotificationType {
 }
 
 type Order implements AnyResource {
-  amount: Float! @deprecated(reason: "Use amountCents, an integer number of cents")
   amountCents: Int!
   buyer: Wallet
   createdAt: ISO8601DateTime!
@@ -1913,11 +1900,6 @@ type OrderEdge {
 }
 
 input OrderInput {
-  """
-  In whole units, use amountCents. Total amount of the order
-  """
-  amount: Float
-
   """
   In cents. Total amount of the order
   """
@@ -2419,7 +2401,6 @@ input RigInspectionInput {
 }
 
 interface SellableItem {
-  cost: Float @deprecated(reason: "Use costCents, an integer number of cents")
   costCents: Int
   title: String
 }
@@ -2439,6 +2420,11 @@ type Settings {
   When this is enabled, users can manifest even if they go into negatives
   """
   allowNegativeCredits: Boolean
+
+  """
+  When this is disabled, only manifest staff can add, move or remove people on loads
+  """
+  allowSelfManifest: Boolean
 
   """
   When this is enabled, users cannot manifest if they have no credits
@@ -2488,6 +2474,11 @@ input SettingsInput {
   allowNegativeCredits: Boolean
 
   """
+  When this is disabled, only manifest staff can add, move or remove people on loads
+  """
+  allowSelfManifest: Boolean
+
+  """
   When this is enabled, users cannot manifest if they have no credits
   """
   requireCredits: Boolean
@@ -2534,7 +2525,6 @@ type SignUpPayload {
 }
 
 type Slot implements AnyResource & SellableItem {
-  cost: Float! @deprecated(reason: "Use costCents, an integer number of cents")
   costCents: Int!
   createdAt: ISO8601DateTime!
   dropzoneUser: DropzoneUser
@@ -2663,7 +2653,6 @@ type Subscription {
 type TicketType implements AnyResource & SellableItem {
   allowManifestingSelf: Boolean
   altitude: Int
-  cost: Float! @deprecated(reason: "Use costCents, an integer number of cents")
   costCents: Int!
   createdAt: ISO8601DateTime!
   currency: String
@@ -2682,11 +2671,6 @@ input TicketTypeInput {
   altitude: Int
 
   """
-  In whole units, use costCents
-  """
-  cost: Float
-
-  """
   In cents
   """
   costCents: Int
@@ -2703,7 +2687,6 @@ input TimeRangeInput {
 }
 
 type Transaction implements AnyResource {
-  amount: Float! @deprecated(reason: "Use amountCents, an integer number of cents")
   amountCents: Int!
   createdAt: ISO8601DateTime!
   dropzoneUser: DropzoneUser!

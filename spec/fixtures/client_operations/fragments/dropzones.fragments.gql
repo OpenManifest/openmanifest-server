@@ -17,6 +17,7 @@ fragment dropzoneEssentials on Dropzone {
     allowManifestBypass
     allowNegativeCredits
     allowDoubleManifesting
+    allowSelfManifest
     requireCredits
     requireLicense
     requireMembership

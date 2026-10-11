@@ -21,7 +21,6 @@
 #  users_count                :integer          default(0), not null
 #  slots_count                :integer          default(0), not null
 #  loads_count                :integer          default(0), not null
-#  credits                    :integer
 #
 FactoryBot.define do
   factory :dropzone do
