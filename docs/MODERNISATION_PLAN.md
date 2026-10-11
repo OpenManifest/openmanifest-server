@@ -96,7 +96,9 @@ document the task links, before changing anything.
 2. Start services and boot the apps as described in [`reference/CLOUD_ENV.md` §4](reference/CLOUD_ENV.md#4-per-session-commands).
    If the setup script version required by the task (CLOUD_ENV §1) is not installed, set the task to
    `owner-check (install setup script version X)` and stop.
-3. Work on **exactly one task per session**.
+3. Work through the queue autonomously: after finishing a task (PR opened, status updated), pick the next task by the
+   rules below and continue until no task qualifies or a stop condition is hit. Each task still gets its own branch,
+   commits and PR, and the acceptance criteria are checked per task; never combine tasks.
 
 ### Picking the task
 
