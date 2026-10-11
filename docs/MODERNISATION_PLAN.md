@@ -3408,7 +3408,7 @@ Size: M
 Fixes: BUG-065, BUG-067, BUG-086, BUG-096
 
 ### P6.27 — Verify Phase 6
-Status: todo
+Status: owner-check (run docs/SMOKE_TEST.md on one iPhone and one Android phone against a staging API; see docs/verification/phase-6.md)
 Repo: both
 Depends on: P6.1, P6.2, P6.3, P6.4, P6.5, P6.6, P6.8, P6.9, P6.10, P6.11, P6.12, P6.13, P6.15, P6.16, P6.17, P6.18, P6.19, P6.20, P6.21, P6.22, P6.23, P6.24, P6.25, P6.26
 Branch: modernise/p6-27-verify
