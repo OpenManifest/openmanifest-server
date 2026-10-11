@@ -874,7 +874,7 @@ Size: M
 Fixes: none
 
 ### P1.7 — Add tenant-isolation characterisation specs
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.6
 Branch: modernise/p1-7-spec-tenancy
