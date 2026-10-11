@@ -2,7 +2,7 @@ fragment ticketTypeEssentials on TicketType {
   id
   name
   altitude
-  cost
+  costCents
   isTandem
   allowManifestingSelf
 }
@@ -17,7 +17,7 @@ fragment ticketTypeDetails on TicketType {
 fragment ticketTypeAddonEssentials on Extra {
   id
   name
-  cost
+  costCents
 }
 
 fragment ticketTypeAddonDetails on Extra {

@@ -4,7 +4,7 @@ module Types
   module Input
     class ExtraInput < Types::Base::Input
       argument :name, String, required: false
-      argument :cost, Float, required: false
+      money_argument :cost
       argument :dropzone_id, Int, required: false
       argument :ticket_type_ids, [Int], required: false
     end

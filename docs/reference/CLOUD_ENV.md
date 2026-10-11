@@ -108,6 +108,7 @@ Reachable already (verified): `github.com`, `raw.githubusercontent.com`, `rubyge
 | `PGHOST` / `PGUSER` / `PGPASSWORD` | `localhost` / `root` / `root` | local throwaway Postgres role created by the setup script (not a secret) |
 | `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes); `bundle exec rspec` needs it too (the master-log specs build blob URLs and fail with "Missing host to link to" without it; CI sets `http://localhost:5000/`) |
 | `WEB_CONCURRENCY` | `0` | single-process Puma in the VM |
+| `CORS_ORIGINS` | *(unset)* | optional: the default (`http://localhost:19006,http://localhost:8081`) covers the Expo web dev server and the served web export used by the smoke test; set it only to test another origin |
 | `EXPO_NO_TELEMETRY` | `1` | avoid blocked telemetry calls |
 | `CI` | `1` | non-interactive Expo/Jest |
 

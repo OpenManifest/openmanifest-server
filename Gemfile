@@ -52,10 +52,11 @@ gem "search_cop"
 gem "active_interaction"
 gem "active_interaction-extras"
 
-# Count things. Pinned: counter_culture 3.14.0 keeps the in-memory counter current inside a group manifest, which
-# exposes the double counting of BUG-019 (three tandem jumpers fail with "No slots available"). P6.10 fixes BUG-019 and
-# removes this pin.
-gem "counter_culture", "3.3.0"
+# Count things
+gem "counter_culture"
+
+# Background jobs, in the primary database
+gem "solid_queue", "~> 1.7"
 
 # Debugging
 gem "appsignal"
@@ -123,6 +124,9 @@ end
 
 group :test do
   gem "webmock"
+  # Fails request specs that run N+1 queries (spec/requests/n_plus_one_spec.rb)
+  gem "prosopite", "~> 2.2"
+  gem "pg_query"
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

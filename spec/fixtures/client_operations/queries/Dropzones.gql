@@ -3,6 +3,10 @@ query Dropzones($state: [DropzoneState!]) {
     edges {
       node {
         ...dropzoneEssentials
+        # null when the caller has not joined the dropzone (see JoinDropzone)
+        currentUser {
+          id
+        }
       }
     }
   }

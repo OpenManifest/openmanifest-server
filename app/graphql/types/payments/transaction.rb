@@ -7,7 +7,14 @@ module Types::Payments
     field :status, Types::Payments::TransactionStatus, null: false
     field :transaction_type, Types::Payments::TransactionType, null: false
     field :message, String, null: true
-    field :amount, Float, null: false
+    field :amount_cents, Int, null: false
+    def amount_cents
+      object.amount_cents.to_i
+    end
+    field :amount, Float, null: false, deprecation_reason: "Use amountCents, an integer number of cents"
+    def amount
+      object.amount_cents.to_i / 100.0
+    end
 
     polymorphic_field :sender, Types::Interfaces::Wallet, null: true
     polymorphic_field :receiver, Types::Interfaces::Wallet, null: true

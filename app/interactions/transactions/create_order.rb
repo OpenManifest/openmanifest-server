@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
 class Transactions::CreateOrder < Transactions::Purchase
-  integer :amount
+  # In cents; positive when the buyer pays the seller
+  integer :amount_cents
   string :title, default: nil
   integer :purchasable, default: nil
   object :buyer, class: [::Dropzone, ::DropzoneUser]
   object :seller, class: [::Dropzone, ::DropzoneUser]
   record :dropzone
 
-  validates :amount, :buyer, :seller, :dropzone, presence: true
+  validates :amount_cents, :buyer, :seller, :dropzone, presence: true
+  validate :parties_belong_to_dropzone
 
-  steps :create_order,
+  steps :check_balance,
+        :create_order,
         :create_transactions,
         :update_credits,
         :confirm_order
@@ -26,7 +29,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "Order ##{@order.id} created with a total value of $#{amount}"
+      message: "Order ##{@order.id} created with a total value of #{Money.new(amount_cents)}"
     )
   end
 
@@ -36,10 +39,12 @@ class Transactions::CreateOrder < Transactions::Purchase
       access_level: :system,
       level: :error,
       access_context: access_context,
+      # An event needs a resource: the failed order (if it got that far), else the dropzone
+      resource: @order || dropzone,
       action: :confirmed,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "Failed to create order of value #{amount}",
+      message: "Failed to create order of value #{Money.new(amount_cents)}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -49,7 +54,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       dropzone: dropzone,
       seller: seller,
       buyer: buyer,
-      amount: total_cost,
+      amount_cents: total_cents,
       state: :pending
     )
     errors.merge!(@order.errors) unless @order.save
@@ -64,8 +69,8 @@ class Transactions::CreateOrder < Transactions::Purchase
     @order
   end
 
-  def total_cost
-    amount
+  def total_cents
+    amount_cents
   end
 
   def order_title
@@ -84,6 +89,27 @@ class Transactions::CreateOrder < Transactions::Purchase
   end
 
   def item_name
-    (amount < 0 ? "Withdrawal" : "Deposit").to_s
+    (amount_cents.negative? ? "Withdrawal" : "Deposit").to_s
+  end
+
+  # A member cannot pay more than they have, unless the dropzone allows negative credits. A step rather than a
+  # validation: validations run again after the interaction, when the balance has already changed.
+  def check_balance
+    return unless buyer.is_a?(::DropzoneUser) && amount_cents.to_i.positive?
+    return if dropzone&.allow_negative_credits? || (buyer.credits_cents || 0) >= amount_cents
+
+    errors.add(:amount, "Not enough credits")
+  end
+
+  private
+
+  # Whoever calls this interaction: credits only move between a dropzone and its own members
+  def parties_belong_to_dropzone
+    return if dropzone.blank?
+
+    [buyer, seller].each do |party|
+      belongs = party.is_a?(::Dropzone) ? party.id == dropzone.id : party.try(:dropzone_id) == dropzone.id
+      errors.add(:base, "The buyer and the seller must be the dropzone or its members") unless belongs
+    end
   end
 end

@@ -5,7 +5,7 @@
 fragment currentUserEssentials on DropzoneUser {
   id
   walletId
-  credits
+  creditsCents
   hasCredits
   hasExitWeight
   hasMembership
@@ -21,7 +21,7 @@ fragment currentUserEssentials on DropzoneUser {
 }
 
 fragment currentUserDetailed on DropzoneUser {
-  ...currentUserEssentials,
+  ...currentUserEssentials
 
   rigInspections {
     ...rigInspectionEssentials

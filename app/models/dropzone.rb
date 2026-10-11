@@ -24,6 +24,9 @@
 #  credits                    :integer
 #
 class Dropzone < ApplicationRecord
+  include MoneyAttributes
+
+  money :credits
   include ActiveStorageSupport::SupportForBase64
   include Discard::Model
   include StateMachines::DropzoneState
@@ -44,7 +47,7 @@ class Dropzone < ApplicationRecord
   has_many :events, class_name: "Activity::Event"
 
   has_many :planes, -> { kept }, dependent: :destroy
-  has_many :loads, -> { kept }, through: :planes
+  has_many :loads, -> { kept }
 
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy
@@ -96,10 +99,17 @@ class Dropzone < ApplicationRecord
     template.destroy unless template.nil?
   end
 
+  # Today's date where the dropzone is (the server runs in UTC, the dropzone is not)
+  def today
+    Time.current.in_time_zone(timezone).to_date
+  end
+
+  # The weather of the dropzone's current day, created when it is first asked for
   def current_conditions
-    weather_conditions.find_or_create_by(
-      created_at: DateTime.now.beginning_of_day
-    )
+    weather_conditions.find_or_create_by!(date: today)
+  rescue ActiveRecord::RecordNotUnique
+    # Another request created it first
+    weather_conditions.find_by!(date: today)
   end
 
   def timezone
@@ -107,6 +117,6 @@ class Dropzone < ApplicationRecord
   end
 
   def set_appsignal_gauge
-    Appsignal.set_gauge("dropzones.count", User.count)
+    Appsignal.set_gauge("dropzones.count", Dropzone.count)
   end
 end
