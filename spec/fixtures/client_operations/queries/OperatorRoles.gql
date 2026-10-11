@@ -1,6 +1,6 @@
 query OperatorPermissions($id: ID!) {
   operator(id: $id) {
-    ...operatorEssentials,
+    ...operatorEssentials
     roles {
       ...roleDetailed
     }

@@ -1,4 +1,4 @@
- query CurrentUserPermissions($operatorId: ID!) {
+query CurrentUserPermissions($operatorId: ID!) {
   operator(id: $operatorId) {
     id
     name

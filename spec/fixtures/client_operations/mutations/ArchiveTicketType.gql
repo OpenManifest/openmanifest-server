@@ -1,5 +1,5 @@
 mutation ArchiveTicketType($id: Int!) {
-  archiveTicketType(input: { id: $id  }) {
+  archiveTicketType(input: { id: $id }) {
     fieldErrors {
       field
       message

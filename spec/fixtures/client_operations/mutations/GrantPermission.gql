@@ -1,18 +1,18 @@
 mutation GrantPermission($membershipId: ID!, $permissionName: Permission!) {
-    grantPermission(input: { membership: $membershipId, permission: $permissionName }) {
-      fieldErrors {
-        message
-        field
-      }
-      errors
-      membership {
-        ...membershipEssentials
-        permissions
-      }
-      fieldErrors {
-        field
-        message
-      }
-      errors
+  grantPermission(input: { membership: $membershipId, permission: $permissionName }) {
+    fieldErrors {
+      message
+      field
     }
+    errors
+    membership {
+      ...membershipEssentials
+      permissions
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
   }
+}

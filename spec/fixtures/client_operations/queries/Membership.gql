@@ -1,13 +1,20 @@
 #import "../fragments/memberships.fragments.gql"
 query Memberships(
-  $operatorId: ID!,
-  $search: String,
-  $permissions: [Permission!],
-  $first: Int,
-  $after: String,
+  $operatorId: ID!
+  $search: String
+  $permissions: [Permission!]
+  $first: Int
+  $after: String
   $licensed: Boolean
 ) {
-  memberships(operator: $operatorId, licensed: $licensed, search: $search, permissions: $permissions, first: $first, after: $after) {
+  memberships(
+    operator: $operatorId
+    licensed: $licensed
+    search: $search
+    permissions: $permissions
+    first: $first
+    after: $after
+  ) {
     edges {
       cursor
       node {
@@ -16,17 +23,23 @@ query Memberships(
     }
   }
 }
-
 
 query MembershipsDetailed(
-  $operatorId: ID!,
-  $search: String,
-  $permissions: [Permission!],
-  $first: Int,
-  $after: String,
+  $operatorId: ID!
+  $search: String
+  $permissions: [Permission!]
+  $first: Int
+  $after: String
   $licensed: Boolean
 ) {
-  memberships(operator: $operatorId, licensed: $licensed, search: $search, permissions: $permissions, first: $first, after: $after) {
+  memberships(
+    operator: $operatorId
+    licensed: $licensed
+    search: $search
+    permissions: $permissions
+    first: $first
+    after: $after
+  ) {
     edges {
       cursor
       node {
@@ -36,17 +49,13 @@ query MembershipsDetailed(
   }
 }
 
-query Membership(
-  $id: ID!,
-) {
+query Membership($id: ID!) {
   membership(id: $id) {
     ...membershipEssentials
   }
 }
 
-query MembershipDetailed(
-  $id: ID!,
-) {
+query MembershipDetailed($id: ID!) {
   membership(id: $id) {
     ...membershipDetails
   }

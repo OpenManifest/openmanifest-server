@@ -1,7 +1,5 @@
 mutation UpdateMembership($membershipId: ID!, $attributes: MembershipInput!) {
-  updateMembership(
-    input: { membership: $membershipId, attributes: $attributes }
-  ) {
+  updateMembership(input: { membership: $membershipId, attributes: $attributes }) {
     errors
     fieldErrors {
       field

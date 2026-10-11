@@ -58,7 +58,7 @@ fragment operatorStatistics on Operator {
   }
 }
 fragment operatorDetailed on Operator {
-  ...operatorEssentials,
+  ...operatorEssentials
 
   federation {
     id

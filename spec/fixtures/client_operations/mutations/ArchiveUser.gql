@@ -1,5 +1,5 @@
 mutation ArchiveUser($id: Int!) {
-  deleteUser(input: { id: $id  }) {
+  deleteUser(input: { id: $id }) {
     errors
     fieldErrors {
       field

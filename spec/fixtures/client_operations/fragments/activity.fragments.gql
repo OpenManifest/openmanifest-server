@@ -13,22 +13,22 @@ fragment activityEssentials on Event {
 fragment activityDetails on Event {
   ...activityEssentials
   resource {
-    ...on Operator {
+    ... on Operator {
       ...operatorEssentials
     }
-    ...on Membership {
+    ... on Membership {
       ...membershipEssentials
     }
-    ...on Load {
+    ... on Load {
       ...loadEssentials
     }
-    ...on Slot {
+    ... on Slot {
       ...slotEssentials
     }
-    ...on Rig {
+    ... on Rig {
       ...rigEssentials
     }
-    ...on Plane {
+    ... on Plane {
       ...planeEssentials
     }
   }

@@ -1,34 +1,26 @@
-mutation UpdateAircraft(
-  $id: Int!
-  $attributes: PlaneInput!
-) {
-updatePlane(
-  input: {
-    id: $id
-    attributes: $attributes
-  }
-) {
-  plane {
-    ...planeEssentials
+mutation UpdateAircraft($id: Int!, $attributes: PlaneInput!) {
+  updatePlane(input: { id: $id, attributes: $attributes }) {
+    plane {
+      ...planeEssentials
 
-    operator {
-      id
-      name
-      planes {
+      operator {
         id
         name
-        registration
-        minSlots
-        maxSlots
-        hours
-        nextMaintenanceHours
+        planes {
+          id
+          name
+          registration
+          minSlots
+          maxSlots
+          hours
+          nextMaintenanceHours
+        }
       }
     }
+    fieldErrors {
+      field
+      message
+    }
+    errors
   }
-  fieldErrors {
-    field
-    message
-  }
-  errors
-}
 }

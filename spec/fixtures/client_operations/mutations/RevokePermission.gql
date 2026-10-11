@@ -1,9 +1,9 @@
 mutation RevokePermission($membershipId: ID!, $permissionName: Permission!) {
   revokePermission(input: { membership: $membershipId, permission: $permissionName }) {
     fieldErrors {
-        message
-        field
-      }
+      message
+      field
+    }
     errors
     membership {
       ...membershipEssentials

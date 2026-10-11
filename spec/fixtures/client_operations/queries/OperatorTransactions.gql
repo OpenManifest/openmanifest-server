@@ -2,7 +2,7 @@
 #import "../fragments/orders.fragments.gql"
 query OperatorTransactions($operatorId: ID!, $after: String) {
   operator(id: $operatorId) {
-    ...operatorEssentials,
+    ...operatorEssentials
     orders(after: $after) {
       edges {
         node {
