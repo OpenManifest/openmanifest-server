@@ -64,6 +64,14 @@ this section ("Decision: …, date"); the executor then changes the blocked task
 | D7 | Is there a 2023 production database to carry forward? | (a) yes: provide a dump for migration rehearsal; (b) no: start fresh | (a) if it exists; all migrations in this plan preserve data either way | P8.8 |
 | D8 | Peer-to-peer credit transfers between members (BUG-008) | (a) remove (only staff with `createUserTransaction` move credits); (b) keep, limited to the same dropzone and the sender's available balance | (a) | P6.7 |
 
+Recorded decisions:
+
+- D4 — Decision: (a) drop Facebook login on all platforms, 2026-10-11 (owner approved D-UI7 of the UI plan). P3.3 is
+  `todo`.
+- UI decisions D-UI1–D-UI11 in [`client:docs/ui-modernisation-plan.md`](https://github.com/OpenManifest/openmanifest/blob/staging/docs/ui-modernisation-plan.md)
+  — Decision: all as recommended, 2026-10-11; D-UI11: no offline mode, but a dropzone can switch off self-manifesting and
+  run everything from the office (UB.1, UB.2). They are built in Phase U.
+
 ## Executor instructions
 
 These are the standing rules for every executor session. Read this whole section, then the task you pick, then every
@@ -82,6 +90,8 @@ document the task links, before changing anything.
 
 - Read the tasks in document order. Pick the first task whose `Status` is `todo` and whose `Depends on` tasks are all
   `done`. Skip tasks that are `blocked (…)` or `owner-check (…)`.
+- Phase U tasks (`UB.n`, `Ux.y`) are picked by the same rule. Before any of them, read the "Phase U rules" at the start of
+  Phase U: they set when the slow UI suites run.
 - If no task qualifies, report that and stop. Do not start a task whose dependencies are `owner-check`; the owner sets
   them to `done` after checking.
 
@@ -114,6 +124,8 @@ document the task links, before changing anything.
   - `done`: every cloud-VM acceptance criterion passed and the owner section says "none".
   - `owner-check (…)`: the code is done and the only remaining criteria need a real device or an account. List exactly
     what the owner must check.
+  - `superseded (by …)`: the task's work moved to the named tasks (Phase U absorbed P7.2, P7.7 and P7.8). It is never
+    picked; tasks that depended on it depend on the named tasks instead.
   - `blocked (…)`: one-line reason, for example `blocked (bundle install fails: geokit-rails needs Ruby < 4)`.
 - Bugs found while working go into [`reference/BUGS.md`](reference/BUGS.md) with the next free ID. Do not fix them unless
   the task's `Fixes:` line covers them. When a task fixes a bug, prefix that bug's Description with `FIXED in P{x}.{y}:`.
@@ -1534,7 +1546,7 @@ Size: S
 Fixes: none
 
 ### P3.3 — Remove or replace Facebook login
-Status: blocked (awaiting decision D4)
+Status: todo
 Repo: both
 Depends on: P3.2
 Branch: modernise/p3-3-facebook-login
@@ -3431,6 +3443,1584 @@ Fixes: none
 
 ---
 
+## Phase U — UI and UX modernisation
+
+Goal: the redesign in [`client:docs/ui-modernisation-plan.md`](https://github.com/OpenManifest/openmanifest/blob/staging/docs/ui-modernisation-plan.md)
+is built: a workspace shell for staff on tablet and desktop, tokens and an in-house component layer (`client:app/ui`),
+the manifest board, load and picker rebuilt for speed, a jumper "Today" screen, People and Setup regrouped, WCAG 2.2 AA,
+client-side i18n with the skydiving terms bundled, and layout tests that run in CI. Approved by the owner on 2026-10-11
+(decisions D-UI1–D-UI11 in that document; D-UI11 answered: no offline, but a dropzone can switch off self-manifesting
+and run everything from the office, task UB.1).
+
+Read before any Phase U task, in this order: this preamble; the design plan sections the task names (§ numbers below
+refer to it); the mockups (<https://claude.ai/artifact/Mdiri5pZsNQ8qEBRtR3jdZ>; if you cannot open it, the plan's §2–§5
+and the screenshots in `client:docs/ui-audit/` are enough); `client:docs/reference/README.md`.
+
+Phase U runs alongside Phases 7–8. It does not wait for D5: screens use the bundled skydiving terms, and only U6.1–U6.3
+need the backend industry profile. It replaces P7.2, P7.7 and P7.8 (marked `superseded`) and pulls the CI part of P8.7
+forward (U0.2).
+
+### Phase U rules (in addition to the executor instructions)
+
+**Test tiers and batches.** Slow UI suites run once per batch, not on every change.
+
+| Tier | What | Command (client) | When |
+|---|---|---|---|
+| 1 | types, lint, Jest | client checks; while working, `yarn jest <paths>` for touched files | after each change, as often as you like |
+| 2 | UI smoke: Playwright `smoke` project (390×844 and 1440×900, light, skydiving terms), layout invariants and axe on the routes the task touched | `yarn test:ui:smoke --grep @<tag>` (tags in each task), then once untagged before pushing | **once per task**, after the change is complete, before push; CI runs it on every PR |
+| 3 | UI full: Playwright `full` project (360×640, 390×844, 820×1180, 1440×900 × light/dark × skydiving/diveBoat, 200 % text, visual regression) and the Android emulator flows (Maestro, from U3.1) | `yarn test:ui:full` locally; `ui-full` and `android-ui` workflows by `workflow_dispatch` on the checkpoint branch | **only in checkpoint tasks** (Ux.y "Checkpoint"), and weekly on `staging` |
+| 4 | owner on real devices | `client:docs/SMOKE_TEST.md` sections named in the checkpoint | listed in each checkpoint PR; required only before production (U7.5) |
+
+- The Android half of tier 3 applies once U3.1 is `done`; if U3.1 is blocked, checkpoints run tier 3 on web only and
+  say so in the PR.
+- UB tasks come before U0.1 in document order: until U0.1 is done, "tier 2" in them means
+  `node scripts/web-smoke.mjs` (CLOUD_ENV §4).
+- Do not run tier 3 outside a checkpoint task. If a tier 2 run shows a problem outside your task's area, write it in the PR
+  body under "For the checkpoint" and leave it.
+- Visual baselines (`toHaveScreenshot`) are created and updated only in checkpoint tasks, only for routes the batch
+  changed, with the diff images attached to the PR. Normal tasks never pass `--update-snapshots`.
+- If tier 3 fails in a checkpoint, fix the regressions in the checkpoint PR when each fix is small (< 30 lines); otherwise
+  set the checkpoint `blocked (<failing flow>)` and add a fix task before it.
+- A batch is the set of tasks between two checkpoints; stack its PRs (executor instructions, "Stacked tasks").
+
+**Definition of done for a converted screen or directory.** No `react-native-paper` import; no hex/`rgb(`/named colour,
+numeric `fontSize`, or numeric spacing outside `app/ui/tokens`; no raw `Pressable`/`Touchable*` with `onPress` outside
+`app/ui`; every user-visible string through `t()`; every interactive element has a role and a name (tests query with
+`getByRole`); the directory is added to the lint allow-list in `client:eslint/ui-converted.js` so the rules become errors there.
+
+**Conventions.** Import UI from `app/ui` (`import { Button, ListRow } from 'app/ui'`); styles through
+`useStyles((t) => …)` from `app/ui/theme`; sizes from `t.space`, `t.type`, `t.radius`, `t.density`; breakpoints and pointer
+from `useDevice()`; strings with `useTranslation(['common', 'terms'])`, sentences take terms as parameters
+(`t('common:newTrip', { trip: t('terms:trip') })`); dates through `app/i18n/format.ts` (luxon). Commit scopes: `ui`, `nav`,
+`board`, `load`, `picker`, `today`, `people`, `setup`, `i18n`, `test`, `ci`.
+
+**Feature flag.** The new board, load screen and picker (U3.2–U3.9) ship behind the `newBoard` preference (on for new
+installs, off for existing ones until U7.4), so the old screens keep working while the batch is reviewed.
+
+**Owner checks.** Checkpoints have no blocking owner criteria, so the stack can continue; each checkpoint PR lists the
+device checks for that batch, and U7.5 collects them as the gate before production.
+
+---
+
+### UB.1 — Let a dropzone switch off self-manifesting
+Status: todo
+Repo: both
+Depends on: none
+Branch: modernise/ub-1-self-manifest-setting
+Goal: A dropzone setting `allowSelfManifest` (default `true`). When it is `false`, members can see the board but cannot
+put themselves on, take themselves off, move or edit their own slots; staff with the `…User…` slot permissions can still
+do everything, including manifesting themselves. Everything can be run from the office.
+Context: Design plan D-UI11 (owner, 2026-10-11). Settings live in `backend:app/models/concerns/dropzones/configuration.rb`
+(`default_settings`, JSON column `dropzones.settings`) and are exposed by `backend:app/graphql/types/dropzone/settings.rb`
+and `Types::Input::Dropzone::SettingsInput`. Self versus others is already split by permission: `createSlot`/`createUserSlot`
+(`backend:app/interactions/manifest/create_slot.rb:147-155`), `deleteSlot`/`deleteUserSlot` (`delete_slot.rb:83-90`),
+`updateSlot`/`updateUserSlot` (`move_slot.rb:125-129`, `mutations/manifest/update_slot.rb:55-77`), `createSlots`
+(`mutations/manifest/create_slots.rb:29-48`). Every check goes through `DropzoneUser#can?` (`backend:app/models/dropzone_user.rb:122`);
+the client hides actions by the permissions it receives (`DropzoneUser.permissions`, `Session.permissions`), so filtering
+permissions in one place covers both the API and the UI.
+Steps:
+  1. backend: add `allow_self_manifest: true` to `default_settings` (comment: "Members may manifest themselves; when
+     false, only staff with the …User… slot permissions manifest"). Add the GraphQL field and input argument
+     `allowSelfManifest`.
+  2. backend: in `DropzoneUser`, a constant `SELF_SERVICE_PERMISSIONS = { createSlot: :createUserSlot,
+     createDoubleSlot: :createUserDoubleSlot, updateSlot: :updateUserSlot, deleteSlot: :deleteUserSlot }`. A self-service
+     permission counts only if `dropzone.allow_self_manifest?` is true or the member also holds its staff counterpart.
+     Apply it in `can?`, `permission_names` and the session's `permissions` (`backend:app/graphql/types/access/session_type.rb:11`;
+     use `permission_names`, not `all_permissions.pluck`). Keep the dataloader-friendly path in `permission_names`
+     (no extra query per member: the dropzone is already loaded with the membership).
+  3. backend: when a mutation is refused for this reason, the error reads "Manifesting is done by the manifest desk at
+     this dropzone" (add a branch in each `required_permissions`/`authorized?` listed in Context that checks the setting
+     first).
+  4. backend specs: request specs in `spec/requests/manifest_authorization_spec.rb` for setting off: fun jumper
+     `createSlot` self, `createSlots` self-group, `deleteSlot` own, `updateSlot` own, `moveSlot` own are refused with that
+     message; manifest staff manifests a jumper, and manifests themselves; `permissions` for the fun jumper omit
+     `createSlot`/`updateSlot`/`deleteSlot`; setting on: today's behaviour unchanged. N+1 spec still green.
+  5. client: `yarn sync:schema && yarn ts:graphql`; add the toggle to `app/forms/dropzone/DropzoneForm.tsx` beside the
+     other rules: "Members can book themselves on loads", helper "When off, only manifest staff can add, move or remove
+     people". On the board and load screen, a member without `CreateSlot` sees a one-line note "Bookings are made at the
+     manifest desk" instead of the add actions (verify the existing gates in `load/ActionButton.tsx`,
+     `manifest/LoadCard/Large/Card.tsx`, `components/appbar/AppBar.tsx` already hide them; fix any that check a role
+     instead of the permission). Jest test for the note.
+  6. Run `bin/sync-client-operations` in the backend if client operations changed.
+Acceptance criteria (cloud VM):
+  - Backend: rspec, rubocop, brakeman green. Client: client checks, `check:graphql`, web export; tier 2 `@manifest`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: per-role overrides (the permissions screen already allows that); hiding the board from members.
+Risk / rollback: default `true` keeps current behaviour; revert both PRs.
+Size: M
+Fixes: none
+
+### UB.2 — Let staff manage a member's equipment from the office
+Status: todo
+Repo: both
+Depends on: none
+Branch: modernise/ub-2-office-equipment
+Goal: Staff with `updateUser` at a dropzone can create, update and archive the personal rigs of that dropzone's members;
+with UB.1 this closes the last self-service action that has no office equivalent.
+Context: Office parity audit (2026-10-11), every member action and its staff path: manifest, take off, move, group
+(`createUserSlot`, `deleteUserSlot`, `updateUserSlot`, `createSlots`) ✓; walk-in member without an account (`createGhost`,
+`client:app/forms/create_user/Dialog.tsx`) ✓; licence, federation number, exit weight (`updateUser`,
+`backend:app/interactions/users/update_user.rb`) ✓; role and membership expiry (`updateDropzoneUser`) ✓; credit
+(`createOrder` with `createUserTransaction`) ✓; rig inspection (staff) ✓; **personal rigs ✗**: `createRig` refuses
+`user_id` of another user (`backend:app/graphql/mutations/setup/equipment/create_rig.rb:59-66`), `updateRig` refuses
+another user's rig (`update_rig.rb:56-66`), and `archiveRig` likewise (check). Pack jobs have no mutations (n/a).
+Steps:
+  1. backend: allow the other-user branch when the caller `can?(:updateUser, dropzone_id:)` at a dropzone where the rig's
+     owner is a member (a `dropzone` argument on `createRig` if the input has none; check `RigInput`). Same rule in
+     `updateRig` and `archiveRig`. Members keep full control of their own rigs.
+  2. backend specs: staff creates/updates/archives a member's rig; staff of another dropzone is refused; a fun jumper
+     cannot touch another member's rig.
+  3. client: on a member's profile (`app/screens/authenticated/user/profile/*`, equipment section and
+     `user/equipment/*`), show add/edit for staff with `UpdateUser`; Jest test with a staff fixture.
+Acceptance criteria (cloud VM):
+  - Backend rspec, rubocop, brakeman green; client checks and `check:graphql`; tier 2 `@profile`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: dropzone rigs (already staff-managed).
+Risk / rollback: revert both PRs.
+Size: M
+Fixes: none
+
+### UB.3 — Expose eligibility with reasons per member
+Status: todo
+Repo: backend
+Depends on: none
+Branch: modernise/ub-3-eligibility
+Goal: `DropzoneUser.eligibility(loadId: ID): Eligibility!` returns whether the member can be manifested now and each
+check's status, so the picker and "Ready to jump" can say what blocks and when it expires.
+Context: Design plan §11 item 1. Rules: `backend:app/models/slot.rb` validations (`membership_in_date?`, licence,
+credits, rig inspection, reserve in date, equipment, exit weight) and the `require_*`/`allow_*` settings in
+`dropzones/configuration.rb`. Existing booleans: `hasLicense`, `hasMembership`, `hasRigInspection`, `hasReserveInDate`,
+`hasCredits`, `hasExitWeight` on `Types::Users::DropzoneUser`.
+Steps:
+  1. A PORO `Manifest::Eligibility` (`app/models/manifest/eligibility.rb` or `app/services`) that takes a membership and
+     an optional load and returns checks. It reuses the same predicates as the slot validations (extract them into the
+     PORO and call it from `Slot` so the two can never disagree).
+  2. GraphQL: `EligibilityCheckKey` enum (`LICENCE`, `MEMBERSHIP`, `RIG_INSPECTION`, `RESERVE_IN_DATE`, `CREDITS`,
+     `EXIT_WEIGHT`, `EQUIPMENT`), `EligibilityStatus` enum (`PASS`, `EXPIRING`, `FAIL`, `NOT_REQUIRED`),
+     `EligibilityCheck { key, status, expiresAt, amountCents }` (no English messages: the client builds copy),
+     `Eligibility { ready: Boolean!, checks: [EligibilityCheck!]! }`. `EXPIRING` when the date is within 14 days.
+  3. Dataloader-safe for a list of members (P6.25 sources); extend `spec/requests/n_plus_one_spec.rb` with a members
+     query selecting `eligibility`.
+  4. Specs for each key and status, settings off → `NOT_REQUIRED`, and parity with `Slot` validation (a member with
+     `ready: false` cannot be manifested and vice versa, for each rule).
+Acceptance criteria (cloud VM):
+  - Backend rspec, rubocop, brakeman green; schema dump diff additive only.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: client use (U3.7, U4.1).
+Risk / rollback: additive; revert.
+Size: M
+Fixes: none
+
+### UB.4 — Expose last slot, call presets and call time
+Status: todo
+Repo: backend
+Depends on: none
+Branch: modernise/ub-4-last-slot-calls
+Goal: The picker can pre-fill a returning member's choices, the call buttons come from the dropzone, and a load can show
+"called at 12:10".
+Context: Design plan §11 items 2–4. Calls are hard-coded 10/15/20 in `client:app/screens/authenticated/dropzone/load/ActionButton.tsx:53-70`;
+`loads.dispatch_at` holds the departure time but not when the call was made.
+Steps:
+  1. `DropzoneUser.lastSlot: Slot` (most recent kept slot at this dropzone on a landed or departed load; ticket type,
+     jump type, rig, exit weight, extras reachable through existing fields), dataloader-backed; N+1 spec.
+  2. Setting `call_presets_minutes: [20, 15, 10]` in `default_settings`; GraphQL `settings.callPresetsMinutes: [Int!]!`
+     and input (validate 1–120, at most 5, unique).
+  3. Migration `loads.called_at` (datetime, null). `UpdateLoad` sets it when `dispatch_at` goes from nil to a time and
+     clears it when the call is cancelled; GraphQL `Load.calledAt`. Spec both transitions.
+Acceptance criteria (cloud VM):
+  - Backend rspec, rubocop, brakeman green; schema dump diff additive only.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: profile-driven call presets (P7.5).
+Risk / rollback: additive; revert and drop the column.
+Size: M
+Fixes: none
+
+---
+
+### U0.1 — Replace the web smoke script with a Playwright Test suite
+Status: todo
+Repo: client
+Depends on: none
+Branch: modernise/u0-1-playwright
+Goal: `e2e/` holds a Playwright Test suite with `smoke` and `full` projects, role log-ins, layout invariants and axe, and
+reproduces everything `scripts/web-smoke.mjs` checks today.
+Context: `scripts/web-smoke.mjs` (Playwright loaded from `/opt/node-tools`, `pressAt` workaround for gesture-handler
+touchables, `checkLayout`, `checkReachable`); serving: `python3 scripts/serve-web-build.py dist 19006`; backend dev seed
+`backend:db/seeds/dev_baseline.rb` (owner, `manifest@example.com`, `pilot@`, `jumper1@`, `jumper2@`, `student@`; check
+the seed for the password). Versions checked 2026-10-11: `@playwright/test` 1.64.x, `@axe-core/playwright` 4.13.x. The
+VM has Chromium in `/opt/pw-browsers`; if the pinned Playwright wants another build, launch with
+`executablePath: process.env.PW_CHROMIUM ?? undefined` and set `PW_CHROMIUM=/opt/pw-browsers/chromium` locally.
+Steps:
+  1. `yarn add -D @playwright/test@~1.64 @axe-core/playwright@~4.13`. `playwright.config.ts`: `baseURL` from
+     `UI_BASE_URL` (default `http://localhost:19006`), `retries: 1` on CI, `workers` 2, `reporter` html + list,
+     timezone `Australia/Brisbane`; projects `smoke` (390×844, 1440×900; light) and `full` (360×640, 390×844, 820×1180,
+     1440×900 × light/dark via `colorScheme`; a `text200` variant that doubles root font size as P5.8 did; a
+     `diveBoat` variant that opens routes with `?profile=diveBoat`, which U0.6 implements; until then skip it).
+  2. `e2e/support/`: `login(page, role)` storing auth state per role in `e2e/.auth/` (git-ignored), `press(locator)`
+     (ported `pressAt`), `expectLayout(page)` (no horizontal scroll, primary action in viewport, last row reachable:
+     ported `checkLayout`/`checkReachable`), `expectAccessible(page, { baseline })` (axe, tags `wcag2a`, `wcag2aa`,
+     `wcag21aa`, `wcag22aa`; violations compared against `e2e/axe-baseline.json`: new serious or critical ones fail,
+     existing ones are listed).
+  3. Specs with tags: `login.spec.ts` (`@login`), `board.spec.ts` (`@manifest`: board, open a load, deep links from the
+     old script), `profile.spec.ts` (`@profile`), `settings.spec.ts` (`@setup`). Record the axe baseline.
+  4. Scripts: `test:ui:smoke` (`playwright test --project=smoke`), `test:ui:full`, `test:ui:report`. Add `e2e/README.md`
+     with the local run (backend boot, web export, serve, run). Delete `scripts/web-smoke.mjs` and update CLOUD_ENV §4
+     and the client README.
+Acceptance criteria (cloud VM):
+  - Client checks; `yarn test:ui:smoke` passes against the dev backend; `yarn test:ui:full --grep @login` passes
+    (one-off check that the full project works; not repeated in later non-checkpoint tasks).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: CI (U0.2).
+Risk / rollback: revert; the old script is in history.
+Size: L
+Fixes: none
+
+### U0.2 — Run the UI smoke suite in CI and add the full-suite workflow
+Status: todo
+Repo: client
+Depends on: U0.1
+Branch: modernise/u0-2-ui-ci
+Goal: Every PR touching the app runs tier 2 against a backend booted in the job; the full suite runs on demand and
+weekly.
+Context: `client:.github/workflows/ci.yml` (`checks`, `web-export`); backend CI setup in `backend:.github/workflows/ci.yml`
+(Postgres 16 service, `ruby/setup-ruby` with `.ruby-version`, `libpq-dev libvips42`). The local endpoint is
+`http://local.openmanifest.org:5000/graphql` (`client:build/constants.ts`). P8.7 step 2 planned this job; it moves here.
+Steps:
+  1. A composite action `.github/actions/ui-env/action.yml`: check out `OpenManifest/openmanifest-server` at `staging`
+     (input `backend-ref`, default `staging`) into `backend/`, Postgres service is declared by the calling job, install
+     Ruby with bundler cache, `db:create db:schema:load`, run `db/seeds/dev_baseline.rb`, start Rails on 5000
+     (`SECRET_KEY_BASE` random, `CORS_ORIGINS=http://localhost:19006`), add `127.0.0.1 local.openmanifest.org` to
+     `/etc/hosts`, `EXPO_ENV=local npx expo export --platform web`, serve `dist` on 19006, wait for both.
+  2. Job `web-ui-smoke` in `ci.yml` (needs `checks`): path filter `app/**`, `e2e/**`, `package.json`, `yarn.lock`,
+     `playwright.config.ts`; runs `yarn test:ui:smoke`; uploads the HTML report and traces on failure.
+  3. Workflow `ui-full.yml`: `workflow_dispatch` (inputs `backend-ref`, `grep`) and `schedule` weekly (Monday 03:00
+     Australia/Brisbane); runs `yarn test:ui:full`, uploads report and screenshot diffs.
+  4. Document in `e2e/README.md` how an executor triggers `ui-full` on a branch (GitHub MCP `actions_run_trigger` or
+     `gh workflow run ui-full.yml --ref <branch>`) and reads the result.
+  5. Amend P8.7 in `backend:docs/MODERNISATION_PLAN.md`: step 2 is done by U0.2.
+Acceptance criteria (cloud VM):
+  - The PR's `web-ui-smoke` job passes; one manual `ui-full` run on the branch passes (attach the run URL).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: Android (U3.1).
+Risk / rollback: revert the workflow files.
+Size: M
+Fixes: none
+
+### U0.3 — Add design tokens and the contrast function
+Status: todo
+Repo: client
+Depends on: none
+Branch: modernise/u0-3-tokens
+Goal: `app/ui/tokens` defines colour (light and dark), type, space, radius, elevation, density and motion, and derives
+accessible brand shades from any operator colour.
+Context: Design plan §3.1–§3.2 and the mockups' "Design system" board. Values:
+  - Light: app `#F4F5F7`, surface `#FFFFFF`, raised `#EEF0F3`, border `#DDE1E6`, text `#14181F`, textMuted `#5B6472`,
+    brand default `#1D3557` (D-UI3), brandSoft `#E4EAF2`.
+  - Dark: app `#0E1116`, surface `#171B22`, raised `#232A34`, border `#2A313C`, text `#E8EBF0`, textMuted `#A9B2BF`,
+    brand (dark default) `#35C3CF` on `#04262A`, brandSoft `#13353A`.
+  - Status pairs (background/foreground, light): open `#E1EEFB`/`#0A4F96`, boarding `#FFE6A8`/`#5C3B00`, departed
+    `#EBE3FA`/`#43287A`, landed `#DDF2E3`/`#17592F`, cancelled `#ECEEF1`/`#4A5260`, warning `#FFE9D6`/`#7A3300`,
+    blocked `#FDE3E5`/`#8E1119`. Dark: ok `#12351F`/`#8FE3AE`, warning `#4A2A0C`/`#FFC98A`, info `#10304F`/`#9CCBFF`,
+    boarding `#4A3A12`/`#FFE08A`; derive the rest the same way and test them.
+  - Type: countdown 56/700, title 20/600, body 15/400, bodyCompact 14/400, label 13/600, caption 12/400; tabular
+    numerals. Space 4, 8, 12, 16, 24, 32, 48. Radius 4, 8, 12, pill. Density rows 40/48/56, touch target min 44 (iOS)
+    / 48 (Android). Motion 120/200/300 ms; highlight 600 ms.
+Steps:
+  1. `app/ui/tokens/{colour,type,space,radius,elevation,density,motion}.ts` with typed objects; `index.ts` exports a
+     `Tokens` type.
+  2. `contrast.ts`: WCAG relative luminance and ratio; `deriveBrand(hex, scheme)` returns `brand`, `onBrand`,
+     `brandText` (the operator colour adjusted in OKLCH lightness until text pairs reach 4.5:1 on surface and on brand),
+     `brandSoft`, `onBrandSoft`.
+  3. Tests (`app/ui/tokens/__tests__`): every listed pair ≥ 4.5:1 (3:1 for icons and large text); `deriveBrand` for 50
+     colours (include `#FF1414`, `#FFFF00`, `#000000`, `#FFFFFF`, the demo navy, the mockup teal) meets the pairs in
+     both schemes.
+Acceptance criteria (cloud VM):
+  - Client checks. (No UI changes yet; no tier 2.)
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: using the tokens (U0.4).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### U0.4 — Generate the app theme from tokens; default brand and system fonts
+Status: todo
+Repo: client
+Depends on: U0.3, U0.1
+Branch: modernise/u0-4-theme
+Goal: `app/ui/theme` provides `ThemeProvider`, `useTheme()`, `useStyles()` and `useDevice()`; Paper's MD2 theme and the
+Navigation theme are generated from tokens with the same exports as today; the default brand is navy and fonts are the
+system fonts. The app looks the same apart from colours, fonts and dark surfaces.
+Context: `app/theme/palette.ts` (MD2 light/dark + Roboto names), `app/theme/overrides.ts` (dropzone colours, live
+preview), `app/constants/Colors.ts` (`#FF1414`), fonts loaded in `app/entrypoint/hooks/useCachedResources.ts:13` and
+`app/entrypoint/providers/AppUpdate.tsx:19`, literal `fontFamily: 'Roboto_…'` in `components/orders/OrderCard.tsx:38` and
+`components/appbar/AppBar.tsx:50`; `app/components/layout/useBreakpoint.ts`. Design plan D-UI3, D-UI8, §3.2 Density, §4
+pointer signal.
+Steps:
+  1. `app/ui/theme/`: `ThemeProvider` (scheme from the preferences store, brand from the current dropzone via
+     `deriveBrand`), `useTheme()`, `useStyles(factory)` (memoised on theme, breakpoint and density; ~60 lines),
+     `useDevice()` → `{ breakpoint, pointer: 'coarse' | 'fine', density }` (`matchMedia('(pointer: coarse)')` on web,
+     `coarse` on native; density from breakpoint and pointer, overridable later in Account).
+  2. Rewrite `app/theme/palette.ts` internals to build `MD2LightTheme`/`MD2DarkTheme` and the Navigation theme from
+     tokens; keep its exports. `Colors.ts` default brand `#1D3557`.
+  3. Remove the Roboto font packages and loading; replace literal `fontFamily` uses with the system font (omit
+     `fontFamily`, keep weights); verify Paper's `fonts` config uses the platform default.
+  4. Record the web bundle size and Jest/Playwright timings in the PR (baseline for U7.3).
+Acceptance criteria (cloud VM):
+  - Client checks, web export; tier 2 (all tags). Before/after screenshots of board, load and profile at 390 and 1440 in
+    light and dark in the PR.
+Acceptance criteria (owner, real device):
+  - none (fonts on devices are checked at Checkpoint U0.10's owner list)
+Out of scope: changing components.
+Risk / rollback: visual change only; revert.
+Size: L
+Fixes: none
+
+### U0.5 — Add the UI lint guardrails and the debt counter
+Status: todo
+Repo: client
+Depends on: U0.4
+Branch: modernise/u0-5-ui-lint
+Goal: The rules in design plan §3.5 exist as errors for converted directories and as a counted debt elsewhere.
+Context: `client:eslint.config.js` (flat config; P5.9 added `no-restricted-syntax`/`no-restricted-imports` guards).
+`eslint-plugin-react-native-a11y` is not usable (ESLint ≤ 8).
+Steps:
+  1. `eslint/ui-converted.js` exports the list of converted globs (start: `app/ui/**`). Rules applied as `error` to
+     those globs: no colour literals (hex, `rgb(`, `rgba(`, `'white'`, `'black'`), no numeric `fontSize`, no numeric
+     `margin*`/`padding*`/`gap` (allow 0), no `react-native-paper` imports, no `Pressable`/`TouchableOpacity`/
+     `TouchableWithoutFeedback`/`TouchableHighlight` JSX with `onPress`, `Image` without `accessibilityLabel` or
+     `accessible={false}`.
+  2. `scripts/ui-debt.mjs`: counts Paper imports, colour literals, raw touchables, numeric font sizes and literal JSX
+     strings per directory; prints a table and writes `ui-debt.json`. CI prints it in the `checks` job (never fails).
+  3. Add the current numbers to `e2e/README.md`'s "UI debt" table; each later task updates them in its PR body.
+Acceptance criteria (cloud VM):
+  - Client checks; `node scripts/ui-debt.mjs` prints the table.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: fixing the debt.
+Risk / rollback: revert.
+Size: S
+Fixes: none
+
+### U0.6 — Add the i18n runtime with bundled terms
+Status: todo
+Repo: client
+Depends on: none
+Branch: modernise/u0-6-i18n
+Goal: `app/i18n` provides i18next with `common` and `terms` namespaces, the skydiving terms bundled as default, a dive
+boat fixture profile, formatters, and a `?profile=` override for tests and the gallery.
+Context: Design plan §6 and D-UI5/D-UI6; GENERALISATION §5; supersedes P7.2's runtime. Versions checked 2026-10-11:
+`i18next` 26.4.x, `react-i18next` 17.0.x, `eslint-plugin-i18next` 6.1.x; `expo-localization` via `npx expo install`.
+Money formatting today: `app/utils/money.ts`; dropzone clock: `app/utils/dropzoneTime.ts` (luxon).
+Steps:
+  1. Install the libraries. `app/i18n/index.ts`: init with `lng` from `expo-localization` (default `en-AU`, fallback
+     `en`), namespaces `common` and `terms`, `returnNull: false`.
+  2. `app/i18n/locales/en/common.json` (start with the tab and header labels), `terms.skydiving.json` (trip=load,
+     vehicle=aircraft, place=slot, participant=jumper, departureCall=call, destination=altitude, crew roles, load states;
+     plural forms `_one`/`_other`), `terms.diveBoat.json` (trip, vessel, place, diver, departure call, dive site;
+     skipper, divemaster) as a fixture.
+  3. `TermsProvider` and `useTerms()`; profile chosen from (in order) the `?profile=` query on web dev/CI builds, a test
+     prop, then `skydiving`. U6.1 later adds the API profile.
+  4. `app/i18n/format.ts`: `formatMoney` (wraps `utils/money.ts`, currency from the dropzone, default AUD),
+     `formatDestination` (skydiving: feet → "14k"), `formatCall` (minutes → "20 minute call"), `formatQuantity`
+     (kg/lb, ft/m, kn/km/h, °C/°F; SI in, unit system from profile, default metric except altitude in ft for
+     skydiving), `formatDate`/`formatTime`/`formatRelative` with luxon in the dropzone time zone, unambiguous dates
+     ("8 Oct 2027").
+  5. Install `eslint-plugin-i18next`; enable `i18next/no-literal-string` (`mode: 'jsx-text-only'`) for the
+     converted globs from U0.5 (only `app/ui/**` for now).
+  6. Tests: plural terms, profile switching, each formatter (including time zone and 12/24 h).
+Acceptance criteria (cloud VM):
+  - Client checks; web export.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: converting screens (done per phase).
+Risk / rollback: additive; revert.
+Size: M
+Fixes: none
+
+### U0.7 — Upgrade Testing Library and add shared test utilities
+Status: todo
+Repo: client
+Depends on: U0.4, U0.6
+Branch: modernise/u0-7-testing-library
+Goal: `@testing-library/react-native` 14.1.x with a `renderWithProviders` that wraps theme, terms, Apollo mocks and
+navigation, so tests query by role.
+Context: 45 test files on RNTL 13 (`app/__tests__`, `app/**/__tests__`); RNTL 14.1.0 needs RN ≥ 0.78 and React ≥ 19
+(met).
+Steps:
+  1. Upgrade; follow the v14 migration guide. If more than 20 test files need non-mechanical changes, stop and set
+     `blocked (RNTL 14 migration larger than expected)`.
+  2. `app/test-utils/render.tsx`: `renderWithProviders(ui, { role, profile, scheme, breakpoint, mocks })` with role
+     fixtures (owner, manifest, fun jumper, student) built from the dev seed's permissions in
+     `backend:config/seed/access.yml`.
+  3. Convert three existing tests to `getByRole` as examples.
+Acceptance criteria (cloud VM):
+  - Client checks.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: converting all tests.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U0.8 — Spike headless primitives for overlays on web
+Status: todo
+Repo: client
+Depends on: U0.4, U0.1
+Branch: modernise/u0-8-primitives-spike
+Goal: A written go/no-go for `@rn-primitives` (dialog, select, tabs, popover, tooltip, portal) based on web keyboard and
+screen-reader semantics.
+Context: Design plan §3.3 (1.5.x, peers `*`, includes react-native-web). Fallback: our own semantics on
+`app/components/input/select/Select.web.tsx`, `Menu.web.tsx`, `layout/DialogOrSheet.web.tsx`.
+Steps:
+  1. Install the packages; a dev-only route `/__spike` with a dialog, select, tabs, popover and tooltip.
+  2. Playwright test (tag `@spike`): dialog traps focus and Esc closes it, returns focus to the trigger; select opens with
+     Enter/Space, arrows move, Enter selects, roles `listbox`/`option`; tabs use arrows and `tab`/`tabpanel`; axe
+     clean.
+  3. Write `client:docs/ui/spike-rn-primitives.md`: results, bundle size added, decision. If no-go, remove the packages
+     and note the fallback for U2.3.
+Acceptance criteria (cloud VM):
+  - Client checks; `yarn test:ui:smoke --grep @spike`.
+Acceptance criteria (owner, real device):
+  - none (TalkBack/VoiceOver on the overlays is in Checkpoint U2.8's owner list)
+Out of scope: building components.
+Risk / rollback: spike route is dev-only; revert.
+Size: M
+Fixes: none
+
+### U0.9 — Apply the logged quick fixes
+Status: todo
+Repo: both
+Depends on: none
+Branch: modernise/u0-9-quick-fixes
+Goal: The behaviour-free fixes in design plan §1.11 are done, plus the one backend bug found by the audit.
+Context: Design plan §1.11.
+Steps:
+  1. client: rename `app/providers/load/context .tsx` (space) and fix imports; delete `components/UserAvatar.web.old.tsx`,
+     `components/input/LocationPicker.oldios.tsx`; remove the 88 `console.log/debug` calls (keep error reporting through
+     AppSignal); fix the stale "Master Log … Temporarily disabled" copy and the check-mark icons on non-check rows in
+     `SettingsMenuScreen.tsx`; correct `client:docs/reference/README.md` §6 (`TabBar.web.tsx` is not a top bar).
+  2. backend: `app/graphql/types/equipment/rig.rb:38` reads an undefined `rig`; use `object`. Add BUG-1xx (next free ID)
+     to `BUGS.md` with `FIXED in U0.9:` and a spec.
+Acceptance criteria (cloud VM):
+  - Client checks, web export; backend rspec and rubocop.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: the visual quick fixes (WeatherBoard artwork, chart hatch, profile empty state, dark tab tint): they are
+rebuilt in U1–U5.
+Risk / rollback: revert.
+Size: S
+Fixes: the new BUG ID
+
+### U0.10 — Checkpoint U0
+Status: todo
+Repo: client
+Depends on: U0.1, U0.2, U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9
+Branch: modernise/u0-10-checkpoint
+Goal: Tier 3 passes on the foundations; baselines exist.
+Context: Phase U rules (tiers).
+Steps:
+  1. Merge the batch's stack into the checkpoint branch as needed; run `yarn test:ui:full` locally and trigger
+     `ui-full` on the branch.
+  2. Create the first visual baselines for login, board, load, profile and settings (all `full` variants); commit them.
+  3. Write `client:docs/verification/ui-u0.md` (results, axe baseline counts, UI debt table) and list the owner checks:
+     system fonts and navy brand on an iPhone and an Android phone, light and dark.
+Acceptance criteria (cloud VM):
+  - Tier 3 web passes (Android starts at U3.1).
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: fixes beyond 30 lines (new task).
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+### U1.1 — Compute navigation destinations from permissions before render
+Status: todo
+Repo: client
+Depends on: U0.10
+Branch: modernise/u1-1-destinations
+Goal: One table of destinations decides tabs, rail and sidebar per role; tabs are registered unconditionally and each
+screen shows a no-access state, so cold loads of deep links work.
+Context: Design plan §5.1; `app/screens/authenticated/routes.tsx:40-46,76,125` (tabs registered after permissions load,
+BUG-100); `components/drawer/Drawer.tsx:30-50,140-287`.
+Steps:
+  1. `app/navigation/destinations.ts`: `{ key, route, icon, labelKey, permission?, platformRole?, group: 'primary' |
+     'more' | 'account' }` for Today, Board, People, Inbox, Wallet, Money, Reports, Setup, Platform, Account.
+  2. `useDestinations()` returns the ordered list for the current session (§5.1 table), waits for the session's
+     permissions (show the splash until known).
+  3. `NoAccess` screen state (`app/ui` `EmptyState` placeholder until U2.4: plain `Text` is fine here, converted in
+     U2.6); register every tab always, guard each screen.
+  4. Jest: destinations for the four role fixtures; BUG-100 cold-load test (Playwright `@nav`: open `/users` directly as
+     owner).
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@nav`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: visual shell (U1.2).
+Risk / rollback: revert.
+Size: M
+Fixes: BUG-100
+
+### U1.2 — Build the responsive shell: tabs, rail and sidebar
+Status: todo
+Repo: client
+Depends on: U1.1
+Branch: modernise/u1-2-shell
+Goal: Bottom tabs on compact, a labelled rail on medium and a sidebar with operator switcher and account menu on
+expanded, all from the destinations table; tablets can rotate.
+Context: Design plan §4–§5, mockup "Desktop: manifest board"; React Navigation 7 `bottom-tabs` supports
+`tabBarPosition: 'left'` (checked in the installed types); `authenticated/TabBar.tsx`, `TabBar.web.tsx` (identical);
+`app.config.ts` `orientation: 'portrait'`.
+Steps:
+  1. `app/navigation/AppNavigation.tsx`: a custom `tabBar` rendering `BottomTabs` (compact), `Rail` (medium, 80 dp,
+     icons and labels) or `Sidebar` (expanded, 240 dp: operator switcher at top, destinations, account menu at the
+     bottom); `tabBarPosition` `bottom`/`left` by breakpoint. Active state uses `brandSoft`/`onBrandSoft` (contrast-safe,
+     fixes the 1.7:1 dark tab icons); labels always visible; `maxFontSizeMultiplier` from `layout/fontScale.ts`.
+  2. Keyboard and semantics on web: `nav` landmark, `aria-current`, focus ring from tokens, skip-to-content link.
+  3. Delete `TabBar.web.tsx`. Set `orientation: 'default'` in `app.config.ts`; lock phones to portrait at runtime
+     (`expo-screen-orientation`, `OrientationLock.PORTRAIT_UP` when the device is a phone) so only tablets rotate.
+  4. All labels through `t()`; convert `app/navigation/**` (definition of done).
+Acceptance criteria (cloud VM):
+  - Client checks, web export; tier 2 `@nav` with new tests: tab bar at 390, sidebar at 1440, per role fixture, keyboard
+    reaches every item.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: Account screen (U1.3), headers (U1.4).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U1.3 — Replace the drawer with Account and More
+Status: todo
+Repo: client
+Depends on: U1.2
+Branch: modernise/u1-3-account
+Goal: No drawer. Account (profile, equipment, appearance, density, switch operator, log out) is reachable from the
+sidebar's account menu and from More on phones; staff get More (Setup, Money, Reports, Account) on compact.
+Context: Design plan §5.2; `components/drawer/*`, `screens/drawers/UserDrawer.tsx`, Settings → Appearance today in
+`configuration/settings_menu`.
+Steps:
+  1. `screens/authenticated/account/AccountScreen.tsx` and `MoreScreen.tsx` (list of `more` destinations).
+  2. Move Appearance (System/Light/Dark) and a Density override (Auto/Compact/Comfortable/Touch, stored in preferences)
+     into Account.
+  3. Remove the drawer navigator, `Drawer.tsx`, `UserDrawer.tsx` and their tests; update links that opened the drawer.
+  4. Convert the new screens (definition of done).
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@nav @account` (log out and switch operator from Account at 390 and 1440).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: Setup regrouping (U5.3).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U1.4 — Replace the app bar with a screen header
+Status: todo
+Repo: client
+Depends on: U1.2
+Branch: modernise/u1-4-header
+Goal: Every screen has `ScreenHeader` (title, back on detail screens, actions); the credits chip leaves the header;
+document titles on web match.
+Context: `components/appbar/AppBar.tsx` (hamburger, title, credits chip that shows the dropzone balance to owners);
+load screen titled "Load" without a back button (design plan §1.8 item 2).
+Steps:
+  1. `app/navigation/ScreenHeader.tsx` used through `screenOptions.header`; back button with `accessibilityLabel`
+     "Back to …" (previous screen's title); actions as `IconButton`s (until U2.1, use a minimal local button and
+     replace it there).
+  2. Titles from `t()`; the load screen reads "Load #n" (term-based: `t('common:tripNumber', { trip, number })`); web
+     `document.title` "<screen> · <operator>".
+  3. Delete `components/appbar/*` and the credits chip.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@nav @manifest` (back from load to board at 390 and 1440).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: balance display (Wallet U4.3, profile U5.2).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U1.5 — Register the User stack once and redirect old paths
+Status: todo
+Repo: client
+Depends on: U1.2
+Branch: modernise/u1-5-user-stack
+Goal: A member's profile has one URL; the three other paths redirect.
+Context: Design plan §1.2 (User stack registered under Manifest, Users, Notifications and Wizards; paths
+`/dropzone/manifest/users/…`, `/user/…`, `/modal/user/…`).
+Steps:
+  1. One `User` stack under People (`/people/:userId/…` keeps `/user/:userId` as the canonical path if that is what
+     push payloads use; check `api/crud/subscriptions` and notification data first and keep their path).
+  2. Linking config redirects the other paths; update `navigate` calls.
+  3. Playwright `@nav`: each old path lands on the profile.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@nav @profile`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: profile redesign (U5.2).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U1.6 — Checkpoint U1
+Status: todo
+Repo: client
+Depends on: U1.1, U1.2, U1.3, U1.4, U1.5
+Branch: modernise/u1-6-checkpoint
+Goal: Tier 3 passes for the shell; baselines updated for changed routes.
+Context: Phase U rules.
+Steps:
+  1. Tier 3 web (local and `ui-full` on the branch); update baselines for the shell routes.
+  2. `client:docs/verification/ui-u1.md`; owner list: navigation per role on a phone and a tablet (both orientations),
+     keyboard on a desktop browser, VoiceOver/TalkBack reach every tab.
+Acceptance criteria (cloud VM):
+  - Tier 3 web passes.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+### U2.1 — Build the base components
+Status: todo
+Repo: client
+Depends on: U0.10
+Branch: modernise/u2-1-base-components
+Goal: `Text`, `Button`, `IconButton`, `ListRow`, `Card`, `Divider`, `Stack`/`Row` layout helpers in `app/ui/components`
+with tests.
+Context: Design plan §3.4; tokens and `useStyles` from U0.3/U0.4.
+Steps:
+  1. `Text` variants = type tokens, `tabular` prop, colour by semantic token only.
+  2. `Button` (primary, secondary, tertiary, destructive; `loading`, `disabled`; height by density, minimum target
+     44/48), `IconButton` (`accessibilityLabel` required by its type; 44/48 target with `hitSlop` when the icon is
+     smaller), `ListRow` (leading, title, supporting text, trailing; role `button` when pressable; selected state),
+     `Card` (flat, raised), `Divider`. Pressed, hover (web) and focus-visible states.
+  3. Tests per component: role, name, state, density sizes, both schemes.
+Acceptance criteria (cloud VM):
+  - Client checks.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: gallery (U2.5).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### U2.2 — Build the form components
+Status: todo
+Repo: client
+Depends on: U2.1
+Branch: modernise/u2-2-form-components
+Goal: `TextField`, `NumberField` (units suffix, min/max, step), `Select`, `Segmented`, `Switch`, `Chip` (filter and
+input) with labels, helper and error text wired for screen readers and react-hook-form.
+Context: Existing `components/input/text/TextField`, `number_input`, `select`, `chip_select`, `dropdown_select`;
+react-hook-form + yup (`app/forms/*`).
+Steps:
+  1. Components with a `control`-friendly API (`value`, `onChange`, `onBlur`, `error`) and `Controller` helpers
+     (`FormTextField` etc.).
+  2. `Select` uses `@rn-primitives/select` if U0.8 said go; otherwise our own listbox semantics.
+  3. Tests: label association, error announcement (`accessibilityLiveRegion`/`aria-live`), keyboard on web (jsdom-level),
+     density sizes.
+Acceptance criteria (cloud VM):
+  - Client checks.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: converting forms (U2.6–U2.7).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### U2.3 — Build the overlay components
+Status: todo
+Repo: client
+Depends on: U2.1, U0.8
+Branch: modernise/u2-3-overlays
+Goal: One `Sheet`/`Dialog` API (bottom sheet on compact native, dialog or side panel elsewhere), `Menu`, `Popover`,
+`Tooltip`, `Banner`, `Toast` (replacing the notifications provider's snackbar visuals).
+Context: `layout/DialogOrSheet*.tsx` (P5.4), `@gorhom/bottom-sheet` 5.2.x, `providers/notifications`; U0.8 decision.
+Steps:
+  1. `Overlay` API: `presentation: 'auto' | 'sheet' | 'dialog' | 'panel'`, title, footer slot (pinned), focus trap and
+     Esc on web, returns focus on close.
+  2. `Menu`, `Popover`, `Tooltip` (primitives or fallback), `Banner` (info/warning/blocked with action), `Toast`.
+  3. Tests; Playwright `@overlay` on a dev route with each overlay at 390 and 1440.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@overlay`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: replacing `DialogOrSheet` users (U2.6).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### U2.4 — Build the display components
+Status: todo
+Repo: client
+Depends on: U2.1
+Branch: modernise/u2-4-display
+Goal: `StatusBadge` (colour + icon + word), `Avatar` (initials fallback, label required), `EmptyState` (message and
+next-step action), `Countdown` (tabular, announces every minute, not every second), `Tabs`, `Skeleton`, `ProgressMeter`.
+Context: Design plan §2 principles 6 and 9; `components/Skeleton`, `ProgressBar`, `UserAvatar`, `LoadCard/Countdown.tsx`.
+Steps:
+  1. Components and tests (Countdown with fake timers and the dropzone time zone).
+  2. Replace `NoAccess` from U1.1 with `EmptyState`.
+Acceptance criteria (cloud VM):
+  - Client checks.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: domain components (U3).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### U2.5 — Add the component gallery
+Status: todo
+Repo: client
+Depends on: U2.2, U2.3, U2.4
+Branch: modernise/u2-5-gallery
+Goal: `/__gallery` (dev and CI builds only) renders every `app/ui` component in every state; Playwright screenshots it
+in the `full` project.
+Context: Design plan §8 "Gallery".
+Steps:
+  1. Route registered only when `environment` is `local`/`development` or `EXPO_PUBLIC_GALLERY=1` (set in the CI web
+     export); sections per component; query params `?scheme=`, `?density=`, `?profile=`.
+  2. `e2e/gallery.spec.ts` (`@gallery`): axe and layout per section; screenshots only in the `full` project.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@gallery` (no screenshots in tier 2).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: baselines (Checkpoint U2.8).
+Risk / rollback: dev-only route.
+Size: M
+Fixes: none
+
+### U2.6 — Re-base inputs and layout wrappers on app/ui
+Status: todo
+Repo: client
+Depends on: U2.2, U2.3
+Branch: modernise/u2-6-inputs
+Goal: `app/components/input/*` and `layout/DialogOrSheet*` become thin adapters over `app/ui` (call sites unchanged);
+`Themed.tsx`, `layout/Screen.tsx`, `layout/ScrollableScreen.tsx` are deleted.
+Context: Design plan §1.5 (25 importers of `TextField`, 12 of `DialogOrSheet`, 10 of `ScrollableScreen`).
+Steps:
+  1. Re-implement the input components on `app/ui` keeping their props; delete the `.web.tsx` variants that become
+     redundant.
+  2. Move the 10 `ScrollableScreen` users to `ScreenContainer`/`FormColumn`; delete the legacy files.
+  3. Add `app/components/input/**` and `app/components/layout/**` to the converted list.
+Acceptance criteria (cloud VM):
+  - Client checks, web export; tier 2 (all tags).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: screen redesigns.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U2.7 — Convert the forms
+Status: todo
+Repo: client
+Depends on: U2.6, U0.6
+Branch: modernise/u2-7-forms
+Goal: `app/forms/**` meets the definition of done (no Paper, tokens only, strings through `t()`), except the manifest
+forms that U3.7 rebuilds.
+Context: `app/forms/*` (about 40 files; `forms/manifest_user` and `forms/manifest_group` are excluded).
+Steps:
+  1. Convert form by form; pinned save button in the `Overlay` footer (answers the P5.4 owner question).
+  2. Strings into `common.json` under `forms.<form>.*`.
+  3. Add `app/forms/**` (minus the two manifest forms) to the converted list.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@setup @profile`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: manifest forms.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U2.8 — Checkpoint U2
+Status: todo
+Repo: client
+Depends on: U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7
+Branch: modernise/u2-8-checkpoint
+Goal: Tier 3 passes; gallery baselines exist for all variants.
+Context: Phase U rules.
+Steps:
+  1. Tier 3 web; create gallery baselines (4 widths × 2 schemes × 2 profiles × 200 % text where relevant).
+  2. `client:docs/verification/ui-u2.md`; owner list: each form on a small Android phone with the keyboard open; overlays
+     with TalkBack and VoiceOver.
+Acceptance criteria (cloud VM):
+  - Tier 3 web passes.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+### U3.1 — Add Android emulator flows with Maestro
+Status: todo
+Repo: client
+Depends on: U0.2
+Branch: modernise/u3-1-android-ui
+Goal: A workflow builds an Android release APK against a backend in the same job, boots an emulator and runs Maestro
+flows at font scale 1.0 and 2.0, on demand and weekly.
+Context: Design plan §8, D-UI10 as amended (checkpoints and weekly only). No emulator in the cloud VM: flows are written
+here and run in GitHub Actions. The emulator reaches the host at `10.0.2.2`; release builds block cleartext HTTP.
+Steps:
+  1. Add an `android-ci` environment: endpoint `http://10.0.2.2:5000/graphql` in `build/constants.ts`, and for that
+     environment only `expo-build-properties` `android.usesCleartextTraffic: true`.
+  2. Workflow `android-ui.yml` (`workflow_dispatch`, weekly): backend via the `ui-env` action (without the web export),
+     `EXPO_ENV=android-ci npx expo prebuild --platform android --clean`, `./gradlew assembleRelease` (debug keystore),
+     `reactivecircus/android-emulator-runner` (API 35, `pixel_7` and a 360×640 dp custom profile), install Maestro
+     (pin the current CLI version; record it in the workflow), run `e2e/maestro/*.yaml` twice (font scale via
+     `adb shell settings put system font_scale 2.0`), upload screenshots and JUnit.
+  3. Flows: `login.yaml`, `board.yaml` (board renders, open a load, back), using `testID`s or accessibility labels.
+  4. Document in `e2e/README.md`.
+Acceptance criteria (cloud VM):
+  - Client checks; one `android-ui` run on the branch passes (attach the run URL). If the build exceeds 60 minutes or the
+    emulator cannot boot on the hosted runner, set `blocked (Android CI: <reason>)` and continue the batch without it.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: iOS (owner device checks only).
+Risk / rollback: separate workflow; revert.
+Size: L
+Fixes: none
+
+### U3.2 — Add the board data layer and the newBoard flag
+Status: todo
+Repo: client
+Depends on: U1.6, U2.8, UB.4
+Branch: modernise/u3-2-board-data
+Goal: `useBoard()` gives today's loads in a stable order with live updates and change highlights; the `newBoard`
+preference switches between old and new board, load and picker screens.
+Context: Design plan §2 principle 8, §12 (drag versus live updates); `api/crud/subscriptions/*`, `providers/load`,
+`utils/dropzoneTime.ts`; `calledAt` and `callPresetsMinutes` from UB.4 (`yarn sync:schema && yarn ts:graphql`).
+Steps:
+  1. `app/features/board/useBoard.ts`: loads for the dropzone's today, ordered by state (open → boarding → departed →
+     landed/cancelled) then load number; changed rows flagged for 600 ms; `freeze()`/`unfreeze()` to hold order while
+     the user drags or edits.
+  2. `newBoard` in the preferences store: default `true` when no previous preferences exist (new install), `false`
+     otherwise; toggle in Account. Route switch in the manifest stack.
+  3. Tests with a mocked subscription push (order stable, highlight set, frozen order honoured).
+Acceptance criteria (cloud VM):
+  - Client checks.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: UI (U3.3).
+Risk / rollback: flag off restores the old board.
+Size: M
+Fixes: none
+
+### U3.3 — Build the load card and the board layouts
+Status: todo
+Repo: client
+Depends on: U3.2
+Branch: modernise/u3-3-board
+Goal: The new board: one column on compact, list plus selected load on medium, load columns with a landed strip on
+expanded; each `LoadCard` shows state, the call countdown as its largest numeral, seats meter, crew chips that wrap and
+the next action; a read-only conditions strip in the board header.
+Context: Mockups "Desktop: manifest board", "Phone: load"; design plan §2 principles 1–2, §4 table; old
+`manifest/ManifestScreen.tsx`, `LoadCard/*`, `Weather/WeatherBoard.tsx`.
+Steps:
+  1. Domain components in `app/features/board/`: `LoadCard`, `CrewChip`, `SeatsMeter`, `ConditionsStrip` (wind at
+     altitude, jump run heading, ground temperature, "Update" opens the existing weather screen until U5.7).
+  2. `BoardScreen` with the three layouts; content max width 1600, horizontal scroll past three columns; empty state
+     "No loads today" with "Create load" for `CreateLoad`.
+  3. All strings through `t()`; terms for load, aircraft, crew roles; convert `app/features/board/**`.
+  4. Playwright `@board`: layout at 390 and 1440, create a load, countdown visible; Jest per component.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: actions (U3.4), load screen (U3.5).
+Risk / rollback: behind `newBoard`.
+Size: L
+Fixes: none
+
+### U3.4 — Make the next load action one tap
+Status: todo
+Repo: client
+Depends on: U3.3
+Branch: modernise/u3-4-load-actions
+Goal: Call (presets from the dropzone, plus custom), cancel call, departed, landed and cancel load are a primary button
+on the card and on the load screen, chosen by state; the speed dial is gone from the new screens.
+Context: `load/ActionButton.tsx:48-130` (speed dial, permission gates `UpdateLoad`), `finalizeLoad`/`updateLoad`
+mutations; UB.4 `callPresetsMinutes`, `calledAt`.
+Steps:
+  1. `useLoadActions(load)`: state machine and permitted actions; destructive ones (cancel load, land with
+     unconfirmed seats) confirm in a dialog; errors as `Toast`.
+  2. Primary action button plus a `Menu` for the rest on card and load header; calls show presets as a `Segmented`
+     choice and "Custom…" (`NumberField`, minutes).
+  3. Tests per transition; Playwright `@board`: call 20 → cancel call → call 10 → departed → landed (step counts asserted:
+     each transition ≤ 2 interactions).
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: haptics (U7.2).
+Risk / rollback: behind `newBoard`.
+Size: M
+Fixes: none
+
+### U3.5 — Build the new load screen
+Status: todo
+Repo: client
+Depends on: U3.4
+Branch: modernise/u3-5-load-screen
+Goal: Load screen with the call card (countdown largest, "called at", destination), crew chips, seat list with
+eligibility badges, groups bracketed, tandem pairs shown together, free seats collapsed into one row, sticky actions on
+compact.
+Context: Mockup "Phone: load"; old `load/LoadScreen.tsx`, `load/Header.tsx`, `load/InfoGrid.tsx`, `slots_table/*`, three
+slot cards (§1.5). Eligibility: booleans now, `eligibility` from UB.3 if present (UB.3 is done before this task in
+document order; if not, use booleans and leave a TODO with UB.3).
+Steps:
+  1. `LoadHeader`, `SeatRow` (avatar, name, licence and jump type, `EligibilityBadge`, group colour border), `FreeSeats`
+     ("N free places", opens the picker in U3.7), crew editing via the existing mutations in a `Menu`.
+  2. Swipe-to-delete stays on native as a shortcut; every seat also has a menu ("Edit", "Move to…", "Take off").
+  3. Strings through `t()`; convert `app/features/load/**`.
+  4. Playwright `@load`: 14-seat load at 390 shows the call card and first seats without scrolling; layout invariants;
+     axe.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@load @board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: picker (U3.7), move (U3.9).
+Risk / rollback: behind `newBoard`.
+Size: L
+Fixes: none
+
+### U3.6 — Checkpoint U3a (board and load)
+Status: todo
+Repo: client
+Depends on: U3.3, U3.4, U3.5
+Branch: modernise/u3-6-checkpoint
+Goal: Tier 3 (web and Android) passes for the new board and load screen.
+Context: Phase U rules.
+Steps:
+  1. Tier 3 web; if U3.1 is `done`, add the flows `board-actions.yaml` (call, depart, land) and `load.yaml` and run
+     `android-ui`; update baselines for board and load.
+  2. `client:docs/verification/ui-u3a.md`; owner list: run a real load with the new board on a tablet at the desk and on
+     a phone (flag on).
+Acceptance criteria (cloud VM):
+  - Tier 3 passes (web; Android when U3.1 is done).
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: M
+Fixes: none
+
+### U3.7 — Build the member picker with one-tap defaults
+Status: todo
+Repo: client
+Depends on: U3.5, UB.3, UB.4
+Branch: modernise/u3-7-picker
+Goal: Adding a returning member to a load takes at most 3 interactions: search, pick (pre-filled from their last
+jump), confirm; eligibility and its reason show before the tap, with a "Fix" action.
+Context: Mockup "Phone: add a jumper"; design plan §2 principles 3–4, §4 ("Adding a person"); old
+`autocomplete/DropzoneUserAutocomplete*.tsx`, `forms/manifest_user/*`; `createSlot` mutation; UB.3 `eligibility`, UB.4
+`lastSlot`.
+Steps:
+  1. `MemberPicker`: search field (focus on open; `/` focuses on web), filters (Everyone, Ready, Jumped today, Group),
+     `MemberPickerRow` (avatar, name, licence/jumps/credit line or the blocking reason, `EligibilityBadge`, "Fix" opens
+     the member's profile section). Presentation: full screen on compact, side panel on medium, roster panel on expanded
+     (stays open beside the columns).
+  2. Selected member expands to the defaults card (ticket, jump type, altitude, rig with inspection date, exit weight,
+     price) from `lastSlot`; "Change ticket, jump type or rig" opens the full manifest form rebuilt on `app/ui`
+     (replaces `forms/manifest_user/*`).
+  3. Footer: "Add <name> to <load>", and the credit sentence ("$40.00 will be taken from her credit now…") built with
+     `formatMoney` and terms.
+  4. Copy for each `EligibilityCheckKey`/`EligibilityStatus` in `common.json`.
+  5. Playwright `@picker`: add `jumper1` to a load in ≤ 3 interactions at 390 and 1440 (count `press`/`fill` calls);
+     a blocked member shows the reason and cannot be added unless `allowManifestBypass` and staff.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@picker @load`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: groups and tandems (U3.8).
+Risk / rollback: behind `newBoard`.
+Size: L
+Fixes: none
+
+### U3.8 — Add group and tandem manifesting to the picker
+Status: todo
+Repo: client
+Depends on: U3.7
+Branch: modernise/u3-8-groups
+Goal: The picker has a group mode (select several, one group number, `createSlots`) and a tandem pairing (instructor
+plus passenger name and exit weight); groups show bracketed on the load.
+Context: `components/dialogs/ManifestGroup/*`, `forms/manifest_group/*` (dialog only mounted on the load screen,
+BUG-066), passenger fields in `forms/manifest_user/ManifestForm.tsx`; design plan §13 questions 4–5 (current flows kept;
+no persistent group concept).
+Steps:
+  1. "Group" toggle in the picker: multi-select rows, shared defaults with per-person overrides, one confirm.
+  2. Tandem: choosing a tandem ticket asks for passenger name and exit weight in the defaults card.
+  3. Delete `components/dialogs/ManifestGroup/*` and `forms/manifest_group/*` once the new flow covers them (old screens
+     keep working through the flag by importing the old code until U7.4: move the old code under
+     `app/legacy/` instead of deleting if the old board still needs it).
+  4. Playwright `@picker`: group of 4 in ≤ 6 interactions; tandem pair.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@picker`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: persistent groups.
+Risk / rollback: behind `newBoard`.
+Size: M
+Fixes: BUG-066 (on the new screens)
+
+### U3.9 — Move people between loads, and drag on the web
+Status: todo
+Repo: client
+Depends on: U3.7
+Branch: modernise/u3-9-move
+Goal: "Move to…" on every seat (all platforms) and, on web at expanded width, drag between load columns and from the
+roster panel onto a load, with a keyboard alternative; live updates never move a row under the pointer.
+Context: `components/slots_table/DragAndDrop/*.web.tsx` (`@dnd-kit/core` 6.3.1), `moveSlot`; `useBoard().freeze()` from
+U3.2; design plan §12 risk 3.
+Steps:
+  1. `MoveToSheet`: list of open loads with free places; disabled loads say why.
+  2. Web: `@dnd-kit/core` `DndContext` around the board; draggable seats and roster rows, droppable load columns; on
+     drag start `freeze()`, on drop or cancel `unfreeze()`; keyboard sensor (Space to pick up, arrows, Space to drop)
+     with live-region announcements.
+  3. Playwright `@move`: drag a seat between columns at 1440; move via sheet at 390; a scripted subscription push during
+     a drag does not reorder the dragged column.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@move`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: drag on native.
+Risk / rollback: behind `newBoard`.
+Size: L
+Fixes: none
+
+### U3.10 — Checkpoint U3b (picker and move)
+Status: todo
+Repo: client
+Depends on: U3.6, U3.7, U3.8, U3.9
+Branch: modernise/u3-10-checkpoint
+Goal: Tier 3 passes for the whole manifest flow; the exit criterion of design plan Phase 3 is shown by a test.
+Context: Phase U rules; design plan §10 Phase 3 exit criterion.
+Steps:
+  1. Tier 3 web; `android-ui` with `picker.yaml`, `group.yaml`, `move.yaml`; baselines for picker and roster.
+  2. `client:docs/verification/ui-u3b.md`; owner list: one staffed day on the new board (flag on) at a dropzone or a
+     realistic rehearsal: record time to manifest returning jumpers and any blocking issue.
+Acceptance criteria (cloud VM):
+  - Tier 3 web and Android pass.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: M
+Fixes: none
+
+---
+
+### U4.1 — Build the Today screen
+Status: todo
+Repo: client
+Depends on: U3.10
+Branch: modernise/u4-1-today
+Goal: Members land on Today: next jump card (state, countdown, load summary, take-me-off when permitted), "Ready to jump"
+checklist with fixes, credit, today's jumps; instructors and pilots also see their duties for the day.
+Context: Mockup "Phone: my day"; design plan §2 principle 7, §5.1; UB.1 (members without `DeleteSlot` see "Ask the
+manifest desk to change your booking" instead of "Take me off"); UB.3 eligibility; `hooks/useManifestValidator.ts`.
+Steps:
+  1. `app/features/today/`: `NextJumpCard`, `ReadyChecklist` (each check with a fix action), `CreditCard`,
+     `TodayJumps`, `DutiesCard` (pilot, load master, GCA, DZSO assignments today).
+  2. Today is the first destination for roles without `CreateUserSlot`.
+  3. Playwright `@today`: as `jumper1`, find my load and take myself off (setting on); with the setting off the action is
+     replaced by the desk note.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@today`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: booking (U4.2).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U4.2 — Let members book themselves from Today and the board
+Status: todo
+Repo: client
+Depends on: U4.1
+Branch: modernise/u4-2-self-booking
+Goal: "Book a jump" on Today and on open loads uses the picker in self mode (defaults from the member's last jump);
+hidden when the dropzone switched off self-manifesting.
+Context: U3.7 picker; UB.1 permissions; `createSlot`.
+Steps:
+  1. Picker `mode: 'self'` (no search, the member's defaults, confirm); entry points on Today and the load card.
+  2. Playwright `@today`: book in ≤ 3 interactions; setting off → no entry points.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@today @board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: booking ahead (D6).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U4.3 — Build the Wallet
+Status: todo
+Repo: client
+Depends on: U4.1
+Branch: modernise/u4-3-wallet
+Goal: Members see balance, money held for booked jumps, history and top-up in one place; staff keep the Money area.
+Context: `screens/authenticated/user/orders`, `order_receipt`, `transactions`, `forms/credits/*`, `createOrder`; the
+credits chip removed in U1.4.
+Steps:
+  1. `app/features/wallet/`: balance card, held amount (sum of the member's slots on open loads; compute client-side
+     from existing fields unless the API has it), history list with receipts, top-up (existing order flow if the
+     dropzone allows it; otherwise "Top up at the manifest desk").
+  2. Replace the member's routes; staff routes stay for Money.
+  3. Playwright `@wallet`.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@wallet`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: card payments.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U4.4 — Turn notifications into the Inbox and route pushes
+Status: todo
+Repo: client
+Depends on: U4.1
+Branch: modernise/u4-4-inbox
+Goal: Inbox lists notifications with read state and actions (rig-inspection request → inspection screen; call → load);
+tapping a push opens the right screen (Today for calls and manifest changes).
+Context: `screens/authenticated/notifications/*`, notification types in `backend:app/models/notification.rb:23-26`
+(`boarding_call`, `user_manifested`, `credits_updated`, `rig_inspection_requested`, …), push data
+`{ notificationId, type }`.
+Steps:
+  1. `app/features/inbox/` with `ListRow`s, unread badge on the tab, mark read.
+  2. Push response handler maps `type` to a route; tests per type.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@inbox`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: new notification types.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U4.5 — Checkpoint U4
+Status: todo
+Repo: client
+Depends on: U4.1, U4.2, U4.3, U4.4
+Branch: modernise/u4-5-checkpoint
+Goal: Tier 3 passes for the member experience.
+Context: Phase U rules.
+Steps:
+  1. Tier 3 web; `android-ui` with `today.yaml` (find my load, take myself off, book) at font scale 2.0; baselines.
+  2. `client:docs/verification/ui-u4.md`; owner list: VoiceOver and TalkBack pass over Today, booking and Wallet; a push
+     for a call opens Today.
+Acceptance criteria (cloud VM):
+  - Tier 3 web and Android pass.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+### U5.1 — Build People
+Status: todo
+Repo: client
+Depends on: U4.5
+Branch: modernise/u5-1-people
+Goal: A searchable, filterable people list (table on expanded; rows elsewhere) with role, licence, eligibility summary,
+credit and last jump; staff can add a walk-in member and act on a row (manifest on…, add credit).
+Context: `screens/authenticated/users/*` (UserListScreen), `forms/create_user/Dialog.tsx` (`createGhost`); UB.3.
+Steps:
+  1. `app/features/people/`: list with search (`/` on web), filters (role, Ready/Expiring/Blocked), sort; row actions in
+     a `Menu`.
+  2. "Add member" opens the ghost form (converted).
+  3. Playwright `@people`.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@people`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: bulk actions.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U5.2 — Redesign the member profile
+Status: todo
+Repo: client
+Depends on: U5.1, UB.2
+Branch: modernise/u5-2-profile
+Goal: Profile = summary and eligibility with fixes, then Jumps (with empty state), Funds, Equipment (staff can add and
+edit, UB.2), Membership (role and expiry with unambiguous dates); one scroll on phones, two columns on expanded.
+Context: `screens/authenticated/user/profile/*`, `user/equipment/*`, `user/rig_inspection`; design plan §1.8 item 5.
+Steps:
+  1. Rebuild the screens on `app/ui`; staff actions gated by permission.
+  2. Playwright `@profile`: own profile and a member's profile as staff.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@profile`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U5.3 — Regroup Setup and add the Rules page
+Status: todo
+Repo: client
+Depends on: U5.1
+Branch: modernise/u5-3-setup
+Goal: Setup has three groups (Operations, People and access, Business) per design plan §5.2; Rules holds the
+eligibility settings, "Members can book themselves on loads" (UB.1) and call presets (UB.4).
+Context: `configuration/settings_menu/SettingsMenuScreen.tsx`, `forms/dropzone/DropzoneForm.tsx`.
+Steps:
+  1. `SetupScreen` with grouped `ListRow`s; side-by-side list and detail on expanded.
+  2. `RulesScreen`: switches with helper text; call presets editor (chips with add/remove, 1–120 minutes).
+  3. Playwright `@setup`: switch off self-manifesting, then as `jumper1` the board shows the desk note.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@setup @today`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: the setup lists (U5.5).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U5.4 — Checkpoint U5a (people and setup)
+Status: todo
+Repo: client
+Depends on: U5.1, U5.2, U5.3
+Branch: modernise/u5-4-checkpoint
+Goal: Tier 3 passes for People, profile and Setup.
+Context: Phase U rules.
+Steps:
+  1. Tier 3 web; `android-ui` `profile.yaml`; baselines.
+  2. `client:docs/verification/ui-u5a.md`; owner list: run a day from the office with self-manifesting off (add a
+     walk-in, record their rig, credit, manifest, move, land).
+Acceptance criteria (cloud VM):
+  - Tier 3 web and Android pass.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+### U5.5 — Put the setup lists on one pattern
+Status: todo
+Repo: client
+Depends on: U5.4
+Branch: modernise/u5-5-setup-lists
+Goal: Aircraft, tickets, add-ons, dropzone rigs and the inspection template use `ResourceList` + `ResourceForm`
+(side panel on expanded, sheet on compact).
+Context: `configuration/aircrafts`, `ticket_types`, `extras`, `dropzone_rigs`, `rig_inspection_template`.
+Steps:
+  1. `app/ui/patterns/ResourceList.tsx`, `ResourceForm.tsx`; convert the five screens.
+  2. Playwright `@setup`: create and edit one of each.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@setup`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U5.6 — Rebuild permissions as a matrix
+Status: todo
+Repo: client
+Depends on: U5.4
+Branch: modernise/u5-6-permissions
+Goal: Roles × permissions matrix on expanded (grouped by `access.yml` groups, sticky headers), per-role list on compact;
+per-user acting permissions on the member profile.
+Context: `configuration/permissions/PermissionsScreen.tsx` (440 lines), `grantPermission`/`revokePermission`/`updateRole`.
+Steps:
+  1. Matrix with `Switch` cells (role `switch`, names "<role>: <permission>"), optimistic update with rollback on error.
+  2. Playwright `@permissions`: grant and revoke.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@permissions`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: new permissions.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U5.7 — Move conditions editing into a panel
+Status: todo
+Repo: client
+Depends on: U5.4
+Branch: modernise/u5-7-conditions
+Goal: "Update" on the conditions strip opens a panel or sheet with temperature, winds aloft table and a numeric jump-run
+heading (0–359°); the navy wizard and the jump-run dial are removed.
+Context: D-UI7; `dropzone/weather_conditions/*`, `components/input/jump_run_select/*` (~700 lines),
+`components/forms/weather_conditions/*`.
+Steps:
+  1. `ConditionsPanel` with `NumberField`s (units via `formatQuantity`), wind rows add/remove.
+  2. Delete the wizard screens and `jump_run_select/*`; redirect their routes to the board with the panel open.
+  3. Playwright `@conditions`.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@conditions @board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: winds-aloft feed changes.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U5.8 — Convert the remaining screens
+Status: todo
+Repo: client
+Depends on: U5.4
+Branch: modernise/u5-8-remaining
+Goal: Reports (Overview charts fixed or replaced), Money (staff transactions), master log, login, sign-up, recovery,
+dropzone select and the wizards meet the definition of done.
+Context: `overview/*` (`statistics/LoadsByDay.web.tsx` hatch), `configuration/transactions`, `master_log`,
+`screens/unauthenticated/*`, `screens/wizards/*`.
+Steps:
+  1. Convert each; charts: keep the library if it renders on web after a fix, otherwise simple bar lists built from
+     tokens.
+  2. If this exceeds a session, split at the unauthenticated screens and add U5.8b before the checkpoint.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@login @reports @setup`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: new reports.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U5.9 — Checkpoint U5b
+Status: todo
+Repo: client
+Depends on: U5.5, U5.6, U5.7, U5.8
+Branch: modernise/u5-9-checkpoint
+Goal: Tier 3 passes for the whole app; axe has no serious or critical violations left (the baseline file is empty).
+Context: Phase U rules; design plan §7.
+Steps:
+  1. Tier 3 web and Android; baselines; empty `e2e/axe-baseline.json` (fix what remains or add a task).
+  2. `client:docs/verification/ui-u5b.md` with the UI debt table (Paper imports should be near zero).
+Acceptance criteria (cloud VM):
+  - Tier 3 passes; axe baseline empty.
+Acceptance criteria (owner, real device):
+  - none (listed for U7.5)
+Out of scope: none.
+Risk / rollback: none.
+Size: M
+Fixes: none
+
+---
+
+### U6.1 — Read terms from the operator's industry profile
+Status: blocked (awaiting decision D5)
+Repo: client
+Depends on: P7.1, U0.6
+Branch: modernise/u6-1-profile-terms
+Goal: `useTerms()` uses the dropzone's `industryProfile.terminology` when present (P7.1), falling back to the bundled
+profile.
+Context: GENERALISATION §5; P7.2 step 2 (superseded).
+Steps:
+  1. `addResourceBundle(lng, 'terms', terminology, true, true)` on dropzone change; tests for switching operators.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`; tier 2.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: units (U6.2).
+Risk / rollback: revert.
+Size: S
+Fixes: none
+
+### U6.2 — Take units and currency from the operator
+Status: blocked (awaiting decision D5)
+Repo: client
+Depends on: P7.3, U6.1
+Branch: modernise/u6-2-units
+Goal: `formatQuantity` and `formatMoney` use the operator's unit system and currency end to end (kg/lb, ft/m).
+Context: P7.3 (SI in the API).
+Steps:
+  1. Read the profile's `units`; inputs (`NumberField`) convert on entry; tests.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@load @picker`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U6.3 — Add neutral route aliases
+Status: blocked (awaiting decision D5)
+Repo: client
+Depends on: U6.1
+Branch: modernise/u6-3-route-aliases
+Goal: Neutral paths (`/board`, `/trip/:id`, `/people/:id`) with the old paths redirecting for one release.
+Context: Design plan §5 (URLs unchanged until this task); GENERALISATION §5.
+Steps:
+  1. Linking config; push payload paths; Playwright `@nav` for every old path.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@nav`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: removing the old paths (after one release).
+Risk / rollback: revert.
+Size: S
+Fixes: none
+
+### U6.4 — Enforce translated strings everywhere
+Status: todo
+Repo: client
+Depends on: U5.9
+Branch: modernise/u6-4-no-literal-strings
+Goal: `i18next/no-literal-string` is an error for `app/**` (except tests and `app/api/**`); no hard-coded skydiving noun
+remains in components.
+Context: Supersedes P7.7/P7.8. U0.6 lint setup.
+Steps:
+  1. Enable the rule for `app/**`; convert what is left.
+  2. Playwright `@terms` (in the `full` project only): with `?profile=diveBoat`, render the main routes and fail on any
+     word from a banned list (load, jumper, aircraft, altitude, manifest, dropzone, slot).
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: other languages.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U6.5 — Checkpoint U6
+Status: todo
+Repo: client
+Depends on: U6.4
+Branch: modernise/u6-5-checkpoint
+Goal: Tier 3 passes in both profiles, including `@terms`.
+Context: Phase U rules. U6.1–U6.3 join this checkpoint's scope when D5 unblocks them; until then it covers U6.4.
+Steps:
+  1. Tier 3 web and Android; baselines for the dive-boat variant.
+  2. `client:docs/verification/ui-u6.md`.
+Acceptance criteria (cloud VM):
+  - Tier 3 passes.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+### U7.1 — Remove react-native-paper
+Status: todo
+Repo: client
+Depends on: U6.5
+Branch: modernise/u7-1-remove-paper
+Goal: No Paper or `react-native-paper-dates`; date and time pickers built on tokens; the Paper theme adapter deleted.
+Context: UI debt table; design plan §3.3.
+Steps:
+  1. Replace remaining Paper uses (except under `app/legacy/`, removed in U7.4); `DateField`/`TimeField` (native:
+     `@react-native-community/datetimepicker` via `npx expo install` if not present, or `@expo/ui` pickers if their
+     web story is adequate by then; web: `<input type="date|time">`).
+  2. `yarn remove react-native-paper react-native-paper-dates`; delete the adapter in `app/theme/palette.ts`.
+Acceptance criteria (cloud VM):
+  - Client checks, web export; tier 2 (all tags).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### U7.2 — Add motion, haptics and reduced motion
+Status: todo
+Repo: client
+Depends on: U6.5
+Branch: modernise/u7-2-motion
+Goal: Motion tokens applied (sheet, panel, highlight), haptics on call, depart and land (native), reduced motion honoured.
+Context: Design plan §3.2 Motion; Reanimated `ReduceMotion`, `expo-haptics`.
+Steps:
+  1. Apply; tests that reduced motion disables animations (mock).
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@board`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U7.3 — Measure and tune performance and bundle size
+Status: todo
+Repo: client
+Depends on: U7.1
+Branch: modernise/u7-3-performance
+Goal: Bundle and startup are no worse than the U0.4 baseline; the board with 6 loads × 14 seats and live updates keeps
+60 fps on web and re-renders only changed cards.
+Context: U0.4 baseline; date-fns still in some files.
+Steps:
+  1. Remove date-fns (luxon only); FlashList for People if the seed scaled to 500 members is slow; memoise board rows.
+  2. Record numbers in `client:docs/verification/ui-u7.md`.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@board @people`; numbers recorded.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### U7.4 — Retire the old board
+Status: todo
+Repo: client
+Depends on: U7.1
+Branch: modernise/u7-4-retire-old-board
+Goal: The `newBoard` flag and `app/legacy/` are removed.
+Context: Do this only after the owner's U3.10 staffed-day check is recorded as passed in `client:docs/verification/ui-u3b.md`;
+otherwise set `owner-check (staffed day on the new board, U3.10)`.
+Steps:
+  1. Remove the flag, the old screens and their tests.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 (all tags).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: S
+Fixes: none
+
+### U7.5 — Verify the UI modernisation
+Status: todo
+Repo: client
+Depends on: U7.2, U7.3, U7.4
+Branch: modernise/u7-5-verify
+Goal: Tier 3 passes on the final app, and the owner has run the collected device checks.
+Context: Phase gate; owner lists in `client:docs/verification/ui-u0.md` … `ui-u6.md`.
+Steps:
+  1. Tier 3 web and Android; final baselines.
+  2. Merge the owner lists into a "UI" section of `client:docs/SMOKE_TEST.md`; write `client:docs/verification/ui-final.md`.
+Acceptance criteria (cloud VM):
+  - Tier 3 passes; CI green on `staging`.
+Acceptance criteria (owner, real device):
+  - The "UI" section of `client:docs/SMOKE_TEST.md` on an iPhone, an Android phone, a small Android phone at font scale
+    2.0, an iPad in both orientations and a desktop browser, light and dark.
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
 ## Phase 7 — Generalisation
 
 Goal: OpenManifest can serve operators other than skydiving dropzones through industry profiles, without renaming
@@ -3439,7 +5029,8 @@ aliases + profile labels; internal names unchanged). Steps 2 (`loads.dropzone_id
 GENERALISATION §6 are already done in P6.16 and P6.23.
 
 All Phase 7 tasks are additive: old GraphQL fields stay, with `deprecation_reason`, until P8.7. Every phase-7 task
-except P7.10 is blocked until D5 is decided; P7.4 and P7.9 also need D6.
+except P7.10 is blocked until D5 is decided; P7.4 and P7.9 also need D6. The client i18n work (P7.2, P7.7, P7.8) moved
+into Phase U, which bundles the skydiving terms and does not wait for D5; U6.1–U6.3 consume P7.1 and P7.3.
 
 ### P7.1 — Add industry profiles
 Status: blocked (awaiting decision D5)
@@ -3468,7 +5059,7 @@ Size: M
 Fixes: none
 
 ### P7.2 — Add i18n to the client with profile terminology
-Status: blocked (awaiting decision D5)
+Status: superseded (by U0.6 and U6.1)
 Repo: client
 Depends on: P7.1
 Branch: modernise/p7-2-i18n
@@ -3492,7 +5083,7 @@ Fixes: none
 ### P7.3 — Add unit conversion
 Status: blocked (awaiting decision D5)
 Repo: both
-Depends on: P7.2
+Depends on: P7.1, U0.6
 Branch: modernise/p7-3-units
 Goal: Quantities are stored in SI and displayed in the operator's units.
 Context: GENERALISATION §4 table. Altitude (feet in `ticket_types.altitude`), distances (miles in weather), mass
@@ -3580,7 +5171,7 @@ Size: L
 Fixes: none
 
 ### P7.7 — Convert manifest and load screens to translated terms
-Status: blocked (awaiting decision D5)
+Status: superseded (by U3.3–U3.9 and U6.4)
 Repo: client
 Depends on: P7.6
 Branch: modernise/p7-7-i18n-manifest
@@ -3600,7 +5191,7 @@ Size: L
 Fixes: none
 
 ### P7.8 — Convert the remaining screens to translated terms
-Status: blocked (awaiting decision D5)
+Status: superseded (by U4.1–U5.8 and U6.4)
 Repo: client
 Depends on: P7.7
 Branch: modernise/p7-8-i18n-rest
@@ -3620,7 +5211,7 @@ Fixes: none
 ### P7.9 — Add the second industry profile
 Status: blocked (awaiting decisions D5, D6)
 Repo: both
-Depends on: P7.8
+Depends on: U6.4, U6.1
 Branch: modernise/p7-9-second-profile
 Goal: A second profile (D6; recommendation: `diving`) works end to end in the web smoke test.
 Context: GENERALISATION §3 and §7.
@@ -3641,7 +5232,7 @@ Fixes: none
 ### P7.10 — Verify Phase 7
 Status: todo
 Repo: both
-Depends on: P7.1, P7.2, P7.3, P7.4, P7.5, P7.6, P7.7, P7.8, P7.9
+Depends on: P7.1, P7.3, P7.4, P7.5, P7.6, P7.9, U6.1, U6.2, U6.4
 Branch: modernise/p7-10-verify
 Goal: Generalisation is proven for both profiles.
 Context: Phase gate. If D5 is decided as "no generalisation", the owner sets P7.1–P7.9 to `done (skipped by D5)` and
@@ -3812,8 +5403,8 @@ if D4 removed Facebook. Only remove fields that the client at the version releas
 Steps:
   1. backend: list deprecated fields (`grep -rn deprecation_reason app/graphql`); remove those not used by
      `client:app/api/**/*.gql`; remove `loginWithFacebook` if D4 = (a).
-  2. client CI: job `web-smoke` that checks out the backend `staging` branch, starts a Postgres service, loads the
-     dev seed, boots Rails, builds the web export with `EXPO_ENV=local`, and runs `scripts/web-smoke.mjs`.
+  2. client CI: done by U0.2 (`web-ui-smoke` on every PR, `ui-full` on demand and weekly). Here, only run `ui-full`
+     against the release build's commit and attach the run.
 Acceptance criteria (cloud VM):
   - Backend rspec green; client `check:graphql` green against the new schema; the new CI job passes on the PR.
 Acceptance criteria (owner, real device):
