@@ -5,16 +5,6 @@ module Types
     implements Types::Interfaces::Polymorphic
     implements Types::Interfaces::Wallet
 
-    lookahead do |scope|
-      scope = scope.includes(:user_roles)     if selects?(:user_roles) || selects?(:roles)
-      scope = scope.includes(:ticket_types)   if selects?(:ticket_types)
-      scope = scope.includes(:extras)         if selects?(:extras)
-      scope = scope.includes(:rigs)           if selects?(:rigs)
-      scope = scope.includes(:planes)         if selects?(:planes)
-      scope = scope.includes(loads: :slots)   if selects?(:loads)
-      scope = scope.includes(:dropzone_users) if selects?(:dropzone_users)
-      scope
-    end
     timestamp_fields
 
     field :id, GraphQL::Types::ID, null: false
@@ -28,7 +18,7 @@ module Types
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
     field :current_user, Types::Users::DropzoneUser, null: true,
                                                      description: "The caller's membership of this dropzone, or null if they have not joined it (see joinDropzone)"
-    field :user_roles, [Types::Access::UserRole], null: false
+    async_field :user_roles, [Types::Access::UserRole], null: false
     field :settings, Types::Dropzone::Settings, null: true
     async_field :federation, Types::Meta::Federation, null: false
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
@@ -63,16 +53,18 @@ module Types
     end
 
     def ticket_types(is_public: true)
-      return object.ticket_types.where(allow_manifesting_self: is_public) unless is_public.nil?
-      object.ticket_types
+      ticket_types = dataloader.with(::Sources::AssociationLoader, [:ticket_types]).load(object).ticket_types
+      return ticket_types if is_public.nil?
+
+      ticket_types.select { |ticket_type| ticket_type.allow_manifesting_self == is_public }
     end
 
-    field :extras, [Types::Dropzone::Tickets::Addon], null: false
+    async_field :extras, [Types::Dropzone::Tickets::Addon], null: false
 
     field :rigs, [Types::Equipment::Rig], null: true,
                                           description: "Get rigs for dropzone"
 
-    field :planes, [Types::Dropzone::Aircraft], null: false, method: :planes
+    async_field :planes, [Types::Dropzone::Aircraft], null: false
 
     field :roles, [Types::Access::UserRole], null: false do
       argument :selectable, Boolean, required: false

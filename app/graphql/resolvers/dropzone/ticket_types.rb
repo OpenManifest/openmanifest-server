@@ -8,11 +8,10 @@ class Resolvers::Dropzone::TicketTypes < Resolvers::Base
 
   def resolve(
     dropzone: nil,
-    allow_manifesting_self: nil,
-    lookahead: nil
+    allow_manifesting_self: nil
   )
     authorize_dropzone!(dropzone)
-    query = apply_lookaheads(lookahead, dropzone.ticket_types)
+    query = dropzone.ticket_types
     query = query.where(allow_manifesting_self: allow_manifesting_self) if allow_manifesting_self
 
     query.order(name: :asc)

@@ -7,12 +7,11 @@ class Resolvers::Dropzones < Resolvers::Base
   argument :state, [Types::Dropzone::State], required: false,
                                              default_value: nil
   def resolve(
-    state: nil,
-    lookahead: nil
+    state: nil
   )
     query = context[:access_context].dropzones
     query = query.where(state: state.map(&:to_s)) if state.present?
 
-    apply_lookaheads(lookahead, query).distinct.order(id: :asc)
+    query.distinct.order(id: :asc)
   end
 end

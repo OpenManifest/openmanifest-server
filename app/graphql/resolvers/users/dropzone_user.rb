@@ -6,9 +6,9 @@ class Resolvers::Users::DropzoneUser < Resolvers::Base
 
   argument :id, ID, required: true
 
-  def resolve(id: nil, lookahead: nil)
+  def resolve(id: nil)
     return nil unless id
-    query = apply_lookaheads(lookahead, DropzoneUser.all)
+    query = DropzoneUser.all
 
     dropzone_user = query.find_by(id: id)
     return nil unless dropzone_user

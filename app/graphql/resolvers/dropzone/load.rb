@@ -6,10 +6,9 @@ class Resolvers::Dropzone::Load < Resolvers::Base
   argument :id, GraphQL::Types::ID, required: true
 
   def resolve(
-    id: nil,
-    lookahead: nil
+    id: nil
   )
-    load = apply_lookaheads(lookahead, Load.kept).find_by(id: id)
+    load = Load.kept.find_by(id: id)
     authorize_record!(load) if load
     load
   end

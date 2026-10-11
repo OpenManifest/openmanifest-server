@@ -5,8 +5,6 @@ class Subscriptions::Manifest::LoadCreated < Types::Base::Subscription
   argument :dropzone_id, ID, required: true
   field :load, Types::Manifest::Load, null: true
 
-  extras [:lookahead]
-
   # Only members of the dropzone hear about its new loads (BUG-011)
   def authorized?(dropzone_id:, **)
     super
@@ -14,11 +12,8 @@ class Subscriptions::Manifest::LoadCreated < Types::Base::Subscription
     true
   end
 
-  def update(dropzone_id:, lookahead: nil)
-    query = ::Types::Manifest::Load.apply_lookaheads(
-      lookahead,
-      ::Load.all
-    )
+  def update(dropzone_id:)
+    query = ::Load.all
     { load: query.find_by(id: object[:load_id]) }
   end
 end
