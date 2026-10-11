@@ -2192,7 +2192,7 @@ Size: S
 Fixes: none
 
 ### P4.4 — Move screen slices and the image viewer to local state
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.3
 Branch: modernise/p4-4-screen-state
