@@ -61,15 +61,7 @@ RSpec.describe "Client operations: dropzones and access" do
       expect(json.dig(:data, :dropzone, :currentConditions)).to include(:id, :winds)
     end
 
-    it "pins the current behaviour that reading a dropzone joins the caller to it (BUG-005)" do
-      stranger = create(:user)
-
-      expect { client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: stranger) }.
-        to change { dropzone.dropzone_users.where(user: stranger).count }.from(0).to(1)
-    end
-
     it "does not create a membership when a stranger reads a dropzone" do
-      pending "BUG-005: dropzone { currentUser } creates a membership through DropzoneUser.for"
       stranger = create(:user)
 
       expect { client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: stranger) }.
@@ -233,7 +225,6 @@ RSpec.describe "Client operations: dropzones and access" do
     end
 
     it "lets a moderator who is not a member publish a dropzone" do
-      pending "BUG-089: updateVisibility raises NoMethodError when the caller has no membership in the dropzone"
       dropzone.update!(state: "private")
       outsider = create(:user, moderation_role: :moderator)
 

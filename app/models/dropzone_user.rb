@@ -143,16 +143,15 @@ class DropzoneUser < ApplicationRecord
     ).destroy_all
   end
 
-  # Get a dropzone user for any user, either find the existing one
-  # or create one
+  # The membership of a user at a dropzone, or nil. Never creates one: users join a dropzone explicitly
+  # (Users::JoinDropzone), checking a permission must not write (BUG-005).
   #
+  # @param [Dropzone, Integer, String] dropzone
   # @param [User] user
-  # @return [DropzoneUser]
-  def self.for(dropzone, user)
-    dropzone = Dropzone.find(dropzone) if dropzone.is_a?(Integer)
-    dz_user = dropzone.dropzone_users.find_or_initialize_by(user: user)
-    dz_user.save if dz_user.new_record?
-    dz_user
+  # @return [DropzoneUser, nil]
+  def self.membership(dropzone, user)
+    dropzone_id = dropzone.respond_to?(:id) ? dropzone.id : dropzone
+    kept.find_by(dropzone_id: dropzone_id, user_id: user.id)
   end
 
   def all_permissions
