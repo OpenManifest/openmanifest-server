@@ -851,7 +851,7 @@ Size: L
 Fixes: none
 
 ### P1.6 — Cover payments, activity and meta operations; enforce full coverage
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.2, P1.3, P1.4, P1.5
 Branch: modernise/p1-6-spec-payments-meta
