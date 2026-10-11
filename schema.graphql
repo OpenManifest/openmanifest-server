@@ -1229,6 +1229,7 @@ type Load implements AnyResource {
   isReady: Boolean!
   loadMaster: DropzoneUser
   loadNumber: Int!
+  lockVersion: Int!
   maxSlots: Int!
   name: String
   occupiedSlots: Int!
@@ -1286,6 +1287,11 @@ input LoadInput {
   dispatchAt: ISO8601DateTime
   gca: ID
   loadMaster: ID
+
+  """
+  The lockVersion of the load as the client last saw it; an older one is refused with CONFLICT
+  """
+  lockVersion: Int
   maxSlots: Int
   name: String
   pilot: ID
@@ -2509,6 +2515,7 @@ type Slot implements AnyResource & SellableItem {
   id: ID!
   jumpType: JumpType
   load: Load!
+  lockVersion: Int!
   order: Order
   passengerExitWeight: Float
   passengerName: String
@@ -2561,6 +2568,11 @@ input SlotInput {
   groupNumber: Int
   jumpType: ID
   load: ID
+
+  """
+  The lockVersion of the slot as the client last saw it; an older one is refused with CONFLICT
+  """
+  lockVersion: Int
   passengerExitWeight: Float
   passengerName: String
   rig: ID

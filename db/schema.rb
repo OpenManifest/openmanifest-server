@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -225,6 +225,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_130000) do
     t.bigint "ready_slots_count", default: 0
     t.bigint "dropzone_id", null: false
     t.date "load_date", null: false
+    t.integer "lock_version", default: 0, null: false
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
     t.index ["dropzone_id", "load_date", "load_number"], name: "index_loads_on_dropzone_id_and_load_date_and_load_number", unique: true
     t.index ["gca_id"], name: "index_loads_on_gca_id"
@@ -405,6 +406,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_130000) do
     t.integer "group_number", default: 0, null: false
     t.bigint "dropzone_user_id"
     t.bigint "created_by_id"
+    t.integer "lock_version", default: 0, null: false
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
     t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"

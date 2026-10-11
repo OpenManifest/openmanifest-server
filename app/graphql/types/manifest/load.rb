@@ -22,6 +22,8 @@ module Types::Manifest
       pilot_weight + (object.slots.map(&:exit_weight).compact_blank.sum || 0)
     end
 
+    # Send it back with updateLoad: a load changed by somebody else in the meantime is refused (CONFLICT)
+    field :lock_version, Int, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :available_slots, Int, null: false

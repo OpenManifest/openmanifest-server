@@ -15,6 +15,8 @@ class Manifest::UpdateLoad < ApplicationInteraction
   object :pilot, class: DropzoneUser, default: nil
   object :plane, class: Plane, default: nil
   string :state, default: nil
+  # The version of the load the client based its change on (optimistic locking, BUG-024)
+  integer :lock_version, default: nil
 
   validates_inclusion_of :state, in: Load.states.keys, allow_nil: true
 
@@ -113,6 +115,8 @@ class Manifest::UpdateLoad < ApplicationInteraction
   end
 
   def update_load
+    # An older version than the stored one makes the save raise StaleObjectError, the mutation answers CONFLICT
+    load.lock_version = lock_version if lock_version
     load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
     load.assign_attributes(
       {

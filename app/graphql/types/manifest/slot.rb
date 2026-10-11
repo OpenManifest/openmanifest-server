@@ -11,6 +11,8 @@ module Types::Manifest
     timestamp_fields
     field :id, GraphQL::Types::ID, null: false
     field :exit_weight, Integer, null: false
+    # Send it back with updateSlot: a slot changed by somebody else in the meantime is refused (CONFLICT)
+    field :lock_version, Int, null: false
     def exit_weight
       object.exit_weight.to_i
     end
