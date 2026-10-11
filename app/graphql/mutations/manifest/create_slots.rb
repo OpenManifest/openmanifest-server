@@ -42,7 +42,10 @@ module Mutations::Manifest
                 end
       return true if allowed
 
-      refuse(if contains_others
+      desk_only = contains_self && membership.manifest_desk_only?(contains_others ? :createUserSlotWithSelf : :createSlot)
+      refuse(if desk_only
+               DropzoneUser::MANIFEST_DESK_MESSAGE
+             elsif contains_others
                "You don't have permissions to manifest other people"
              else
                "You don't have permissions to manifest"

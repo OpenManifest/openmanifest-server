@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | Office operation | UB.1, UB.2 | Owner request (D-UI11): run everything from the office. Small, independent. |
+| 1 | Office operation | UB.2 | Owner request (D-UI11): run everything from the office. Small, independent. |
 | 2 | Phase 7 stage A: rename | P7.1, P7.2, P7.3, P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
 | 3 | Phase 7: templates and modules | P7.7 | Terminology and modules come from templates; the UI foundations and navigation read them. |
 | 4 | UI foundations | U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
@@ -3592,7 +3592,7 @@ device checks for that batch, and U6.5 collects them as the gate before producti
 ---
 
 ### UB.1 — Let a dropzone switch off self-manifesting
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/ub-1-self-manifest-setting

@@ -2441,6 +2441,11 @@ type Settings {
   allowNegativeCredits: Boolean
 
   """
+  When this is disabled, only manifest staff can add, move or remove people on loads
+  """
+  allowSelfManifest: Boolean
+
+  """
   When this is enabled, users cannot manifest if they have no credits
   """
   requireCredits: Boolean
@@ -2486,6 +2491,11 @@ input SettingsInput {
   When this is enabled, users can manifest even if they go into negatives
   """
   allowNegativeCredits: Boolean
+
+  """
+  When this is disabled, only manifest staff can add, move or remove people on loads
+  """
+  allowSelfManifest: Boolean
 
   """
   When this is enabled, users cannot manifest if they have no credits
