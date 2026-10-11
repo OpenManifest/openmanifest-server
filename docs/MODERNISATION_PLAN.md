@@ -3232,7 +3232,7 @@ Size: L
 Fixes: BUG-040, BUG-045, BUG-046, BUG-047, BUG-098
 
 ### P6.20 — Use the dropzone time zone in the client
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.19
 Branch: modernise/p6-20-client-timezone

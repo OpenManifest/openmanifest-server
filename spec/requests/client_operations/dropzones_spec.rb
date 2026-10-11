@@ -61,6 +61,18 @@ RSpec.describe "Client operations: dropzones and access" do
       expect(json.dig(:data, :dropzone, :currentConditions)).to include(:id, :winds)
     end
 
+    it "returns the dropzone's time zone, for the app to work out the dropzone's day" do
+      dropzone.update!(time_zone: "Australia/Sydney")
+
+      expect(client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: user).dig(:data, :dropzone, :timeZone)).to eq("Australia/Sydney")
+    end
+
+    it "falls back to Brisbane for a dropzone without a time zone" do
+      dropzone.update_columns(time_zone: nil)
+
+      expect(client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: user).dig(:data, :dropzone, :timeZone)).to eq("Australia/Brisbane")
+    end
+
     it "does not create a membership when a stranger reads a dropzone" do
       stranger = create(:user)
 

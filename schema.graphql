@@ -608,6 +608,11 @@ type Dropzone implements AnyResource & Wallet {
   state: DropzoneState!
   statistics: Statistics!
   ticketTypes(isPublic: Boolean): [TicketType!]!
+
+  """
+  The dropzone's time zone (IANA name): its days, and the times of its loads, are in it
+  """
+  timeZone: String!
   updatedAt: ISO8601DateTime!
   userRoles: [UserRole!]!
   walletId: ID!
