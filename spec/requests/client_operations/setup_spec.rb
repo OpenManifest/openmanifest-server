@@ -61,8 +61,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "cannot move an aircraft to another dropzone" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateAircraft", variables: { id: plane.id, attributes: { dropzoneId: other_dropzone.id } }, as: owner_user)
 
       expect(plane.reload.dropzone).to eq(dropzone)
@@ -149,15 +147,12 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "cannot move a ticket type to another dropzone" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { dropzoneId: other_dropzone.id } }, as: owner_user)
 
       expect(ticket.reload.dropzone).to eq(dropzone)
     end
 
     it "keeps the extras of other ticket types when one ticket type's extras change" do
-      pending "BUG-061: updating extras deletes the links of other ticket types in the dropzone"
       extra = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
       other_ticket = create(:ticket_type, dropzone: dropzone, name: "Boogie", cost: 60)
       other_ticket.extras << extra
@@ -172,8 +167,6 @@ RSpec.describe "Client operations: setup" do
     let!(:ticket) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
 
     it "archives the ticket type" do
-      pending "BUG-039: archiveTicketType authorizes with Dropzone.find(<ticket type id>) and context[:current_user]"
-
       json = client_operation("ArchiveTicketType", variables: { id: ticket.id }, as: owner_user)
 
       expect(json.dig(:data, :archiveTicketType, :errors)).to be_nil
@@ -323,8 +316,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "cannot reassign the rig to another user" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateRig", variables: { id: rig.id, userId: staff_user.id }, as: user)
 
       expect(rig.reload.user).to eq(user)
@@ -335,7 +326,6 @@ RSpec.describe "Client operations: setup" do
     let!(:rig) { create(:rig, user: user, dropzone: nil) }
 
     it "archives the caller's own rig" do
-      pending "BUG-039: archiveRig authorizes with context[:current_user], which graphql_devise never sets"
       json = client_operation("ArchiveRig", variables: { id: rig.id }, as: user)
 
       expect(json.dig(:data, :archiveRig, :errors)).to be_nil
@@ -343,8 +333,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "archives someone else's rig for staff" do
-      pending "BUG-039: archiveRig authorizes with context[:current_user], which is never set"
-
       client_operation("ArchiveRig", variables: { id: rig.id }, as: owner_user)
 
       expect(rig.reload).to be_discarded
