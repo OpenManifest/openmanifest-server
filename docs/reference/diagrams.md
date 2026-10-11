@@ -15,7 +15,7 @@ flowchart LR
   subgraph Devices
     IOS[iOS app<br/>Expo SDK 47 / RN 0.70]
     AND[Android app<br/>Expo SDK 47 / RN 0.70]
-    WEB[Web app<br/>expo export:web, webpack<br/>GitHub Pages]
+    WEB[Web app<br/>expo export --platform web, Metro<br/>GitHub Pages]
   end
   subgraph Expo[Expo services]
     EAS[EAS Build / Submit]

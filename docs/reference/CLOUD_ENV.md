@@ -156,14 +156,13 @@ export PATH=/opt/node20/bin:$PATH              # Phases 0-2. From P3.15: /opt/no
 yarn install --frozen-lockfile                 # ~1 min
 yarn check:types && yarn check:linting
 npx jest --ci                                  # after P0.6: yarn check:testing
-EXPO_ENV=local npx expo export:web             # SDK 47-49 (webpack) -> web-build/ ; ~5 min, run in background
-# From P3.7 (SDK 50, Metro web): EXPO_ENV=local npx expo export --platform web  -> dist/
+EXPO_ENV=local npx expo export --platform web  # Metro (since P3.7) -> dist/ ; ~1 min. Before P3.7 (SDK 47-49): `npx expo export:web` -> web-build/ (webpack, ~5 min)
 ```
 
 Serving the web build and running the smoke script (both added by P0.8):
 
 ```bash
-python3 scripts/serve-web-build.py web-build 19006 &      # SPA server with index.html fallback
+python3 scripts/serve-web-build.py dist 19006 &           # SPA server with index.html fallback (web-build before P3.7)
 TZ=Australia/Brisbane node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
 ```
 
@@ -215,6 +214,6 @@ server (`ss` prints nothing in this VM).
 | P2.5 | Setup script version B; Ruby 3.4.11 (`.ruby-version`) |
 | P2.9 | Setup script version C; Ruby 4.0.7 |
 | P3.5 | `api.expo.dev` should be allowlisted for `npx expo-doctor` (otherwise `EXPO_OFFLINE=1`) |
-| P3.7 | Web export command becomes `npx expo export --platform web` (output `dist/`); serve `dist` instead of `web-build` |
+| P3.7 | done: web export command is `npx expo export --platform web` (output `dist/`); serve `dist` instead of `web-build` |
 | P3.15 | Client uses `/opt/node24/bin` |
 | P6.17 (Solid Queue) | Start the job worker in a second process: `bin/jobs` |
