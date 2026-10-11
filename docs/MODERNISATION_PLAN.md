@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | UI safety net | U0.1, U0.2 | Playwright and CI first, so every later refactor is checked in a browser on every PR. |
+| 1 | UI safety net | U0.2 | Playwright and CI first, so every later refactor is checked in a browser on every PR. |
 | 2 | Office operation | UB.1, UB.2 | Owner request (D-UI11): run everything from the office. Small, independent. |
 | 3 | Phase 7 stage A: rename | P7.1, P7.2, P7.3, P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
 | 4 | Phase 7: templates and modules | P7.7 | Terminology and modules come from templates; the UI foundations and navigation read them. |
@@ -3697,7 +3697,7 @@ Size: S
 Fixes: none
 
 ### U0.1 — Replace the web smoke script with a Playwright Test suite
-Status: todo
+Status: done
 Repo: client
 Depends on: none
 Branch: modernise/u0-1-playwright
