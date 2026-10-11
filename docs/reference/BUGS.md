@@ -21,8 +21,8 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 | critical | 7 |
 | high | 30 |
 | medium | 42 |
-| low | 17 |
-| **total** | **96** |
+| low | 19 |
+| **total** | **98** |
 
 ## Android / mobile layout: shared root causes
 
@@ -141,3 +141,5 @@ in headless Chromium at 360×640 and 1280×800. They group into these root cause
 | BUG-094 | medium | confirmed | users | backend | `app/interactions/users/update_user.rb:22-35` | `updateUser` with an email that already belongs to another user raises `ActiveRecord::RecordNotUnique` (HTTP 500) instead of returning a field error. | `users_spec.rb` "returns a field error when the email belongs to another user" (pending). | Validate uniqueness before saving and return `fieldErrors` (P6.15). |
 | BUG-095 | low | confirmed | API | backend | `app/graphql/support/dropzone_context.rb:11-17` | Resolvers that declare their dropzone with the `dropzone` argument helper (`masterLog`, `aircrafts`, `ticketTypes`, `ticketAddons`) call `ctx[:access_context].at_dropzone`, which is nil for anonymous requests: they raise `NoMethodError` (HTTP 500) instead of returning `AUTHENTICATION_ERROR`. | `setup_spec.rb` "requires authentication" under MasterLog (pending). | Check `ctx[:access_context]` in the `prepare` lambda or authenticate before argument preparation (P6.2). |
 | BUG-096 | medium | confirmed | forms | client | `app/forms/aircraft/Dialog.tsx:19-26`; `app/forms/ticket_type/Dialog.tsx:19-28` | The aircraft and ticket-type dialogs build `initial` from the absent original (`original?.x \|\| initial?.x`), so untouched fields are `undefined` and override the form defaults: a new aircraft starts with max/min slots unset ("Maximum slots is required" until typed in), a new ticket starts at $0, with public manifesting off and no `extraIds`. | Skipped `BUG-096` tests in the client's `app/__tests__/setup/{AircraftForm,TicketTypeForm}.test.tsx` (verified failing). | Only pass keys that have a value (or fall back to `EMPTY_FORM_VALUES`); un-skip the tests (P6.26). |
+| BUG-097 | low | confirmed | settings | backend | `app/models/concerns/dropzones/configuration.rb:19-21` | FIXED in P2.8: `Dropzone#settings=` merged the symbol-keyed `default_settings` with the string-keyed stored settings, so the serialised JSON had every key twice (`{"require_license":true,"require_license":false}`); parsers keep the last one, which is why it worked. json 2.21 warns about duplicate keys and json 3.0 raises. | Warnings `detected duplicate key "require_rig_inspection" in {...}` in the P2.8 run of the specs. | `default_settings.stringify_keys` (done in P2.8). |
+| BUG-098 | low | confirmed | test infrastructure | backend | `spec/rails_helper.rb:62` | `config.around(:suite)` is not supported by RSpec ("hooks are only supported on the RSpec configuration object … will be ignored"), so the `Time.use_zone("Australia/Brisbane")` wrapper never runs and the specs run in UTC. Specs about days and time zones therefore do not exercise the zone the dropzone default uses. | Warning printed on every spec run. | Wrap with `config.around(:each)` (or set `Time.zone` in `before(:suite)`) and fix whatever then fails (P6.19). |

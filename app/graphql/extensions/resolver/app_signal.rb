@@ -33,7 +33,7 @@ module Extensions::Resolver::AppSignal
         self.class.name,
         [
           "Variables: ",
-          JSON.pretty_generate(Appsignal::Utils::HashSanitizer.sanitize(context.query.variables.to_h || {}, ["password"])),
+          JSON.pretty_generate(Appsignal::Utils::SampleDataSanitizer.sanitize(context.query.variables.to_h || {}, ["password"])),
           "Query: ",
           context.query.query_string,
         ].join("\n")

@@ -12,18 +12,18 @@ gem "rails", "~> 8.1.4"
 gem "pg"
 
 # Use Puma as the app server
-gem "puma", "~> 6.0"
-gem "redis", "~> 4.0"
+gem "puma"
+gem "redis"
 # Use Active Model has_secure_password
 gem "bcrypt", "~> 3.1.7"
 
 # Coordinate based location
 gem "geokit-rails"
 gem 'rexml'
-gem "dotenv-rails", groups: %i(development test), require: "dotenv/rails-now"
+gem "dotenv-rails", groups: %i(development test), require: "dotenv/load"
 
 # Soft delete records
-gem "discard", "~> 1.2"
+gem "discard"
 
 # Multiprocess serving
 gem "foreman"
