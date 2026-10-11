@@ -1,0 +1,19 @@
+# Solid Cache (the production cache store): entries live in a table of the primary database.
+default: &default
+  store_options:
+    # Entries are dropped when they are older than 60 days, or when the cache is larger than 256 MB
+    max_age: <%= 60.days.to_i %>
+    max_size: <%= 256.megabytes %>
+    namespace: <%= Rails.env %>
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+staging:
+  <<: *default
+
+production:
+  <<: *default

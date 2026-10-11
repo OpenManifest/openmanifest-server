@@ -55,7 +55,7 @@ this section ("Decision: …, date"); the executor then changes the blocked task
 
 | ID | Decision | Options | Recommendation | Blocks |
 |---|---|---|---|---|
-| D1 | Hosting for the API, database, Redis and file storage, and for the web app | (a) Fly.io (configs exist: `fly.toml`, `fly-production.toml`) with Fly Postgres and S3-compatible storage; (b) Render/Heroku-style PaaS; (c) a VPS with Kamal (Rails 8 default) | (a) Fly.io for the API with a Rails 8 Dockerfile, managed Postgres and an S3-compatible bucket. Web: keep GitHub Pages (existing `openmanifest-web` repos), which needs no new account | P8.4, P8.5, P8.6 |
+| D1 | Hosting for the API, database and file storage (no Redis: Solid Queue, Solid Cache and Solid Cable run on PostgreSQL), and for the web app | (a) Fly.io (configs exist: `fly.toml`, `fly-production.toml`) with Fly Postgres and S3-compatible storage; (b) Render/Heroku-style PaaS; (c) a VPS with Kamal (Rails 8 default) | (a) Fly.io for the API with a Rails 8 Dockerfile, managed Postgres and an S3-compatible bucket. Web: keep GitHub Pages (existing `openmanifest-web` repos), which needs no new account | P8.4, P8.5, P8.6 |
 | D2 | Store and Expo accounts and identifiers: Apple team, Play Console, EAS project `1d8fa34d-2ff8-4095-ab49-29a426117a8c`, bundle id `com.dangertechnologies.openmanifest`, domains `openmanifest.org` | (a) keep the existing identifiers if the owner still controls them; (b) new identifiers (a new app in the stores) | (a) if access exists (keeps users and EAS Update channels); otherwise (b) with a new EAS project | P3.21 (owner part), P8.2, P8.3, P8.6, owner device checks from Phase 3 |
 | D3 | Dropzone eligibility defaults (BUG-033): the 2023 Settings release turned on `require_membership`, `require_rig_inspection`, `require_reserve_in_date`, `require_equipment`, `require_license`, `require_credits` for all existing dropzones | (a) keep strict defaults; (b) permissive defaults for new dropzones and backfill existing ones as permissive; (c) permissive for existing, strict for new | (b) new and existing dropzones default to `require_credits` = value of `is_credit_system_enabled`, everything else `false`; operators opt in | P6.14 |
 | D4 | Facebook login (BUG-084) | (a) drop Facebook login on all platforms; (b) re-implement with `expo-auth-session` | (a) drop. Native `expo-facebook` was removed from Expo, Facebook needs app review, and email + Apple sign-in remain | P3.3 |
@@ -3735,8 +3735,8 @@ Status: blocked (awaiting decision D1)
 Repo: backend
 Depends on: P8.3
 Branch: modernise/p8-4-deploy-api
-Goal: The API builds into a production Docker image and deploys to the D1 host with Postgres, Redis (ActionCable),
-object storage and the Solid Queue worker.
+Goal: The API builds into a production Docker image and deploys to the D1 host with Postgres (which also holds Solid Cable's
+messages and Solid Cache's entries), object storage and the Solid Queue worker (`bin/jobs`).
 Context: Rails 8.1 generates a production `Dockerfile` (`bin/rails app:update` from P2.7 may already have it); existing
 `fly.toml`, `fly-production.toml` target 2023 apps. D1 recommendation: Fly.io.
 Steps:
@@ -3812,7 +3812,7 @@ if D4 removed Facebook. Only remove fields that the client at the version releas
 Steps:
   1. backend: list deprecated fields (`grep -rn deprecation_reason app/graphql`); remove those not used by
      `client:app/api/**/*.gql`; remove `loginWithFacebook` if D4 = (a).
-  2. client CI: job `web-smoke` that checks out the backend `staging` branch, starts Postgres/Redis services, loads the
+  2. client CI: job `web-smoke` that checks out the backend `staging` branch, starts a Postgres service, loads the
      dev seed, boots Rails, builds the web export with `EXPO_ENV=local`, and runs `scripts/web-smoke.mjs`.
 Acceptance criteria (cloud VM):
   - Backend rspec green; client `check:graphql` green against the new schema; the new CI job passes on the PR.
