@@ -19,10 +19,10 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 | Severity | Count |
 |---|---|
 | critical | 7 |
-| high | 30 |
-| medium | 42 |
+| high | 31 |
+| medium | 43 |
 | low | 19 |
-| **total** | **98** |
+| **total** | **100** |
 
 ## Android / mobile layout: shared root causes
 
@@ -143,3 +143,5 @@ in headless Chromium at 360×640 and 1280×800. They group into these root cause
 | BUG-096 | medium | confirmed | forms | client | `app/forms/aircraft/Dialog.tsx:19-26`; `app/forms/ticket_type/Dialog.tsx:19-28` | The aircraft and ticket-type dialogs build `initial` from the absent original (`original?.x \|\| initial?.x`), so untouched fields are `undefined` and override the form defaults: a new aircraft starts with max/min slots unset ("Maximum slots is required" until typed in), a new ticket starts at $0, with public manifesting off and no `extraIds`. | Skipped `BUG-096` tests in the client's `app/__tests__/setup/{AircraftForm,TicketTypeForm}.test.tsx` (verified failing). | Only pass keys that have a value (or fall back to `EMPTY_FORM_VALUES`); un-skip the tests (P6.26). |
 | BUG-097 | low | confirmed | settings | backend | `app/models/concerns/dropzones/configuration.rb:19-21` | FIXED in P2.8: `Dropzone#settings=` merged the symbol-keyed `default_settings` with the string-keyed stored settings, so the serialised JSON had every key twice (`{"require_license":true,"require_license":false}`); parsers keep the last one, which is why it worked. json 2.21 warns about duplicate keys and json 3.0 raises. | Warnings `detected duplicate key "require_rig_inspection" in {...}` in the P2.8 run of the specs. | `default_settings.stringify_keys` (done in P2.8). |
 | BUG-098 | low | confirmed | test infrastructure | backend | `spec/rails_helper.rb:62` | `config.around(:suite)` is not supported by RSpec ("hooks are only supported on the RSpec configuration object … will be ignored"), so the `Time.use_zone("Australia/Brisbane")` wrapper never runs and the specs run in UTC. Specs about days and time zones therefore do not exercise the zone the dropzone default uses. | Warning printed on every spec run. | Wrap with `config.around(:each)` (or set `Time.zone` in `before(:suite)`) and fix whatever then fails (P6.19). |
+| BUG-099 | high | confirmed | auth | client | `app/api/client/client.ts:12-35` | FIXED in P3.12: `useApolloClient` installed the authenticated Apollo link in a `useEffect`, which runs after the children's effects, so the first queries after a page reload with persisted credentials (`Loads`, the `LoadCreated` subscription) went out through the unauthenticated default link; the batched `Loads` request failed with "requires authentication" and the board showed "No loads so far today". | Playwright (P3.12 smoke deep-link check): reload `/dropzone/manifest` after login; request headers of the first `Loads` batch had no `authorization`. | Set the link while rendering (done). |
+| BUG-100 | medium | confirmed | navigation | client | `app/screens/authenticated/routes.tsx:57-123` | A cold load (full page load) of `/users` or `/user/<id>` ends on `/`: the Users tab is registered only when `canViewUsers` is true, and the permissions have not loaded yet on the first render, so the URL matches no route (same for the Overview tab). | Playwright (P3.12): after login, `page.goto('/users')` ends on `/`. | Register the tabs unconditionally and gate access inside the screens, or delay the navigator until permissions are loaded. |
