@@ -1,16 +1,29 @@
-# OpenManifest modernisation plan
+# OpenManifest plan
 
-Single source of truth for reviving, modernising and releasing OpenManifest. It covers both repositories:
+Single source of truth for reviving, modernising, generalising and releasing OpenManifest and for the first features
+built on it. It covers both repositories:
 
 - **backend** = `OpenManifest/openmanifest-server` (this repo; Rails GraphQL API)
 - **client** = `OpenManifest/openmanifest` (Expo / React Native app for iOS, Android and web)
 
+Every task lives in this file, and the **Execution order** below is the one queue for all of them. Design documents
+hold the reasoning and are linked from the tasks:
+
+| Design | Covers | Tasks |
+|---|---|---|
+| [GENERALISATION](reference/GENERALISATION.md) | industry templates, modules, rename map, generic domain model | Phase 7 |
+| [`client:docs/ui-modernisation-plan.md`](https://github.com/OpenManifest/openmanifest/blob/staging/docs/ui-modernisation-plan.md) | UI and UX redesign, design system, testing strategy | Phase U |
+| [COMMERCE_FOUNDATION](features/COMMERCE_FOUNDATION.md) | money, ledger, Stripe, platform fee, orders, coupons | Phase C |
+| [BOOKING_PLAN](features/BOOKING_PLAN.md) | bookable services, availability, guest booking | Phase B |
+| [WEBSHOP_PLAN](features/WEBSHOP_PLAN.md) | products, stock, shop checkout, vouchers, reports | Phase S |
+
 The client repo's `docs/MODERNISATION_PLAN.md` only points here. Reference material lives in [`docs/reference/`](reference/):
 [README](reference/README.md) (system reference), [BUGS](reference/BUGS.md) (bug register), [diagrams](reference/diagrams.md),
-[GENERALISATION](reference/GENERALISATION.md), [CLOUD_ENV](reference/CLOUD_ENV.md). Client-side reference:
+[CLOUD_ENV](reference/CLOUD_ENV.md). Client-side reference:
 <https://github.com/OpenManifest/openmanifest/blob/staging/docs/reference/README.md>.
 
-Written in pass 1 on 2026-10-08 against backend `b8dc33a` and client `3112795` (both `staging`).
+Written in pass 1 on 2026-10-08 against backend `b8dc33a` and client `3112795` (both `staging`). Phases 7, U, C, B and
+S were added on 2026-10-11 and merged into one queue the same day.
 
 ## Current state
 
@@ -42,8 +55,8 @@ infrastructure and fire on every push to `staging`/`main`.
    owner on real devices. That needs EAS/App Store/Play accounts (decision D2). Until then, owner checks rely on web builds
    on phone browsers.
 4. **Production data integrity.** Counters are double-counted, money is stored as floats, membership uniqueness exists only
-   in Ruby, and load numbers are duplicated. Migrations that add constraints must clean the data first, and whether a
-   production database still exists is unknown (decision D7).
+   in Ruby, and load numbers are duplicated. Migrations that add constraints must clean the data first. Decision D7
+   (2026-10-11): there is no production database to carry forward, which also lets Phase 7 rename in place.
 5. **Environment and external dependencies.** `cache.ruby-lang.org` and Expo's API are blocked in the VM. Ruby 4.0
    compatibility of older gems (`geokit-rails`, `search_cop`, `active_interaction-extras`) is unproven. Third-party keys
    (AppSignal, Google Maps, APF, Apple, Facebook, SMTP) may no longer be valid.
@@ -58,19 +71,18 @@ this section ("Decision: …, date"); the executor then changes the blocked task
 | D1 | Hosting for the API, database and file storage (no Redis: Solid Queue, Solid Cache and Solid Cable run on PostgreSQL), and for the web app | (a) Fly.io (configs exist: `fly.toml`, `fly-production.toml`) with Fly Postgres and S3-compatible storage; (b) Render/Heroku-style PaaS; (c) a VPS with Kamal (Rails 8 default) | (a) Fly.io for the API with a Rails 8 Dockerfile, managed Postgres and an S3-compatible bucket. Web: keep GitHub Pages (existing `openmanifest-web` repos), which needs no new account | P8.4, P8.5, P8.6 |
 | D2 | Store and Expo accounts and identifiers: Apple team, Play Console, EAS project `1d8fa34d-2ff8-4095-ab49-29a426117a8c`, bundle id `com.dangertechnologies.openmanifest`, domains `openmanifest.org` | (a) keep the existing identifiers if the owner still controls them; (b) new identifiers (a new app in the stores) | (a) if access exists (keeps users and EAS Update channels); otherwise (b) with a new EAS project | P3.21 (owner part), P8.2, P8.3, P8.6, owner device checks from Phase 3 |
 | D3 | Dropzone eligibility defaults (BUG-033): the 2023 Settings release turned on `require_membership`, `require_rig_inspection`, `require_reserve_in_date`, `require_equipment`, `require_license`, `require_credits` for all existing dropzones | (a) keep strict defaults; (b) permissive defaults for new dropzones and backfill existing ones as permissive; (c) permissive for existing, strict for new | (b) new and existing dropzones default to `require_credits` = value of `is_credit_system_enabled`, everything else `false`; operators opt in | P6.14 |
-| D4 | Facebook login (BUG-084) | (a) drop Facebook login on all platforms; (b) re-implement with `expo-auth-session` | (a) drop. Native `expo-facebook` was removed from Expo, Facebook needs app review, and email + Apple sign-in remain | P3.3 |
-| D5 | Generalisation go-ahead and naming strategy (GENERALISATION.md §6) | (A) rename tables/models now; (B) keep internal names, add generic API aliases and profile labels, rename internals later; (C) labels only | (B) | P7.1–P7.9 |
-| D6 | Generalisation scope (GENERALISATION.md §7): target industries, cargo, recurring trips, multi-leg routes, booking ahead, payments | — | Start with skydiving + one second profile (dive boats), people only, single destination, same-day trips | P7.4, P7.9 |
-| D7 | Is there a 2023 production database to carry forward? | (a) yes: provide a dump for migration rehearsal; (b) no: start fresh | (a) if it exists; all migrations in this plan preserve data either way | P8.8 |
+| D4 | Facebook login (BUG-084) | (a) drop Facebook login on all platforms; (b) re-implement with `expo-auth-session` | **Decision: (a) drop Facebook login on all platforms (owner, 2026-10-11, approved as D-UI7 of the UI plan).** | none (P3.3 unblocked) |
+| D5 | Generalisation go-ahead and naming strategy (GENERALISATION.md §0, §3) | (A) rename tables, models, API and client now; (B) keep internal names, add generic API aliases and profile labels, rename internals later; (C) labels only | **Decision: go ahead with (A), rename in place with no compatibility layer; keep `Load` as `Load` (owner, 2026-10-11).** | none (P7.1–P7.31 unblocked) |
+| D6 | Generalisation scope: target industries (GENERALISATION.md §1) | — | **Decision: skydiving, scuba diving, snorkel trips, whale watching, fishing charters, parasailing, whitewater rafting, scenic flights, hot-air balloons, gliding clubs, tandem paragliding, safari drives and bus tours, each configured by an industry template chosen at operator creation (owner, 2026-10-11).** People only (no cargo); one destination per slot or an ordered list per load; boarding at the start only | none |
+| D7 | Is there a 2023 production database to carry forward? | (a) yes: provide a dump for migration rehearsal; (b) no: start fresh | **Decision: (b), the project is not in production and there is no data to keep (owner, 2026-10-11).** | none (P8.8 uses the D7 (b) path) |
 | D8 | Peer-to-peer credit transfers between members (BUG-008) | (a) remove (only staff with `createUserTransaction` move credits); (b) keep, limited to the same dropzone and the sender's available balance | (a) | P6.7 |
+| D9 | Customer booking, timetables and bus-tour scope | — | **Decision: customer self-booking (including tandems for skydiving and paragliding, tours, flights) is built by Phase B (design in `docs/features/BOOKING_PLAN.md`). Phase 7 builds only the manifest-side seam (P7.17) and ships bus tours staff-manifested; bus tours become a full fit when booking lands (owner, 2026-10-11).** | none |
+| D10 | Branding for non-skydiving operators | (a) keep "OpenManifest", replace airplane icons with vehicle-kind icons, skydiving illustrations only for the skydiving template; (b) per-template themes; (c) skydiving look everywhere | **Decision: (a) (owner, 2026-10-11).** | none (P7.22) |
+| D11 | Online payments for customer bookings | — | **Decision: built by Phases C and B (designs in `docs/features/`); not in Phase 7 (owner, 2026-10-11).** | none |
 
-Recorded decisions:
-
-- D4 — Decision: (a) drop Facebook login on all platforms, 2026-10-11 (owner approved D-UI7 of the UI plan). P3.3 is
-  `todo`.
-- UI decisions D-UI1–D-UI11 in [`client:docs/ui-modernisation-plan.md`](https://github.com/OpenManifest/openmanifest/blob/staging/docs/ui-modernisation-plan.md)
-  — Decision: all as recommended, 2026-10-11; D-UI11: no offline mode, but a dropzone can switch off self-manifesting and
-  run everything from the office (UB.1, UB.2). They are built in Phase U.
+Decisions recorded in the design documents (all decided by the owner on 2026-10-11): D-UI1–D-UI11 (UI plan; D-UI6's
+vocabulary is replaced by D5 and GENERALISATION §3/§13), CD1–CD7 (COMMERCE_FOUNDATION §2), BD1–BD7 (BOOKING_PLAN §2),
+SD1–SD4 (WEBSHOP_PLAN §2).
 
 ## Executor instructions
 
@@ -88,16 +100,18 @@ document the task links, before changing anything.
 
 ### Picking the task
 
-- Read the tasks in document order. Pick the first task whose `Status` is `todo` and whose `Depends on` tasks are all
-  `done`. Skip tasks that are `blocked (…)` or `owner-check (…)`.
+- Go through the **Execution order** table from top to bottom, and within a row in the order listed. Pick the first
+  task whose `Status` is `todo` and whose `Depends on` tasks are all `done`. Skip tasks that are `blocked (…)`,
+  `owner-check (…)` or `superseded (…)`.
 - If no task qualifies, report that and stop. Do not start a task whose dependencies are `owner-check`; the owner sets
-  them to `done` after checking.
+  them to `done` after checking. Phase verify tasks are owner gates for releases, not dependencies of later work.
 
 ### Git workflow
 
 - **Base branch**: `staging` (the default branch of both repos).
 - For each task, run `git fetch origin staging` in every repo the task touches, then
-  `git checkout -B modernise/p{phase}-{n}-{short-slug} origin/staging`. Use the `Branch:` value from the task exactly.
+  `git checkout -B <branch> origin/staging`, where `<branch>` is the task's `Branch:` value exactly (`modernise/…` for
+  Phases 0–8 and U, `feature/…` for Phases C, B and S).
 - Make the changes, then run every "Acceptance criteria (cloud VM)" command and keep the output for the PR description.
 - Commit using Conventional Commits with the task ID in the subject, for example
   `chore(deps): upgrade rails to 7.1 [P2.3]` or `fix(manifest): count slots once [P6.9]`. Several commits per task are fine.
@@ -122,8 +136,7 @@ document the task links, before changing anything.
   - `done`: every cloud-VM acceptance criterion passed and the owner section says "none".
   - `owner-check (…)`: the code is done and the only remaining criteria need a real device or an account. List exactly
     what the owner must check.
-  - `superseded (by …)`: the task's work moved to the named tasks (Phase U absorbed P7.2, P7.7 and P7.8). It is never
-    picked; tasks that depended on it depend on the named tasks instead.
+  - `superseded (by …)`: the task's work was merged into the named tasks. It is never picked, and no task depends on it.
   - `blocked (…)`: one-line reason, for example `blocked (bundle install fails: geokit-rails needs Ruby < 4)`.
 - Bugs found while working go into [`reference/BUGS.md`](reference/BUGS.md) with the next free ID. Do not fix them unless
   the task's `Fixes:` line covers them. When a task fixes a bug, prefix that bug's Description with `FIXED in P{x}.{y}:`.
@@ -153,7 +166,114 @@ Do not improvise a different design. Do not skip, disable or delete tests to get
 - Versions named in tasks were verified on 2026-10-08. If an exact version no longer installs, use the newest patch of
   the same minor and note it in the PR.
 
+### Client UI work
+
+These rules apply to every task that changes the client, in every phase.
+
+**Test tiers.** Slow UI suites run once per batch, not on every change. "Web smoke test" in any task means tier 2 once
+U0.1 is `done` (before that, `node scripts/web-smoke.mjs` as in CLOUD_ENV §4).
+
+| Tier | What | Command (client) | When |
+|---|---|---|---|
+| 1 | types, lint, Jest | client checks; while working, `yarn jest <paths>` for touched files | after each change, as often as you like |
+| 2 | UI smoke: Playwright `smoke` project (390×844 and 1440×900, light, skydiving operator), layout invariants and axe on the routes the task touched | `yarn test:ui:smoke --grep @<tag>` (tags in each task), then once untagged before pushing | **once per task**, after the change is complete, before push; CI runs it on every PR |
+| 3 | UI full: Playwright `full` project (360×640, 390×844, 820×1180, 1440×900 × light/dark × skydiving/generic operator, 200 % text, visual regression) and the Android emulator flows (Maestro, from U3.1) | `yarn test:ui:full` locally; `ui-full` and `android-ui` workflows by `workflow_dispatch` on the task branch | **only in checkpoint and verify tasks**, and weekly on `staging` |
+| 4 | owner on real devices | `client:docs/SMOKE_TEST.md` sections named in the checkpoint | listed in checkpoint and verify PRs; required only before production |
+
+- The Android half of tier 3 applies once U3.1 is `done`; if U3.1 is blocked, run tier 3 on web only and say so.
+- Do not run tier 3 outside a checkpoint or verify task. If a tier 2 run shows a problem outside your task's area,
+  write it in the PR body under "For the checkpoint" and leave it.
+- Visual baselines (`toHaveScreenshot`) are created and updated only in checkpoint and verify tasks, only for routes the
+  batch changed, with the diff images attached to the PR. Other tasks never pass `--update-snapshots`.
+- If tier 3 fails in a checkpoint, fix the regressions in the checkpoint PR when each fix is small (< 30 lines);
+  otherwise set the checkpoint `blocked (<failing flow>)` and add a fix task before it.
+- A batch is the set of tasks between two checkpoints; stack its PRs ("Stacked tasks" above).
+
+**Definition of done for a new or converted screen** (from U2.8 on, every new screen in any phase meets it): no
+`react-native-paper` import; no hex/`rgb(`/named colour, numeric `fontSize` or numeric spacing outside
+`app/ui/tokens`; no raw `Pressable`/`Touchable*` with `onPress` outside `app/ui`; every user-visible string through
+`t()`; every interactive element has a role and a name (tests query with `getByRole`); the directory is added to the
+lint allow-list in `client:eslint/ui-converted.js` so the rules become errors there.
+
+**Conventions.** Import UI from `app/ui` (`import { Button, ListRow } from 'app/ui'`); styles through
+`useStyles((t) => …)` from `app/ui/theme`; sizes from `t.space`, `t.type`, `t.radius`, `t.density`; breakpoints and pointer
+from `useDevice()`; strings with `useTranslation(['common', 'terms'])` and the term keys of GENERALISATION §13; sentences
+take terms as parameters (`t('common:newLoad', { load: t('terms:load') })`); dates, money and quantities through
+`app/i18n/format.ts`; new navigation entries go in the destinations table (`app/navigation/destinations.ts`, U1.1) with
+their permission and module. Commit scopes: `ui`, `nav`, `board`, `load`, `picker`, `today`, `people`, `setup`,
+`i18n`, `test`, `ci`, plus the feature scopes of each phase.
+
+### Names after the rename
+
+From P7.6 on, code uses the names in GENERALISATION §3 (`Operator`, `Membership`, `Vehicle`, `Guest`, `ActivityType`,
+`DailyLog`, `body_mass_kg`, …; `Load` and `Slot` keep their names). A few task Contexts written before the rename still
+name old files or identifiers (`dropzone`, `plane`, `rig`, `passenger`, `screens/authenticated/dropzone/…`): map them
+through `config/vocabulary.yml`. A path that moved under the vocabulary map is not a stop condition.
+
+### Commerce, booking and webshop tasks (Phases C, B, S)
+
+- **Rules for every task** at the start of each of these phases apply in addition to everything above.
+- **External services**: `api.stripe.com`, `js.stripe.com` and `challenges.cloudflare.com` are not reachable from the
+  VM. Specs stub HTTP with WebMock and recorded fixtures under `spec/fixtures/stripe/` and `spec/fixtures/turnstile/`.
+  Never put real keys in fixtures. If the owner later allowlists Stripe (CLOUD_ENV §2) with test-mode keys, tasks may
+  add an opt-in `STRIPE_LIVE_TESTS=1` spec group; CI never runs it. Real payments need a deployed API with a public
+  HTTPS URL for webhooks (P8.4); until then cloud-VM acceptance uses the fake payment adapter (C2.1), and Stripe
+  test-mode checks are owner checks on staging.
+- **Secrets**: new server variables (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `TURNSTILE_SECRET_KEY`) go into the
+  environment-variable table of [`reference/README.md`](reference/README.md) §8 by name only. Publishable keys
+  (`EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `EXPO_PUBLIC_TURNSTILE_SITE_KEY`) are not secrets and go into the client's
+  per-environment config.
+- **Permissions**: new permissions go into the list in `config/seed/access.yml`; default grants go into the base
+  templates' role presets (`config/industries/_*/presets.yml`, P7.7), and a data migration grants them to the matching
+  roles of existing operators.
+- **Caches and rate limits** use `Rails.cache`, which is Solid Cache in production (no Redis).
+- **Decisions** for these phases live in the design documents' decision tables; record new ones there
+  ("Decision: …, date") and unblock dependent tasks in the next task's PR.
+
 ---
+
+## Execution order
+
+The one queue for every open task in this file (rule in "Picking the task"). Dependencies are hard constraints; the
+order is the priority. Tasks with status `done`, `owner-check` or `superseded` are not listed.
+
+| # | Stage | Tasks, in order | Why here |
+|---|---|---|---|
+| 1 | Finish Phase 3 | P3.3 | Unblocked by D4; removes dead login code before anything else touches it. |
+| 2 | UI safety net | U0.1, U0.2 | Playwright and CI first, so every later refactor is checked in a browser on every PR. |
+| 3 | Office operation | UB.1, UB.2 | Owner request (D-UI11): run everything from the office. Small, independent. |
+| 4 | Phase 7 stage A: rename | P7.1, P7.2, P7.3, P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
+| 5 | Phase 7: templates and modules | P7.7 | Terminology and modules come from templates; the UI foundations and navigation read them. |
+| 6 | UI foundations | U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
+| 7 | App shell | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
+| 8 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
+| 9 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
+| 10 | Manifest UI | U3.1, U3.2, U3.3, U3.4, U3.5, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
+| 11 | Member UI | U4.1, U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
+| 12 | People and setup | U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
+| 13 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
+| 14 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
+| 15 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
+| 16 | Release | P8.1, P8.2, P8.3, P8.4, P8.5, P8.6, P8.7, P8.8, P8.9 | Versioning, deploy and stores; most tasks wait for D1 and D2, and the queue moves on while they do. |
+| 17 | Commerce foundation | C1.1, C1.2, C1.3, C2.1, C2.2, C2.3, C2.4, C2.5, C2.6, C2.7, C2.8, C2.9, C2.10, C2.11 | Money, ledger, Stripe, platform fee, checkout, coupons. Shared by booking and the webshop. |
+| 18 | Booking | B1.1, B1.2, B1.3, B1.4, B1.5, B1.6, B1.7, B1.8, B2.1, B2.2, B2.3, B2.4, B2.5, B3.1, B3.2, B3.3, B3.4 | Operators' highest-value sales; if a booking task is blocked, the queue continues with the webshop. |
+| 19 | Webshop | S1.1, S1.2, S1.3, S1.4, S2.1, S2.2, S2.3, S3.1, S3.2, S3.3, S4.1, S4.2, S4.3, S4.4 | Catalogue, stock, checkout, virtual products, fulfilment, reports. |
+| 20 | Waiting for decisions | P6.7, P6.14 | Picked when D8 and D3 are decided. |
+
+What the merge of the plans changed (2026-10-11), so nothing is built twice:
+
+- P7.18 (i18n wiring) is done by U0.6; P7.19 (manifest screens' strings) by U3.3–U3.9; P7.22's navigation step by
+  U1.1. U0.6 uses GENERALISATION §13's term keys and the operator's terminology instead of bundled profiles.
+- UB.3 (eligibility with reasons) became step 4 of P7.16 (`Membership.eligibility`); UB.4's call presets are P7.11's
+  call schedule, and its remaining part is the new UB.3 (last slot and call time).
+- Phase U's terminology phase (old U6.1–U6.5) is gone: API terms are in U0.6, units and currency in P7.12, route aliases
+  are not needed (D5: rename in place, P7.4), enforcement is P7.20. UI hardening is now U6.1–U6.5.
+- The operator currency moved from C1.1 to P7.12 (the wizard and the formatters need it before Phase C).
+- Phase C, B and S tasks use the renamed code (Operator, Membership, Vehicle, Guest), build their screens on `app/ui`
+  in the shell's destinations (Platform, Setup → Business, Bookings, Shop, Reports), and test with Playwright. B3.2 uses
+  Phase 7's guests, escorts and prepaid slots; booking chooses the markdown renderer that the webshop reuses; online
+  top-up lives in the Wallet.
+- P7.1 and C1.1 no longer wait for the P6.27 device check (phase verify tasks are release gates, not dependencies).
 
 ## Phase 0 — Baseline
 
@@ -3445,61 +3565,29 @@ Fixes: none
 
 Goal: the redesign in [`client:docs/ui-modernisation-plan.md`](https://github.com/OpenManifest/openmanifest/blob/staging/docs/ui-modernisation-plan.md)
 is built: a workspace shell for staff on tablet and desktop, tokens and an in-house component layer (`client:app/ui`),
-the manifest board, load and picker rebuilt for speed, a jumper "Today" screen, People and Setup regrouped, WCAG 2.2 AA,
-client-side i18n with the skydiving terms bundled, and layout tests that run in CI. Approved by the owner on 2026-10-11
-(decisions D-UI1–D-UI11 in that document; D-UI11 answered: no offline, but a dropzone can switch off self-manifesting
-and run everything from the office, task UB.1).
+the manifest board, load and picker rebuilt for speed, a member "Today" screen, People and Setup regrouped, WCAG 2.2 AA,
+client-side i18n fed by the operator's terminology, and layout tests that run in CI. Approved by the owner on
+2026-10-11 (decisions D-UI1–D-UI11 in that document; D-UI11: no offline mode, but an operator can switch off
+self-manifesting and run everything from the office, UB.1 and UB.2).
 
-Read before any Phase U task, in this order: this preamble; the design plan sections the task names (§ numbers below
-refer to it); the mockups (<https://claude.ai/artifact/Mdiri5pZsNQ8qEBRtR3jdZ>; if you cannot open it, the plan's §2–§5
-and the screenshots in `client:docs/ui-audit/` are enough); `client:docs/reference/README.md`.
+Read before any Phase U task, in this order: "Client UI work" in the executor instructions; this preamble; the design
+plan sections the task names (§ numbers in Phase U refer to it); the mockups
+(<https://claude.ai/artifact/Mdiri5pZsNQ8qEBRtR3jdZ>; if you cannot open it, the design plan's §2–§5 and the
+screenshots in `client:docs/ui-audit/` are enough); `client:docs/reference/README.md`.
 
-Phase U runs alongside Phases 7–8. It does not wait for D5: screens use the bundled skydiving terms, and only U6.1–U6.3
-need the backend industry profile. It replaces P7.2, P7.7 and P7.8 (marked `superseded`) and pulls the CI part of P8.7
-forward (U0.2).
-
-### Phase U rules (in addition to the executor instructions)
-
-Phase U tasks (`UB.n`, `Ux.y`) are picked by the normal rule (first `todo` in document order whose dependencies are
-`done`). Read these rules before starting any of them.
-
-**Test tiers and batches.** Slow UI suites run once per batch, not on every change.
-
-| Tier | What | Command (client) | When |
-|---|---|---|---|
-| 1 | types, lint, Jest | client checks; while working, `yarn jest <paths>` for touched files | after each change, as often as you like |
-| 2 | UI smoke: Playwright `smoke` project (390×844 and 1440×900, light, skydiving terms), layout invariants and axe on the routes the task touched | `yarn test:ui:smoke --grep @<tag>` (tags in each task), then once untagged before pushing | **once per task**, after the change is complete, before push; CI runs it on every PR |
-| 3 | UI full: Playwright `full` project (360×640, 390×844, 820×1180, 1440×900 × light/dark × skydiving/diveBoat, 200 % text, visual regression) and the Android emulator flows (Maestro, from U3.1) | `yarn test:ui:full` locally; `ui-full` and `android-ui` workflows by `workflow_dispatch` on the checkpoint branch | **only in checkpoint tasks** (Ux.y "Checkpoint"), and weekly on `staging` |
-| 4 | owner on real devices | `client:docs/SMOKE_TEST.md` sections named in the checkpoint | listed in each checkpoint PR; required only before production (U7.5) |
-
-- The Android half of tier 3 applies once U3.1 is `done`; if U3.1 is blocked, checkpoints run tier 3 on web only and
-  say so in the PR.
-- UB tasks come before U0.1 in document order: until U0.1 is done, "tier 2" in them means
-  `node scripts/web-smoke.mjs` (CLOUD_ENV §4).
-- Do not run tier 3 outside a checkpoint task. If a tier 2 run shows a problem outside your task's area, write it in the PR
-  body under "For the checkpoint" and leave it.
-- Visual baselines (`toHaveScreenshot`) are created and updated only in checkpoint tasks, only for routes the batch
-  changed, with the diff images attached to the PR. Normal tasks never pass `--update-snapshots`.
-- If tier 3 fails in a checkpoint, fix the regressions in the checkpoint PR when each fix is small (< 30 lines); otherwise
-  set the checkpoint `blocked (<failing flow>)` and add a fix task before it.
-- A batch is the set of tasks between two checkpoints; stack its PRs (executor instructions, "Stacked tasks").
-
-**Definition of done for a converted screen or directory.** No `react-native-paper` import; no hex/`rgb(`/named colour,
-numeric `fontSize`, or numeric spacing outside `app/ui/tokens`; no raw `Pressable`/`Touchable*` with `onPress` outside
-`app/ui`; every user-visible string through `t()`; every interactive element has a role and a name (tests query with
-`getByRole`); the directory is added to the lint allow-list in `client:eslint/ui-converted.js` so the rules become errors there.
-
-**Conventions.** Import UI from `app/ui` (`import { Button, ListRow } from 'app/ui'`); styles through
-`useStyles((t) => …)` from `app/ui/theme`; sizes from `t.space`, `t.type`, `t.radius`, `t.density`; breakpoints and pointer
-from `useDevice()`; strings with `useTranslation(['common', 'terms'])`, sentences take terms as parameters
-(`t('common:newTrip', { trip: t('terms:trip') })`); dates through `app/i18n/format.ts` (luxon). Commit scopes: `ui`, `nav`,
-`board`, `load`, `picker`, `today`, `people`, `setup`, `i18n`, `test`, `ci`.
+How Phase U fits with Phase 7 (see "Execution order"): the safety net (U0.1, U0.2) and the office tasks (UB.1, UB.2)
+run first; the renames (P7.1–P7.6) and templates (P7.7) come next, so everything after them uses the final names and
+the operator's terminology; then the UI foundations (U0.3–U2.8); then the generic domain model (P7.8–P7.17); then the
+screens (U3–U5), built once for that model. Phase 7's own UI tasks were merged into Phase U where they overlapped:
+P7.18 into U0.6, P7.19 into U3, P7.22's navigation part into U1.1. The design plan's D-UI6 vocabulary is replaced by
+GENERALISATION §3 and §13 (owner decision D5): code uses `Operator`, `Membership`, `Vehicle`, `Load`, `Slot`; users
+see the operator's terms.
 
 **Feature flag.** The new board, load screen and picker (U3.2–U3.9) ship behind the `newBoard` preference (on for new
-installs, off for existing ones until U7.4), so the old screens keep working while the batch is reviewed.
+installs, off for existing ones until U6.4), so the old screens keep working while the batch is reviewed.
 
-**Owner checks.** Checkpoints have no blocking owner criteria, so the stack can continue; each checkpoint PR lists the
-device checks for that batch, and U7.5 collects them as the gate before production.
+**Owner checks.** Checkpoints have no blocking owner criteria, so the queue can continue; each checkpoint PR lists the
+device checks for that batch, and U6.5 collects them as the gate before production.
 
 ---
 
@@ -3583,64 +3671,29 @@ Risk / rollback: revert both PRs.
 Size: M
 Fixes: none
 
-### UB.3 — Expose eligibility with reasons per member
+### UB.3 — Expose the last slot and the call time
 Status: todo
 Repo: backend
-Depends on: none
-Branch: modernise/ub-3-eligibility
-Goal: `DropzoneUser.eligibility(loadId: ID): Eligibility!` returns whether the member can be manifested now and each
-check's status, so the picker and "Ready to jump" can say what blocks and when it expires.
-Context: Design plan §11 item 1. Rules: `backend:app/models/slot.rb` validations (`membership_in_date?`, licence,
-credits, rig inspection, reserve in date, equipment, exit weight) and the `require_*`/`allow_*` settings in
-`dropzones/configuration.rb`. Existing booleans: `hasLicense`, `hasMembership`, `hasRigInspection`, `hasReserveInDate`,
-`hasCredits`, `hasExitWeight` on `Types::Users::DropzoneUser`.
+Depends on: P7.17
+Branch: modernise/ub-3-last-slot-call-time
+Goal: The picker can pre-fill a returning member's choices and a load can show "called at 12:10".
+Context: Design plan §11 items 2 and 4. Call presets moved to P7.11 (`callScheduleMinutes`) and eligibility reasons to
+P7.16 (`Membership.eligibility`); this task keeps the rest of the former UB.4. P7.17 added `departed_at` and
+`completed_at`.
 Steps:
-  1. A PORO `Manifest::Eligibility` (`app/models/manifest/eligibility.rb` or `app/services`) that takes a membership and
-     an optional load and returns checks. It reuses the same predicates as the slot validations (extract them into the
-     PORO and call it from `Slot` so the two can never disagree).
-  2. GraphQL: `EligibilityCheckKey` enum (`LICENCE`, `MEMBERSHIP`, `RIG_INSPECTION`, `RESERVE_IN_DATE`, `CREDITS`,
-     `EXIT_WEIGHT`, `EQUIPMENT`), `EligibilityStatus` enum (`PASS`, `EXPIRING`, `FAIL`, `NOT_REQUIRED`),
-     `EligibilityCheck { key, status, expiresAt, amountCents }` (no English messages: the client builds copy),
-     `Eligibility { ready: Boolean!, checks: [EligibilityCheck!]! }`. `EXPIRING` when the date is within 14 days.
-  3. Dataloader-safe for a list of members (P6.25 sources); extend `spec/requests/n_plus_one_spec.rb` with a members
-     query selecting `eligibility`.
-  4. Specs for each key and status, settings off → `NOT_REQUIRED`, and parity with `Slot` validation (a member with
-     `ready: false` cannot be manifested and vice versa, for each rule).
+  1. `Membership.lastSlot: Slot` (most recent kept slot at this operator on a departed or completed load; ticket type,
+     activity type, equipment, destination, body mass and extras reachable through existing fields), dataloader-backed;
+     N+1 spec.
+  2. Migration `loads.called_at` (datetime, null), set by the state machine when the load enters `boarding` and cleared
+     when the call is cancelled; GraphQL `Load.calledAt`. Specs for both transitions.
 Acceptance criteria (cloud VM):
   - Backend rspec, rubocop, brakeman green; schema dump diff additive only.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: client use (U3.7, U4.1).
-Risk / rollback: additive; revert.
-Size: M
-Fixes: none
-
-### UB.4 — Expose last slot, call presets and call time
-Status: todo
-Repo: backend
-Depends on: none
-Branch: modernise/ub-4-last-slot-calls
-Goal: The picker can pre-fill a returning member's choices, the call buttons come from the dropzone, and a load can show
-"called at 12:10".
-Context: Design plan §11 items 2–4. Calls are hard-coded 10/15/20 in `client:app/screens/authenticated/dropzone/load/ActionButton.tsx:53-70`;
-`loads.dispatch_at` holds the departure time but not when the call was made.
-Steps:
-  1. `DropzoneUser.lastSlot: Slot` (most recent kept slot at this dropzone on a landed or departed load; ticket type,
-     jump type, rig, exit weight, extras reachable through existing fields), dataloader-backed; N+1 spec.
-  2. Setting `call_presets_minutes: [20, 15, 10]` in `default_settings`; GraphQL `settings.callPresetsMinutes: [Int!]!`
-     and input (validate 1–120, at most 5, unique).
-  3. Migration `loads.called_at` (datetime, null). `UpdateLoad` sets it when `dispatch_at` goes from nil to a time and
-     clears it when the call is cancelled; GraphQL `Load.calledAt`. Spec both transitions.
-Acceptance criteria (cloud VM):
-  - Backend rspec, rubocop, brakeman green; schema dump diff additive only.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: profile-driven call presets (P7.5).
+Out of scope: none.
 Risk / rollback: additive; revert and drop the column.
-Size: M
+Size: S
 Fixes: none
-
----
 
 ### U0.1 — Replace the web smoke script with a Playwright Test suite
 Status: todo
@@ -3660,7 +3713,7 @@ Steps:
      `UI_BASE_URL` (default `http://localhost:19006`), `retries: 1` on CI, `workers` 2, `reporter` html + list,
      timezone `Australia/Brisbane`; projects `smoke` (390×844, 1440×900; light) and `full` (360×640, 390×844, 820×1180,
      1440×900 × light/dark via `colorScheme`; a `text200` variant that doubles root font size as P5.8 did; a
-     `diveBoat` variant that opens routes with `?profile=diveBoat`, which U0.6 implements; until then skip it).
+     `generic` variant that opens routes with `?industry=generic`, which U0.6 implements; until then skip it).
   2. `e2e/support/`: `login(page, role)` storing auth state per role in `e2e/.auth/` (git-ignored), `press(locator)`
      (ported `pressAt`), `expectLayout(page)` (no horizontal scroll, primary action in viewport, last row reachable:
      ported `checkLayout`/`checkReachable`), `expectAccessible(page, { baseline })` (axe, tags `wcag2a`, `wcag2aa`,
@@ -3703,7 +3756,6 @@ Steps:
      Australia/Brisbane); runs `yarn test:ui:full`, uploads report and screenshot diffs.
   4. Document in `e2e/README.md` how an executor triggers `ui-full` on a branch (GitHub MCP `actions_run_trigger` or
      `gh workflow run ui-full.yml --ref <branch>`) and reads the result.
-  5. Amend P8.7 in `backend:docs/MODERNISATION_PLAN.md`: step 2 is done by U0.2.
 Acceptance criteria (cloud VM):
   - The PR's `web-ui-smoke` job passes; one manual `ui-full` run on the branch passes (attach the run URL).
 Acceptance criteria (owner, real device):
@@ -3758,13 +3810,13 @@ Branch: modernise/u0-4-theme
 Goal: `app/ui/theme` provides `ThemeProvider`, `useTheme()`, `useStyles()` and `useDevice()`; Paper's MD2 theme and the
 Navigation theme are generated from tokens with the same exports as today; the default brand is navy and fonts are the
 system fonts. The app looks the same apart from colours, fonts and dark surfaces.
-Context: `app/theme/palette.ts` (MD2 light/dark + Roboto names), `app/theme/overrides.ts` (dropzone colours, live
+Context: `app/theme/palette.ts` (MD2 light/dark + Roboto names), `app/theme/overrides.ts` (operator colours, live
 preview), `app/constants/Colors.ts` (`#FF1414`), fonts loaded in `app/entrypoint/hooks/useCachedResources.ts:13` and
 `app/entrypoint/providers/AppUpdate.tsx:19`, literal `fontFamily: 'Roboto_…'` in `components/orders/OrderCard.tsx:38` and
 `components/appbar/AppBar.tsx:50`; `app/components/layout/useBreakpoint.ts`. Design plan D-UI3, D-UI8, §3.2 Density, §4
 pointer signal.
 Steps:
-  1. `app/ui/theme/`: `ThemeProvider` (scheme from the preferences store, brand from the current dropzone via
+  1. `app/ui/theme/`: `ThemeProvider` (scheme from the preferences store, brand from the current operator via
      `deriveBrand`), `useTheme()`, `useStyles(factory)` (memoised on theme, breakpoint and density; ~60 lines),
      `useDevice()` → `{ breakpoint, pointer: 'coarse' | 'fine', density }` (`matchMedia('(pointer: coarse)')` on web,
      `coarse` on native; density from breakpoint and pointer, overridable later in Account).
@@ -3772,7 +3824,7 @@ Steps:
      tokens; keep its exports. `Colors.ts` default brand `#1D3557`.
   3. Remove the Roboto font packages and loading; replace literal `fontFamily` uses with the system font (omit
      `fontFamily`, keep weights); verify Paper's `fonts` config uses the platform default.
-  4. Record the web bundle size and Jest/Playwright timings in the PR (baseline for U7.3).
+  4. Record the web bundle size and Jest/Playwright timings in the PR (baseline for U6.3).
 Acceptance criteria (cloud VM):
   - Client checks, web export; tier 2 (all tags). Before/after screenshots of board, load and profile at 390 and 1440 in
     light and dark in the PR.
@@ -3809,39 +3861,41 @@ Risk / rollback: revert.
 Size: S
 Fixes: none
 
-### U0.6 — Add the i18n runtime with bundled terms
+### U0.6 — Add i18n with the operator's terminology
 Status: todo
 Repo: client
-Depends on: none
+Depends on: P7.7
 Branch: modernise/u0-6-i18n
-Goal: `app/i18n` provides i18next with `common` and `terms` namespaces, the skydiving terms bundled as default, a dive
-boat fixture profile, formatters, and a `?profile=` override for tests and the gallery.
-Context: Design plan §6 and D-UI5/D-UI6; GENERALISATION §5; supersedes P7.2's runtime. Versions checked 2026-10-11:
-`i18next` 26.4.x, `react-i18next` 17.0.x, `eslint-plugin-i18next` 6.1.x; `expo-localization` via `npx expo install`.
-Money formatting today: `app/utils/money.ts`; dropzone clock: `app/utils/dropzoneTime.ts` (luxon).
+Goal: `app/i18n` provides i18next with `common` and `terms` namespaces; `terms` come from the current operator's
+`terminology` (P7.7) with bundled fallbacks; formatters exist for money, dates, quantities, destinations and calls.
+Context: GENERALISATION §13 (term keys `operator, member, vehicle, load, slot, ticket, extra, destination, activity,
+crew.<key>, escort, guest, certification_body, certification, equipment, inspection, daily_log, call, load_count,
+state.<state>`); this task replaces P7.18 (superseded). Design plan §6. Versions checked 2026-10-11: `i18next` 26.4.x,
+`react-i18next` 17.0.x, `eslint-plugin-i18next` 6.1.x; `expo-localization` via `npx expo install`. Money formatting
+today: `app/utils/money.ts`; operator clock: `app/utils/dropzoneTime.ts` or its renamed successor (luxon).
 Steps:
   1. Install the libraries. `app/i18n/index.ts`: init with `lng` from `expo-localization` (default `en-AU`, fallback
      `en`), namespaces `common` and `terms`, `returnNull: false`.
-  2. `app/i18n/locales/en/common.json` (start with the tab and header labels), `terms.skydiving.json` (trip=load,
-     vehicle=aircraft, place=slot, participant=jumper, departureCall=call, destination=altitude, crew roles, load states;
-     plural forms `_one`/`_other`), `terms.diveBoat.json` (trip, vessel, place, diver, departure call, dive site;
-     skipper, divemaster) as a fixture.
-  3. `TermsProvider` and `useTerms()`; profile chosen from (in order) the `?profile=` query on web dev/CI builds, a test
-     prop, then `skydiving`. U6.1 later adds the API profile.
-  4. `app/i18n/format.ts`: `formatMoney` (wraps `utils/money.ts`, currency from the dropzone, default AUD),
-     `formatDestination` (skydiving: feet → "14k"), `formatCall` (minutes → "20 minute call"), `formatQuantity`
-     (kg/lb, ft/m, kn/km/h, °C/°F; SI in, unit system from profile, default metric except altitude in ft for
-     skydiving), `formatDate`/`formatTime`/`formatRelative` with luxon in the dropzone time zone, unambiguous dates
-     ("8 Oct 2027").
-  5. Install `eslint-plugin-i18next`; enable `i18next/no-literal-string` (`mode: 'jsx-text-only'`) for the
-     converted globs from U0.5 (only `app/ui/**` for now).
-  6. Tests: plural terms, profile switching, each formatter (including time zone and 12/24 h).
+  2. `app/i18n/locales/en/common.json` (start with tab and header labels) and `terms.generic.json` (the `generic`
+     template's words, the fallback). `scripts/sync-terminology.mjs` copies each backend template's
+     `config/industries/<slug>/locales/en.yml` into `app/i18n/fixtures/<slug>.json` (same mechanism as
+     `scripts/sync-schema.mjs`) for tests, the gallery and Playwright.
+  3. `useOperatorTerms()`: on operator change, `i18n.addResourceBundle(lng, 'terms', operator.terminology, true, true)`.
+     On web dev/CI builds, `?industry=<slug>` replaces the operator's terms with that fixture (used by the `full`
+     Playwright project and the gallery); tests pass a fixture through `renderWithProviders`.
+  4. `app/i18n/format.ts`: `formatMoney` (wraps `utils/money.ts`; currency from `operator.currency` once P7.12 adds it,
+     `AUD` until then), `formatDate`/`formatTime`/`formatRelative` with luxon in the operator's time zone,
+     unambiguous dates ("8 Oct 2027"), `formatCall` (minutes → the template's call wording), `formatDestination` and
+     `formatQuantity` as thin stubs that P7.8 and P7.12 complete.
+  5. Install `eslint-plugin-i18next`; enable `i18next/no-literal-string` (`mode: 'jsx-text-only'`) for the converted
+     globs from U0.5 (only `app/ui/**` for now). Convert the tab labels (proof of wiring).
+  6. Tests: plural terms, switching between a skydiving and a generic operator, each formatter (time zone, 12/24 h).
 Acceptance criteria (cloud VM):
-  - Client checks; web export.
+  - Client checks, `check:graphql`; web export; tier 2 `@nav`.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: converting screens (done per phase).
-Risk / rollback: additive; revert.
+Out of scope: converting screens (done as each screen is rebuilt).
+Risk / rollback: revert.
 Size: M
 Fixes: none
 
@@ -3858,8 +3912,8 @@ Steps:
   1. Upgrade; follow the v14 migration guide. If more than 20 test files need non-mechanical changes, stop and set
      `blocked (RNTL 14 migration larger than expected)`.
   2. `app/test-utils/render.tsx`: `renderWithProviders(ui, { role, profile, scheme, breakpoint, mocks })` with role
-     fixtures (owner, manifest, fun jumper, student) built from the dev seed's permissions in
-     `backend:config/seed/access.yml`.
+     fixtures (owner, manifest, fun jumper, student) built from the skydiving template's role presets
+     (`backend:config/industries/skydiving/presets.yml`, P7.7).
   3. Convert three existing tests to `getByRole` as examples.
 Acceptance criteria (cloud VM):
   - Client checks.
@@ -3925,7 +3979,7 @@ Repo: client
 Depends on: U0.1, U0.2, U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9
 Branch: modernise/u0-10-checkpoint
 Goal: Tier 3 passes on the foundations; baselines exist.
-Context: Phase U rules (tiers).
+Context: Client UI work (test tiers).
 Steps:
   1. Merge the batch's stack into the checkpoint branch as needed; run `yarn test:ui:full` locally and trigger
      `ui-full` on the branch.
@@ -3935,7 +3989,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 web passes (Android starts at U3.1).
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: fixes beyond 30 lines (new task).
 Risk / rollback: none.
 Size: S
@@ -3943,24 +3997,26 @@ Fixes: none
 
 ---
 
-### U1.1 — Compute navigation destinations from permissions before render
+### U1.1 — Compute navigation destinations from permissions and modules before render
 Status: todo
 Repo: client
 Depends on: U0.10
 Branch: modernise/u1-1-destinations
-Goal: One table of destinations decides tabs, rail and sidebar per role; tabs are registered unconditionally and each
-screen shows a no-access state, so cold loads of deep links work.
-Context: Design plan §5.1; `app/screens/authenticated/routes.tsx:40-46,76,125` (tabs registered after permissions load,
-BUG-100); `components/drawer/Drawer.tsx:30-50,140-287`.
+Goal: One table of destinations decides tabs, rail and sidebar per role and per the operator's modules; tabs are
+registered unconditionally and each screen shows a no-access or not-available state, so cold loads of deep links work.
+Context: Design plan §5.1; GENERALISATION §14 (module-aware navigation, formerly P7.22 step 1); `operator.modules`
+(P7.7); `app/screens/authenticated/routes.tsx` (tabs registered after permissions load, BUG-100); the drawer
+component (renamed in P7.4 if it contained an old term).
 Steps:
-  1. `app/navigation/destinations.ts`: `{ key, route, icon, labelKey, permission?, platformRole?, group: 'primary' |
-     'more' | 'account' }` for Today, Board, People, Inbox, Wallet, Money, Reports, Setup, Platform, Account.
-  2. `useDestinations()` returns the ordered list for the current session (§5.1 table), waits for the session's
-     permissions (show the splash until known).
-  3. `NoAccess` screen state (`app/ui` `EmptyState` placeholder until U2.4: plain `Text` is fine here, converted in
-     U2.6); register every tab always, guard each screen.
-  4. Jest: destinations for the four role fixtures; BUG-100 cold-load test (Playwright `@nav`: open `/users` directly as
-     owner).
+  1. `app/navigation/destinations.ts`: `{ key, route, icon, labelKey, permission?, module?, setting?, platformRole?,
+     group: 'primary' | 'more' | 'account' }` for Today, Board, People, Inbox, Wallet, Money, Reports, Setup, Platform,
+     Account. Later phases add Bookings and Shop here.
+  2. `useDestinations()` returns the ordered list for the current session (§5.1 table) filtered by permissions and
+     `operator.modules`; it waits for the session's permissions (splash until known).
+  3. `NoAccess` and `NotAvailable` ("not available for this operator") screen states (plain `Text` until U2.4); register
+     every tab always, guard each screen.
+  4. Jest: destinations for the four role fixtures and for a skydiving and a generic operator; BUG-100 cold-load test
+     (Playwright `@nav`: open the people route directly as owner).
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@nav`.
 Acceptance criteria (owner, real device):
@@ -4036,7 +4092,7 @@ Steps:
   1. `app/navigation/ScreenHeader.tsx` used through `screenOptions.header`; back button with `accessibilityLabel`
      "Back to …" (previous screen's title); actions as `IconButton`s (until U2.1, use a minimal local button and
      replace it there).
-  2. Titles from `t()`; the load screen reads "Load #n" (term-based: `t('common:tripNumber', { trip, number })`); web
+  2. Titles from `t()`; the load screen reads "Load #n" (term-based: `t('common:loadNumber', { load: t('terms:load'), number })`); web
      `document.title` "<screen> · <operator>".
   3. Delete `components/appbar/*` and the credits chip.
 Acceptance criteria (cloud VM):
@@ -4076,7 +4132,7 @@ Repo: client
 Depends on: U1.1, U1.2, U1.3, U1.4, U1.5
 Branch: modernise/u1-6-checkpoint
 Goal: Tier 3 passes for the shell; baselines updated for changed routes.
-Context: Phase U rules.
+Context: Client UI work (test tiers).
 Steps:
   1. Tier 3 web (local and `ui-full` on the branch); update baselines for the shell routes.
   2. `client:docs/verification/ui-u1.md`; owner list: navigation per role on a phone and a tablet (both orientations),
@@ -4084,7 +4140,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 web passes.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: S
@@ -4192,7 +4248,7 @@ in the `full` project.
 Context: Design plan §8 "Gallery".
 Steps:
   1. Route registered only when `environment` is `local`/`development` or `EXPO_PUBLIC_GALLERY=1` (set in the CI web
-     export); sections per component; query params `?scheme=`, `?density=`, `?profile=`.
+     export); sections per component; query params `?scheme=`, `?density=`, `?industry=`.
   2. `e2e/gallery.spec.ts` (`@gallery`): axe and layout per section; screenshots only in the `full` project.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@gallery` (no screenshots in tier 2).
@@ -4252,15 +4308,15 @@ Repo: client
 Depends on: U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7
 Branch: modernise/u2-8-checkpoint
 Goal: Tier 3 passes; gallery baselines exist for all variants.
-Context: Phase U rules.
+Context: Client UI work (test tiers).
 Steps:
-  1. Tier 3 web; create gallery baselines (4 widths × 2 schemes × 2 profiles × 200 % text where relevant).
+  1. Tier 3 web; create gallery baselines (4 widths × 2 schemes × skydiving and generic × 200 % text where relevant).
   2. `client:docs/verification/ui-u2.md`; owner list: each form on a small Android phone with the keyboard open; overlays
      with TalkBack and VoiceOver.
 Acceptance criteria (cloud VM):
   - Tier 3 web passes.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: S
@@ -4271,7 +4327,7 @@ Fixes: none
 ### U3.1 — Add Android emulator flows with Maestro
 Status: todo
 Repo: client
-Depends on: U0.2
+Depends on: U2.8
 Branch: modernise/u3-1-android-ui
 Goal: A workflow builds an Android release APK against a backend in the same job, boots an emulator and runs Maestro
 flows at font scale 1.0 and 2.0, on demand and weekly.
@@ -4300,19 +4356,20 @@ Fixes: none
 ### U3.2 — Add the board data layer and the newBoard flag
 Status: todo
 Repo: client
-Depends on: U1.6, U2.8, UB.4
+Depends on: U1.6, U2.8, P7.17, UB.3
 Branch: modernise/u3-2-board-data
-Goal: `useBoard()` gives today's loads in a stable order with live updates and change highlights; the `newBoard`
-preference switches between old and new board, load and picker screens.
-Context: Design plan §2 principle 8, §12 (drag versus live updates); `api/crud/subscriptions/*`, `providers/load`,
-`utils/dropzoneTime.ts`; `calledAt` and `callPresetsMinutes` from UB.4 (`yarn sync:schema && yarn ts:graphql`).
+Goal: `useBoard(date)` gives the loads of a day in a stable order with live updates and change highlights; the
+`newBoard` preference switches between the old and new board, load and picker screens.
+Context: Design plan §2 principle 8, §12 (drag versus live updates); load subscriptions in `app/api/crud/subscriptions/*`;
+`loads(from:, to:)` and future dates (P7.17); `Load.vehicles` (P7.9), `Load.crew` (P7.10), `Load.destinations` (P7.8),
+`calledAt` (UB.3).
 Steps:
-  1. `app/features/board/useBoard.ts`: loads for the dropzone's today, ordered by state (open → boarding → departed →
-     landed/cancelled) then load number; changed rows flagged for 600 ms; `freeze()`/`unfreeze()` to hold order while
-     the user drags or edits.
+  1. `app/features/board/useBoard.ts`: loads for the chosen date (today by default, operator time zone), ordered by
+     state (open → boarding → departed → completed/cancelled) then load number; changed rows flagged for 600 ms;
+     `freeze()`/`unfreeze()` to hold order while the user drags or edits.
   2. `newBoard` in the preferences store: default `true` when no previous preferences exist (new install), `false`
      otherwise; toggle in Account. Route switch in the manifest stack.
-  3. Tests with a mocked subscription push (order stable, highlight set, frozen order honoured).
+  3. Tests with a mocked subscription push (order stable, highlight set, frozen order honoured) and a future date.
 Acceptance criteria (cloud VM):
   - Client checks.
 Acceptance criteria (owner, real device):
@@ -4327,18 +4384,24 @@ Status: todo
 Repo: client
 Depends on: U3.2
 Branch: modernise/u3-3-board
-Goal: The new board: one column on compact, list plus selected load on medium, load columns with a landed strip on
-expanded; each `LoadCard` shows state, the call countdown as its largest numeral, seats meter, crew chips that wrap and
-the next action; a read-only conditions strip in the board header.
-Context: Mockups "Desktop: manifest board", "Phone: load"; design plan §2 principles 1–2, §4 table; old
-`manifest/ManifestScreen.tsx`, `LoadCard/*`, `Weather/WeatherBoard.tsx`.
+Goal: The new board: one column on compact, list plus selected load on medium, load columns with a completed strip on
+expanded; a date switcher; each `LoadCard` shows state, the call countdown as its largest numeral, its vehicles, places
+meter, crew chips per crew role and the next action; a read-only conditions strip when the operator has the
+winds-aloft module.
+Context: Mockups "Desktop: manifest board", "Phone: load"; design plan §2 principles 1–2, §4 table; GENERALISATION §7
+and §14 (`VehicleIcon`, `CrewChip` per crew role); the old board screen, load cards and weather board (paths after
+P7.4/P7.6). Replaces P7.19 for these screens.
 Steps:
-  1. Domain components in `app/features/board/`: `LoadCard`, `CrewChip`, `SeatsMeter`, `ConditionsStrip` (wind at
-     altitude, jump run heading, ground temperature, "Update" opens the existing weather screen until U5.7).
-  2. `BoardScreen` with the three layouts; content max width 1600, horizontal scroll past three columns; empty state
-     "No loads today" with "Create load" for `CreateLoad`.
-  3. All strings through `t()`; terms for load, aircraft, crew roles; convert `app/features/board/**`.
-  4. Playwright `@board`: layout at 390 and 1440, create a load, countdown visible; Jest per component.
+  1. Domain components in `app/features/board/`: `LoadCard`, `VehicleIcon` (kind → glyph per GENERALISATION §14),
+     `CrewChip` (one per crew role, per vehicle for vehicle-scoped roles), `PlacesMeter` (capacity from carrying
+     vehicles minus seat-occupying crew), `DestinationLabel` (`formatDestination`), `ConditionsStrip` (module
+     `winds_aloft`; wind at altitude, jump-run heading, ground temperature, "Update" opens the existing weather screen
+     until U5.7).
+  2. `BoardScreen` with the three layouts and the date switcher (today by default; future dates per P7.17); content
+     max width 1600, horizontal scroll past three columns; empty state with "Create load" for `createLoad`.
+  3. All strings through `t()` with the operator's terms; convert `app/features/board/**`.
+  4. Playwright `@board`: layout at 390 and 1440, create a load, countdown visible, a generic operator's board shows no
+     skydiving words; Jest per component.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@board`.
 Acceptance criteria (owner, real device):
@@ -4353,22 +4416,24 @@ Status: todo
 Repo: client
 Depends on: U3.3
 Branch: modernise/u3-4-load-actions
-Goal: Call (presets from the dropzone, plus custom), cancel call, departed, landed and cancel load are a primary button
-on the card and on the load screen, chosen by state; the speed dial is gone from the new screens.
-Context: `load/ActionButton.tsx:48-130` (speed dial, permission gates `UpdateLoad`), `finalizeLoad`/`updateLoad`
-mutations; UB.4 `callPresetsMinutes`, `calledAt`.
+Goal: Call (from the operator's call schedule, plus custom), cancel call, depart, complete and cancel load are a
+primary button on the card and on the load screen, chosen by state; the speed dial is gone from the new screens.
+Context: Load states `open, boarding, departed, completed, cancelled` (P7.5) with the template's state terms;
+`operator.callScheduleMinutes` (P7.11; empty means depart directly); the old action button (P7.11 made it generate
+calls from the schedule); `updateLoad`/`finalizeLoad` (or their renamed successors).
 Steps:
-  1. `useLoadActions(load)`: state machine and permitted actions; destructive ones (cancel load, land with
-     unconfirmed seats) confirm in a dialog; errors as `Toast`.
-  2. Primary action button plus a `Menu` for the rest on card and load header; calls show presets as a `Segmented`
-     choice and "Custom…" (`NumberField`, minutes).
-  3. Tests per transition; Playwright `@board`: call 20 → cancel call → call 10 → departed → landed (step counts asserted:
-     each transition ≤ 2 interactions).
+  1. `useLoadActions(load)`: state machine and permitted actions; destructive ones (cancel load, complete with
+     unconfirmed places) confirm in a dialog; errors as `Toast`; required crew missing blocks departure with the
+     reason (P7.10 validation message).
+  2. Primary action button plus a `Menu` for the rest on card and load header; calls show the schedule as a
+     `Segmented` choice and "Custom…" (`NumberField`, minutes).
+  3. Tests per transition; Playwright `@board`: call → cancel call → call → depart → complete, each transition ≤ 2
+     interactions; an operator with an empty call schedule departs directly.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@board`.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: haptics (U7.2).
+Out of scope: haptics (U6.2).
 Risk / rollback: behind `newBoard`.
 Size: M
 Fixes: none
@@ -4378,19 +4443,20 @@ Status: todo
 Repo: client
 Depends on: U3.4
 Branch: modernise/u3-5-load-screen
-Goal: Load screen with the call card (countdown largest, "called at", destination), crew chips, seat list with
-eligibility badges, groups bracketed, tandem pairs shown together, free seats collapsed into one row, sticky actions on
-compact.
-Context: Mockup "Phone: load"; old `load/LoadScreen.tsx`, `load/Header.tsx`, `load/InfoGrid.tsx`, `slots_table/*`, three
-slot cards (§1.5). Eligibility: booleans now, `eligibility` from UB.3 if present (UB.3 is done before this task in
-document order; if not, use booleans and leave a TODO with UB.3).
+Goal: Load screen with the call card (countdown largest, "called at", destinations), crew by role, places grouped by
+vehicle when the load has several, guests shown under their escort, groups bracketed, eligibility and prepaid badges,
+free places collapsed into one row, sticky actions on compact.
+Context: Mockup "Phone: load"; GENERALISATION §7 (vehicles, crew), §10 (escorts), §17 item 3 (prepaid); P7.9
+(`Load.vehicles`, `Slot.loadVehicle`), P7.15 (`escort_slot_id`), P7.16 (`Membership.eligibility`), P7.17 (`Slot.prepaid`);
+the old load screen, header, info grid, slots table and slot cards (design plan §1.5; paths after P7.4/P7.6).
 Steps:
-  1. `LoadHeader`, `SeatRow` (avatar, name, licence and jump type, `EligibilityBadge`, group colour border), `FreeSeats`
-     ("N free places", opens the picker in U3.7), crew editing via the existing mutations in a `Menu`.
-  2. Swipe-to-delete stays on native as a shortcut; every seat also has a menu ("Edit", "Move to…", "Take off").
+  1. `LoadHeader`, `PlaceRow` (avatar, name, certification and activity type, `EligibilityBadge`, prepaid badge, group
+     colour border, destination when per slot), `VehicleSection` (when the `multi_vehicle` module is on), `EscortGroup`,
+     `FreePlaces` ("N free places", opens the picker in U3.7); crew editing per crew role in a `Menu`.
+  2. Swipe-to-delete stays on native as a shortcut; every place also has a menu ("Edit", "Move to…", "Take off").
   3. Strings through `t()`; convert `app/features/load/**`.
-  4. Playwright `@load`: 14-seat load at 390 shows the call card and first seats without scrolling; layout invariants;
-     axe.
+  4. Playwright `@load`: a full load at 390 shows the call card and first places without scrolling; a two-vehicle load
+     for a generic operator; layout invariants; axe.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@load @board`.
 Acceptance criteria (owner, real device):
@@ -4406,7 +4472,7 @@ Repo: client
 Depends on: U3.3, U3.4, U3.5
 Branch: modernise/u3-6-checkpoint
 Goal: Tier 3 (web and Android) passes for the new board and load screen.
-Context: Phase U rules.
+Context: Client UI work (test tiers).
 Steps:
   1. Tier 3 web; if U3.1 is `done`, add the flows `board-actions.yaml` (call, depart, land) and `load.yaml` and run
      `android-ui`; update baselines for board and load.
@@ -4415,7 +4481,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 passes (web; Android when U3.1 is done).
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: M
@@ -4424,52 +4490,52 @@ Fixes: none
 ### U3.7 — Build the member picker with one-tap defaults
 Status: todo
 Repo: client
-Depends on: U3.5, UB.3, UB.4
+Depends on: U3.5
 Branch: modernise/u3-7-picker
 Goal: Adding a returning member to a load takes at most 3 interactions: search, pick (pre-filled from their last
-jump), confirm; eligibility and its reason show before the tap, with a "Fix" action.
-Context: Mockup "Phone: add a jumper"; design plan §2 principles 3–4, §4 ("Adding a person"); old
-`autocomplete/DropzoneUserAutocomplete*.tsx`, `forms/manifest_user/*`; `createSlot` mutation; UB.3 `eligibility`, UB.4
-`lastSlot`.
+slot), confirm; eligibility and its reason show before the tap, with a "Fix" action.
+Context: Mockup "Phone: add a jumper"; design plan §2 principles 3–4, §4 ("Adding a person"); P7.16
+`Membership.eligibility(loadId)` (list-safe) and `slotEligibility` (full check for the chosen combination); UB.3
+`lastSlot`; P7.8 destinations (per-slot scope), P7.14 equipment per required kind; the old member autocomplete and
+manifest form (paths after P7.4/P7.6); `createSlot`.
 Steps:
-  1. `MemberPicker`: search field (focus on open; `/` focuses on web), filters (Everyone, Ready, Jumped today, Group),
-     `MemberPickerRow` (avatar, name, licence/jumps/credit line or the blocking reason, `EligibilityBadge`, "Fix" opens
-     the member's profile section). Presentation: full screen on compact, side panel on medium, roster panel on expanded
-     (stays open beside the columns).
-  2. Selected member expands to the defaults card (ticket, jump type, altitude, rig with inspection date, exit weight,
-     price) from `lastSlot`; "Change ticket, jump type or rig" opens the full manifest form rebuilt on `app/ui`
-     (replaces `forms/manifest_user/*`).
-  3. Footer: "Add <name> to <load>", and the credit sentence ("$40.00 will be taken from her credit now…") built with
-     `formatMoney` and terms.
-  4. Copy for each `EligibilityCheckKey`/`EligibilityStatus` in `common.json`.
-  5. Playwright `@picker`: add `jumper1` to a load in ≤ 3 interactions at 390 and 1440 (count `press`/`fill` calls);
-     a blocked member shows the reason and cannot be added unless `allowManifestBypass` and staff.
+  1. `MemberPicker`: search field (focus on open; `/` focuses on web), filters (Everyone, Ready, Here today, Group),
+     `MemberPickerRow` (avatar, name, certification/load count/credit line or the blocking reason, `EligibilityBadge`,
+     "Fix" opens the member's profile section). Presentation: full screen on compact, side panel on medium, roster panel
+     on expanded (stays open beside the columns).
+  2. Selected member expands to the defaults card (ticket, activity type, destination when per slot, one equipment item
+     per required kind with its inspection or service date, body mass, price) from `lastSlot`; `slotEligibility`
+     checks the combination; "Change…" opens the full manifest form rebuilt on `app/ui` (replaces the old manifest
+     form).
+  3. Footer: "Add <name> to <load>" and the credit sentence built with `formatMoney` and terms.
+  4. Copy for each eligibility code in `common.json`.
+  5. Playwright `@picker`: add a member to a load in ≤ 3 interactions at 390 and 1440 (count `press`/`fill` calls); a
+     blocked member shows the reason and cannot be added unless `allowManifestBypass` and staff.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@picker @load`.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: groups and tandems (U3.8).
+Out of scope: groups and escorts (U3.8).
 Risk / rollback: behind `newBoard`.
 Size: L
 Fixes: none
 
-### U3.8 — Add group and tandem manifesting to the picker
+### U3.8 — Add groups and escorted guests to the picker
 Status: todo
 Repo: client
 Depends on: U3.7
 Branch: modernise/u3-8-groups
-Goal: The picker has a group mode (select several, one group number, `createSlots`) and a tandem pairing (instructor
-plus passenger name and exit weight); groups show bracketed on the load.
-Context: `components/dialogs/ManifestGroup/*`, `forms/manifest_group/*` (dialog only mounted on the load screen,
-BUG-066), passenger fields in `forms/manifest_user/ManifestForm.tsx`; design plan §13 questions 4–5 (current flows kept;
-no persistent group concept).
+Goal: The picker has a group mode (select several, one group number, `createSlots`) and books guests with an escort
+for tickets that require one (tandem, try dive, child with adult: n guests per escort up to `escort_capacity`); groups
+and escorts show on the load.
+Context: P7.15 (`requires_escort`, `escort_capacity`, guest fields), GENERALISATION §10; the old group dialog and form
+(BUG-066), design plan §13 questions 4–5 (no persistent group concept).
 Steps:
   1. "Group" toggle in the picker: multi-select rows, shared defaults with per-person overrides, one confirm.
-  2. Tandem: choosing a tandem ticket asks for passenger name and exit weight in the defaults card.
-  3. Delete `components/dialogs/ManifestGroup/*` and `forms/manifest_group/*` once the new flow covers them (old screens
-     keep working through the flag by importing the old code until U7.4: move the old code under
-     `app/legacy/` instead of deleting if the old board still needs it).
-  4. Playwright `@picker`: group of 4 in ≤ 6 interactions; tandem pair.
+  2. Escort tickets: the defaults card asks for the guests (name, body mass, date of birth when limits apply) and the
+     escort (members holding the ticket's escort crew role or qualification).
+  3. Move the old group and manifest-form code under `app/legacy/` while the old board still needs it (removed in U6.4).
+  4. Playwright `@picker`: group of 4 in ≤ 6 interactions; a tandem (1 guest, 1 escort); a try dive (3 guests, 1 escort).
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@picker`.
 Acceptance criteria (owner, real device):
@@ -4479,22 +4545,23 @@ Risk / rollback: behind `newBoard`.
 Size: M
 Fixes: BUG-066 (on the new screens)
 
-### U3.9 — Move people between loads, and drag on the web
+### U3.9 — Move people between loads and vehicles, and drag on the web
 Status: todo
 Repo: client
 Depends on: U3.7
 Branch: modernise/u3-9-move
-Goal: "Move to…" on every seat (all platforms) and, on web at expanded width, drag between load columns and from the
-roster panel onto a load, with a keyboard alternative; live updates never move a row under the pointer.
-Context: `components/slots_table/DragAndDrop/*.web.tsx` (`@dnd-kit/core` 6.3.1), `moveSlot`; `useBoard().freeze()` from
-U3.2; design plan §12 risk 3.
+Goal: "Move to…" on every place (all platforms; loads and, on multi-vehicle loads, vehicles) and, on web at expanded
+width, drag between load columns and from the roster panel onto a load, with a keyboard alternative; live updates
+never move a row under the pointer.
+Context: the old drag-and-drop web files (`@dnd-kit/core` 6.3.1), `moveSlot` (between vehicles since P7.9);
+`useBoard().freeze()` from U3.2; design plan §12 risk 3.
 Steps:
-  1. `MoveToSheet`: list of open loads with free places; disabled loads say why.
-  2. Web: `@dnd-kit/core` `DndContext` around the board; draggable seats and roster rows, droppable load columns; on
+  1. `MoveToSheet`: open loads (and their vehicles) with free places; disabled targets say why.
+  2. Web: `@dnd-kit/core` `DndContext` around the board; draggable places and roster rows, droppable load columns; on
      drag start `freeze()`, on drop or cancel `unfreeze()`; keyboard sensor (Space to pick up, arrows, Space to drop)
      with live-region announcements.
-  3. Playwright `@move`: drag a seat between columns at 1440; move via sheet at 390; a scripted subscription push during
-     a drag does not reorder the dragged column.
+  3. Playwright `@move`: drag a place between columns at 1440; move via sheet at 390; a scripted subscription push
+     during a drag does not reorder the dragged column.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@move`.
 Acceptance criteria (owner, real device):
@@ -4510,7 +4577,7 @@ Repo: client
 Depends on: U3.6, U3.7, U3.8, U3.9
 Branch: modernise/u3-10-checkpoint
 Goal: Tier 3 passes for the whole manifest flow; the exit criterion of design plan Phase 3 is shown by a test.
-Context: Phase U rules; design plan §10 Phase 3 exit criterion.
+Context: Client UI work (test tiers); design plan §10 Phase 3 exit criterion.
 Steps:
   1. Tier 3 web; `android-ui` with `picker.yaml`, `group.yaml`, `move.yaml`; baselines for picker and roster.
   2. `client:docs/verification/ui-u3b.md`; owner list: one staffed day on the new board (flag on) at a dropzone or a
@@ -4518,7 +4585,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 web and Android pass.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: M
@@ -4531,15 +4598,16 @@ Status: todo
 Repo: client
 Depends on: U3.10
 Branch: modernise/u4-1-today
-Goal: Members land on Today: next jump card (state, countdown, load summary, take-me-off when permitted), "Ready to jump"
-checklist with fixes, credit, today's jumps; instructors and pilots also see their duties for the day.
-Context: Mockup "Phone: my day"; design plan §2 principle 7, §5.1; UB.1 (members without `DeleteSlot` see "Ask the
-manifest desk to change your booking" instead of "Take me off"); UB.3 eligibility; `hooks/useManifestValidator.ts`.
+Goal: Members land on Today: next load card (state, countdown, load summary, take-me-off when permitted), a "Ready"
+checklist with fixes, credit, today's loads; crew members also see their assignments for the day.
+Context: Mockup "Phone: my day"; design plan §2 principle 7, §5.1; UB.1 (members without `deleteSlot` see "Ask the
+manifest desk to change your booking"); P7.16 `Membership.eligibility` (codes for membership, certification,
+qualification, equipment inspection and service, credits, limits); P7.10 crew assignments.
 Steps:
-  1. `app/features/today/`: `NextJumpCard`, `ReadyChecklist` (each check with a fix action), `CreditCard`,
-     `TodayJumps`, `DutiesCard` (pilot, load master, GCA, DZSO assignments today).
-  2. Today is the first destination for roles without `CreateUserSlot`.
-  3. Playwright `@today`: as `jumper1`, find my load and take myself off (setting on); with the setting off the action is
+  1. `app/features/today/`: `NextLoadCard`, `ReadyChecklist` (one row per eligibility check with a fix action),
+     `CreditCard`, `TodayLoads`, `DutiesCard` (the member's crew assignments today).
+  2. Today is the first destination for roles without `createUserSlot`.
+  3. Playwright `@today`: as a fun jumper, find my load and take myself off (self-manifest on); with it off the action is
      replaced by the desk note.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@today`.
@@ -4555,7 +4623,7 @@ Status: todo
 Repo: client
 Depends on: U4.1
 Branch: modernise/u4-2-self-booking
-Goal: "Book a jump" on Today and on open loads uses the picker in self mode (defaults from the member's last jump);
+Goal: "Book a jump" on Today and on open loads uses the picker in self mode (defaults from the member's last slot, UB.3);
 hidden when the dropzone switched off self-manifesting.
 Context: U3.7 picker; UB.1 permissions; `createSlot`.
 Steps:
@@ -4588,7 +4656,7 @@ Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@wallet`.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: card payments.
+Out of scope: online card top-up (C2.5 adds it to this screen).
 Risk / rollback: revert.
 Size: M
 Fixes: none
@@ -4601,7 +4669,7 @@ Branch: modernise/u4-4-inbox
 Goal: Inbox lists notifications with read state and actions (rig-inspection request → inspection screen; call → load);
 tapping a push opens the right screen (Today for calls and manifest changes).
 Context: `screens/authenticated/notifications/*`, notification types in `backend:app/models/notification.rb:23-26`
-(`boarding_call`, `user_manifested`, `credits_updated`, `rig_inspection_requested`, …), push data
+(after P7.5: `boarding`, `user_manifested`, `credits_updated`, the equipment inspection request, …), push data
 `{ notificationId, type }`.
 Steps:
   1. `app/features/inbox/` with `ListRow`s, unread badge on the tab, mark read.
@@ -4621,7 +4689,7 @@ Repo: client
 Depends on: U4.1, U4.2, U4.3, U4.4
 Branch: modernise/u4-5-checkpoint
 Goal: Tier 3 passes for the member experience.
-Context: Phase U rules.
+Context: Client UI work (test tiers).
 Steps:
   1. Tier 3 web; `android-ui` with `today.yaml` (find my load, take myself off, book) at font scale 2.0; baselines.
   2. `client:docs/verification/ui-u4.md`; owner list: VoiceOver and TalkBack pass over Today, booking and Wallet; a push
@@ -4629,7 +4697,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 web and Android pass.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: S
@@ -4664,8 +4732,8 @@ Status: todo
 Repo: client
 Depends on: U5.1, UB.2
 Branch: modernise/u5-2-profile
-Goal: Profile = summary and eligibility with fixes, then Jumps (with empty state), Funds, Equipment (staff can add and
-edit, UB.2), Membership (role and expiry with unambiguous dates); one scroll on phones, two columns on expanded.
+Goal: Profile = summary and eligibility with fixes, then Loads (with empty state), Funds, Certifications and
+qualifications (P7.13), Equipment (P7.14; staff can add and edit, UB.2), Membership (role and expiry with unambiguous dates); one scroll on phones, two columns on expanded.
 Context: `screens/authenticated/user/profile/*`, `user/equipment/*`, `user/rig_inspection`; design plan §1.8 item 5.
 Steps:
   1. Rebuild the screens on `app/ui`; staff actions gated by permission.
@@ -4685,11 +4753,13 @@ Repo: client
 Depends on: U5.1
 Branch: modernise/u5-3-setup
 Goal: Setup has three groups (Operations, People and access, Business) per design plan §5.2; Rules holds the
-eligibility settings, "Members can book themselves on loads" (UB.1) and call presets (UB.4).
+eligibility settings, "Members can book themselves on loads" (UB.1), the call schedule (P7.11), units and
+currency (P7.12) and the template's optional modules (P7.7).
 Context: `configuration/settings_menu/SettingsMenuScreen.tsx`, `forms/dropzone/DropzoneForm.tsx`.
 Steps:
   1. `SetupScreen` with grouped `ListRow`s; side-by-side list and detail on expanded.
-  2. `RulesScreen`: switches with helper text; call presets editor (chips with add/remove, 1–120 minutes).
+  2. `RulesScreen`: switches with helper text; call schedule editor (chips, descending, at most 6, may be empty);
+     Modules (switches for optional modules; locked ones shown disabled).
   3. Playwright `@setup`: switch off self-manifesting, then as `jumper1` the board shows the desk note.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@setup @today`.
@@ -4706,7 +4776,7 @@ Repo: client
 Depends on: U5.1, U5.2, U5.3
 Branch: modernise/u5-4-checkpoint
 Goal: Tier 3 passes for People, profile and Setup.
-Context: Phase U rules.
+Context: Client UI work (test tiers).
 Steps:
   1. Tier 3 web; `android-ui` `profile.yaml`; baselines.
   2. `client:docs/verification/ui-u5a.md`; owner list: run a day from the office with self-manifesting off (add a
@@ -4714,7 +4784,7 @@ Steps:
 Acceptance criteria (cloud VM):
   - Tier 3 web and Android pass.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: S
@@ -4725,7 +4795,8 @@ Status: todo
 Repo: client
 Depends on: U5.4
 Branch: modernise/u5-5-setup-lists
-Goal: Aircraft, tickets, add-ons, dropzone rigs and the inspection template use `ResourceList` + `ResourceForm`
+Goal: Vehicles, tickets (with `DestinationSelect`), extras, destinations, crew roles, equipment kinds, operator equipment,
+inspection forms and accepted certification bodies use `ResourceList` + `ResourceForm`
 (side panel on expanded, sheet on compact).
 Context: `configuration/aircrafts`, `ticket_types`, `extras`, `dropzone_rigs`, `rig_inspection_template`.
 Steps:
@@ -4765,13 +4836,14 @@ Status: todo
 Repo: client
 Depends on: U5.4
 Branch: modernise/u5-7-conditions
-Goal: "Update" on the conditions strip opens a panel or sheet with temperature, winds aloft table and a numeric jump-run
+Goal: For operators with the `winds_aloft` module, "Update" on the conditions strip opens a panel or sheet with temperature, winds aloft table and a numeric jump-run
 heading (0–359°); the navy wizard and the jump-run dial are removed.
 Context: D-UI7; `dropzone/weather_conditions/*`, `components/input/jump_run_select/*` (~700 lines),
 `components/forms/weather_conditions/*`.
 Steps:
   1. `ConditionsPanel` with `NumberField`s (units via `formatQuantity`), wind rows add/remove.
-  2. Delete the wizard screens and `jump_run_select/*`; redirect their routes to the board with the panel open.
+  2. Move the winds-aloft screens and components into `app/features/skydiving/` (GENERALISATION §14).
+     Delete the wizard screens and `jump_run_select/*`; redirect their routes to the board with the panel open.
   3. Playwright `@conditions`.
 Acceptance criteria (cloud VM):
   - Client checks; tier 2 `@conditions @board`.
@@ -4787,7 +4859,8 @@ Status: todo
 Repo: client
 Depends on: U5.4
 Branch: modernise/u5-8-remaining
-Goal: Reports (Overview charts fixed or replaced), Money (staff transactions), master log, login, sign-up, recovery,
+Goal: Reports (Overview charts fixed or replaced), Platform (the cross-operator overview for administrators),
+Money (staff transactions), daily log, login, sign-up, recovery,
 dropzone select and the wizards meet the definition of done.
 Context: `overview/*` (`statistics/LoadsByDay.web.tsx` hatch), `configuration/transactions`, `master_log`,
 `screens/unauthenticated/*`, `screens/wizards/*`.
@@ -4810,14 +4883,14 @@ Repo: client
 Depends on: U5.5, U5.6, U5.7, U5.8
 Branch: modernise/u5-9-checkpoint
 Goal: Tier 3 passes for the whole app; axe has no serious or critical violations left (the baseline file is empty).
-Context: Phase U rules; design plan §7.
+Context: Client UI work (test tiers); design plan §7.
 Steps:
   1. Tier 3 web and Android; baselines; empty `e2e/axe-baseline.json` (fix what remains or add a task).
   2. `client:docs/verification/ui-u5b.md` with the UI debt table (Paper imports should be near zero).
 Acceptance criteria (cloud VM):
   - Tier 3 passes; axe baseline empty.
 Acceptance criteria (owner, real device):
-  - none (listed for U7.5)
+  - none (listed for U6.5)
 Out of scope: none.
 Risk / rollback: none.
 Size: M
@@ -4825,112 +4898,15 @@ Fixes: none
 
 ---
 
-### U6.1 — Read terms from the operator's industry profile
-Status: blocked (awaiting decision D5)
-Repo: client
-Depends on: P7.1, U0.6
-Branch: modernise/u6-1-profile-terms
-Goal: `useTerms()` uses the dropzone's `industryProfile.terminology` when present (P7.1), falling back to the bundled
-profile.
-Context: GENERALISATION §5; P7.2 step 2 (superseded).
-Steps:
-  1. `addResourceBundle(lng, 'terms', terminology, true, true)` on dropzone change; tests for switching operators.
-Acceptance criteria (cloud VM):
-  - Client checks, `check:graphql`; tier 2.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: units (U6.2).
-Risk / rollback: revert.
-Size: S
-Fixes: none
-
-### U6.2 — Take units and currency from the operator
-Status: blocked (awaiting decision D5)
-Repo: client
-Depends on: P7.3, U6.1
-Branch: modernise/u6-2-units
-Goal: `formatQuantity` and `formatMoney` use the operator's unit system and currency end to end (kg/lb, ft/m).
-Context: P7.3 (SI in the API).
-Steps:
-  1. Read the profile's `units`; inputs (`NumberField`) convert on entry; tests.
-Acceptance criteria (cloud VM):
-  - Client checks; tier 2 `@load @picker`.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: none.
-Risk / rollback: revert.
-Size: M
-Fixes: none
-
-### U6.3 — Add neutral route aliases
-Status: blocked (awaiting decision D5)
-Repo: client
-Depends on: U6.1
-Branch: modernise/u6-3-route-aliases
-Goal: Neutral paths (`/board`, `/trip/:id`, `/people/:id`) with the old paths redirecting for one release.
-Context: Design plan §5 (URLs unchanged until this task); GENERALISATION §5.
-Steps:
-  1. Linking config; push payload paths; Playwright `@nav` for every old path.
-Acceptance criteria (cloud VM):
-  - Client checks; tier 2 `@nav`.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: removing the old paths (after one release).
-Risk / rollback: revert.
-Size: S
-Fixes: none
-
-### U6.4 — Enforce translated strings everywhere
+### U6.1 — Remove react-native-paper
 Status: todo
 Repo: client
-Depends on: U5.9
-Branch: modernise/u6-4-no-literal-strings
-Goal: `i18next/no-literal-string` is an error for `app/**` (except tests and `app/api/**`); no hard-coded skydiving noun
-remains in components.
-Context: Supersedes P7.7/P7.8. U0.6 lint setup.
-Steps:
-  1. Enable the rule for `app/**`; convert what is left.
-  2. Playwright `@terms` (in the `full` project only): with `?profile=diveBoat`, render the main routes and fail on any
-     word from a banned list (load, jumper, aircraft, altitude, manifest, dropzone, slot).
-Acceptance criteria (cloud VM):
-  - Client checks; tier 2.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: other languages.
-Risk / rollback: revert.
-Size: M
-Fixes: none
-
-### U6.5 — Checkpoint U6
-Status: todo
-Repo: client
-Depends on: U6.4
-Branch: modernise/u6-5-checkpoint
-Goal: Tier 3 passes in both profiles, including `@terms`.
-Context: Phase U rules. U6.1–U6.3 join this checkpoint's scope when D5 unblocks them; until then it covers U6.4.
-Steps:
-  1. Tier 3 web and Android; baselines for the dive-boat variant.
-  2. `client:docs/verification/ui-u6.md`.
-Acceptance criteria (cloud VM):
-  - Tier 3 passes.
-Acceptance criteria (owner, real device):
-  - none
-Out of scope: none.
-Risk / rollback: none.
-Size: S
-Fixes: none
-
----
-
-### U7.1 — Remove react-native-paper
-Status: todo
-Repo: client
-Depends on: U6.5
-Branch: modernise/u7-1-remove-paper
+Depends on: P7.20
+Branch: modernise/u6-1-remove-paper
 Goal: No Paper or `react-native-paper-dates`; date and time pickers built on tokens; the Paper theme adapter deleted.
 Context: UI debt table; design plan §3.3.
 Steps:
-  1. Replace remaining Paper uses (except under `app/legacy/`, removed in U7.4); `DateField`/`TimeField` (native:
+  1. Replace remaining Paper uses (except under `app/legacy/`, removed in U6.4); `DateField`/`TimeField` (native:
      `@react-native-community/datetimepicker` via `npx expo install` if not present, or `@expo/ui` pickers if their
      web story is adequate by then; web: `<input type="date|time">`).
   2. `yarn remove react-native-paper react-native-paper-dates`; delete the adapter in `app/theme/palette.ts`.
@@ -4943,11 +4919,11 @@ Risk / rollback: revert.
 Size: L
 Fixes: none
 
-### U7.2 — Add motion, haptics and reduced motion
+### U6.2 — Add motion, haptics and reduced motion
 Status: todo
 Repo: client
-Depends on: U6.5
-Branch: modernise/u7-2-motion
+Depends on: P7.20
+Branch: modernise/u6-2-motion
 Goal: Motion tokens applied (sheet, panel, highlight), haptics on call, depart and land (native), reduced motion honoured.
 Context: Design plan §3.2 Motion; Reanimated `ReduceMotion`, `expo-haptics`.
 Steps:
@@ -4961,11 +4937,11 @@ Risk / rollback: revert.
 Size: M
 Fixes: none
 
-### U7.3 — Measure and tune performance and bundle size
+### U6.3 — Measure and tune performance and bundle size
 Status: todo
 Repo: client
-Depends on: U7.1
-Branch: modernise/u7-3-performance
+Depends on: U6.1
+Branch: modernise/u6-3-performance
 Goal: Bundle and startup are no worse than the U0.4 baseline; the board with 6 loads × 14 seats and live updates keeps
 60 fps on web and re-renders only changed cards.
 Context: U0.4 baseline; date-fns still in some files.
@@ -4981,11 +4957,11 @@ Risk / rollback: revert.
 Size: M
 Fixes: none
 
-### U7.4 — Retire the old board
+### U6.4 — Retire the old board
 Status: todo
 Repo: client
-Depends on: U7.1
-Branch: modernise/u7-4-retire-old-board
+Depends on: U6.1
+Branch: modernise/u6-4-retire-old-board
 Goal: The `newBoard` flag and `app/legacy/` are removed.
 Context: Do this only after the owner's U3.10 staffed-day check is recorded as passed in `client:docs/verification/ui-u3b.md`;
 otherwise set `owner-check (staffed day on the new board, U3.10)`.
@@ -5000,13 +4976,13 @@ Risk / rollback: revert.
 Size: S
 Fixes: none
 
-### U7.5 — Verify the UI modernisation
+### U6.5 — Verify the UI modernisation
 Status: todo
 Repo: client
-Depends on: U7.2, U7.3, U7.4
-Branch: modernise/u7-5-verify
+Depends on: U6.2, U6.3, U6.4
+Branch: modernise/u6-5-verify
 Goal: Tier 3 passes on the final app, and the owner has run the collected device checks.
-Context: Phase gate; owner lists in `client:docs/verification/ui-u0.md` … `ui-u6.md`.
+Context: Phase gate; owner lists in `client:docs/verification/ui-u0.md` … `ui-u5b.md`.
 Steps:
   1. Tier 3 web and Android; final baselines.
   2. Merge the owner lists into a "UI" section of `client:docs/SMOKE_TEST.md`; write `client:docs/verification/ui-final.md`.
@@ -5024,125 +5000,375 @@ Fixes: none
 
 ## Phase 7 — Generalisation
 
-Goal: OpenManifest can serve operators other than skydiving dropzones through industry profiles, without renaming
-tables or breaking released clients. Design: [GENERALISATION.md](reference/GENERALISATION.md), option B (generic API
-aliases + profile labels; internal names unchanged). Steps 2 (`loads.dropzone_id`) and 6 (money in cents) of
-GENERALISATION §6 are already done in P6.16 and P6.23.
+Goal: OpenManifest serves any operator that manifests people onto loads (skydiving, scuba, snorkel, whale watching,
+fishing charters, parasailing, whitewater rafting, scenic flights, hot-air balloons, gliding, tandem paragliding,
+safari, bus tours). Operators pick an industry template at creation; the template switches on modules and seeds
+editable presets; code and API use industry-neutral names; users see their industry's words. Design, diagrams and the
+rename map: [GENERALISATION.md](reference/GENERALISATION.md) (§n below refers to it).
 
-All Phase 7 tasks are additive: old GraphQL fields stay, with `deprecation_reason`, until P8.7. Every phase-7 task
-except P7.10 is blocked until D5 is decided; P7.4 and P7.9 also need D6. The client i18n work (P7.2, P7.7, P7.8) moved
-into Phase U, which bundles the skydiving terms and does not wait for D5; U6.1–U6.3 consume P7.1 and P7.3.
+Rules for every Phase 7 task (from D5, D7, D9 and D11):
 
-### P7.1 — Add industry profiles
-Status: blocked (awaiting decision D5)
-Repo: backend
-Depends on: P6.27
-Branch: modernise/p7-1-industry-profiles
-Goal: Dropzones have an `industry_profile` (default `skydiving`) and `profile_overrides`; the API exposes the merged
-profile.
-Context: GENERALISATION §3 (YAML example), §6 step 1.
+- **Rename, do not alias.** There is no production data and no released client. Change tables, columns, models, GraphQL
+  types, fields, arguments and client code in place. No deprecated mirrors, no backfills, no dual columns. Migrations
+  are still reversible (`rename_table`, `rename_column`, `change_table`). **`Load` keeps its name** (owner, D5): `loads`,
+  `load_number`, `load_date`, `createLoad`, `loadCreated` and the client's load screens stay.
+- **Rebuild the dev seed instead of migrating data.** Every task that changes the schema updates `db/seeds/dev_baseline.rb`
+  and the factories so `bin/rails db:reset` works; the P0.5 smoke data must still log in and show a manifest board.
+- **Backend and client renames merge in pairs.** A backend rename task (P7.3, P7.5) changes the API; the client keeps
+  passing its checks against its own schema copy (`app/api/openmanifest.graphql`) until the paired client task syncs
+  it. The owner merges each pair together, backend first.
+- **No industry branches.** Behaviour depends on `operator.module?(…)` and operator settings, never on the industry slug.
+  From P7.7, `bin/check-industry-branches` (backend) and `yarn check:industry-branches` (client) fail on
+  `industry ==`, `industry?(`, `skydiving?`, `isSkydiving` and similar outside `config/industries/**`.
+- **Mechanical renames use a codemod.** Rename tasks run the replacements listed in `config/vocabulary.yml` with the
+  script added in P7.1 (`bin/rename-vocabulary --group <name>`), then fix what the script cannot (grammar in comments,
+  file moves, ambiguous words). Review the diff for false positives before committing.
+- **No customer booking or online payment here.** Those belong to Phases B and C (designs in `docs/features/`, D9,
+  D11). Phase 7 only builds the manifest-side seam they use (P7.17, GENERALISATION §17).
+- **Order with Phase U** (see Execution order): stage A (P7.1–P7.6) and P7.7 run before the UI foundations; P7.8–P7.17
+  run after them and before the screens are rebuilt; P7.22, P7.20 and P7.21 run after Phase U's screens. P7.18 and
+  P7.19 are superseded by U0.6 and U3; P7.22 lost its navigation step to U1.1.
+- **Screens Phase U rebuilds get the smallest change.** In P7.8–P7.17, client steps that touch the board, load screen,
+  load and manifest forms, slots table, profile or the setup lists make the smallest change that keeps those screens
+  working and tested; U3–U5 rebuild them for the generic model. New screens (destinations, crew roles, equipment
+  kinds, accepted certification bodies) are built on `app/ui` per "Client UI work".
+
+### P7.1 — Add the vocabulary map, the old-terms check and the rename codemod
+Status: todo
+Repo: both
+Depends on: U0.2
+Branch: modernise/p7-1-vocabulary
+Goal: The rename map exists in machine-readable form; both repos can count old terms and apply renames per group.
+Context: GENERALISATION §3 (table). The check runs in report mode until P7.20 makes it enforcing.
 Steps:
-  1. Migration: `dropzones.industry_profile` string not null default `"skydiving"`, `profile_overrides` jsonb not null
-     default `{}`.
-  2. `config/industry_profiles/skydiving.yml` exactly as GENERALISATION §3; `IndustryProfile` PORO
-     (`app/models/industry_profile.rb`) loaded with `Rails.application.config_for`-style YAML at boot, `deep_merge` with
-     overrides, JSON-schema-like validation in a spec (required keys present).
-  3. GraphQL `IndustryProfileType` (`slug`, `terminology` as JSON scalar, `destinationTypes`, `defaultCallScheduleMinutes`,
-     `tripCrewRoles`, `units`) and `Dropzone.industryProfile`.
-  4. Specs: default profile, override merge, GraphQL field.
+  1. backend: `config/vocabulary.yml` with one entry per row of §3 that changes a name: `group` (`tenant`, `vehicle`,
+     `certifications`, `equipment`, `settings`, `permissions`), `old` and `new` in every case form used (snake, camel,
+     Pascal, kebab, plural), and `allow` globs (`config/industries/skydiving/**`, `app/**/skydiving/**`,
+     `app/features/skydiving/**`, `db/migrate/**`, `docs/**`, `CHANGELOG.md`). `Load` is not in the map. Client copy at
+     `config/vocabulary.yml`, synced by `scripts/sync-vocabulary.mjs` from the backend checkout (same mechanism as
+     `scripts/sync-schema.mjs`).
+  2. `bin/check-vocabulary` (backend, Ruby, uses `git grep -n -w`) and `scripts/check-vocabulary.mjs` (client,
+     `yarn check:vocabulary`): print a count per old term and per directory; `--enforce` exits 1 on any hit outside
+     `allow`. CI runs it without `--enforce` and writes the table to the job summary.
+  3. `bin/rename-vocabulary --group <group> [--dry-run]` (backend) and `scripts/rename-vocabulary.mjs` (client): apply the
+     group's word-boundary replacements to file contents and `git mv` files and directories whose names contain an old
+     term. Skips `allow` paths. Specs/tests for the replacement function (case forms, word boundaries, unrelated words
+     containing an old term are untouched).
 Acceptance criteria (cloud VM):
-  - Backend env: `bundle exec rspec` green; schema dump diff is additive only.
+  - Backend rspec green; client checks pass; `bin/check-vocabulary` and `yarn check:vocabulary` exit 0 and the baseline
+    counts are in the PR body; `bin/rename-vocabulary --group tenant --dry-run` lists files without changing them.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: a second profile (P7.9).
-Risk / rollback: additive; rollback drops columns.
+Out of scope: applying renames (P7.3 onwards).
+Risk / rollback: tooling only; revert.
 Size: M
 Fixes: none
 
-### P7.2 — Add i18n to the client with profile terminology
-Status: superseded (by U0.6 and U6.1)
-Repo: client
+### P7.2 — Drop legacy columns and deprecated API fields
+Status: todo
+Repo: both
 Depends on: P7.1
-Branch: modernise/p7-2-i18n
-Goal: The client has i18next with `common` and `terms` namespaces; `terms` come from the current dropzone's profile.
-Context: GENERALISATION §5. Libraries: `i18next` (latest 25.x), `react-i18next` (latest 15.x), `expo-localization`
-(`npx expo install`), `eslint-plugin-i18next` (latest).
+Branch: modernise/p7-2-drop-legacy
+Goal: Nothing kept only for data migration or old clients remains.
+Context: D7 = (b). P6.23 kept the float money columns (`dropzones.credits`, `dropzone_users.credits`, `orders.amount`,
+`ticket_types.cost`, `extras.cost`, `transactions.amount`) and deprecated GraphQL fields (`grep -rn deprecation_reason
+app/graphql`: `Slot.cost`, `DropzoneUser.credits`, `SellableItem.cost`, `TicketType.cost`, `Extra.cost`, `Order.amount`,
+`Transaction.amount`) and still accepts float inputs. `planes.is_deleted`, `ticket_types.is_deleted`, `extras.is_deleted`
+are superseded by `discarded_at`.
 Steps:
-  1. `app/i18n/index.ts`: init with `lng` from `expo-localization`, fallback `en`, resources `en/common.json`,
-     `en/terms.json` (skydiving defaults as fallback).
-  2. `useProfileTerms()` hook: on current dropzone change, `i18n.addResourceBundle(lng, 'terms', terminology, true, true)`.
-  3. Convert the tab labels and drawer items only (proof of wiring); tests for term switching.
+  1. backend: migration dropping those columns (reversible with types); remove the deprecated fields and float inputs;
+     remove the `is_deleted` reads (verify with `git grep is_deleted` that nothing else uses them).
+  2. client: remove the deprecated fields from documents and fragments (`check:graphql` must pass against the new
+     schema after `scripts/sync-schema.mjs`); regenerate code.
 Acceptance criteria (cloud VM):
-  - Client checks, `check:graphql`, web export and web smoke test pass.
+  - Backend rspec green; `grep -rn deprecation_reason app/graphql` prints nothing; client checks, `check:graphql`, web
+    export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: converting all strings (P7.7, P7.8).
-Risk / rollback: revert.
+Out of scope: renames.
+Risk / rollback: revert both; the down migration restores empty columns.
 Size: M
 Fixes: none
 
-### P7.3 — Add unit conversion
-Status: blocked (awaiting decision D5)
-Repo: both
-Depends on: P7.1, U0.6
-Branch: modernise/p7-3-units
-Goal: Quantities are stored in SI and displayed in the operator's units.
-Context: GENERALISATION §4 table. Altitude (feet in `ticket_types.altitude`), distances (miles in weather), mass
-(`exit_weight` kg), speed (knots in winds JSON).
+### P7.3 — Rename the tenant in the backend: Dropzone → Operator, DropzoneUser → Membership
+Status: todo
+Repo: backend
+Depends on: P7.2
+Branch: modernise/p7-3-operator-backend
+Goal: The backend says `Operator` and `Membership` everywhere; behaviour is unchanged.
+Context: GENERALISATION §3 rows "Dropzone" and "DropzoneUser". Affects tables `dropzones`, `dropzone_users`, every
+`dropzone_id`/`dropzone_user_id` column and foreign key, `Dropzones::Configuration`, `StateMachines::DropzoneState`,
+interactions `Setup::Dropzones::*`, `Users::JoinDropzone`, GraphQL types `Dropzone*`, `DropzoneUser*`, root fields
+`dropzone`, `dropzones`, `dropzoneUser`, `dropzoneUsers`, mutations `createDropzone`, `updateDropzone`, `deleteDropzone`,
+`joinDropzone`, `updateDropzoneUser`, arguments `dropzone`/`dropzoneId`, `users.dropzone_count`, counter caches,
+`master_log_entry/dropzone*.rb`, specs, factories, seeds.
 Steps:
-  1. backend: `Units` module (`to_si`, `from_si`); SI columns added alongside existing ones for weather distances and
-     mass (`exit_spot_m`, `offset_m`, `body_mass_kg`), backfilled; GraphQL SI fields added, old fields deprecated.
-     Altitude moves with destinations in P7.4.
-  2. client: `app/i18n/units.ts` (`formatQuantity`, `parseQuantity`, `compactAltitude`); unit system from
-     `industryProfile.units` merged with dropzone settings; replace display/input of the affected fields.
-  3. Unit tests for every conversion pair in the table; backend backfill spec.
+  1. Migration: `rename_table :dropzones, :operators`, `rename_table :dropzone_users, :memberships`, rename every
+     `dropzone_id` → `operator_id`, `dropzone_user_id` → `membership_id`, `users.dropzone_count` → `operator_count`;
+     rename indexes and foreign keys so their names match.
+  2. `bin/rename-vocabulary --group tenant`, then fix the remainder by hand; rename files and constants (Zeitwerk must
+     load: `bin/rails zeitwerk:check`).
+  3. Regenerate `schema.graphql` (P1.8 drift check) and the annotate comments.
+  4. Rename the request specs and client-operation fixtures from Phase 1 to the new operation names; they must pass
+     with only name changes in their expectations.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - `bin/rails zeitwerk:check`, rspec and rubocop green; `bin/rails db:reset` works; `bin/check-vocabulary` shows 0
+    `tenant` hits outside allowed paths.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: canopy area (stays ft² in the skydiving module).
-Risk / rollback: old columns kept; revert both.
+Out of scope: client (P7.4); user-visible words (they come from terminology in P7.18–P7.20).
+Risk / rollback: revert; the down migration renames back. The client is broken against this API until P7.4 merges, so
+the owner merges P7.3 and P7.4 together.
 Size: L
 Fixes: none
 
-### P7.4 — Add destinations
-Status: blocked (awaiting decisions D5, D6)
-Repo: both
+### P7.4 — Rename the tenant in the client
+Status: todo
+Repo: client
 Depends on: P7.3
-Branch: modernise/p7-4-destinations
-Goal: Ticket types and slots reference a `Destination`; altitude becomes a destination kind.
-Context: GENERALISATION §6 step 3; D6 scope decides whether `named_location`/`route` kinds are built now (recommendation:
-`altitude` and `named_location` only).
+Branch: modernise/p7-4-operator-client
+Goal: The client uses the renamed API and says `operator`/`membership` in code; routes are neutral.
+Context: GENERALISATION §3; `app/providers/dropzone/*`, `screens/limbo/dropzone_select/*`, `screens/wizards/dropzone_wizard/*`,
+`useSession` (`currentDropzoneId`), `app/screens/routes.tsx` paths `/dropzone/...`, `forms/dropzone*`, all `.gql`
+documents.
 Steps:
-  1. backend: `destinations` table as GENERALISATION §6 step 3 (kinds per D6); backfill one altitude destination per
-     distinct `(dropzone_id, altitude)`; `ticket_types.destination_id`, `slots.destination_id`; `TicketType.altitude`
-     deprecated and computed. CRUD mutations `createDestination`/`updateDestination`/`archiveDestination` with
-     `updateDropzone` permission.
-  2. client: destinations configuration screen; `AltitudeSelect` replaced with `DestinationSelect`; ticket type form
-     uses it.
-  3. Specs and tests; backfill rehearsal on the P0.5 seed.
+  1. `scripts/sync-schema.mjs` against the P7.3 branch; `scripts/rename-vocabulary.mjs --group tenant`; fix the rest;
+     regenerate code.
+  2. Routes drop the `dropzone` prefix: `/dropzone/manifest` → `/manifest`, `/dropzone/load/:loadId` → `/loads/:loadId`,
+     dropzone selection → `/operators/select`; directory `screens/authenticated/dropzone/` →
+     `screens/authenticated/manifest/`. Update the Playwright suite's paths (`e2e/`, U0.1).
+  3. The persisted session key `currentDropzoneId` becomes `currentOperatorId` (no migration needed: no released app).
+  4. Visible copy stays as it is ("Dropzone"); it moves to terms in P7.19/P7.20.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Client checks, `check:graphql`, web export and web smoke test (against the P7.3 backend) pass; the remaining `tenant`
+    hits in `yarn check:vocabulary` are visible copy only (listed in the PR).
 Acceptance criteria (owner, real device):
   - none
-Out of scope: multi-leg routes unless D6 includes them.
-Risk / rollback: old column kept. Revert both.
+Out of scope: vehicle and participant names (P7.6).
+Risk / rollback: revert together with P7.3.
 Size: L
 Fixes: none
 
-### P7.5 — Make the call schedule configurable
-Status: blocked (awaiting decision D5)
-Repo: both
+### P7.5 — Rename vehicles, guests, activity types and the daily log in the backend
+Status: todo
+Repo: backend
 Depends on: P7.4
-Branch: modernise/p7-5-call-schedule
-Goal: Load call buttons (20/15/10 minutes) come from `dropzone.settings.callScheduleMinutes` (profile default).
-Context: GENERALISATION §6 step 4; client `load/ActionButton.tsx` hard-codes calls.
+Branch: modernise/p7-5-vehicle-backend
+Goal: `Plane` → `Vehicle`, `Passenger` → `Guest`, `JumpType` → `ActivityType`, `MasterLog` → `DailyLog`, `exit_weight` →
+`body_mass_kg`, `jump_count` → `load_count`; aviation-only load states and setup permissions renamed; behaviour
+unchanged. `Load` is not renamed.
+Context: GENERALISATION §3 and §7 (state names). Tables `planes`, `passengers`, `jump_types`, `master_logs`; columns
+`loads.plane_id` → `loads.vehicle_id` (replaced by `load_vehicles` in P7.9), `slots.jump_type_id`, `slots.passenger_id`,
+`planes.max_slots`/`min_slots` → `vehicles.capacity`/`min_capacity`, `master_logs.dzso_id` → `duty_officer_id`,
+`exit_weight` on `users`, `slots`, `passengers` → `body_mass_kg`, `users.jump_count`, `memberships.jump_count` →
+`load_count`, `users.plane_count` (drop if unused); `StateMachines::LoadState` states (`boarding_call` → `boarding`,
+`in_flight` → `departed`, `landed` → `completed`) and events (`dispatch` → `call`, `take_off` → `depart`,
+`mark_as_landed` → `complete`), notification types; permissions in `config/seed/access.yml` (`createPlane` →
+`createVehicle`, `actAsDZSO` → `actAsDutyOfficer`, `actAsRigInspector` → `actAsEquipmentInspector`, …);
+`MasterLogEntry::*`; the `Aircraft` GraphQL class names; mutations `createPlane`/`updatePlane`/`deletePlane`; query
+`planes`, `jumpTypes`.
 Steps:
-  1. backend: setting with default from profile; GraphQL `Settings.callScheduleMinutes: [Int!]!`; `updateDropzone` accepts it.
-  2. client: ActionButton generates call actions from the setting; settings screen edits it.
+  1. Migration with `rename_table`/`rename_column`; `vehicles.kind` string not null default `"aircraft"` (the default is
+     dropped in P7.7 when templates set it); enum values keep their integers.
+  2. `bin/rename-vocabulary --group vehicle` and `--group permissions`; fix the remainder; Zeitwerk check.
+  3. Regenerate `schema.graphql`; rename Phase 1 specs/fixtures.
+Acceptance criteria (cloud VM):
+  - Zeitwerk check, rspec and rubocop green; `bin/rails db:reset` works; vocabulary check shows 0 `vehicle`/`permissions`
+    hits outside allowed paths.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: crew columns (`pilot_id`, `gca_id`, `load_master_id` stay until P7.10); `ticket_types.altitude` (P7.8);
+rigs and federations (P7.13, P7.14); weather (stays, owned by the winds-aloft module).
+Risk / rollback: revert; merge with P7.6.
+Size: L
+Fixes: none
+
+### P7.6 — Rename vehicles, guests, activity types and the daily log in the client
+Status: todo
+Repo: client
+Depends on: P7.5
+Branch: modernise/p7-6-vehicle-client
+Goal: The client uses the P7.5 API; code names follow §3.
+Context: `configuration/aircrafts/*`, `forms/aircraft/*`, `components/chips/PlaneChip.tsx`, `JumpTypeChipSelect.tsx`,
+`JumpTypeSelect.tsx`, master log screens, passenger fields in the manifest forms, `calculateWingLoading.ts` (reads
+`bodyMassKg`), load state enums in `ActionButton.tsx` and `Countdown.tsx`, user wizard `Wingloading.tsx`.
+Steps:
+  1. Sync schema; `scripts/rename-vocabulary.mjs --group vehicle --group permissions`; fix the rest; regenerate code.
+  2. Directory names: `configuration/aircrafts/` → `configuration/vehicles/`, `configuration/master_log/` →
+     `configuration/daily_log/`, `forms/aircraft/` → `forms/vehicle/`.
+  3. Update the Playwright suite (`e2e/`) and the client tests.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export and web smoke test pass; the remaining `vehicle` hits in the vocabulary
+    check are visible copy only (listed in the PR).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: visible copy.
+Risk / rollback: revert together with P7.5.
+Size: L
+Fixes: none
+
+### P7.7 — Add industry templates with inheritance, modules and the presets engine
+Status: todo
+Repo: backend
+Depends on: P7.6
+Branch: modernise/p7-7-industry-templates
+Goal: Every operator has an immutable `industry` and a `modules` set; `createOperator` requires an industry and seeds
+the operator from the template's presets; templates can extend abstract bases; skydiving behaviour is unchanged; a
+`generic` template exists.
+Context: GENERALISATION §2, §5 (file layout, inheritance diagram, YAML), §6 (sequence). Today
+`Setup::Dropzones::Access::CreateDefaults` (now `Setup::Operators::…`) seeds roles from `config/seed/access.yml`,
+`global.yml` seeds jump types and APF licences, the configuration concern holds default settings,
+`UserRole::DEFAULT`/`DEFAULT_LICENSED` hard-code `student`/`fun_jumper`, the rig-inspection template default is in
+`rig_inspection.rb:38-106`, and `Setup::Demo::DataGenerator` builds skydiving demo data.
+UB.1's `allow_self_manifest` setting moves into the template defaults with the other settings.
+Steps:
+  1. Migration: `operators.industry` string not null (no default), `operators.modules` jsonb not null default `{}`;
+     drop the `vehicles.kind` default; `time_zone` not null without default.
+  2. `config/industries/schema.json`; abstract bases `_aviation`, `_water`, `_ground` (crew role names, units, daily-log
+     template, call schedule per §5 matrix); `skydiving` (extends `_aviation`) and `generic`, each with `template.yml`,
+     `presets.yml`, `catalogue.yml`, `locales/en.yml`. Skydiving content moves from `access.yml` (roles), `global.yml`,
+     the settings defaults, the role defaults and the default inspection form. `access.yml` keeps only the permission list.
+  3. `Industry` registry (`app/models/industry.rb`): loads templates at boot, resolves `extends` (maps deep-merge, lists
+     replace, one level of `extends` per file, cycles rejected), validates against the schema; `Industry.selectable`
+     excludes names starting with `_`; `Industry.fetch(slug)`, `#modules`, `#terminology(locale)`, `#units`, `#presets`,
+     `#booking` (validated, consumed by the booking plan). `Operator#module?(name)`, `#terminology`, `#units`,
+     `#call_schedule_minutes` merge template defaults with `operators.modules`/`settings`.
+  4. `Presets::Apply` interaction: roles and permissions (with `default`/`default_certified` flags replacing the
+     constants), ticket types, extras, vehicle kinds, enabled activity types, inspection form templates. Each later
+     Phase 7 task extends it for its own records. `Setup::Operators::Create` takes `industry` and composes
+     `Presets::Apply` inside its transaction.
+  5. GraphQL: `industries` query (`slug`, `name`, `description`, `icon`, `base`, `modules`, `presetSummary`),
+     `Industry` enum (selectable only), `Operator.industry`, `.modules`, `.terminology` (JSON), `.units`;
+     `createOperator(industry: Industry!)`; `updateOperator(modules:)` for optional modules (a module the template marks
+     `locked` cannot be turned off).
+  6. Seeds: catalogues are loaded from each template's `catalogue.yml`; the dev seed creates its operator with
+     `industry: "skydiving"`; the demo generator takes the industry (skydiving and generic data for now).
+  7. `bin/check-industry-branches` added to CI.
+  8. Specs: every selectable template resolves and validates; a child template overrides a base key and inherits the
+     rest; presets apply idempotently; a skydiving operator created through `createOperator` has exactly the roles,
+     permissions and settings it had before this task (compare with a fixture captured on the parent commit); a
+     `generic` operator can create a vehicle, a load and a slot.
+Acceptance criteria (cloud VM):
+  - Rspec and rubocop green; `bin/check-industry-branches` exits 0; `bin/rails db:reset` works.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: client wizard (P7.23); other templates (P7.24–P7.30).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### P7.8 — Add destinations
+Status: todo
+Repo: both
+Depends on: P7.7
+Branch: modernise/p7-8-destinations
+Goal: Altitude becomes one kind of destination; loads and slots reference destinations according to the template's
+destination scope.
+Context: GENERALISATION §4 (ER, scope note) and §12. `ticket_types.altitude` (int feet); client
+`components/input/dropdown_select/AltitudeSelect.tsx` (hard-coded 4000/14000), `slots_table/UserRow.tsx` ("14k"),
+`configuration/ticket_types/*`, daily log altitude.
+Steps:
+  1. backend: `destinations` (`operator_id`, `kind` string `altitude|site|route|section`, `name`, `altitude_m`
+     decimal(10,2), `location` jsonb, `stops` jsonb array, `min_certification_rank` int null, `discarded_at`);
+     `load_destinations` (`load_id`, `destination_id`, `position`, unique per load/position); `slots.destination_id`;
+     `ticket_types.default_destination_id`; drop `ticket_types.altitude`. Validation: kind allowed by the operator's
+     `destinations.kinds`; per-slot scope requires `slots.destination_id` (defaulted from the ticket type), per-load scope
+     requires ≥ 1 load destination when the load is called.
+  2. Presets: skydiving destinations "Hop n Pop" 1219.2 m and "Full altitude" 4267.2 m; ticket types point at them.
+  3. GraphQL: `Destination` type, `operator.destinations`, `createDestination`/`updateDestination`/`archiveDestination`
+     (`updateOperator` permission), `Load.destinations`, `Slot.destination`, `TicketType.defaultDestination`; load
+     create/update accept `destinationIds`.
+  4. client: destinations configuration screen; `DestinationSelect` replaces `AltitudeSelect`; the ticket type form uses
+     it; the load form shows ordered destinations when the scope is per load; altitude display converts metres to feet
+     with the "14k" format until units land (P7.12 replaces the formatter).
+  5. Specs/tests for both scopes.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: boarding at intermediate stops (GENERALISATION §16).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.9 — Allow several vehicles on one load
+Status: todo
+Repo: both
+Depends on: P7.8
+Branch: modernise/p7-9-multi-vehicle
+Goal: A load uses one or more vehicles, each carrying participants or supporting (tug, chase vehicle, shuttle);
+capacity is the sum of the carrying vehicles; slots can be assigned to a carrying vehicle.
+Context: GENERALISATION §1 (rafting, safari, bus tours, gliding, balloons), §7 "Vehicles". `loads.vehicle_id` (from
+P7.5), slot counting and capacity locks from P6.10, client load card, load form vehicle picker.
+Steps:
+  1. backend: `load_vehicles` (`load_id`, `vehicle_id`, `role` `carrying|support`, `position`; unique per load/vehicle;
+     at least one carrying); `slots.load_vehicle_id` null; drop `loads.vehicle_id`. Capacity = sum of carrying
+     capacities; a slot with a vehicle counts against that vehicle as well (same locked counter pattern as P6.10). A
+     vehicle cannot be on two overlapping open loads (`dispatch_at` within an operator setting, default 0 = only one
+     open load per vehicle at a time).
+  2. `multi_vehicle` module: off → API and UI accept exactly one carrying vehicle and no support vehicles (today's
+     behaviour); on → any number. Skydiving template: off. `generic` and `_ground`: on.
+  3. GraphQL: `Load.vehicles: [LoadVehicle!]!`, `Slot.loadVehicle`; load inputs take `vehicles: [{vehicleId, role}]`;
+     `moveSlot` can move between vehicles of a load.
+  4. client: single-vehicle picker unchanged when the module is off; with it on, a vehicle list in the load form and
+     slots grouped by vehicle on the load screen.
+  5. Specs/tests: capacity sum; per-vehicle capacity; concurrent last-seat specs from P6.10 still pass.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: automatic distribution of participants across vehicles.
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.10 — Generalise load crew
+Status: todo
+Repo: both
+Depends on: P7.9
+Branch: modernise/p7-10-crew-roles
+Goal: Pilot, GCA and load master become crew roles defined per operator, assigned per load or per vehicle; required
+roles are validated from data.
+Context: GENERALISATION §7. `loads.pilot_id`, `gca_id`, `load_master_id`; `validates :gca`, `:pilot` in the load model;
+permissions `actAsPilot`, `actAsGCA`, `actAsLoadMaster`; client `PilotChip`, `GcaChip`, `LoadMasterChip`, load form.
+Steps:
+  1. backend: `crew_roles` (`operator_id`, `key`, `name`, `scope` `load|vehicle`, `required`, `occupies_slot`,
+     `permission`, `position`), `load_crew_assignments` (`load_id`, `load_vehicle_id` null, `crew_role_id`,
+     `membership_id`; unique per load/vehicle/role); drop the three columns. Validation: every required load-scoped role
+     assigned once per load, every required vehicle-scoped role once per vehicle the role applies to (carrying, or the
+     kinds listed on the role), each by a member holding the role's permission; capacity counts crew with
+     `occupies_slot`. Presets seed skydiving `pilot` (vehicle, required), `gca` (load, required), `load_master` (load).
+  2. GraphQL: `CrewRole`, `operator.crewRoles`, `Load.crew: [LoadCrewAssignment!]!`, load inputs take
+     `crew: [{crewRoleId, membershipId, loadVehicleId}]`; CRUD for crew roles (`updateOperator` permission).
+  3. client: one `CrewChip` per crew role, per vehicle for vehicle-scoped roles (replaces the three chips); the load form
+     is generated from `crewRoles`.
+  4. Specs/tests (required role missing, wrong permission, a guide per raft on a three-raft load, capacity with
+     seat-occupying crew).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: duty officer on the daily log (stays a single column).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.11 — Make the call schedule configurable
+Status: todo
+Repo: both
+Depends on: P7.10
+Branch: modernise/p7-11-call-schedule
+Goal: Call buttons and countdowns come from `operator.callScheduleMinutes` (template default, editable).
+Context: client `screens/authenticated/manifest/load/ActionButton.tsx` (hard-coded 20/15/10), `Countdown.tsx`;
+notification copy.
+Steps:
+  1. backend: `settings.call_schedule_minutes` (array of positive integers, descending, max 6, may be empty) with the
+     template default; GraphQL `Operator.callScheduleMinutes: [Int!]!`; `updateOperator` accepts it.
+  2. client: ActionButton generates call actions from it (none when empty: depart directly); operator settings screen
+     edits it.
   3. Specs/tests.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: none.
@@ -5150,58 +5376,273 @@ Risk / rollback: revert both.
 Size: S
 Fixes: none
 
-### P7.6 — Generalise trip crew roles
-Status: blocked (awaiting decision D5)
+### P7.12 — Store SI units and display the operator's units
+Status: todo
 Repo: both
-Depends on: P7.5
-Branch: modernise/p7-6-crew-roles
-Goal: Pilot, GCA and load master become crew assignments driven by the profile's `trip_crew_roles`.
-Context: GENERALISATION §6 step 5; `loads.pilot_id`, `gca_id`, `load_master_id`; `validates :gca, :pilot`.
+Depends on: P7.11
+Branch: modernise/p7-12-units
+Goal: Quantities are SI in the database and API and shown in the operator's unit system; each operator has a
+currency.
+Context: GENERALISATION §12. The operator currency moved here from COMMERCE C1.1 so the wizard (P7.23) and the
+client formatters (U0.6) have it before Phase C. Remaining non-SI storage after P7.5/P7.8: weather `exit_spot_miles`, `offset_miles`, winds
+JSON speeds (knots), `temperature`; canopy size (ft², moves into equipment attributes in P7.14).
 Steps:
-  1. backend: `trip_crew_assignments` table, backfill, model validation from the profile's required roles; old fields
-     become deprecated mirrors kept in sync by a callback for one release.
-  2. client: crew chips generated per role.
-  3. Specs/tests.
+  1. backend: `Units` module (`to_si`, `from_si`, supported units per quantity); rename/convert weather columns to
+     `exit_spot_m`, `offset_m`, winds speeds to m/s (`*_mps`), `temperature_c`; `settings.units` merged with the template's
+     `units`; GraphQL `Operator.units` (`{altitude, depth, distance, mass, speed, temperature}`) and SI fields only;
+     `operators.currency` (ISO 4217, not null; `AUD` for existing rows and the dev seed; set at creation from P7.23),
+     GraphQL `Operator.currency`, `updateOperator` accepts it until the operator has payments (guard added in C1.1).
+  2. client: complete `formatQuantity` and add `parseQuantity` and `compactAltitude` in `app/i18n/format.ts` (U0.6);
+     every display/input of mass, altitude, depth, distance, speed and temperature goes through them; `formatMoney`
+     uses `operator.currency`; the operator settings screen picks units and currency.
+  3. Unit tests for every conversion pair; backend spec for the weather calculations in SI.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass; a skydiving operator still
+    sees "14k" and kg.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: none.
-Risk / rollback: mirrors keep old clients working. Revert both.
+Out of scope: per-user unit preferences.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.13 — Generalise certifications
+Status: todo
+Repo: both
+Depends on: P7.12
+Branch: modernise/p7-13-certifications
+Goal: Federations, licences and qualifications become certification bodies, levels and qualifications with comparable
+ranks and optional expiry; operators accept several bodies; requirements are minimum ranks or qualifications.
+Context: GENERALISATION §8. Tables `federations`, `licenses`, `licensed_jump_types`, `user_federations`,
+`qualifications`, `user_federation_qualifications`; `operators.federation_id`, `users.license_id`,
+`memberships.license_id`, `users.apf_number`; `Federations::ApfSync`, `Federations::AssignUser`; mutation
+`joinFederation`; client `forms/user_wizard/steps/Federation*.tsx`, `License.tsx`, `FederationCardSelect.tsx`,
+`LicenseCardSelect.tsx`, operator wizard `Federation` step.
+Steps:
+  1. backend: rename to `certification_bodies` (+ `industry`, `verification_provider`), `certification_levels`
+     (+ `rank` int not null, `equivalence_key`), `permitted_activities`, `user_certifications` (`number` replaces
+     `license_number`; + `verified_at`, `verified_by_id`), `user_qualifications` (+ `number`; `expires_at` exists);
+     a body may have no levels (qualifications only); new `operator_certification_bodies`; drop
+     `operators.federation_id`, `users.license_id`, `users.apf_number`; `memberships.license_id` →
+     `memberships.certification_level_id` only if still used, else drop. `bin/rename-vocabulary --group certifications`.
+  2. `ticket_types.min_certification_rank`, `ticket_types.required_qualification_id`, `extras.required_qualification_id`;
+     activity-type gating keeps using permitted activities. APF sync becomes `Certifications::Providers::Apf`, chosen by
+     `verification_provider`.
+  3. Catalogue: skydiving `catalogue.yml` gets ranks (No licence 0, Student 10, A 20 … E 60) and `equivalence_key`s.
+  4. GraphQL: `CertificationBody`, `CertificationLevel`, `UserCertification`, `Qualification`, `UserQualification`;
+     `operator.certificationBodies` (accepted), `certificationBodies(industry:)`; `joinCertificationBody` replaces
+     `joinFederation`; `addUserQualification`.
+  5. client: wizard steps list only the operator's accepted bodies; a qualification step (number, expiry) when the
+     operator's tickets or extras require qualifications; operator settings edit accepted bodies; renames.
+  6. Specs: rank comparison across two bodies; expired qualification fails; APF provider unchanged behaviour.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: catalogues for other industries (template tasks); automated verification for non-APF bodies.
+Risk / rollback: revert both.
 Size: L
 Fixes: none
 
-### P7.7 — Convert manifest and load screens to translated terms
-Status: superseded (by U3.3–U3.9 and U6.4)
-Repo: client
-Depends on: P7.6
-Branch: modernise/p7-7-i18n-manifest
-Goal: All user-visible strings under `app/screens/authenticated/dropzone/**` and `app/components/{load_card,slots_table}/**`
-use `t()`; the `i18next/no-literal-string` rule is enabled for those directories.
-Context: GENERALISATION §5.
+### P7.14 — Generalise equipment
+Status: todo
+Repo: both
+Depends on: P7.13
+Branch: modernise/p7-14-equipment
+Goal: Rigs become equipment items of operator-defined kinds with validated attributes, service dates and inspections
+with a validity; a slot can use several items; skydiving specifics live in the skydiving namespace.
+Context: GENERALISATION §9. `rigs` (`rig_type`, `canopy_size`, `repack_expires_at`, `maintained_at`, `pack_value`,
+`packing_card`, `make`, `model`, `serial`, `is_public`), `rig_inspections`, `operators.rig_inspection_template_id`,
+`slots.rig_id`, `packs`, `Slot#wing_loading`, `operator.student_rigs`/`tandem_rigs`; settings `require_equipment`,
+`require_rig_inspection`, `require_reserve_in_date`; client `screens/authenticated/user/equipment/*`,
+`configuration/rigs/*`, `forms/rig*`, `user_wizard/steps/Rig.tsx`, `ReserveRepack.tsx`, `AskForRig.tsx`,
+`calculateWingLoading.ts`. UB.2 lets staff with `updateUser` manage members' personal rigs; keep that rule on the
+renamed equipment mutations.
 Steps:
-  1. Replace literals with keys in `common.json`; skydiving terms via `terms:` keys.
-  2. Enable `i18next/no-literal-string` (mode `jsx-text-only`) for the converted directories in `eslint.config.js`.
+  1. backend: `equipment_kinds` (`operator_id`, `key`, `name`, `attribute_schema` jsonb, `service_interval_days`,
+     `inspection_form_template_id`, `inspection_valid_days` null = until changed, `required_by` jsonb of ticket type and
+     activity ids); `equipment` (renamed `rigs`: `kind_id`, `ownership` enum personal/operator, `user_id`, `operator_id`,
+     `name`, `make`, `model`, `serial`, `attributes` jsonb validated by the kind schema, `service_due_at`);
+     `equipment_inspections`; `slot_equipment` replaces `slots.rig_id`; settings renamed
+     (`require_equipment_inspection`, `require_equipment_in_service`). Skydiving `rig` kind schema: `rig_type`,
+     `canopy_size_m2` (shown ft²), `pack_value`; `repack_expires_at` → `service_due_at`.
+  2. `app/models/skydiving/` (or `app/services/skydiving/`): wing loading, packing jobs (`packs`), student/tandem rig
+     scopes; reachable only with the `equipment` module and a `rig` kind.
+  3. GraphQL: `EquipmentKind`, `Equipment`, `EquipmentInspection`, `Slot.equipment`; mutations renamed
+     (`createEquipment`, …); `availableEquipment(kind:)` replaces `availableRigs`.
+  4. client: generic equipment screens driven by the kind's attribute schema (string/integer/decimal/enum/date fields);
+     skydiving components (`WingLoading`, rig wizard steps) move to `app/features/skydiving/`; the manifest form picks
+     one item per required kind.
+  5. Specs/tests: attribute validation, service date expiry, inspection validity of one day, two items on one slot.
 Acceptance criteria (cloud VM):
-  - Client checks, web export and smoke test pass; web smoke screenshots show identical English copy.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: other directories (P7.8).
+Out of scope: kinds for other industries (template tasks).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.15 — Generalise escorts and guests
+Status: todo
+Repo: both
+Depends on: P7.14
+Branch: modernise/p7-15-escorts
+Goal: Tandem becomes "requires escort" with a configurable number of guests per escort; guests carry the same
+personal fields as booking participants.
+Context: GENERALISATION §10, §17 items 2 and 7. `ticket_types.is_tandem`, `slots.passenger_slot_id` (escort → guest,
+1:1), `Manifest::CreateSlot` tandem branch, `guests` (renamed from `passengers` in P7.5); client manifest form passenger
+fields, "Tandem Passenger:" row.
+Steps:
+  1. backend: `ticket_types.requires_escort` (replaces `is_tandem`), `escort_capacity` int default 1,
+     `escort_crew_role_id` / `escort_qualification_id` null; `slots.escort_slot_id` on the guest slot (replaces
+     `passenger_slot_id` on the escort slot); `guests` gets `email`, `phone`, `date_of_birth`, `emergency_contact`.
+     Validation: escort slot on the same load (and same vehicle when assigned), escort qualified, guests per escort ≤
+     capacity. A child-with-adult ticket is an escort ticket whose escort needs no qualification.
+  2. GraphQL and client: the manifest form books n guests with one escort; the slots table groups guests under their
+     escort.
+  3. Specs/tests: 1:1 tandem unchanged; 1:4 try dive; capacity exceeded; child with adult.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.16 — Add participant limits and move eligibility into module rules
+Status: todo
+Repo: both
+Depends on: P7.15
+Branch: modernise/p7-16-eligibility
+Goal: Manifest eligibility is computed once on the server from core and module rules, including age and body-mass
+limits; the client shows the server's result instead of re-implementing it.
+Context: GENERALISATION §11, §17 item 6. Server: `Manifest::CreateSlot`, `Slot` validations,
+`Operators::Configuration`. Client: `app/hooks/useManifestValidator.ts`. The booking plan's `participant_rules` use
+`min_age` and `max_body_mass_kg`.
+Steps:
+  1. backend: `users.date_of_birth`; `ticket_types.participant_limits` jsonb (`min_age`, `max_age`,
+     `min_body_mass_kg`, `max_body_mass_kg`); `activity_types.participant_limits` (same keys); `vehicles.max_payload_kg`;
+     `group_limits` on ticket types (`max_group_body_mass_kg`, `max_group_size`) for flight groups (`slots.group_number`).
+  2. `Eligibility::Rule` interface (`applies?(operator)`, `check(context) → Result(code, ok, message_key)`), core rules
+     (capacity, membership, credits unless prepaid, double manifesting) and module rules (certification rank /
+     qualification, equipment present / inspected / in service, limits: age, body mass, group mass and size, load mass ≤
+     sum of carrying vehicles' payload; escort); `Eligibility.check(…)` used by slot creation, moves and edits; bypass
+     handling unchanged.
+  3. GraphQL `slotEligibility(loadId, membershipId | guest, ticketTypeId, extraIds, equipmentIds, loadVehicleId,
+     groupNumber): [EligibilityResult!]!`.
+  4. `Membership.eligibility(loadId: ID): Eligibility!`, a list-safe summary for pickers and the Today checklist
+     (formerly UB.3): `ready` plus one entry per applicable rule (`code`, `ok`, `status` `PASS`/`EXPIRING`/`FAIL`/
+     `NOT_REQUIRED`, `expiresAt`, `amountCents`), `EXPIRING` within 14 days; dataloader-backed, with an N+1 spec for a
+     members list selecting it.
+  5. client: `useManifestValidator` calls `slotEligibility` (debounced) and renders results; local rule code removed;
+     date of birth in the profile wizard when the limits module is on.
+  6. Specs: one per rule; module off → rule absent; missing date of birth with an age limit fails with its own code;
+     `eligibility.ready` agrees with slot creation for every rule.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: recency and waiver rules (GENERALISATION §16).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.17 — Add the manifest-side booking seam
+Status: todo
+Repo: both
+Depends on: P7.16
+Branch: modernise/p7-17-booking-seam
+Goal: Loads can be scheduled on future dates and carry actual times; slots can be prepaid; templates declare how
+bookings reach the manifest. Nothing booking-specific is built.
+Context: GENERALISATION §7 "Dates", §17 (contract items 1–7). Phase B (design `docs/features/BOOKING_PLAN.md`): B3.2 check-in to manifest and BD7 (b) session ↔ load. Today loads are listed per
+operator-local day and the board shows today only; tandem slots skip the wallet through
+`Transactions::Purchase#refund_if_tandem`.
+Steps:
+  1. backend: `loads.departed_at`, `loads.completed_at` set by the state machine; `load_date` may be in the future
+     (validation: not in the past when created); `loads(from:, to:)` query by date range; load numbers per
+     `load_date` as today.
+  2. `slots.prepaid` boolean default false: no wallet charge on creation or completion; replaces the tandem special
+     case with a prepaid flag set for escort tickets that were charged to the guest's order (behaviour for tandems
+     unchanged, proven by the existing payment specs); GraphQL `Slot.prepaid`, `CreateSlotInput.prepaid` (permission
+     `createPrepaidSlot`, granted to the roles that hold `createUserSlot` today).
+  3. Templates: `booking.manifest_link` (`checkin` | `load`) validated by the schema; skydiving `checkin`, generic
+     `load`; exposed as `Industry.booking { manifestLink }`.
+  4. client (smallest change, Phase 7 rules; U3.3 builds the real one): date picker on the manifest board (today by default, operator time zone from P6.20); creating a load for
+     another date; prepaid badge on slots.
+  5. Specs/tests: future load listing; prepaid slot not charged on completion; reopening a completed load clears
+     `completed_at`.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: booking tables, sessions, availability and payments (booking and commerce plans).
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.18 — Add i18n to the client with operator terminology
+Status: superseded (by U0.6)
+Repo: client
+Depends on: P7.17
+Branch: modernise/p7-18-i18n
+Goal: The client has i18next with `common` and `terms` namespaces; `terms` come from the current operator.
+Context: GENERALISATION §13. Libraries: `i18next`, `react-i18next`, `expo-localization` (`npx expo install`),
+`eslint-plugin-i18next` (latest versions at the time of the task).
+Steps:
+  1. `app/i18n/index.ts`: init with the device language, fallback `en`, `en/common.json`, `en/terms.json` (generic
+     template words as fallback).
+  2. `useOperatorTerms()`: on operator change, `i18n.addResourceBundle(lng, 'terms', operator.terminology, true, true)`.
+  3. Convert the tab labels, drawer and settings menu (proof of wiring); tests switching between a skydiving and a
+     generic operator.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: converting all strings (P7.19, P7.20).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### P7.19 — Convert manifest and load screens to translated terms
+Status: superseded (by U3.3–U3.9)
+Repo: client
+Depends on: P7.18
+Branch: modernise/p7-19-i18n-manifest
+Goal: All user-visible strings under `app/screens/authenticated/manifest/**` and the load, slot and manifest components
+use `t()`; `i18next/no-literal-string` is on for those directories.
+Context: GENERALISATION §13.
+Steps:
+  1. Replace literals with keys in `common.json`; industry words via `terms:` keys, including load state names
+     (`terms:state.departed` → "In flight" for aviation templates).
+  2. Enable `i18next/no-literal-string` (mode `jsx-text-only`) for the converted directories in `eslint.config.js`.
+Acceptance criteria (cloud VM):
+  - Client checks, web export and web smoke test pass; smoke screenshots for the skydiving operator show the same English
+    copy as before.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: other directories (P7.20).
 Risk / rollback: revert.
 Size: L
 Fixes: none
 
-### P7.8 — Convert the remaining screens to translated terms
-Status: superseded (by U4.1–U5.8 and U6.4)
-Repo: client
-Depends on: P7.7
-Branch: modernise/p7-8-i18n-rest
-Goal: All remaining screens and components use `t()`; the lint rule covers `app/**`.
-Context: As P7.7.
+### P7.20 — Convert the remaining screens and enforce the vocabulary check
+Status: todo
+Repo: both
+Depends on: P7.22
+Branch: modernise/p7-20-i18n-rest
+Goal: Every client screen uses `t()`; the lint rule covers `app/**`; the vocabulary check is enforcing in both repos.
+Context: Phase U converted every screen it rebuilt (U0.6, U2.7, U3–U5) and P7.22 isolated the skydiving features;
+this task converts what is left and enforces. P7.1 check.
 Steps:
-  1. As P7.7 for every remaining directory; enable the rule for `app/**` (exclude tests and `app/api/**`).
+  1. client: as P7.19 for every remaining directory; rule on `app/**` (excluding tests and `app/api/**`).
+  2. both: CI runs the vocabulary check with `--enforce`; fix or allow-list every remaining hit (allow-list entries need
+     a one-line reason in `config/vocabulary.yml`).
+  3. client: Playwright `@terms` (full project only): as a generic operator, render the main routes and fail on any
+     word from the skydiving vocabulary (jumper, aircraft, altitude, dropzone, rig, …).
 Acceptance criteria (cloud VM):
-  - Client checks, web export and smoke test pass.
+  - Backend rspec green; client checks, web export and web smoke test pass; both vocabulary checks pass with `--enforce`.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: translations into other languages.
@@ -5209,45 +5650,309 @@ Risk / rollback: revert.
 Size: L
 Fixes: none
 
-### P7.9 — Add the second industry profile
-Status: blocked (awaiting decisions D5, D6)
-Repo: both
-Depends on: U6.4, U6.1
-Branch: modernise/p7-9-second-profile
-Goal: A second profile (D6; recommendation: `diving`) works end to end in the web smoke test.
-Context: GENERALISATION §3 and §7.
+### P7.21 — Use operator terminology in server-generated copy
+Status: todo
+Repo: backend
+Depends on: P7.20
+Branch: modernise/p7-21-server-copy
+Goal: Notifications, push messages, activity events and emails use Rails I18n with the operator's terms.
+Context: GENERALISATION §13. Literal copy in the load state machine (`"Load ##{n} take off at …"`), `Load` model
+notifications, `Activity::CreateEvent` messages in interactions, mailer views.
 Steps:
-  1. backend: `config/industry_profiles/<slug>.yml`; seeds for a demo operator in `db/seeds/dev_baseline.rb`.
-  2. client: hide equipment/licence/winds screens when the profile disables them; conditions module switch.
-  3. Web smoke test: log in as the demo operator's admin, create a trip, manifest two participants; terms show the
-     profile's words.
+  1. `config/locales/en.yml` keys with interpolation; `Operator#term(key, count:)`; replace literals ("take off" becomes
+     the template's `call` wording).
+  2. Spec: a skydiving operator and an operator with the terminology override `load: Trip` produce "Load #3 …" and
+     "Trip #3 …".
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test (both profiles) pass.
+  - Rspec green; `git grep -nE '"(Dropzone|Jumper|Plane|Aircraft)'` in `app/` prints nothing outside skydiving paths.
 Acceptance criteria (owner, real device):
-  - Owner reviews the second profile's screens on a phone and confirms the terminology.
-Out of scope: further profiles.
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### P7.22 — Make navigation module-aware, replace airplane icons and isolate skydiving features
+Status: todo
+Repo: client
+Depends on: U5.9
+Branch: modernise/p7-22-module-aware-ui
+Goal: Screens, tabs and menu entries show only what the operator's modules provide; skydiving-only UI lives in
+`app/features/skydiving/`; vehicle icons follow the vehicle kind (D10).
+Context: GENERALISATION §14 (icon mapping verified against `@expo/vector-icons` 15.0.2); D10 = (a).
+Steps:
+  1. Navigation already filters on modules (U1.1); add `module` to the remaining entry points (Setup groups, Account and
+     profile sections) and use the `NotAvailable` state for their deep links.
+  2. Move winds/jump-run screens, wing loading, packing jobs and remaining skydiving components into
+     `app/features/skydiving/`.
+  3. `VehicleIcon` (`kind` → icon per §14) replaces every hard-coded airplane icon (manifest tab, load cards, vehicle
+     lists); the operator's template icon is used in the operator selector. Skydiving illustrations and Lottie
+     animations render only when the operator's template is skydiving-based (read from `operator.industry`'s
+     `illustrations` key in the template, not from the slug); others use neutral illustrations shipped in `assets/`.
+  4. The user profile wizard asks only for what the modules need.
+  5. Tests: a generic operator sees no equipment, certification, weather or daily-log entries and no airplane icon.
+Acceptance criteria (cloud VM):
+  - Client checks, web export and web smoke test pass, including a run as a generic operator with no skydiving words or
+    airplane icons on screen; `git grep -n "name=\"airplane\"\|'airplane'" app/` hits only `VehicleIcon` and
+    `app/features/skydiving/`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### P7.23 — Add the operator wizard with an industry picker
+Status: todo
+Repo: both
+Depends on: P7.21
+Branch: modernise/p7-23-operator-wizard
+Goal: Creating an operator starts with choosing an industry; the rest of the wizard is pre-filled from the template and
+the owner reviews the seeded presets.
+Context: GENERALISATION §6 (sequence and steps); client `screens/wizards/operator_wizard/` (was `dropzone_wizard`).
+Steps:
+  1. backend: `industries` query returns a `presetSummary` (crew roles, ticket types, destinations, roles);
+     `createOperator` accepts `currency`, `units`, `certificationBodyIds`.
+  2. client: steps Industry (cards grouped air / water / land / other) → Name → Location and time zone → Currency and
+     units → Certification bodies (if module on) → Branding → Review presets (prices, first vehicle) → Done; time zone
+     and currency pre-filled from `expo-localization`.
+  3. Optional modules are edited in Setup → Rules (U5.3); the wizard's review step links there. The wizard is built on
+     `app/ui` (Client UI work) and replaces the old wizard frame.
+  4. Web smoke test creates a `generic` operator through the wizard.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - Owner runs the wizard on a phone for skydiving and generic and confirms the steps read well.
+Out of scope: further templates.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+Template tasks P7.24–P7.30 share these steps; each task lists only what differs.
+
+- backend: `config/industries/<slug>/{template.yml,presets.yml,catalogue.yml,locales/en.yml}` extending the base named
+  in GENERALISATION §5 and following its module matrix row; certification bodies, levels, qualifications and activity
+  types in `catalogue.yml`; presets for roles, crew roles, vehicle kinds, ticket types (with participant limits and
+  escorts), extras, destinations, equipment kinds; `booking.manifest_link` per §17. Names of certification levels,
+  limits and crew roles are checked against public sources (agency course lists, operator safety pages, regulators),
+  cited in the PR; preset numbers are marked as defaults to review.
+- backend: the demo generator and the dev seed get one demo operator per template with staff, a vehicle (or vehicles),
+  destinations and participants.
+- client: anything the task names; otherwise templates are data only.
+- Web smoke test: the scenario in the task, run in addition to every earlier template's scenario.
+- Acceptance criteria (cloud VM) for every template task: backend rspec green; client checks, `check:graphql`, web
+  export and the web smoke test (all templates so far) pass.
+- Acceptance criteria (owner, real device): the owner reviews the template's screens and wording on a phone, ideally
+  with an operator from that industry.
+- Risk / rollback: revert both.
+
+### P7.24 — Add the scuba and snorkel templates
+Status: todo
+Repo: both
+Depends on: P7.23
+Branch: modernise/p7-24-scuba-snorkel
+Goal: A dive centre can run a two-site boat trip with certified divers, rental gear, nitrox and a try-dive guest; a
+snorkel operator runs the same boat without certifications.
+Context: GENERALISATION §1, §5 (scuba YAML), §8. `snorkel` extends `scuba`.
+Steps:
+  1. scuba catalogue: PADI, SSI, NAUI, CMAS, RAID, SDI/TDI, BSAC recreational levels with ranks and `equivalence_key`s;
+     a nitrox qualification per body; dive types (fun, night, deep, wreck, drift, training). Equipment kinds BCD,
+     regulator, wetsuit, cylinder. Sites with `max_depth_m` and `min_certification_rank`.
+  2. snorkel: certifications off; equipment kinds mask, fins, stinger suit; children-with-adult ticket.
+  3. Web smoke: create a scuba operator in the wizard; add a boat and two sites; manifest an Advanced diver, an Open
+     Water diver (blocked from a 30 m site), a nitrox extra (blocked without the qualification) and a try-dive guest
+     with an instructor; call, depart, complete. Create a snorkel operator and complete a load with a child and an adult.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: marine conditions, dive logs (GENERALISATION §16).
 Risk / rollback: revert both.
 Size: L
 Fixes: none
 
-### P7.10 — Verify Phase 7
+### P7.25 — Add the whale-watching and fishing-charter templates
 Status: todo
 Repo: both
-Depends on: P7.1, P7.3, P7.4, P7.5, P7.6, P7.9, U6.1, U6.2, U6.4
-Branch: modernise/p7-10-verify
-Goal: Generalisation is proven for both profiles.
-Context: Phase gate. If D5 is decided as "no generalisation", the owner sets P7.1–P7.9 to `done (skipped by D5)` and
-this task only records that.
+Depends on: P7.24
+Branch: modernise/p7-25-whale-fishing
+Goal: Boat operators without certifications run route and grounds trips with a passenger list; fishing charters
+check fishing licences and rent rods.
+Context: GENERALISATION §1, §5. Both extend `_water`.
 Steps:
-  1. Run all backend and client checks, web export and smoke test for both profiles.
-  2. Write `docs/verification/phase-7.md`; update GENERALISATION.md with what was built and what remains.
+  1. whale_watching: route destinations, crew skipper (required), deckhand, naturalist; adult/child/family tickets.
+  2. fishing_charter: grounds destinations; a qualification-only certification body per supported jurisdiction
+     ("Recreational fishing licence", with expiry) required by the adult ticket and waivable per ticket (some
+     jurisdictions cover charter passengers under the operator's licence: a ticket setting, not a hard rule); rod and
+     tackle equipment kinds.
+  3. Daily log template `passenger_list`: names, contact, emergency contact per load, exportable as CSV.
+  4. Web smoke: a whale-watching load with adults and a child, completed, passenger list exported; a fishing load where
+     a passenger without a licence is blocked and then allowed on a licence-included ticket.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: catch logging.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.26 — Add the scenic-flight and hot-air-balloon templates
+Status: todo
+Repo: both
+Depends on: P7.25
+Branch: modernise/p7-26-scenic-balloon
+Goal: Scenic flight operators fly routes with weight limits; balloon operators fly from launch sites with a chase
+vehicle and crew; both log flight times.
+Context: GENERALISATION §1, §5, §7 (support vehicles, actual times), §11 (limits). Both extend `_aviation`.
+Steps:
+  1. scenic_flights: vehicle kinds helicopter and aeroplane with `max_payload_kg`; route destinations; pilot crew
+     (vehicle, required); per-person `max_body_mass_kg` on tickets; flight log daily template (`departed_at`,
+     `completed_at`, pilot, vehicle, passengers).
+  2. hot_air_balloon: vehicle kinds balloon (carrying) and chase vehicle (support); pilot (vehicle, required on the
+     balloon), chase crew (vehicle, on the chase vehicle); launch-site destinations; `min_age` and body-mass limits.
+  3. Web smoke: a scenic flight where adding a passenger over the payload is blocked; a balloon load with a chase
+     vehicle and crew, departed and completed, with flight times in the log.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: seat assignment by weight (GENERALISATION §16).
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.27 — Add the tandem-paragliding and parasailing templates
+Status: todo
+Repo: both
+Depends on: P7.26
+Branch: modernise/p7-27-paragliding-parasailing
+Goal: Paragliding operators shuttle tandem passengers to a launch, one pilot per passenger; parasailing operators fly
+solo, tandem and triple flights from a boat within per-person and per-flight limits.
+Context: GENERALISATION §1, §5, §10 (escorts), §11 (group limits). `tandem_paragliding` extends `_aviation`,
+`parasailing` extends `_water`.
+Steps:
+  1. tandem_paragliding: vehicle kind van; launch-site destinations; tandem ticket `requires_escort` 1:1 with escort
+     qualification "Tandem pilot rating" (qualification of a national body or operator-issued); driver crew; equipment
+     kinds wing and harness with inspections; body-mass min/max and `min_age` on the ticket; `booking.manifest_link:
+     checkin`.
+  2. parasailing: vehicle kind boat; crew captain and winch operator (both required); solo/tandem/triple tickets as
+     flight groups (`group_number`) with `max_group_size` and `max_group_body_mass_kg`, per-person min body mass;
+     harness equipment kind.
+  3. Web smoke: three paragliding passengers with three pilots on one van load, a fourth blocked for lack of a pilot; a
+     parasailing load where a triple flight over the group limit is blocked and accepted as a tandem plus a solo.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: flying-weather module.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.28 — Add the gliding-club template with flight times and duration charges
+Status: todo
+Repo: both
+Depends on: P7.27
+Branch: modernise/p7-28-gliding
+Goal: A gliding club runs a flying day: each load is one launch of a glider (aerotow or winch), members are charged
+for the launch and for glider time by the minute, and the flying log records take-off and landing times.
+Context: GENERALISATION §1, §5, §7 ("Duration charges"). Extends `_aviation`. Club model like skydiving (memberships,
+wallet credits).
+Steps:
+  1. backend: `flight_times` module: `ticket_types.price_per_minute_cents`; on completion the slot's charge is
+     `cost_cents + ceil(minutes(departed_at → completed_at)) × price_per_minute_cents` through the existing finalise
+     step (wallet transaction text names both parts); a staff correction of `departed_at`/`completed_at` on a completed
+     load re-computes the charge (refund or extra charge through the existing wallet transactions).
+  2. Template: vehicle kinds glider (carrying, capacity 1–2), tug (support), winch (support); crew instructor (vehicle,
+     glider), tug pilot (vehicle, tug, required with aerotow), winch driver (vehicle, winch), launch point controller
+     (load); per-slot altitude destinations for aerotow release heights priced by ticket type; instructional flight
+     ticket = escort 1:1 with instructor qualification; catalogue of national gliding bodies with licences/ratings
+     (the executor picks the bodies for the owner's markets, starting with Australia's GFA, the UK's BGA and the US's
+     SSA, and cites sources); glider equipment kind with daily inspection (`inspection_valid_days: 1`); call schedule
+     empty; flying log daily template with launches, times and durations.
+  3. client: the load card shows elapsed time while departed; staff can correct times on a completed load.
+  4. Web smoke: two aerotow launches and a winch launch on one day, one instructional; durations charged; flying log
+     lists all three.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks; plus a spec for rounding and for time corrections.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: OLC/IGC flight-log import, glider maintenance hours tracking beyond `service_due_at`.
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.29 — Add the whitewater-rafting and safari templates
+Status: todo
+Repo: both
+Depends on: P7.28
+Branch: modernise/p7-29-rafting-safari
+Goal: Rafting operators send several rafts with a guide each plus a shuttle down a river section; safari operators
+send several 4×4s with a ranger and tracker each.
+Context: GENERALISATION §1, §5, §7 (multi-vehicle, vehicle-scoped crew). `whitewater_rafting` extends `_water`,
+`safari` extends `_ground`; both use `multi_vehicle`.
+Steps:
+  1. whitewater_rafting: vehicle kinds raft (carrying), shuttle bus and safety kayak (support); crew raft guide
+     (vehicle, raft, required), safety kayaker (vehicle, kayak), driver (vehicle, shuttle); river-section destinations
+     with `grade`; `min_age` per section ticket; equipment kinds PFD, helmet, wetsuit; guide-rating qualifications for
+     staff.
+  2. safari: vehicle kind 4×4 (carrying); ranger (vehicle, required), tracker (vehicle); drive-sector / route
+     destinations; children-with-adult and `min_age` per drive ticket.
+  3. Web smoke: a rafting load with three rafts, a shuttle and a kayak, each raft with a guide, participants assigned
+     to rafts, one too young for the section blocked; a safari load with two 4×4s.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: automatic assignment of participants to rafts or vehicles.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.30 — Add the bus-tour template
+Status: todo
+Repo: both
+Depends on: P7.29
+Branch: modernise/p7-30-bus-tours
+Goal: A tour operator runs routes with one or more buses, a driver per bus and a guide, manifesting passengers at the
+desk; the template is ready for customer bookings once the booking plan lands.
+Context: GENERALISATION §1, §5, §16, §17; D9: customer booking, timetables and payments come from the booking and
+commerce plans, so in Phase 7 bus tours are staff-manifested. Extends `_ground`.
+Steps:
+  1. Template: vehicle kind bus (carrying); driver (vehicle, required), guide (load); route destinations with ordered
+     stops; adult/child/concession tickets, children with an adult; `booking.manifest_link: load`; passenger-list daily
+     log.
+  2. client: route destination editor (ordered stops with names and optional times).
+  3. Web smoke: tomorrow's departure created today with two buses, passengers manifested onto each, called, departed,
+     completed the next day; passenger list exported.
+Acceptance criteria (cloud VM):
+  - As stated above for template tasks.
+Acceptance criteria (owner, real device):
+  - As stated above for template tasks.
+Out of scope: customer booking, timetables, pickups and stop-level boarding (booking plan and GENERALISATION §16).
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.31 — Verify Phase 7
+Status: todo
+Repo: both
+Depends on: P7.1, P7.2, P7.3, P7.4, P7.5, P7.6, P7.7, P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, P7.20, P7.21, P7.22, P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, U0.6, U3.10
+Branch: modernise/p7-31-verify
+Goal: Generalisation is proven for every shipped template.
+Context: Phase gate.
+Steps:
+  1. Run all backend and client checks, web export and the web smoke test for every template.
+  2. Write `docs/verification/phase-7.md`; update GENERALISATION.md (what was built, what remains), the backend and client
+     reference READMEs and both `diagrams.md` files to the new names.
 Acceptance criteria (cloud VM):
   - All commands exit 0; CI green on `staging`.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: none.
 Risk / rollback: none.
-Size: S
+Size: M
 Fixes: none
 
 ---
@@ -5260,7 +5965,7 @@ in D2, with production data migrated per D7.
 ### P8.1 — Add versioning and changelogs
 Status: todo
 Repo: both
-Depends on: P7.10
+Depends on: P7.31, U6.5
 Branch: modernise/p8-1-versioning
 Goal: Both repos use semantic versions with a changelog; the API reports its version.
 Context: Client version in `package.json` (1.1.60) is the single source since P3.21; backend has no version.
@@ -5398,14 +6103,14 @@ Depends on: P8.1
 Branch: modernise/p8-7-deprecations-smoke
 Goal: Deprecated fields that no supported client uses are removed; the web smoke test runs in client CI against a backend
 started in the same job.
-Context: Deprecated in Phases 6–7 (float money fields, `ticketType.altitude`, crew mirrors), and `loginWithFacebook`
-if D4 removed Facebook. Only remove fields that the client at the version released in P8.8 no longer queries
+Context: P7.2 removed the Phase 6 deprecations and Phase 7 renamed without deprecating (D5), so step 1 should find
+nothing except `loginWithFacebook` if D4 removed Facebook. Only remove fields that the client at the version released in P8.8 no longer queries
 (`check:graphql` proves it).
 Steps:
   1. backend: list deprecated fields (`grep -rn deprecation_reason app/graphql`); remove those not used by
      `client:app/api/**/*.gql`; remove `loginWithFacebook` if D4 = (a).
-  2. client CI: done by U0.2 (`web-ui-smoke` on every PR, `ui-full` on demand and weekly). Here, only run `ui-full`
-     against the release build's commit and attach the run.
+  2. client CI: done by U0.2 (`web-ui-smoke` on every PR, `ui-full` on demand and weekly). Here, run `ui-full`
+     against the release commit and attach the run.
 Acceptance criteria (cloud VM):
   - Backend rspec green; client `check:graphql` green against the new schema; the new CI job passes on the PR.
 Acceptance criteria (owner, real device):
@@ -5416,14 +6121,14 @@ Size: M
 Fixes: none
 
 ### P8.8 — Migrate production data and submit to the stores
-Status: blocked (awaiting decision D7)
+Status: todo
 Repo: both
 Depends on: P8.6, P8.7
 Branch: modernise/p8-8-production-release
 Goal: The production database is migrated (or created fresh per D7), and version 2.0.0 is submitted to the App Store and
 Play Store.
-Context: Data-changing migrations from P6.10, P6.16, P6.23, P7.x. Old money/unit columns are dropped after this release
-in a follow-up.
+Context: D7 = (b): there is no production data, so only the fresh-setup path applies (old money columns were dropped in
+P7.2). The D7 (a) wording below is kept for reference only.
 Steps:
   1. D7 (a): restore the owner-provided dump into a local throwaway database in the VM; run `bin/rails db:migrate`;
      record row counts and the output of every data migration in `docs/verification/production-migration.md`
@@ -5455,6 +6160,1160 @@ Acceptance criteria (cloud VM):
   - All commands exit 0; CI green on `staging` and `main`.
 Acceptance criteria (owner, real device):
   - Owner confirms the store releases are live.
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+## Phase C — Commerce foundation
+
+Goal: operators connect their own Stripe account; members top up credits online by card, Apple Pay or Google Pay; every
+money movement is posted to a per-operator double-entry ledger; the platform fee (configurable per operator, free
+plans supported) applies to online and offline sales; customers, sales orders, checkout, refunds, disputes and coupons
+exist for Phases B and S. Design and decisions CD1–CD7: [COMMERCE_FOUNDATION](features/COMMERCE_FOUNDATION.md) (§n in
+Phase C refers to it; read it through the vocabulary map, its prose predates the rename).
+
+Rules for every Phase C task: money is integer cents in the database and API (`*Cents: Int!` fields plus the operator
+`currency`); every interaction that moves money records a ledger entry with `Ledger.record!` in the same database
+transaction; every new mutation has a tenant-isolation spec (P1.7 style) and an authorization spec; webhook handlers
+are idempotent and have a duplicate-delivery spec; client screens follow "Client UI work".
+
+### C1.1 — Replace the app's Money class with the money gem; tax settings
+Status: todo
+Repo: both
+Depends on: P7.12, U5.9
+Branch: feature/c1-1-money-tax
+Goal: `::Money` is the money gem everywhere and the app's own class is gone; the operator currency (P7.12) becomes
+immutable once used; each operator has tax settings, shown and applied correctly in the client.
+Context: COMMERCE §3.1, CD5. `app/models/money.rb` (app value object, collides with the gem), `MoneyAttributes`, call sites
+(`grep -rn "Money\." app lib spec`), `Transaction#notification_message`. `operators.currency` and `formatMoney` with the
+operator currency exist since P7.12.
+Steps:
+  1. backend: add `gem "money", "~> 7.1"`; `config/initializers/money.rb` (`rounding_mode` half-up, `locale_backend
+     :currency`, no default currency); delete `app/models/money.rb` and its spec (port the behaviour assertions to
+     the new helpers); move `cents_of` to `MoneyAttributes.cents_of`; add `<name>_money` readers to `MoneyAttributes`
+     that return `Money.new(cents, currency)` with the operator's currency; replace `to_s` call sites with `format`.
+  2. Migration: `operators.tax_rate_bps` integer not null default 0, `prices_include_tax` boolean default true,
+     `tax_label`, `tax_registration_number`, `legal_name`. Validation: the currency cannot change once the operator has
+     payments or ledger entries (guard written now, checked against tables added later).
+  3. GraphQL: `Operator.taxSettings`; `updateOperator` accepts them (permission `updateOperator`).
+  4. client: tax fields in Setup → Business → Rules (U5.3 group).
+  5. Specs: formatting parity with the old class for AUD (`"$12.50"`, `"-$3.00"`), currency immutability, tax maths
+     table (inclusive/exclusive, rounding).
+Acceptance criteria (cloud VM):
+  - Backend `bundle exec rspec` green, rubocop clean; `test ! -e app/models/money.rb`; client checks, `check:graphql`,
+    web export pass; tier 2 `@setup`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: ledger.
+Risk / rollback: revert; the migration is additive.
+Size: M
+Fixes: none
+
+### C1.2 — Ledger: double_entry, chart of accounts, journal outbox
+Status: todo
+Repo: backend
+Depends on: C1.1
+Branch: feature/c1-2-ledger
+Goal: `Ledger.record!`, posting, `reverse!`, `balance` and `trial_balance` work per operator on `double_entry`, with
+append-only entries.
+Context: §3.2 (all of it, including the limits table).
+Steps:
+  1. `gem "double_entry", "~> 2.0"`; `bin/rails generate double_entry:install` (json metadata); migration for
+     `ledger_entries`; DB triggers rejecting `UPDATE`/`DELETE` on `double_entry_lines` and on `ledger_entries` (except
+     setting `posted_at` once).
+  2. `Ledger::ChartOfAccounts` and `Ledger::PostingRules` (the two tables in §3.2) drive
+     `config/initializers/double_entry.rb`: accounts per key × `SUPPORTED_CURRENCIES`, scoped by operator; transfer
+     codes per posting rule.
+  3. `app/models/ledger.rb`: `record!` (validation), `PostLedgerEntryJob` (lock, idempotent split into transfers),
+     sweep every minute in `config/recurring.yml`, `reverse!`, `balance`, `trial_balance`, `profit_and_loss(from, to)`.
+  4. Specs: valid and invalid entries (unbalanced, foreign currency, unknown account, zero line), posting splits multi-line
+     entries correctly, double posting is a no-op, an undeclared transfer raises, reversal, trial balance zero, triggers
+     block edits, entry recorded inside a rolled-back transaction leaves nothing behind.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; rubocop clean.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: posting existing flows (C1.3).
+Risk / rollback: new tables only.
+Size: L
+Fixes: none
+
+### C1.3 — Record the wallet flows in the ledger and reconcile daily
+Status: todo
+Repo: both
+Depends on: C1.2
+Branch: feature/c1-3-wallet-ledger
+Goal: Every existing credit movement records a balanced entry; existing balances get opening entries; desk top-ups
+accrue the offline fee; a daily job proves the ledger and the wallets agree.
+Context: §3.2 posting rules (wallet and desk rows), §3.4 (offline fee). `app/interactions/transactions/{purchase,
+confirm,refund,create_order}.rb`; staff top-ups go through `createOrder` (client `app/forms/credits`).
+Steps:
+  1. Record entries in `Purchase` (reserve), `Confirm` (recognise revenue and tax), `Refund` (reverse), staff top-up
+     and withdrawal. Staff top-ups gain `paymentMethod` (`cash` default, `card_terminal`, `bank_transfer`,
+     `complimentary`); complimentary posts to `promotional_expense` and carries no fee. client: payment-method select
+     in the credits form.
+  2. No offline fee yet: plans arrive in C2.2, which accrues fees from then on (desk top-ups recorded before C2.2 are
+     not charged retroactively).
+  3. Rake task `ledger:opening_balances` (idempotent, prints counts): per operator, wallets and reserved transactions
+     against `opening_balance_equity`; also run from a data migration so every environment is consistent.
+  4. `LedgerReconciliationJob` daily in `config/recurring.yml` (invariants in §3.2); mismatches create error-level
+     activity events and report to AppSignal.
+  5. Specs: each flow records the expected lines; opening balances on the P0.5 seed make reconciliation pass; a forced
+     mismatch is reported.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; on the dev seed, `bin/rails ledger:opening_balances` then the reconciliation job report no
+    mismatch; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: online payments.
+Risk / rollback: recording is additive; the opening-balance task is idempotent by `document`.
+Size: L
+Fixes: none
+
+### C2.1 — Stripe Connect onboarding and webhooks
+Status: todo
+Repo: both
+Depends on: C1.3
+Branch: feature/c2-1-stripe-connect
+Goal: An operator with `managePayments` connects a Stripe account from the app; account status stays current from
+webhooks; the fake provider covers development and tests.
+Context: §3.3, CD1. Stripe API is not reachable from the VM (README "External services").
+Steps:
+  1. backend: `gem "stripe"` (latest stable 20.x); `PaymentProviders::Base`, `::Stripe`, `::Fake`; provider chosen by
+     `PAYMENT_PROVIDER` (default `fake` outside production).
+  2. `payment_accounts`, `provider_events` tables; mutation `startPaymentOnboarding(operatorId)` returns an account-link
+     URL; `Operator.paymentAccount { chargesEnabled payoutsEnabled requirementsDue }`.
+  3. `Webhooks::StripeController#create` (`POST /webhooks/stripe`, CSRF-free, signature verified with
+     `STRIPE_WEBHOOK_SECRET`), stores the event, enqueues `ProcessProviderEventJob`; handler registry; `account.updated`.
+     On first `charges_enabled`, register the web app's domain for Apple Pay on the connected account.
+  4. Permissions from §3.8 with the role backfill.
+  5. client: Setup → Business → Payments screen (U5.3 group; status, "Connect Stripe" opening the link with `expo-web-browser`, refresh on
+     return).
+  6. Specs with WebMock and fixtures: onboarding authz and tenancy, bad signature → 400, duplicate event handled once,
+     `account.updated` updates flags.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks and web export pass.
+Acceptance criteria (owner, real device):
+  - Owner, on staging with test-mode keys: connect a test operator account and see "charges enabled".
+Out of scope: charges (C2.4).
+Risk / rollback: new tables and endpoint. Revert both.
+Size: L
+Fixes: none
+
+### C2.2 — Configurable fee plans, per-operator assignment, free operators
+Status: todo
+Repo: both
+Depends on: C2.1
+Branch: feature/c2-2-platform-fee
+Goal: Platform administrators configure fee plans and assign them to operators (including free, permanently or until a
+date); online and offline fees are computed from the plan in force, snapshotted and recorded on both sets of books;
+zero fees and missing plans charge nothing.
+Context: §3.4, CD3.
+Steps:
+  1. backend: `platform_fee_plans`, `platform_fee_assignments`, `platform_fees` (`kind` online/offline, owed and
+     collected amounts); seed "Standard AUD" (default) and "Free" per §3.4.
+  2. `PlatformFees::PlanResolver` (assignment covering the time → currency default → none) and
+     `PlatformFees::Calculator` (formulas in §3.4; 0 when no plan or a zero plan).
+  3. Administrator-only mutations: `createPlatformFeePlan`, `updatePlatformFeePlan` (new version when in use),
+     `archivePlatformFeePlan`, `setDefaultPlatformFeePlan`, `assignPlatformFeePlan(operatorId, planId, startsAt,
+     endsAt, reason)`, `endPlatformFeeAssignment`; queries `platformFeePlans`, `operator.platformFeePlan` (operator
+     `managePayments` can read the plan in force and its end date). Activity event and operator notification on
+     assignment changes.
+  4. Ledger entries for fees charged and refunded; offline accrual on desk top-ups and `recordDeskPayment`.
+  5. client: Platform destination (U1.1, U5.8) for administrators: plans list and form,
+     operator search with the plan in force, assign/end with dates and reason; operator Payments screen shows the plan
+     in force.
+  6. Specs: rounding table (amounts 0, 1, 33, 34, 100, 12 345, below the minimum, at a maximum when set), offline
+     formula; resolver precedence and date boundaries (assignment ends → default applies); free plan and no plan →
+     no fee row, no ledger entry, no offline accrual; editing a plan in use versions it and leaves past fees unchanged;
+     non-administrators rejected.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: carry-forward and invoices (C2.10), statements (C2.9).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### C2.3 — Customers, sales orders and the wallet top-up sellable
+Status: todo
+Repo: backend
+Depends on: C2.2
+Branch: feature/c2-3-sales-orders
+Goal: The order model, totals, the `Sellable` contract and `WalletTopUp` exist; `createCheckout` creates an order with a
+pending payment through the fake provider; staff can settle orders at the desk.
+Context: §3.5.
+Steps:
+  1. Tables `customers`, `sales_orders`, `sales_order_lines`, `payments`; models, state machines (`state_machines`
+     already in the Gemfile), `Sellable` concern, `Commerce::Totals` (tax per §3.1).
+  2. `WalletTopUp` sellable: amount chosen by the member within operator limits (`settings.top_up_min_cents`,
+     `top_up_max_cents`); `on_paid!` credits the wallet through the existing wallet code and records the entry.
+  3. `Commerce::Checkout` and mutation `createCheckout(input: {operatorId, lines, idempotencyKey})` (logged-in
+     members); query `salesOrder(id)` (buyer or `readOrders`); subscription `salesOrderUpdated(salesOrderId)`;
+     `recordDeskPayment` (`recordDeskPayments`) with offline fee accrual.
+  4. `ExpireSalesOrdersJob` every minute (`config/recurring.yml`).
+  5. Specs: totals, idempotency (same key twice → same order; parallel requests → one order), expiry releases lines,
+     desk payment accrues 1 %, tenant isolation.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; schema dump diff additive.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: Stripe charges (C2.4), coupons (C2.7).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### C2.4 — Charge through Stripe and confirm from webhooks
+Status: todo
+Repo: backend
+Depends on: C2.3
+Branch: feature/c2-4-payment-intents
+Goal: Checkout creates a PaymentIntent on the operator's account with the platform fee; orders become paid only from
+webhooks; late and lost webhooks are handled.
+Context: §3.3, §3.5 (late payment rule).
+Steps:
+  1. `Payments::CreateIntent` (outside the checkout DB transaction, idempotency key `payment-<id>`; the fee from the plan
+     in force, and no `application_fee_amount` at all when it is 0); `createCheckout`
+     returns `clientSecret`, `stripeAccountId`, `publishableKey`; checkout fails clearly when the operator's account
+     cannot take charges.
+  2. Handlers: `payment_intent.succeeded` (mark paid, `on_paid!`, ledger, fee record, staff/customer notification),
+     `payment_failed` (record message), `canceled`; late success on an expired order → re-reserve or full refund.
+  3. `Payments::RecordProcessingFeeJob` reads the balance transaction and records the Stripe fee.
+  4. `ReconcileStuckPaymentsJob` (every 15 minutes) re-fetches intents in `processing`.
+  5. Development-only `simulatePayment(paymentId, outcome)` for the fake provider.
+  6. Specs with fixtures: happy path, duplicate webhook, failure then retry, late success both ways, processing-fee
+     entry, stuck-payment recovery.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none (end-to-end in C2.11)
+Out of scope: client UI, carry-forward (C2.10).
+Risk / rollback: revert; no data migration.
+Size: L
+Fixes: none
+
+### C2.5 — Client payments and online credit top-up
+Status: todo
+Repo: both
+Depends on: C2.4
+Branch: feature/c2-5-client-payments
+Goal: Members top up credits from the app and the web with card, Apple Pay or Google Pay; the payment components are
+reusable by the other plans.
+Context: §3.3 (client), CD6. Client platform-file convention (`*.web.tsx`), Apollo hooks via codegen.
+Steps:
+  1. client: `npx expo install @stripe/stripe-react-native`; config plugin in `app.config.ts` (`merchantIdentifier`
+     per environment, `enableGooglePay: true`); `@stripe/stripe-js` and `@stripe/react-stripe-js` for web.
+  2. `app/features/payments/` (on `app/ui`): `PaymentProvider(.web).tsx` (keyed by `stripeAccountId`), `PayButton(.web).tsx`
+     (PaymentSheet natively; Express Checkout Element + Payment Element on web), `OrderStatus` (waits for
+     `salesOrderUpdated`, falls back to polling).
+  3. Online top-up in the Wallet (U4.3) and, for staff, on a member's Funds section (U5.2); remote switch `topUpsInIosApp` (backend: a
+     platform setting exposed on `currentUser` or app config; default on) per CD6.
+  4. With the fake provider, a development "Simulate payment" button replaces the Stripe UI so Playwright (`@payments`)
+     can complete a top-up.
+  5. Tests: top-up form validation, status transitions with mocked subscription, iOS switch hides the entry; extend
+     `docs/SMOKE_TEST.md` with "top up credits".
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export, smoke test with the fake provider pass.
+Acceptance criteria (owner, real device):
+  - Owner, staging test mode: top up with a test card on web, with Apple Pay on an iPhone (development build), with
+    Google Pay on Android; balances and the ledger agree.
+Out of scope: credit packages with bonuses (WEBSHOP S3.1).
+Risk / rollback: revert; feature hidden when the operator has no connected account.
+Size: L
+Fixes: none
+
+### C2.6 — Refunds and disputes
+Status: todo
+Repo: both
+Depends on: C2.5
+Branch: feature/c2-6-refunds
+Goal: Staff refund orders fully or partly; fees (online and offline), ledger and wallet follow; disputes are tracked
+and recorded.
+Context: §3.6, CD4.
+Steps:
+  1. `refunds` table; `refundSalesOrder(input: {salesOrderId, lines: [{lineId, quantity}], amountCents?, reason,
+     restock})` with `refundOrders`; provider refund with `refund_application_fee: true`; wallet refunds; desk refunds
+     reduce the offline fee accrual; ledger reversal; `on_refunded!`.
+  2. Handlers `charge.refunded` (refunds made in the Stripe Dashboard are mirrored), `charge.dispute.created|closed`
+     (lost: chargeback entry and application-fee refund).
+  3. client: refund action in the Money area (U5.8) for top-ups (shop and booking screens reuse it later).
+  4. Specs: partial and full refund maths, fee refund proportional (online and offline), Dashboard-initiated refund
+     mirrored once, lost dispute records a chargeback and refunds the fee, carried-forward fees untouched by the
+     carrying payment's refund.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - Owner, staging test mode: refund a test top-up half, then fully; check the Stripe Dashboard shows the fee refunds.
+Out of scope: return shipping (WEBSHOP S4.1).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### C2.7 — Coupons (backend)
+Status: todo
+Repo: backend
+Depends on: C2.6
+Branch: feature/c2-7-coupons
+Goal: Coupons can be created, validated and redeemed in checkout with exact allocation and safe limits.
+Context: §3.7.
+Steps:
+  1. Tables `coupons`, `coupon_targets`, `coupon_redemptions`; CRUD mutations (`manageCoupons`); `previewCoupon(code,
+     lines)` for the client; `createCheckout` accepts `couponCode`.
+  2. Conditional-update redemption reservation; release on expiry/cancel.
+  3. Stored-value sellables (`stored_value? == true`) never discounted.
+  4. Specs: each kind, date window, per-customer and total limits under 20 parallel checkouts (no over-redemption),
+     allocation remainder, zero-total order paid without provider (and no fee), ledger `discounts` line.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: UI (C2.8).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### C2.8 — Coupons (client)
+Status: todo
+Repo: client
+Depends on: C2.7
+Branch: feature/c2-8-coupons-client
+Goal: Staff manage coupons; checkout accepts a code and shows the discount.
+Context: Setup list-and-form pattern (`ResourceList`/`ResourceForm`, U5.5).
+Steps:
+  1. Setup → Business → Coupons list and form (kind, value, window, limits, targets).
+  2. Coupon field in the shared checkout summary component (`previewCoupon`).
+  3. Tests: form validation; discount display.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### C2.9 — Platform fee statements and platform reporting
+Status: todo
+Repo: both
+Depends on: C2.8
+Branch: feature/c2-9-fee-statements
+Goal: Operators see what they paid and owe OpenManifest; platform administrators see fee revenue, payment volume and
+outstanding offline fees.
+Context: §3.4 reporting, CD5 (tax line).
+Steps:
+  1. Queries: `operator.platformFeeStatement(month)` (`managePayments`): plan(s) in force that month, online fees,
+     offline fees accrued, collected, owed, refunded, complimentary credits, tax line; CSV download.
+     `platformRevenue(from, to)` (administrators): per operator and currency: plan in force, online and offline volume,
+     fees, outstanding, refunds, disputes; operators on a free plan and operators with no plan listed separately, with
+     the fees they would have paid under the default plan (so free arrangements have a visible cost).
+  2. client: statement screen under Setup → Business → Payments; administrator screen in the Platform destination.
+  3. Specs: statement totals equal the platform-side ledger accounts for the month (operator time zone boundaries).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: collection (C2.10).
+Risk / rollback: read-only.
+Size: M
+Fixes: none
+
+### C2.10 — Collect offline fees: carry-forward and monthly invoices
+Status: todo
+Repo: both
+Depends on: C2.9
+Branch: feature/c2-10-offline-fee-collection
+Goal: Offline fees owed by an operator are collected automatically from its next online payments, and any remainder is
+invoiced monthly through Stripe Billing.
+Context: §3.4 (collection), CD7.
+Steps:
+  1. `platform_fee_collections`; in `Payments::CreateIntent`, add owed offline fees (oldest first) to
+     `application_fee_amount` up to `carry_forward_cap_bps` of the payment, reserving them so two concurrent payments
+     cannot collect the same fee; settle on `payment_intent.succeeded`, release on failure/expiry.
+  2. Billing customer per operator on the platform account (`billing_customer_id`, billing email collected on the
+     Payments screen); `MonthlyPlatformInvoicesJob` daily, invoicing each operator once its month has ended in its own
+     time zone (the same month boundaries as the C2.9 statement), itemised by month; handlers `invoice.paid` (settle, ledger) and `invoice.payment_failed` (notify
+     `managePayments` holders, show on the Payments screen).
+  3. client: "Owed to OpenManifest" and invoices on the Payments screen.
+  4. Specs: cap arithmetic, oldest-first allocation, concurrent payments, failed payment releases the reservation,
+     invoice amounts equal owed fees, paid invoice settles, nothing invoiced when nothing is owed.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - Owner, staging test mode: record a desk top-up, make an online top-up and see the larger application fee in the
+    Stripe Dashboard; run the invoice job for an operator with no online payments and pay the test invoice.
+Out of scope: dunning beyond Stripe Billing's own retries; suspending operators that do not pay (owner policy, later).
+Risk / rollback: revert; owed fees stay recorded and can be invoiced manually.
+Size: L
+Fixes: none
+
+### C2.11 — Verify the commerce foundation
+Status: todo
+Repo: both
+Depends on: C2.10
+Branch: feature/c2-11-verify
+Goal: The foundation works end to end and is documented.
+Context: all of this plan.
+Steps:
+  1. Run every check in both repos; record results in `docs/verification/commerce-foundation.md`.
+  2. Update `docs/reference/README.md` (payments row, domain model, env vars, jobs) and `diagrams.md` (ER for §3.9,
+     sequence for checkout → webhook → ledger outbox).
+Acceptance criteria (cloud VM):
+  - All checks exit 0.
+Acceptance criteria (owner, real device):
+  - Owner on staging (needs P8.4 or an equivalent public URL for webhooks): test-mode top-ups on web, iPhone and
+    Android; a desk top-up collected by carry-forward; a refund; a fee statement matching the Stripe Dashboard; App
+    Review's answer on in-app top-ups (CD6) recorded here.
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+## Phase B — Booking
+
+Goal: operators publish bookable services, set up when they run and how many people fit, and customers book and pay
+online with or without an account, never double-booked; booked participants reach the manifest as prepaid guest slots.
+Design and decisions BD1–BD7: [BOOKING_PLAN](features/BOOKING_PLAN.md) (§n in Phase B refers to it). Builds on Phase C.
+
+Rules for every Phase B task: concurrency claims are proven by specs that run real parallel threads against PostgreSQL
+(the P6.10 lock specs are the pattern); every public (`authenticate: false`) field has a spec that it exposes nothing
+from unpublished services or other operators; times are tested in a non-UTC operator time zone with a DST change;
+client screens follow "Client UI work".
+
+### B1.1 — Operator booking profile and the public API surface
+Status: todo
+Repo: backend
+Depends on: C2.9
+Branch: feature/b1-1-public-profile
+Goal: Operators have a slug and booking settings; anonymous clients can read a published operator's public profile;
+the rate-limit extension exists.
+Context: §3.5. graphql_devise `authenticate: false`. `Operator` has no slug today.
+Steps:
+  1. Migration: `operators.slug` (unique, generated from the name, editable, never one of the client's reserved first
+     path segments listed in `config/reserved_slugs.yml`: `manifest`, `loads`, `operators`, `people`, `bookings`, …), settings `booking_enabled` (false),
+     `booking_horizon_days` (120), `hold_minutes` (15), `booking_contact_email`, `booking_terms_md`.
+  2. Query `publicOperator(slug)` (`authenticate: false`): name, slug, banner, colours, time zone, currency, terms,
+     contact; null unless `booking_enabled`.
+  3. `Extensions::RateLimited` field extension (limit, period, key by IP or argument) using `Rails.cache`.
+  4. Specs: public field shape, disabled operator returns null, rate limit returns `RATE_LIMITED` error code.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; schema dump diff additive.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: services.
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### B1.2 — Services, resources and permissions
+Status: todo
+Repo: backend
+Depends on: B1.1
+Branch: feature/b1-2-services
+Goal: Staff create services and resources through the API; published services are publicly readable.
+Context: §3.1, §3.9.
+Steps:
+  1. Tables `services`, `resources`, `service_resource_requirements`; models with validations (payment mode and deposit
+     consistent, participant rules ranges, `description_md` ≤ 20 000 characters).
+  2. Mutations `createService`, `updateService`, `archiveService`, `createResource`, `updateResource`,
+     `archiveResource` (`manageServices`); queries `services(operatorId)` (staff), `publicServices(operatorSlug)`,
+     `publicService(operatorSlug, slug)`.
+  3. Permissions in `access.yml` with role backfill.
+  4. Specs: authz, tenancy, public visibility of draft/archived, validation.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: availability (B1.3).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### B1.3 — Availability rules and session generation
+Status: todo
+Repo: backend
+Depends on: B1.2
+Branch: feature/b1-3-availability
+Goal: Rules and exceptions produce sessions for the booking horizon; public availability answers "what can I book".
+Context: §3.2.
+Steps:
+  1. Tables `availability_rules`, `availability_exceptions`, `booking_sessions` (with the capacity check constraint).
+  2. `BookingSessions::Generate` (idempotent per service and date range, local-time generation, never touches booked
+     sessions); `GenerateBookingSessionsJob` nightly in `config/recurring.yml` and after rule changes.
+  3. Mutations for rules, exceptions, one-off sessions, session capacity and closing (`manageServices`).
+  4. Query `availability(serviceId, from, to, participants)` (public for published services): sessions with remaining
+     places, accounting for resource units (allocation table arrives in B1.4; until then capacity only).
+  5. Specs: weekly pattern, exceptions, DST week in `Australia/Sydney` and `Europe/Oslo`, regeneration with bookings
+     present (stub booked count), capacity floor.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: holds.
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### B1.4 — Holds, capacity and resource allocation
+Status: todo
+Repo: backend
+Depends on: B1.3
+Branch: feature/b1-4-holds
+Goal: Places and resource units are reserved atomically with database-enforced guarantees; holds expire.
+Context: §3.3 (all three guarantees and the race table), §3.4.
+Steps:
+  1. Tables `bookings`, `booking_participants`, `resource_allocations` (`btree_gist`, exclusion constraint with
+     `released_at IS NULL`).
+  2. `Bookings::Reserve` (conditional update, allocation with `SKIP LOCKED` and retry on exclusion violation, inline
+     expiry of stale holds on that session), `Bookings::Release`, `Bookings::Reschedule`.
+  3. Mutation `createBookingHold` for logged-in users and staff (guests in B1.5); `ExpireBookingHoldsJob` every minute;
+     nightly counter check.
+  4. Resource blocks: `blockResource(resourceId, from, to, reason)`.
+  5. Availability (B1.3 step 4) includes free resource units.
+  6. Specs: every row of the race table in §3.3 with real threads.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; the concurrency specs pass 20 consecutive runs (`for i in $(seq 20); do bundle exec rspec spec/concurrency/bookings; done`).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: payment.
+Risk / rollback: additive; constraint migrations are reversible.
+Size: L
+Fixes: none
+
+### B1.5 — Guest customers: Turnstile, email codes, manage links
+Status: todo
+Repo: backend
+Depends on: B1.4
+Branch: feature/b1-5-guest-verification
+Goal: Guests can hold a booking after a captcha, prove their email with a code, and manage the booking from a link.
+Context: §3.5. Turnstile is not reachable from the VM (stub with fixtures).
+Steps:
+  1. `Captcha::Turnstile.verify(token, ip)` (5-second timeout; `TURNSTILE_SECRET_KEY`; always-pass test keys in
+     development per Cloudflare's documented test site/secret keys).
+  2. `customer_verifications` (code HMAC, expiry, attempts); mutations `createBookingHold` (guest variant),
+     `resendVerificationCode`, `verifyCustomerEmail`; mailer.
+  3. `Booking.generates_token_for(:manage)`; query `managedBooking(token)`.
+  4. Rate limits from §3.5; `AnonymiseGuestCustomersJob` monthly.
+  5. Specs: captcha failure, code expiry/attempts/resend timing, token expiry, limits, anonymisation keeps ledger rows.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: UI (B2.1).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### B1.6 — Booking checkout and confirmation
+Status: todo
+Repo: backend
+Depends on: B1.5
+Branch: feature/b1-6-booking-checkout
+Goal: Bookings are paid (deposit or full) through COMMERCE checkout, with coupons, and confirmed by webhook; free
+bookings confirm without payment.
+Context: §3.6; COMMERCE §3.5 (Sellable, late payment), C2.7 (coupons).
+Steps:
+  1. `Booking` implements `Sellable`; `startBookingCheckout(bookingId | manageToken, couponCode, idempotencyKey)` for
+     guests (verified) and users; hold extended once.
+  2. On paid: `confirmed`, balance due stored, ledger to `customer_deposits`, staff push, confirmation email (B1.8 adds
+     the template; here a plain one).
+  3. Zero-amount path (payment mode `none` or 100 % coupon) requires a verified customer.
+  4. Specs: deposit maths with coupons and tax, late payment both ways, unverified guest rejected, free path.
+Acceptance criteria (cloud VM):
+  - Backend rspec green.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: cancellations.
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### B1.7 — Cancellation, rescheduling, operator cancellations and desk payments
+Status: todo
+Repo: backend
+Depends on: B1.6
+Branch: feature/b1-7-cancellations
+Goal: Customers and staff cancel or reschedule within policy; operators cancel whole sessions; balances paid at the
+desk are recorded.
+Context: §3.4, §3.6, §3.7; COMMERCE C2.6 refunds.
+Steps:
+  1. Policy snapshot on the booking; `cancelBooking` (manage token or user; staff variant overrides policy with a
+     reason), `rescheduleBooking`, `cancelBookingSession(sessionId, reason)` (each booking: notice + reschedule/refund
+     choice per BD6).
+  2. Desk balances through COMMERCE `recordDeskPayment` (offline fee accrued); revenue recognition at check-in or
+     session end (`RecogniseBookingRevenueJob` hourly).
+  3. Optional "pay balance online" checkout for the remaining amount (BD4 a).
+  4. Specs: each policy tier at the boundary hours (operator time zone), forfeited deposit posting, session
+     cancellation with mixed paid/unpaid bookings, reschedule keeps payments.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; ledger reconciliation passes after the spec scenarios.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: automatic balance charges (BD4 b).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### B1.8 — Booking emails and reminders
+Status: todo
+Repo: backend
+Depends on: B1.7
+Branch: feature/b1-8-booking-emails
+Goal: Customers receive clear confirmation, reminder and change emails with calendar files and the manage link.
+Context: §3.8. Only `app/mailers/application_mailer.rb` exists (devise mails come from devise); there are no mailer
+previews yet, so this task adds `spec/mailers/previews/` and sets `config.action_mailer.preview_paths` in development.
+Steps:
+  1. Mailers and templates (HTML + text, operator branding colours and logo): code, confirmation (with `.ics`),
+     reminder 24 h before (`BookingRemindersJob` hourly), cancellation, reschedule, operator cancellation.
+  2. Push/in-app notifications for logged-in customers (new `notification_type` values).
+  3. Specs: content, `.ics` validity (start/end in UTC with `TZID`), reminder sent once.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; mailer previews render.
+Acceptance criteria (owner, real device):
+  - Owner receives the confirmation and reminder emails on staging (SMTP) and adds the `.ics` to a phone calendar.
+Out of scope: SMS.
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### B2.1 — Public booking pages on the web
+Status: todo
+Repo: both
+Depends on: B1.8
+Branch: feature/b2-1-public-booking
+Goal: A guest can go from the operator's booking link to a confirmed, paid booking on a phone browser.
+Context: §3.10. Unauthenticated routes live in `client:app/screens/unauthenticated/`; linking config in
+`client:app/screens/routes.tsx`; payment components from C2.5.
+Steps:
+  1. client (Client UI work rules; public routes in the destinations-free unauthenticated stack): routes `/:operatorSlug/book`, `/:operatorSlug/book/:serviceSlug` available signed in or out; screens:
+     service list, service detail (markdown description: choose the renderer here per WEBSHOP_PLAN §3.1, record the choice in the PR, and add
+     `MarkdownView`/`MarkdownEditor` to `app/ui`; S1.1 reuses them), date picker with availability, session picker, participants form (rules), customer details,
+     Turnstile widget (`.web.tsx` only), code entry, coupon, payment, confirmation.
+  2. Hold countdown; clear "sold out, pick another time" recovery.
+  3. backend: embed snippet documented in `docs/reference/README.md` (iframe of the booking URL).
+  4. Tests: flow with mocked API; extend `docs/SMOKE_TEST.md` and the Playwright suite (`e2e/booking.spec.ts`, `@booking`) with a guest booking using the
+     fake payment provider and Turnstile test keys.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export and the smoke test (including the new booking step) pass.
+Acceptance criteria (owner, real device):
+  - Owner books as a guest on an iPhone (Safari, Apple Pay) and an Android phone (Chrome, Google Pay) on staging test
+    mode; the layout passes the 360 dp checks from Phase 5.
+Out of scope: native guest booking (BD1 b).
+Risk / rollback: revert; operators enable booking explicitly.
+Size: L
+Fixes: none
+
+### B2.2 — Manage-booking page
+Status: todo
+Repo: client
+Depends on: B2.1
+Branch: feature/b2-2-manage-booking
+Goal: From the emailed link, a customer views, completes participant details for, cancels or reschedules a booking, and
+pays a balance.
+Context: §3.5 manage link; B1.7 mutations.
+Steps:
+  1. Route `/bookings/manage/:token`; booking summary, participant details form, cancel with the refund the policy
+     gives (shown before confirming), reschedule picker, pay-balance button.
+  2. Tests for each action and for an expired token.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### B2.3 — Staff configuration: services, resources and availability
+Status: todo
+Repo: client
+Depends on: B2.2
+Branch: feature/b2-3-booking-config
+Goal: Staff with `manageServices` set up everything a booking needs from the app.
+Context: Setup list-and-form pattern (`ResourceList`/`ResourceForm`, U5.5).
+Steps:
+  1. Setup → Booking group: operator booking settings (enable, slug, hold minutes, terms), Services (form with
+     payment mode, policy tiers, participant rules, resource requirements, markdown description with preview), Resources
+     (units, blocks), Availability (weekly rules editor, exceptions, preview of generated sessions).
+  2. Tests for each form's validation and the rule preview.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner sets up a tandem service with weekend sessions on a small Android phone.
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### B2.4 — Staff bookings calendar, manual bookings and check-in
+Status: todo
+Repo: both
+Depends on: B2.3
+Branch: feature/b2-4-booking-desk
+Goal: Staff see and run the day's bookings: calendar, list, booking detail, manual booking, move, cancel, check-in,
+no-show, desk payment.
+Context: §3.7.
+Steps:
+  1. backend: `bookings(operatorId, from, to, state, serviceId)` and `bookingSessions(...)` for staff
+     (`readBookings`), subscription `bookingUpdated(operatorId)`; `checkInBooking`, `markNoShow`.
+  2. client: Bookings destination (U1.1 table; shown with `booking_enabled` and `readBookings`) (day/week calendar with fill bars, list, detail sheet with actions; manual booking reusing the
+     B2.1 flow with "pay at desk" and "no payment").
+  3. Tests: actions, live update via mocked subscription.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner checks in a booking and records a desk payment on a phone.
+Out of scope: manifest link (B3.2).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### B2.5 — Booking in the app for signed-in users
+Status: todo
+Repo: client
+Depends on: B2.4
+Branch: feature/b2-5-app-booking
+Goal: Signed-in users book from the native app and see their bookings.
+Context: B2.1 screens are reused in the authenticated stack; native payments through C2.5 (PaymentSheet).
+Steps:
+  1. "Book" entry on Today (U4.1); reuse the booking screens without Turnstile and code steps.
+  2. Today and Account → My bookings (upcoming, past, manage actions).
+  3. Tests.
+Acceptance criteria (cloud VM):
+  - Client checks, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner books with Apple Pay on an iPhone development build and with Google Pay on Android.
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### B3.1 — Participant details and waiver forms
+Status: todo
+Repo: both
+Depends on: B2.5
+Branch: feature/b3-1-participant-forms
+Goal: Services can require per-participant answers (medical declaration, weight, emergency contact, waiver
+acknowledgement) built with the existing form templates.
+Context: `FormTemplate` (JSON definition, used for rig inspections), `services.participant_form_template_id`.
+Steps:
+  1. backend: answers stored on `booking_participants.form_answers` with the template version; validation against the
+     template; "details incomplete" flag on the booking.
+  2. client: form renderer reused from the equipment inspection screen (P7.14) in booking flow, manage page and staff detail;
+     template editor reused from configuration.
+  3. Tests.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: legally binding e-signatures (needs owner legal advice; record the acknowledgement and timestamp only).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### B3.2 — Check-in to manifest
+Status: todo
+Repo: both
+Depends on: B3.1
+Branch: feature/b3-2-checkin-manifest
+Goal: On check-in, staff put the booking's participants on a load in one step, as prepaid guest slots with their
+escorts, without charging anyone's wallet.
+Context: BD7 (a); GENERALISATION §17 (mode (a) check-in; mode (b) session ↔ load is later work); P7.15 (guests,
+escorts), P7.16 (limits checked at slot creation), P7.17 (`prepaid` slots, dated loads).
+Steps:
+  1. backend: `manifestBooking(bookingId, loadId, escortMembershipIds?)` creates a `Guest` per participant (name, email,
+     phone, date of birth, `body_mass_kg`, emergency contact) and prepaid slots with the service's `ticket_type_id`
+     through `Manifest::CreateSlot` (escort slots for escort tickets); participant ↔ slot link; limit failures return
+     the same eligibility codes staff see.
+  2. client: "Manifest" action on a checked-in booking with a load picker (open loads of that day) and escort choice.
+  3. Specs: tandem booking of 2 → 2 guest slots + 2 escort slots, nothing charged, revenue recognised once; a
+     participant over the body-mass limit fails with its code.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass; tier 2 `@booking`.
+Acceptance criteria (owner, real device):
+  - Owner manifests a booked tandem on a phone.
+Out of scope: mode (b) (session ↔ load), BD7 (b).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### B3.3 — Booking statistics
+Status: todo
+Repo: both
+Depends on: B3.2
+Branch: feature/b3-3-booking-stats
+Goal: Operators see utilisation, revenue and no-shows per service and period.
+Context: the Reports destination (U5.8);
+WEBSHOP S4.3 later consolidates reports.
+Steps:
+  1. backend: `bookingStatistics(operatorId, from, to)` (`readReports`): sessions, capacity, places sold, utilisation %,
+     revenue recognised, deposits outstanding, cancellations and refunds, no-show rate, coupon usage, lead time.
+  2. client: Booking section on the overview screen; CSV export.
+  3. Specs: numbers on a fixed scenario, operator-time-zone day boundaries.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: read-only.
+Size: M
+Fixes: none
+
+### B3.4 — Verify booking
+Status: todo
+Repo: both
+Depends on: B3.3
+Branch: feature/b3-4-verify
+Goal: Booking works end to end and is documented.
+Context: all of this plan.
+Steps:
+  1. Run all checks; `docs/verification/booking.md` with results and the race-table spec output.
+  2. Update `docs/reference/README.md` (feature inventory, domain model, jobs, public API) and `diagrams.md` (booking
+     state and sequence diagrams from §3.4 and §3.10).
+Acceptance criteria (cloud VM):
+  - All checks exit 0.
+Acceptance criteria (owner, real device):
+  - Owner runs a full day on staging: guest bookings on two phones, a weather cancellation of one session, check-in
+    and manifest of the rest; the ledger reconciliation reports no mismatch.
+Out of scope: none.
+Risk / rollback: none.
+Size: S
+Fixes: none
+
+---
+
+## Phase S — Webshop
+
+Goal: operators sell physical goods and virtual products (credit packages, gift vouchers, memberships) to signed-in
+members on the web and in the app, manage stock and fulfilment, and see sales reports. Design and decisions SD1–SD4:
+[WEBSHOP_PLAN](features/WEBSHOP_PLAN.md) (§n in Phase S refers to it). Builds on Phase C; gift vouchers and reports
+also use Phase B.
+
+Rules for every Phase S task: as Phase C (cents, ledger in the same transaction, tenant-isolation and authz specs);
+stock claims are proven with parallel-thread specs like B1.4; client screens follow "Client UI work".
+
+### S1.1 — Catalogue: products, variants, categories, markdown
+Status: todo
+Repo: both
+Depends on: C2.9
+Branch: feature/s1-1-catalogue
+Goal: Staff create products with variants, categories, visibility and a markdown description; the public and members
+can read what they are allowed to see.
+Context: §3.1, §3.8, SD3.
+Steps:
+  1. backend: tables `product_categories`, `products`, `product_options`, `product_variants` (stock columns created
+     here, used in S1.3); validations; mutations (`manageProducts`); queries `products(operatorId, filter)` (staff),
+     `shopProducts(operatorSlug, categorySlug, search)` and `shopProduct(operatorSlug, slug)` (`authenticate: false`,
+     filtered by visibility: `public` for everyone, `members` for members of that operator, `staff` for staff).
+  2. client: reuse `MarkdownView` and `MarkdownEditor` from B2.1 (`app/ui`).
+  3. Permissions with role backfill.
+  4. Specs: visibility matrix (anonymous, other operator's member, member, staff) × (draft, active, archived, window),
+     SKU uniqueness, markdown length.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql` pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: media (S1.2), staff screens (S1.4).
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### S1.2 — Media: direct uploads for images and video
+Status: todo
+Repo: both
+Depends on: S1.1
+Branch: feature/s1-2-media
+Goal: Staff attach ordered images and videos to products and services from a phone or the web, uploading straight to
+storage.
+Context: §3.2, SD1. `config/storage.yml`; P6.21 upload fixes; `expo-image-picker` is installed.
+Steps:
+  1. backend: `product_media` (polymorphic owner: product or service); `createDirectUpload`; `attachMedia`,
+     `reorderMedia`, `updateMedia` (alt text), `removeMedia`; content-type and size validation on the blob; ffmpeg
+     poster generation (skip with a warning when ffmpeg is missing); `PurgeUnattachedBlobsJob` daily.
+  2. Document bucket CORS and ffmpeg in `docs/reference/README.md` §8 (for P8.4).
+  3. client: `MediaManager` component (pick from library/camera, upload progress, reorder by drag on web and
+     move buttons on native, alt text), `MediaGallery` (swipe, video playback with `expo-video` if bundled with SDK 57,
+     otherwise the SDK's video module).
+  4. Specs: direct upload round trip on the Disk service, rejected types and sizes, ordering, tenant isolation.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks and web export pass.
+Acceptance criteria (owner, real device):
+  - Owner uploads 3 photos and a 1-minute phone video to a product on an iPhone and on Android; both play on web.
+Out of scope: transcoding (SD1 b).
+Risk / rollback: additive.
+Size: L
+Fixes: none
+
+### S1.3 — Stock movements and reservations
+Status: todo
+Repo: backend
+Depends on: S1.2
+Branch: feature/s1-3-stock
+Goal: Stock changes are recorded as movements; checkout reserves stock atomically; overselling is impossible unless
+backorders are allowed.
+Context: §3.3.
+Steps:
+  1. `stock_movements`; `Inventory::Move` (receive, adjust with reason, damage); check constraint on variants.
+  2. `ProductVariant` implements `Sellable` (`reserve!`, `release!`, `on_paid!` decrements, `on_refunded!` with optional
+     restock).
+  3. Low-stock crossing notification.
+  4. Specs: 20 threads buying the last 3 units → 3 succeed; backorder variant never blocks; expiry releases; counters
+     equal movement sums after the scenarios.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; the stock concurrency spec passes 20 consecutive runs.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: valuation.
+Risk / rollback: additive.
+Size: M
+Fixes: none
+
+### S1.4 — Staff catalogue and stock screens
+Status: todo
+Repo: client
+Depends on: S1.3
+Branch: feature/s1-4-catalogue-screens
+Goal: Staff manage the whole catalogue and stock from the app.
+Context: Setup list-and-form pattern (U5.5); S1.1–S1.3 API.
+Steps:
+  1. Shop destination (U1.1 table; shown with `manageProducts` or `readOrders`) → Products: list with status/visibility/stock badges and search; product form (details, markdown editor,
+     options and variants grid, prices, visibility and dates, media manager); categories screen.
+  2. Stock: per-variant movement history, receive/adjust dialog with reason.
+  3. Tests for forms and the variants grid.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner creates a T-shirt with sizes and colours, photos and stock on a small Android phone.
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### S2.1 — Storefront and cart
+Status: todo
+Repo: both
+Depends on: S1.4
+Branch: feature/s2-1-storefront
+Goal: Anyone can browse an operator's shop; signed-in users keep a cart across web and app.
+Context: §3.4. Public routes like B2.1 (`/:operatorSlug/shop`, `/:operatorSlug/shop/:productSlug`).
+Steps:
+  1. backend: `carts`, `cart_items`; mutations `addToCart`, `updateCartItem`, `removeCartItem`; query `cart(operatorId)`
+     with current prices and availability flags.
+  2. client: shop home (categories, featured), product list, product detail (gallery, variant picker, stock state,
+     markdown), cart screen; "sign in to buy" for anonymous visitors, returning to the product after login.
+  3. Tests; smoke test step "browse shop, add to cart".
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export, smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: checkout (S2.2).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### S2.2 — Checkout with shipping and pickup
+Status: todo
+Repo: both
+Depends on: S2.1
+Branch: feature/s2-2-shop-checkout
+Goal: Signed-in users buy physical goods with card, Apple Pay or Google Pay, choosing delivery or pickup.
+Context: §3.4; COMMERCE checkout (C2.3–C2.5) and coupons (C2.7–C2.8).
+Steps:
+  1. backend: `shipping_zones`, `shipping_rates`, pickup setting; `shippingOptions(cartId, address)`; checkout from a
+     cart (lines from cart items, address and rate snapshot); shipping in totals, tax and ledger; staff configuration
+     mutations (`manageProducts`).
+  2. client: address form (saved addresses per user), shipping option list, order summary with coupon, payment with
+     the C2.5 components, order confirmation; shipping configuration screen for staff.
+  3. Specs: rate selection by zone/postcode/weight, free-over threshold after discounts, tax on shipping, stock
+     reserved and released, order emails (receipt with tax details from COMMERCE C1.1).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, web export, smoke test (checkout with the fake provider) pass.
+Acceptance criteria (owner, real device):
+  - Owner buys with Apple Pay on an iPhone and Google Pay on Android (staging test mode); the order, stock, ledger and
+    fee agree.
+Out of scope: carrier rates (SD2 b).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### S2.3 — Pay with wallet credits
+Status: todo
+Repo: both
+Depends on: S2.2
+Branch: feature/s2-3-wallet-tender
+Goal: Members pay shop orders with credits when the operator uses the credit system.
+Context: SD4; wallet code (`add_cents!`, P6.10 locks), `allow_negative_credits` setting.
+Steps:
+  1. backend: `payments.provider = wallet`; balance check under the wallet lock; ledger `customer_wallets` →
+     revenue; refunds back to the wallet; no platform fee.
+  2. client: "Pay with credits (balance A$…)" option in checkout.
+  3. Specs: insufficient balance, concurrent wallet spend (manifest + shop at once) never overdraws, refund.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: split tender.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### S3.1 — Credit packages
+Status: todo
+Repo: both
+Depends on: S2.3
+Branch: feature/s3-1-credit-packages
+Goal: Operators sell fixed credit packages with optional bonus credits, in the shop and on the top-up screen.
+Context: §3.5; COMMERCE C2.3 `WalletTopUp`, C2.5 top-up screen, CD6 (iOS flag).
+Steps:
+  1. backend: product kind `credit_package` with `credits_cents`, `bonus_cents`; `Sellable` posting per §3.5; never
+     discountable.
+  2. client: packages shown on the top-up screen above the free-amount option; product form fields.
+  3. Specs: bonus posting, coupon rejected, refund removes credits (refusing if the member already spent them, unless
+     staff force it into a negative balance with a reason).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### S3.2 — Gift vouchers
+Status: todo
+Repo: both
+Depends on: S3.1, B1.6
+Branch: feature/s3-2-gift-vouchers
+Goal: Customers buy gift vouchers for someone else; vouchers pay for shop orders and bookings.
+Context: §3.5. Booking checkout (B1.6) accepts the voucher as a tender too.
+Steps:
+  1. backend: `gift_vouchers` (code, initial and remaining balance, expiry, purchaser, recipient, message, state),
+     `gift_voucher_redemptions`; product kind `gift_voucher` (fixed amounts or a custom amount in a range); voucher
+     email with code; `redeemGiftVoucher` in shop and booking checkout (partial redemption, the rest by card);
+     staff `convertVoucherToCredits`; expiry job posting breakage per the accountant's advice (CD5).
+  2. client: voucher product page (recipient fields), voucher field in checkout and booking payment, staff voucher
+     lookup.
+  3. Specs: concurrent redemption of one voucher never exceeds its balance, partial use, expiry, refund of a voucher
+     purchase only while unused.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner buys a voucher on the web and redeems half of it on a tandem booking.
+Out of scope: printed vouchers (PDF) — add if operators ask.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### S3.3 — Membership products
+Status: todo
+Repo: both
+Depends on: S3.2
+Branch: feature/s3-3-memberships
+Goal: Members renew their operator membership online.
+Context: §3.5; `memberships.expires_at`, the `membership` eligibility check (P7.16).
+Steps:
+  1. backend: product kind `membership` with `duration_months`; `on_paid!` extends expiry; notification; ledger.
+  2. client: "Renew membership" as the fix action of the membership check on Today (U4.1) and in the picker (U3.7).
+  3. Specs: extension from today vs from a future expiry; refund does not shorten (staff adjust manually).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: recurring subscriptions.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### S4.1 — Fulfilment, pickup and order emails
+Status: todo
+Repo: both
+Depends on: S3.3
+Branch: feature/s4-1-fulfilment
+Goal: Staff ship or hand over orders, partially or fully, and customers are told at each step.
+Context: §3.4 fulfilment.
+Steps:
+  1. backend: `shipments`; `createShipment(salesOrderId, lines, carrier, trackingNumber, trackingUrl)`,
+     `markShipmentDelivered`, `markReadyForPickup`, `markPickedUp` (`updateOrders`); order `fulfilment_state`; emails
+     and push; customer "My orders" query with shipments.
+  2. client: fulfilment actions in the order detail; customer order history and tracking link.
+  3. Specs: partial shipment states, refund of an unshipped line, notification sent once.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, web export pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: labels and live carrier tracking (SD2 b), return authorisations.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### S4.2 — Orders dashboard
+Status: todo
+Repo: both
+Depends on: S4.1
+Branch: feature/s4-2-dashboard
+Goal: Staff see at a glance what needs doing in the shop and act on it.
+Context: §3.7 dashboard.
+Steps:
+  1. backend: `shopDashboard(operatorId)` (counts and first items per panel), `salesOrders(operatorId, filter)` with
+     search by number, customer, product; subscription `salesOrderUpdated(operatorId)`; push on paid orders with a
+     per-user opt-out setting.
+  2. client: Shop dashboard (panels from §3.7), orders list with filters, order detail (lines, payments, refunds,
+     shipments, notes, actions), staff landing card with counts.
+  3. Tests: panels with mocked data, live update.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export pass.
+Acceptance criteria (owner, real device):
+  - Owner places an order on one phone and sees it arrive on another phone's dashboard without refreshing.
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### S4.3 — Reports and statistics
+Status: todo
+Repo: both
+Depends on: S4.2, B3.3
+Branch: feature/s4-3-reports
+Goal: Operators get the sales, stored-value and accounting reports in §3.7, with CSV export.
+Context: §3.7 reports; ledger balances and `profit_and_loss` (COMMERCE C1.2); booking statistics (B3.3); `react-native-chart-kit` is
+already a client dependency.
+Steps:
+  1. backend: report queries (`readReports`), each returning rows plus totals, in the operator's time zone; CSV
+     endpoint per report (signed, short-lived URL); trial balance and P&L from the ledger.
+  2. client: in the Reports destination (U5.8), date range, tabs (Sales, Products, Coupons, Stored value, Bookings, Accounting),
+     charts for time series, CSV download.
+  3. Specs: a fixed scenario (sales, discounts, refunds, vouchers, wallet spend, bookings) whose report totals equal
+     the ledger; month boundary in a non-UTC zone.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks and web export pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: accounting-software integrations.
+Risk / rollback: read-only.
+Size: L
+Fixes: none
+
+### S4.4 — Verify the webshop
+Status: todo
+Repo: both
+Depends on: S4.3
+Branch: feature/s4-4-verify
+Goal: The webshop works end to end and is documented.
+Context: all of this plan.
+Steps:
+  1. Run all checks; `docs/verification/webshop.md`.
+  2. Update `docs/reference/README.md` (feature inventory, domain model, jobs, permissions) and `diagrams.md` (shop ER and
+     order state diagram).
+Acceptance criteria (cloud VM):
+  - All checks exit 0.
+Acceptance criteria (owner, real device):
+  - Owner, on staging: buys a physical product (ship) and a voucher on web, a credit package on iPhone, pays with
+    credits on Android; ships, refunds one line; reports and the fee statement match the Stripe Dashboard.
 Out of scope: none.
 Risk / rollback: none.
 Size: S
