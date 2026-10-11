@@ -39,7 +39,7 @@ class Slot < ApplicationRecord
 
   belongs_to :passenger_slot, optional: true, class_name: "Slot"
 
-  has_many :slot_extras
+  has_many :slot_extras, dependent: :destroy
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
   scope :ready, -> {

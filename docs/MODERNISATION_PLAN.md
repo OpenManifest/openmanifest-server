@@ -3032,7 +3032,7 @@ Size: L
 Fixes: BUG-035, BUG-026, BUG-036, BUG-082
 
 ### P6.13 — Fix group manifesting and store add-ons
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.12
 Branch: modernise/p6-13-groups-extras
