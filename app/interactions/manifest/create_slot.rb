@@ -25,7 +25,8 @@ class Manifest::CreateSlot < ApplicationInteraction
   # #required_permissions); everything must belong to the dropzone the caller acts in
   validate :same_dropzone
 
-  steps :build_slot,
+  steps :lock_load_and_member,
+        :build_slot,
         :set_tandem_passenger,
         :validate,
         :create_order,
@@ -66,12 +67,19 @@ class Manifest::CreateSlot < ApplicationInteraction
     )
   end
 
+  # Capacity and credits are checked against rows nobody else can change until this transaction ends (BUG-020, BUG-023).
+  # Lock order: the load, then the member (CreateMultipleSlots locks the load and then all members by id).
+  def lock_load_and_member
+    load.lock!
+    dropzone_user.lock!
+  end
+
   def validate
     errors.merge!(@model.errors) unless @model.valid?
   end
 
   def save
-    errors.merge!(@model.errors) unless @model.save
+    unique_per_load { errors.merge!(@model.errors) unless @model.save }
   end
 
   def build_slot
@@ -116,14 +124,17 @@ class Manifest::CreateSlot < ApplicationInteraction
     end
   end
 
+  # The order saves the new slot with it
   def create_order
-    compose(
-      Transactions::Purchase,
-      buyer: dropzone_user,
-      seller: access_context.dropzone,
-      purchasable: model,
-      access_context: access_context
-    )
+    unique_per_load do
+      compose(
+        Transactions::Purchase,
+        buyer: dropzone_user,
+        seller: access_context.dropzone,
+        purchasable: model,
+        access_context: access_context
+      )
+    end
   end
 
   # Push update to GraphQL
@@ -142,6 +153,14 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   private
+
+  # One person has one slot per load (unique index): report a violation instead of raising. The savepoint keeps the
+  # surrounding transaction usable for the error event.
+  def unique_per_load(&)
+    Slot.transaction(requires_new: true, &)
+  rescue ActiveRecord::RecordNotUnique
+    errors.add(:base, "Already manifested on this load")
+  end
 
   def manifesting_self?
     access_context&.subject.present? && dropzone_user.id == access_context.subject.id

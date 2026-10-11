@@ -11,7 +11,8 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   validate :same_dropzone
 
-  steps :open_with_room,
+  steps :lock_rows,
+        :open_with_room,
         :affordable?,
         :move_slot,
         :validate,
@@ -51,6 +52,14 @@ class Manifest::MoveSlot < ApplicationInteraction
       message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user.user.name} from load ##{load.load_number}",
       details: errors.full_messages.join(", ")
     )
+  end
+
+  # Capacity and credits are checked against rows nobody else can change until this transaction ends (BUG-020,
+  # BUG-023). Lock order: the loads by id, then the member.
+  def lock_rows
+    [source_slot.load, destination_load].compact.uniq.sort_by(&:id).each(&:lock!)
+    source_slot.reload
+    source_slot.dropzone_user&.lock!
   end
 
   def move_slot
