@@ -12,6 +12,8 @@ module Dropzones
 
       # Set up default settings for a dropzone when initialized
       after_initialize do
+        # Partial selects (counter_culture's reconciliation) do not load the column
+        next unless has_attribute?(:settings)
         next if self.class.default_settings.keys.all? { |key| settings.key?(key) }
         assign_attributes(settings: self.class.default_settings.merge(settings || {}))
       end

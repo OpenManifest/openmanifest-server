@@ -4,7 +4,7 @@ module Types
   module Input
     class TicketTypeInput < Types::Base::Input
       argument :currency, String, required: false
-      argument :cost, Float, required: false
+      money_argument :cost
       argument :name, String, required: false
       argument :altitude, Int, required: false
       argument :allow_manifesting_self, Boolean, required: false

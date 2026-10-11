@@ -21,18 +21,18 @@ class RigInspection < ApplicationRecord
   belongs_to :rig
 
   scope :at_dropzone, -> (dropzone) { includes(:inspected_by).where(dropzone_users: { dropzone_id: dropzone.id }) }
-  after_create :notify!
   after_save :notify!
 
+  # Tells the owner when the rig is cleared to jump: when an inspection is created as ok, or becomes ok
   def notify!
-    if (new_record? && is_ok?) || (is_ok? && !is_ok_was)
-      Notification.create(
-        received_by: dropzone_user,
-        message: "Your equipment has been cleared to jump",
-        type: :rig_inspection_completed,
-        resource: self
-      )
-    end
+    return unless is_ok? && saved_change_to_is_ok?
+
+    Notification.create!(
+      received_by: dropzone_user,
+      message: "Your equipment has been cleared to jump",
+      notification_type: :rig_inspection_completed,
+      resource: self
+    )
   end
 
   def self.default_form

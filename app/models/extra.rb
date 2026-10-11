@@ -13,6 +13,9 @@
 #  is_deleted  :boolean          default(FALSE)
 #
 class Extra < ApplicationRecord
+  include MoneyAttributes
+
+  money :cost
   include Discard::Model
 
   belongs_to :dropzone

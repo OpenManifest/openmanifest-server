@@ -1,12 +1,13 @@
 fragment slotEssentials on Slot {
   id
+  lockVersion
   createdAt
   exitWeight
   passengerName
   passengerExitWeight
   wingLoading
   groupNumber
-  cost
+  costCents
   ticketType {
     ...ticketTypeDetails
   }
@@ -30,7 +31,7 @@ fragment slotDetails on Slot {
 }
 
 fragment userSlotDetails on Slot {
-  ...slotDetails,
+  ...slotDetails
   load {
     ...loadEssentials
   }

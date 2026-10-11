@@ -5,5 +5,6 @@ module Resolvers
     include Extensions::Resolver::AppSignal
     include Support::Lookahead::Resolver
     include Support::DropzoneContext
+    include Support::Authorization
   end
 end

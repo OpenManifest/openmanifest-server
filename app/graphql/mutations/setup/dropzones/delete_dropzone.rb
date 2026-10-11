@@ -48,8 +48,10 @@ module Mutations::Setup::Dropzones
     end
 
     def authorized?(id: nil, attributes: nil)
-      dz_user = Dropzone.find(id).dropzone_users.find_by(user_id: context[:current_user])
-      if dz_user.can? :deleteDropzone
+      dropzone = Dropzone.find_by(id: id)
+      return [false, { errors: ["Dropzone not found"] }] unless dropzone
+
+      if context[:current_resource].can?(:deleteDropzone, dropzone_id: dropzone.id)
         true
       else
         [

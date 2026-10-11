@@ -20,11 +20,11 @@ class Access::GrantPermission < ApplicationInteraction
       action: :deleted,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} granted permission `#{permission.name}` to #{dropzone_user.user.name}"
+      message: "#{access_context.user.name} granted permission `#{permission.name}` to #{dropzone_user.user.name}"
     )
     Notification.create(
       received_by: dropzone_user,
-      message: "#{access_context.subject.user.name} gave you access to `#{permission.name}`",
+      message: "#{access_context.user.name} gave you access to `#{permission.name}`",
       notification_type: :permission_granted,
       resource: dropzone_user,
       sent_by: access_context.subject

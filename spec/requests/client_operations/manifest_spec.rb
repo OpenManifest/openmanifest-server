@@ -63,7 +63,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "returns the jumpers of a load that has no load master" do
-      pending "BUG-091: Sources::Model#fetch drops nil keys, shifting the batched DropzoneUser results"
       no_master_load = create(:load, plane: plane, pilot: pilot, gca: owner, load_master: nil)
       manifest!(fun_jumper, load: no_master_load.id)
 
@@ -85,6 +84,12 @@ RSpec.describe "Client operations: manifest" do
       expect(json.dig(:data, :createLoad, :errors)).to be_nil
       expect(json.dig(:data, :createLoad, :load)).to include(name: "Load A", state: "open", maxSlots: 10, loadNumber: 2)
       expect(json.dig(:data, :createLoad, :load, :pilot, :id)).to eq(pilot.id.to_s)
+    end
+
+    it "ignores the state sent for a new load" do
+      json = client_operation("CreateLoad", variables: load_variables.merge(state: "landed"), as: owner_user)
+
+      expect(json.dig(:data, :createLoad, :load, :state)).to eq("open")
     end
 
     it "refuses a jumper without createLoad" do
@@ -125,12 +130,38 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "changes the maximum number of slots" do
-      pending "BUG-025: check_max_slots is inverted, so any valid change of max slots is rejected"
-
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 12 } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_nil
       expect(manifest_load.reload.max_slots).to eq(12)
+    end
+
+    it "refuses fewer slots than are already manifested" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 1 } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors).join).to match(/too many manifested/i)
+      expect(manifest_load.reload.max_slots).to eq(10)
+    end
+
+    it "allows exactly as many slots as are manifested" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 2 } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.max_slots).to eq(2)
+    end
+
+    it "changes to a plane that seats exactly the manifested jumpers" do
+      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+      small_plane = create(:plane, dropzone: dropzone, max_slots: 2)
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: small_plane.id } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.plane).to eq(small_plane)
     end
 
     it "refuses a jumper" do
@@ -141,12 +172,89 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "only allows valid state transitions" do
-      pending "BUG-035: the load state is taken directly from client input"
       manifest_load.update!(state: "landed")
 
-      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
 
       expect(manifest_load.reload.state).to eq("landed")
+      expect(json.dig(:data, :updateLoad, :errors).join).to match(/can't go from landed to boarding call/)
+    end
+
+    it "starts a boarding call with a call time and the state" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding_call" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding_call")
+      expect(manifest_load.reload.dispatch_at).to be_present
+    end
+
+    it "starts a boarding call with only a call time" do
+      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601 } }, as: owner_user)
+
+      expect(manifest_load.reload.state).to eq("boarding_call")
+    end
+
+    it "refuses a boarding call without a call time" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_present
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "cancels the boarding call by clearing the call time" do
+      manifest_load.update!(dispatch_at: 10.minutes.from_now)
+      manifest_load.dispatch
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload).to have_attributes(state: "open", dispatch_at: nil)
+    end
+
+    it "accepts the state the load is already in" do
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "re-opens a cancelled load" do
+      manifest_load.cancel
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "open" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(manifest_load.reload.state).to eq("open")
+    end
+
+    it "lands a load through the state, settling the orders and counting the jump once" do
+      slot = manifest!(fun_jumper)
+      manifest_load.update!(dispatch_at: 10.minutes.from_now)
+      manifest_load.dispatch
+
+      expect { client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "landed" } }, as: owner_user) }.
+        to change { fun_jumper.user.reload.jump_count }.by(1)
+
+      expect(manifest_load.reload.state).to eq("landed")
+      expect(slot.reload.order.state).to eq("completed")
+    end
+
+    it "cancels a load through the state and refunds the jumpers" do
+      manifest!(fun_jumper)
+
+      client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "cancelled" } }, as: owner_user)
+
+      expect(manifest_load.reload.state).to eq("cancelled")
+      expect(fun_jumper.reload.credits).to eq(300)
+    end
+
+    it "does not take off a cancelled load" do
+      manifest_load.cancel
+
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "in_flight" } }, as: owner_user)
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_present
+      expect(manifest_load.reload.state).to eq("cancelled")
     end
   end
 
@@ -156,7 +264,7 @@ RSpec.describe "Client operations: manifest" do
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
       expect(json.dig(:data, :createSlot, :slot, :dropzoneUser, :id)).to eq(fun_jumper.id.to_s)
-      expect(json.dig(:data, :createSlot, :slot, :cost)).to eq(40.0)
+      expect(json.dig(:data, :createSlot, :slot, :costCents)).to eq(4000)
       expect(fun_jumper.reload.credits).to eq(260)
     end
 
@@ -197,7 +305,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "does not let a student manifest another member" do
-      pending "BUG-006: createSlot only requires createSlot; the self-versus-other check is never called"
       student = create(:user)
       create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"), credits: 100)
 
@@ -207,21 +314,78 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "counts each slot once on the load" do
-      pending "BUG-019: counter_culture increments slots_count twice per slot"
       manifest!(fun_jumper)
 
       expect(manifest_load.reload.slots_count).to eq(1)
     end
 
-    it "stores the selected add-ons with the slot" do
-      pending "BUG-028: extras are accepted but never stored or charged"
-      extra = create(:extra, dropzone: dropzone, cost: 5) if FactoryBot.factories.registered?(:extra)
-      extra ||= Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
-      ticket_type.extras << extra
+    context "with add-ons" do
+      let!(:video) { Extra.create!(dropzone: dropzone, name: "Video", cost: 5) }
+      let!(:coach) { Extra.create!(dropzone: dropzone, name: "Coach", cost: 12) }
+      let!(:unrelated) { Extra.create!(dropzone: dropzone, name: "Not on this ticket", cost: 1) }
 
-      slot = manifest!(fun_jumper, extras: [extra.id])
+      before { ticket_type.extras << [video, coach] }
 
-      expect(slot.reload.extras).to eq([extra])
+      it "stores the selected add-ons with the slot" do
+        slot = manifest!(fun_jumper, extras: [video.id])
+
+        expect(slot.reload.extras).to eq([video])
+      end
+
+      it "stores every selected add-on" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        expect(slot.reload.slot_extras.count).to eq(2)
+        expect(slot.extras).to match_array([video, coach])
+      end
+
+      it "charges the ticket and the add-ons in one order" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        expect(slot.reload.cost).to eq(57)
+        expect(slot.order.amount).to eq(57)
+        expect(fun_jumper.reload.credits).to eq(243)
+      end
+
+      it "refunds the add-ons with the ticket" do
+        slot = manifest!(fun_jumper, extras: [video.id, coach.id])
+
+        client_operation("DeleteSlot", variables: { id: slot.id }, as: owner_user)
+
+        expect(fun_jumper.reload.credits).to eq(300)
+      end
+
+      it "counts the add-ons in the credit check" do
+        fun_jumper.update!(credits: 50)
+
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [video.id, coach.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+        expect(json.dig(:data, :createSlot, :fieldErrors).to_a.to_s + json.dig(:data, :createSlot, :errors).to_a.to_s).to match(/credits/i)
+      end
+
+      it "refuses an add-on that is not offered with the ticket" do
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [unrelated.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+        expect(json.dig(:data, :createSlot, :fieldErrors, 0, :field)).to eq("extras")
+        expect(Slot.where(dropzone_user: fun_jumper)).to be_empty
+      end
+
+      it "refuses an add-on of another dropzone" do
+        foreign = Extra.create!(dropzone: create(:dropzone), name: "Video", cost: 5)
+
+        json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [foreign.id]), as: owner_user)
+
+        expect(json.dig(:data, :createSlot, :slot)).to be_nil
+      end
+
+      it "manifests without add-ons as before" do
+        slot = manifest!(fun_jumper)
+
+        expect(slot.reload.extras).to be_empty
+        expect(slot.order.amount).to eq(40)
+      end
     end
   end
 
@@ -248,10 +412,48 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "gives the group one group number" do
-      pending "BUG-027: the group number is recomputed per member"
       client_operation("ManifestGroup", variables: group_variables, as: owner_user)
 
       expect(manifest_load.slots.pluck(:group_number).uniq.size).to eq(1)
+    end
+
+    it "gives a group of three one group number, and the next group the next one" do
+      third = create(:dropzone_user, dropzone: dropzone, credits: 300)
+      other_group = Array.new(2) { create(:dropzone_user, dropzone: dropzone, credits: 300) }
+      [[fun_jumper, second, third], other_group].each do |members|
+        variables = group_variables.merge(jumpType: JumpType.allowed_for(members).first.id, userGroup: members.map { |member| { id: member.id, exitWeight: 80 } })
+        expect(client_operation("ManifestGroup", variables: variables, as: owner_user).dig(:data, :createSlots, :errors)).to be_blank
+      end
+
+      groups = manifest_load.slots.group_by(&:group_number).values.map { |slots| slots.map(&:dropzone_user) }
+      expect(groups).to match_array([match_array([fun_jumper, second, third]), match_array(other_group)])
+    end
+
+    it "uses the group number the client gives" do
+      client_operation("ManifestGroup", variables: group_variables.merge(groupNumber: 7), as: owner_user)
+
+      expect(manifest_load.slots.pluck(:group_number)).to eq([7, 7])
+    end
+
+    it "charges the add-ons to every member of the group" do
+      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      ticket_type.extras << video
+
+      client_operation("ManifestGroup", variables: group_variables.merge(extras: [video.id]), as: owner_user)
+
+      expect(manifest_load.slots.map { |slot| slot.extras.to_a }).to all(eq([video]))
+      expect([fun_jumper, second].map { |member| member.reload.credits }).to eq([255, 255])
+    end
+
+    it "counts the add-ons in the credit check of the group" do
+      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      ticket_type.extras << video
+      second.update!(credits: 42)
+
+      json = client_operation("ManifestGroup", variables: group_variables.merge(extras: [video.id]), as: owner_user)
+
+      expect(json.dig(:data, :createSlots, :fieldErrors, 0)).to include(field: "credits")
+      expect(manifest_load.slots).to be_empty
     end
   end
 
@@ -267,7 +469,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "keeps the slot when the target load is full" do
-      pending "BUG-092: moveSlot does not check the capacity of the target load (slot validations only run on create)"
       second_load.update!(max_slots: 1)
       other = create(:dropzone_user, dropzone: dropzone, credits: 300)
       client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user)
@@ -278,7 +479,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "does not let a student move someone else's slot" do
-      pending "BUG-007: moveSlot has no permission requirement"
       student = create(:user)
       create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"))
 
@@ -287,15 +487,26 @@ RSpec.describe "Client operations: manifest" do
       expect(slot.reload.load).to eq(manifest_load)
     end
 
-    it "swaps with a target slot" do
-      pending "BUG-031: moveSlot raises on the group_numner typo when a target slot is given"
+    it "moves a slot of a jumper whose credit balance is empty (nil)" do
+      fun_jumper.update_columns(credits: nil)
+
+      json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
+
+      expect(json.dig(:data, :moveSlot, :errors)).to be_nil
+      expect(slot.reload.load).to eq(second_load)
+    end
+
+    it "moves next to a target slot, into its load and group" do
       other = create(:dropzone_user, dropzone: dropzone, credits: 300)
       target = Slot.find(client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user).dig(:data, :createSlot, :slot, :id))
+      target.update_column(:group_number, 7)
 
-      client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetSlot: target.id, targetLoad: second_load.id }, as: owner_user)
+      json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetSlot: target.id, targetLoad: second_load.id }, as: owner_user)
 
+      expect(json.dig(:data, :moveSlot, :errors)).to be_nil
       expect(slot.reload.load).to eq(second_load)
-      expect(target.reload.load).to eq(manifest_load)
+      expect(slot.group_number).to eq(7)
+      expect(target.load).to eq(second_load)
     end
   end
 
@@ -326,7 +537,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "deletes a slot that has no order" do
-      pending "BUG-032: deleting a slot without an order fails with \"Order is required\""
       slot.order.destroy!
       slot.reload
 
@@ -354,6 +564,23 @@ RSpec.describe "Client operations: manifest" do
       expect(fun_jumper.reload.credits).to eq(300)
     end
 
+    it "lands a load only once" do
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+
+      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
+        not_to(change { fun_jumper.user.reload.jump_count })
+    end
+
+    it "does not cancel a landed load" do
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+
+      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "cancelled" }, as: owner_user)
+
+      expect(json.dig(:data, :finalizeLoad, :errors).join).to match(/can't be cancelled/)
+      expect(manifest_load.reload.state).to eq("landed")
+      expect(fun_jumper.reload.credits).to eq(260)
+    end
+
     it "refuses a jumper" do
       client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: user)
 
@@ -361,7 +588,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "lands a load that has a tandem passenger" do
-      pending "BUG-030: finalising raises for slots without an order (tandem passengers)"
       instructor.update!(credits: 500)
       client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, passengerName: "Pat", passengerExitWeight: 70), as: owner_user)
 
@@ -371,8 +597,6 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "updates the jump counts of the jumpers when the load lands" do
-      pending "BUG-026: update_counters! checks state_changed? after the save, which is always false"
-
       expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
         to change { fun_jumper.user.reload.jump_count }.by(1)
     end

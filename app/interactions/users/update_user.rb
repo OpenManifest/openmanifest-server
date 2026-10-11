@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class Users::UpdateUser < ApplicationInteraction
-  record :dropzone_user
+  # The member whose profile is edited; without one the caller edits their own profile (logging out clears the push token
+  # before any dropzone is chosen)
+  record :dropzone_user, default: nil
+  record :user, default: nil
   string :name, default: nil
   string :nickname, default: nil
   string :push_token, default: nil
@@ -9,35 +12,55 @@ class Users::UpdateUser < ApplicationInteraction
   string :federation_number, default: nil
   string :phone, default: nil
   string :email, default: nil
-  integer :user_role_id, default: nil
   decimal :exit_weight, default: nil
   record :license, default: nil
-  date_time :expires_at, default: nil
 
   steps :authorize,
+        :check_email,
         :assign_attributes,
         :assign_federation,
-        :dropzone_user
+        :result
 
   def assign_attributes
-    dropzone_user.user.assign_attributes(
-      {
-        name: name,
-        nickname: nickname,
-        push_token: push_token,
-        phone: phone,
-        email: email,
-        exit_weight: exit_weight,
-        user_role_id: user_role_id,
-        expires_at: expires_at,
-      }.compact
-    )
-    errors.merge!(dropzone_user.user.errors) unless dropzone_user.user.save
-    if image
-      dropzone_user.user.avatar.attach(data: image)
-      # Resize image
-      dropzone_user.user.avatar.variant(resize_to_fill: [500, 500], gravity: 'north')
-    end
+    attributes = {
+      name: name,
+      nickname: nickname,
+      phone: phone,
+      email: email,
+      exit_weight: exit_weight,
+    }.compact
+    # Sending null clears the push token (logging out); leaving it out keeps it
+    attributes[:push_token] = push_token if inputs.given?(:push_token)
+    target_user.assign_attributes(attributes)
+    save_user
+    attach_avatar if image
+  end
+
+  def result
+    dropzone_user
+  end
+
+  def attach_avatar
+    Support::ImageUpload.attach(target_user.avatar, image, name: "avatar")
+  rescue Support::ImageUpload::Invalid => e
+    errors.add(:image, e.message)
+  end
+
+  # Taking somebody else's email is a validation error, not a database exception (BUG-094)
+  def check_email
+    return if email.blank?
+    return unless User.where.not(id: target_user.id).exists?(["LOWER(email) = ? OR LOWER(uid) = ?", email.downcase, email.downcase])
+
+    errors.add(:email, "has already been taken")
+  end
+
+  def save_user
+    user = target_user
+    # The savepoint keeps the transaction usable if a concurrent request took the email in the meantime
+    saved = User.transaction(requires_new: true) { user.save }
+    errors.merge!(user.errors) unless saved
+  rescue ActiveRecord::RecordNotUnique
+    errors.add(:email, "has already been taken")
   end
 
   def assign_federation
@@ -47,7 +70,7 @@ class Users::UpdateUser < ApplicationInteraction
     # new license:
     compose(
       Federations::AssignUser,
-      user: dropzone_user.user,
+      user: target_user,
       license: license,
       uid: federation_number,
       federation: license.federation,
@@ -55,27 +78,24 @@ class Users::UpdateUser < ApplicationInteraction
     )
   end
 
+  # Users can always update their own profile. A profile belongs to the user, not to a dropzone, so staff may edit it
+  # only while the user is a member of no other dropzone than the one the staff member acts in (updateUser there).
   def authorize
-    user_dropzone_ids = dropzone_user.user.dropzone_users.pluck(:dropzone_id)
-    if user_role_id && user_role_id != dropzone_user.user_role_id && !access_context.subject.can?(:grantPermission)
-      errors.add(:base, 'You are not authorized to change user roles')
-      return false
-    end
+    return errors.add(:base, "Nobody to update") unless target_user
+    return if access_context.user&.id == target_user.id
+    return errors.add(:base, "You cant update other users") unless dropzone_user
 
-    # Users can always update their own profile
-    if access_context.user.id == dropzone_user.user.id
-      true
-    # We can't check for dropzones since User isn't directly
-    # linked to any dropzone, but if this user only belongs to
-    # one dropzone, and you have access to :updateUser at that dropzone,
-    # then you can update the users profile. As soon as the user
-    # joins other dropzones, you can no longer edit their profile
-    elsif user_dropzone_ids.count == 1 && access_context.can?(:updateUser, dropzone_id: user_dropzone_ids.first)
-      true
-    elsif user_dropzone_ids.count > 1 && access_context.can?(:updateUser, dropzone_id: user_dropzone_ids.first)
-      errors.add(:base, "Update failed. User is a member of multiple dropzones")
-    else
+    dropzone_ids = target_user.dropzone_users.kept.pluck(:dropzone_id)
+    if !access_context.can?(:updateUser) || dropzone_user.dropzone_id != access_context.dropzone&.id
       errors.add(:base, "You cant update other users")
+    elsif dropzone_ids.uniq.size > 1
+      errors.add(:base, "Update failed. User is a member of multiple dropzones")
     end
+  end
+
+  private
+
+  def target_user
+    dropzone_user&.user || user
   end
 end

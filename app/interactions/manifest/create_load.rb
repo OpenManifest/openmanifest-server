@@ -9,6 +9,7 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :gca,           class: DropzoneUser, default: nil
   object  :load_master,   class: DropzoneUser, default: nil
   object  :plane,         class: Plane
+  # Ignored: a new load is always open
   string  :state,         default: "open"
   date_time :created_at,  default: -> { DateTime.current }
 
@@ -26,7 +27,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} created load ##{@load.load_number}"
+      message: "#{access_context.user.name} created load ##{@load.load_number}"
     )
   end
 
@@ -40,7 +41,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to create a new load"
+      message: "#{access_context.user.name} failed to create a new load"
     )
   end
 
@@ -51,7 +52,6 @@ class Manifest::CreateLoad < ApplicationInteraction
       pilot: pilot,
       load_master: load_master,
       plane: plane,
-      state: state,
       max_slots: max_slots || plane.max_slots,
       created_at: created_at
     )
@@ -59,7 +59,6 @@ class Manifest::CreateLoad < ApplicationInteraction
 
   def save
     errors.merge!(@load.errors) unless @load.save
-    @load.broadcast_create
     @load
   end
 end
