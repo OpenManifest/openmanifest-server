@@ -2616,7 +2616,7 @@ Size: S
 Fixes: none
 
 ### P5.10 — Verify Phase 5
-Status: todo
+Status: owner-check (the "Layout" section of client:docs/SMOKE_TEST.md on a small Android phone, a large Android phone, an iPhone and an iPad, each at default and maximum font size, dark mode on one; merge the Phase 0–5 stacks and confirm CI on `staging`)
 Repo: both
 Depends on: P5.1, P5.2, P5.3, P5.4, P5.5, P5.6, P5.7, P5.8, P5.9
 Branch: modernise/p5-10-verify
