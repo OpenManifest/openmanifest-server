@@ -42,8 +42,8 @@ infrastructure and fire on every push to `staging`/`main`.
    owner on real devices. That needs EAS/App Store/Play accounts (decision D2). Until then, owner checks rely on web builds
    on phone browsers.
 4. **Production data integrity.** Counters are double-counted, money is stored as floats, membership uniqueness exists only
-   in Ruby, and load numbers are duplicated. Migrations that add constraints must clean the data first, and whether a
-   production database still exists is unknown (decision D7).
+   in Ruby, and load numbers are duplicated. Migrations that add constraints must clean the data first. Decision D7
+   (2026-10-11): there is no production database to carry forward, which also lets Phase 7 rename in place.
 5. **Environment and external dependencies.** `cache.ruby-lang.org` and Expo's API are blocked in the VM. Ruby 4.0
    compatibility of older gems (`geokit-rails`, `search_cop`, `active_interaction-extras`) is unproven. Third-party keys
    (AppSignal, Google Maps, APF, Apple, Facebook, SMTP) may no longer be valid.
@@ -59,10 +59,13 @@ this section ("Decision: …, date"); the executor then changes the blocked task
 | D2 | Store and Expo accounts and identifiers: Apple team, Play Console, EAS project `1d8fa34d-2ff8-4095-ab49-29a426117a8c`, bundle id `com.dangertechnologies.openmanifest`, domains `openmanifest.org` | (a) keep the existing identifiers if the owner still controls them; (b) new identifiers (a new app in the stores) | (a) if access exists (keeps users and EAS Update channels); otherwise (b) with a new EAS project | P3.21 (owner part), P8.2, P8.3, P8.6, owner device checks from Phase 3 |
 | D3 | Dropzone eligibility defaults (BUG-033): the 2023 Settings release turned on `require_membership`, `require_rig_inspection`, `require_reserve_in_date`, `require_equipment`, `require_license`, `require_credits` for all existing dropzones | (a) keep strict defaults; (b) permissive defaults for new dropzones and backfill existing ones as permissive; (c) permissive for existing, strict for new | (b) new and existing dropzones default to `require_credits` = value of `is_credit_system_enabled`, everything else `false`; operators opt in | P6.14 |
 | D4 | Facebook login (BUG-084) | (a) drop Facebook login on all platforms; (b) re-implement with `expo-auth-session` | (a) drop. Native `expo-facebook` was removed from Expo, Facebook needs app review, and email + Apple sign-in remain | P3.3 |
-| D5 | Generalisation go-ahead and naming strategy (GENERALISATION.md §6) | (A) rename tables/models now; (B) keep internal names, add generic API aliases and profile labels, rename internals later; (C) labels only | (B) | P7.1–P7.9 |
-| D6 | Generalisation scope (GENERALISATION.md §7): target industries, cargo, recurring trips, multi-leg routes, booking ahead, payments | — | Start with skydiving + one second profile (dive boats), people only, single destination, same-day trips | P7.4, P7.9 |
-| D7 | Is there a 2023 production database to carry forward? | (a) yes: provide a dump for migration rehearsal; (b) no: start fresh | (a) if it exists; all migrations in this plan preserve data either way | P8.8 |
+| D5 | Generalisation go-ahead and naming strategy (GENERALISATION.md §0, §3) | (A) rename tables, models, API and client now; (B) keep internal names, add generic API aliases and profile labels, rename internals later; (C) labels only | **Decision: go ahead with (A), rename in place with no compatibility layer, because there is no production data and no released client (owner, 2026-10-11).** | none (P7.1–P7.24 unblocked) |
+| D6 | Generalisation scope: target industries and what the first release covers (GENERALISATION.md §1, §16) | — | **Decision: skydiving, scuba diving and bus tours, configured by an industry chosen at operator creation (owner, 2026-10-11).** Scope defaults used by Phase 7 unless the owner changes them: people only (no cargo), trips created per day or for a date (no timetables), one destination per slot or an ordered list per trip, boarding at the start only, internal wallet only. Bus-tour specifics are D9 | none |
+| D7 | Is there a 2023 production database to carry forward? | (a) yes: provide a dump for migration rehearsal; (b) no: start fresh | **Decision: (b), the project is not in production and there is no data to keep (owner, 2026-10-11).** | none (P8.8 uses the D7 (b) path) |
 | D8 | Peer-to-peer credit transfers between members (BUG-008) | (a) remove (only staff with `createUserTransaction` move credits); (b) keep, limited to the same dropzone and the sender's available balance | (a) | P6.7 |
+| D9 | Bus-tour scope (GENERALISATION.md §1, §16) | (a) same-day trips on a route, boarding at the start only, staff manifest passengers; (b) (a) + customers book future trips themselves; (c) (b) + timetables (recurring departures) and hotel pickups / stop-level boarding | (a) for Phase 7: it reuses everything built for skydiving and scuba. (b) and (c) are a customer-booking product of their own and belong in a later phase with payments (D11) | P7.23 |
+| D10 | Branding for non-skydiving operators | (a) keep "OpenManifest" (already neutral), replace airplane icons with vehicle-kind icons, keep skydiving illustrations/Lottie only for the skydiving template; (b) per-template app themes and illustrations for every template; (c) keep the skydiving look everywhere | (a) | P7.20 |
+| D11 | Online payments (Stripe or similar) for customer bookings | (a) not in this modernisation; internal wallet and staff-recorded payments only; (b) add a payment provider after Phase 8 | (a) now, (b) as a later phase together with D9 (b)/(c) | none in this plan |
 
 ## Executor instructions
 
@@ -3433,124 +3436,315 @@ Fixes: none
 
 ## Phase 7 — Generalisation
 
-Goal: OpenManifest can serve operators other than skydiving dropzones through industry profiles, without renaming
-tables or breaking released clients. Design: [GENERALISATION.md](reference/GENERALISATION.md), option B (generic API
-aliases + profile labels; internal names unchanged). Steps 2 (`loads.dropzone_id`) and 6 (money in cents) of
-GENERALISATION §6 are already done in P6.16 and P6.23.
+Goal: OpenManifest serves any operator that manifests people onto vehicles (skydiving, scuba diving, bus tours, …).
+Operators pick an industry template at creation; the template switches on modules and seeds editable presets; code and
+API use industry-neutral names; users see their industry's words. Design, diagrams and the rename map:
+[GENERALISATION.md](reference/GENERALISATION.md) (§n below refers to it).
 
-All Phase 7 tasks are additive: old GraphQL fields stay, with `deprecation_reason`, until P8.7. Every phase-7 task
-except P7.10 is blocked until D5 is decided; P7.4 and P7.9 also need D6.
+Rules for every Phase 7 task (from D5 and D7):
 
-### P7.1 — Add industry profiles
-Status: blocked (awaiting decision D5)
-Repo: backend
+- **Rename, do not alias.** There is no production data and no released client. Change tables, columns, models, GraphQL
+  types, fields, arguments and client code in place. No deprecated mirrors, no backfills, no dual columns. Migrations
+  are still reversible (`rename_table`, `rename_column`, `change_table`).
+- **Rebuild the dev seed instead of migrating data.** Every task that changes the schema updates `db/seeds/dev_baseline.rb`
+  and the factories so `bin/rails db:reset` works; the P0.5 smoke data must still log in and show a manifest board.
+- **Backend and client renames merge in pairs.** A backend rename task (P7.3, P7.5) changes the API; the client keeps
+  passing its checks against its own schema copy (`app/api/openmanifest.graphql`) until the paired client task syncs
+  it. The owner merges each pair together, backend first.
+- **No industry branches.** Behaviour depends on `operator.module?(…)` and operator settings, never on the industry slug.
+  From P7.7, `bin/check-industry-branches` (backend) and `yarn check:industry-branches` (client) fail on
+  `industry ==`, `industry?(`, `skydiving?`, `isSkydiving` and similar outside `config/industries/**`.
+- **Mechanical renames use a codemod.** Rename tasks run the replacements listed in `config/vocabulary.yml` with the
+  script added in P7.1 (`bin/rename-vocabulary --group <name>`), then fix what the script cannot (grammar in comments,
+  file moves, ambiguous words such as "load" in "reload" or "page load"). Review the diff for false positives before
+  committing.
+
+### P7.1 — Add the vocabulary map, the old-terms check and the rename codemod
+Status: todo
+Repo: both
 Depends on: P6.27
-Branch: modernise/p7-1-industry-profiles
-Goal: Dropzones have an `industry_profile` (default `skydiving`) and `profile_overrides`; the API exposes the merged
-profile.
-Context: GENERALISATION §3 (YAML example), §6 step 1.
+Branch: modernise/p7-1-vocabulary
+Goal: The rename map exists in machine-readable form; both repos can count old terms and apply renames per group.
+Context: GENERALISATION §3 (table). The check runs in report mode until P7.18 makes it enforcing.
 Steps:
-  1. Migration: `dropzones.industry_profile` string not null default `"skydiving"`, `profile_overrides` jsonb not null
-     default `{}`.
-  2. `config/industry_profiles/skydiving.yml` exactly as GENERALISATION §3; `IndustryProfile` PORO
-     (`app/models/industry_profile.rb`) loaded with `Rails.application.config_for`-style YAML at boot, `deep_merge` with
-     overrides, JSON-schema-like validation in a spec (required keys present).
-  3. GraphQL `IndustryProfileType` (`slug`, `terminology` as JSON scalar, `destinationTypes`, `defaultCallScheduleMinutes`,
-     `tripCrewRoles`, `units`) and `Dropzone.industryProfile`.
-  4. Specs: default profile, override merge, GraphQL field.
+  1. backend: `config/vocabulary.yml` with one entry per row of §3: `group` (`tenant`, `trip`, `certifications`,
+     `equipment`, `settings`, `permissions`), `old` and `new` in every case form used (snake, camel, Pascal, kebab,
+     plural), and `allow` globs (`config/industries/skydiving/**`, `app/**/skydiving/**`, `app/features/skydiving/**`,
+     `db/migrate/**`, `docs/**`, `CHANGELOG.md`). Client copy at `config/vocabulary.yml`, synced by
+     `scripts/sync-vocabulary.mjs` from the backend checkout (same mechanism as `scripts/sync-schema.mjs`).
+  2. `bin/check-vocabulary` (backend, Ruby, uses `git grep -n -w`) and `scripts/check-vocabulary.mjs` (client,
+     `yarn check:vocabulary`): print a count per old term and per directory; `--enforce` exits 1 on any hit outside
+     `allow`. CI runs it without `--enforce` and writes the table to the job summary.
+  3. `bin/rename-vocabulary --group <group> [--dry-run]` (backend) and `scripts/rename-vocabulary.mjs` (client): apply the
+     group's word-boundary replacements to file contents and `git mv` files and directories whose names contain an old
+     term. Skips `allow` paths. Specs/tests for the replacement function (case forms, word boundaries, `reload` untouched).
 Acceptance criteria (cloud VM):
-  - Backend env: `bundle exec rspec` green; schema dump diff is additive only.
+  - Backend rspec green; client checks pass; `bin/check-vocabulary` and `yarn check:vocabulary` exit 0 and the baseline
+    counts are in the PR body; `bin/rename-vocabulary --group tenant --dry-run` lists files without changing them.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: a second profile (P7.9).
-Risk / rollback: additive; rollback drops columns.
+Out of scope: applying renames (P7.3 onwards).
+Risk / rollback: tooling only; revert.
 Size: M
 Fixes: none
 
-### P7.2 — Add i18n to the client with profile terminology
-Status: blocked (awaiting decision D5)
-Repo: client
+### P7.2 — Drop legacy columns and deprecated API fields
+Status: todo
+Repo: both
 Depends on: P7.1
-Branch: modernise/p7-2-i18n
-Goal: The client has i18next with `common` and `terms` namespaces; `terms` come from the current dropzone's profile.
-Context: GENERALISATION §5. Libraries: `i18next` (latest 25.x), `react-i18next` (latest 15.x), `expo-localization`
-(`npx expo install`), `eslint-plugin-i18next` (latest).
+Branch: modernise/p7-2-drop-legacy
+Goal: Nothing kept only for data migration or old clients remains.
+Context: D7 = (b). P6.23 kept the float money columns (`dropzones.credits`, `dropzone_users.credits`, `orders.amount`,
+`ticket_types.cost`, `extras.cost`, `transactions.amount`) and deprecated GraphQL fields (`grep -rn deprecation_reason
+app/graphql`: `Slot.cost`, `DropzoneUser.credits`, `SellableItem.cost`, `TicketType.cost`, `Extra.cost`, `Order.amount`,
+`Transaction.amount`) and still accepts float inputs. `planes.is_deleted`, `ticket_types.is_deleted`, `extras.is_deleted`
+are superseded by `discarded_at`.
 Steps:
-  1. `app/i18n/index.ts`: init with `lng` from `expo-localization`, fallback `en`, resources `en/common.json`,
-     `en/terms.json` (skydiving defaults as fallback).
-  2. `useProfileTerms()` hook: on current dropzone change, `i18n.addResourceBundle(lng, 'terms', terminology, true, true)`.
-  3. Convert the tab labels and drawer items only (proof of wiring); tests for term switching.
+  1. backend: migration dropping those columns (reversible with types); remove the deprecated fields and float inputs;
+     remove the `is_deleted` reads (verify with `git grep is_deleted` that nothing else uses them).
+  2. client: remove the deprecated fields from documents and fragments (`check:graphql` must pass against the new
+     schema after `scripts/sync-schema.mjs`); regenerate code.
+  3. Update P8.7 step 1 if anything deprecated remains (it should not).
 Acceptance criteria (cloud VM):
-  - Client checks, `check:graphql`, web export and web smoke test pass.
+  - Backend rspec green; `grep -rn deprecation_reason app/graphql` prints nothing; client checks, `check:graphql`, web
+    export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: converting all strings (P7.7, P7.8).
-Risk / rollback: revert.
+Out of scope: renames.
+Risk / rollback: revert both; the down migration restores empty columns.
 Size: M
 Fixes: none
 
-### P7.3 — Add unit conversion
-Status: blocked (awaiting decision D5)
-Repo: both
+### P7.3 — Rename the tenant in the backend: Dropzone → Operator, DropzoneUser → Membership
+Status: todo
+Repo: backend
 Depends on: P7.2
-Branch: modernise/p7-3-units
-Goal: Quantities are stored in SI and displayed in the operator's units.
-Context: GENERALISATION §4 table. Altitude (feet in `ticket_types.altitude`), distances (miles in weather), mass
-(`exit_weight` kg), speed (knots in winds JSON).
+Branch: modernise/p7-3-operator-backend
+Goal: The backend says `Operator` and `Membership` everywhere; behaviour is unchanged.
+Context: GENERALISATION §3 rows "Dropzone" and "DropzoneUser". Affects tables `dropzones`, `dropzone_users`, every
+`dropzone_id`/`dropzone_user_id` column and foreign key, `Dropzones::Configuration`, `StateMachines::DropzoneState`,
+interactions `Setup::Dropzones::*`, `Users::JoinDropzone`, GraphQL types `Dropzone*`, `DropzoneUser*`, root fields
+`dropzone`, `dropzones`, `dropzoneUser`, `dropzoneUsers`, mutations `createDropzone`, `updateDropzone`, `deleteDropzone`,
+`joinDropzone`, `updateDropzoneUser`, arguments `dropzone`/`dropzoneId`, `users.dropzone_count`, counter caches,
+`master_log_entry/dropzone*.rb`, specs, factories, seeds.
 Steps:
-  1. backend: `Units` module (`to_si`, `from_si`); SI columns added alongside existing ones for weather distances and
-     mass (`exit_spot_m`, `offset_m`, `body_mass_kg`), backfilled; GraphQL SI fields added, old fields deprecated.
-     Altitude moves with destinations in P7.4.
-  2. client: `app/i18n/units.ts` (`formatQuantity`, `parseQuantity`, `compactAltitude`); unit system from
-     `industryProfile.units` merged with dropzone settings; replace display/input of the affected fields.
-  3. Unit tests for every conversion pair in the table; backend backfill spec.
+  1. Migration: `rename_table :dropzones, :operators`, `rename_table :dropzone_users, :memberships`, rename every
+     `dropzone_id` → `operator_id`, `dropzone_user_id` → `membership_id`, `users.dropzone_count` → `operator_count`;
+     rename indexes and foreign keys so their names match.
+  2. `bin/rename-vocabulary --group tenant`, then fix the remainder by hand; rename files and constants (Zeitwerk must
+     load: `bin/rails zeitwerk:check`).
+  3. Regenerate `schema.graphql` (P1.8 drift check) and the annotate comments.
+  4. Rename the request specs and client-operation fixtures from Phase 1 to the new operation names; they must pass
+     with only name changes in their expectations.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - `bin/rails zeitwerk:check`, rspec and rubocop green; `bin/rails db:reset` works; `bin/check-vocabulary` shows 0
+    `tenant` hits outside allowed paths.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: canopy area (stays ft² in the skydiving module).
-Risk / rollback: old columns kept; revert both.
+Out of scope: client (P7.4); user-visible words (they come from terminology in P7.16).
+Risk / rollback: revert; the down migration renames back. The client is broken against this API until P7.4 merges, so
+the owner merges P7.3 and P7.4 together.
 Size: L
 Fixes: none
 
-### P7.4 — Add destinations
-Status: blocked (awaiting decisions D5, D6)
-Repo: both
+### P7.4 — Rename the tenant in the client
+Status: todo
+Repo: client
 Depends on: P7.3
-Branch: modernise/p7-4-destinations
-Goal: Ticket types and slots reference a `Destination`; altitude becomes a destination kind.
-Context: GENERALISATION §6 step 3; D6 scope decides whether `named_location`/`route` kinds are built now (recommendation:
-`altitude` and `named_location` only).
+Branch: modernise/p7-4-operator-client
+Goal: The client uses the renamed API and says `operator`/`membership` in code; routes are neutral.
+Context: GENERALISATION §3; `app/providers/dropzone/*`, `screens/limbo/dropzone_select/*`, `screens/wizards/dropzone_wizard/*`,
+`useSession` (`currentDropzoneId`), `app/screens/routes.tsx` paths `/dropzone/...`, `forms/dropzone*`, all `.gql`
+documents.
 Steps:
-  1. backend: `destinations` table as GENERALISATION §6 step 3 (kinds per D6); backfill one altitude destination per
-     distinct `(dropzone_id, altitude)`; `ticket_types.destination_id`, `slots.destination_id`; `TicketType.altitude`
-     deprecated and computed. CRUD mutations `createDestination`/`updateDestination`/`archiveDestination` with
-     `updateDropzone` permission.
-  2. client: destinations configuration screen; `AltitudeSelect` replaced with `DestinationSelect`; ticket type form
-     uses it.
-  3. Specs and tests; backfill rehearsal on the P0.5 seed.
+  1. `scripts/sync-schema.mjs` against the P7.3 branch; `scripts/rename-vocabulary.mjs --group tenant`; fix the rest;
+     regenerate code.
+  2. Routes drop the `dropzone` prefix: `/dropzone/manifest` → `/manifest`, `/dropzone/load/:loadId` → `/load/:loadId`
+     (becomes `/trips/:tripId` in P7.6), dropzone selection → `/operators/select`. Update `scripts/web-smoke.mjs` paths.
+  3. The persisted session key `currentDropzoneId` becomes `currentOperatorId` (no migration needed: no released app).
+  4. Visible copy stays as it is ("Dropzone"); it moves to terms in P7.17/P7.18.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Client checks, `check:graphql`, web export and web smoke test (against the P7.3 backend) pass; the remaining `tenant` hits
+    in `yarn check:vocabulary` are visible copy only (listed in the PR).
 Acceptance criteria (owner, real device):
   - none
-Out of scope: multi-leg routes unless D6 includes them.
-Risk / rollback: old column kept. Revert both.
+Out of scope: trip/vehicle names (P7.6).
+Risk / rollback: revert together with P7.3.
 Size: L
 Fixes: none
 
-### P7.5 — Make the call schedule configurable
-Status: blocked (awaiting decision D5)
-Repo: both
+### P7.5 — Rename trips, vehicles and participants in the backend
+Status: todo
+Repo: backend
 Depends on: P7.4
-Branch: modernise/p7-5-call-schedule
-Goal: Load call buttons (20/15/10 minutes) come from `dropzone.settings.callScheduleMinutes` (profile default).
-Context: GENERALISATION §6 step 4; client `load/ActionButton.tsx` hard-codes calls.
+Branch: modernise/p7-5-trip-backend
+Goal: `Plane` → `Vehicle`, `Load` → `Trip`, `Passenger` → `Guest`, `JumpType` → `ActivityType`, `MasterLog` → `DailyLog`,
+`exit_weight` → `weight_kg`, `jump_count` → `trip_count`; load states and permissions renamed; behaviour unchanged.
+Context: GENERALISATION §3 rows for these concepts and §7 (state names). Tables `planes`, `loads`, `passengers`,
+`jump_types`, `master_logs`; columns `loads.plane_id`, `load_number`, `load_date`, `slots.load_id`, `slots.jump_type_id`,
+`slots.passenger_id`, `max_slots`/`min_slots` → `capacity`/`min_capacity`, `master_logs.dzso_id` → `duty_officer_id`,
+`users.plane_count` (drop if unused); `StateMachines::LoadState` events/states (`boarding_call` → `boarding`,
+`in_flight` → `departed`, `landed` → `completed`, events `dispatch` → `call`, `take_off` → `depart`, `mark_as_landed` →
+`complete`); notification types; permissions in `config/seed/access.yml` (`createLoad` → `createTrip`, `createPlane` →
+`createVehicle`, `actAsDZSO` → `actAsDutyOfficer`, …); subscriptions `loadCreated`/`loadUpdated` → `tripCreated`/
+`tripUpdated`; `Manifest::*Load` interactions; `MasterLogEntry::*`; the `Aircraft` GraphQL class names.
 Steps:
-  1. backend: setting with default from profile; GraphQL `Settings.callScheduleMinutes: [Int!]!`; `updateDropzone` accepts it.
-  2. client: ActionButton generates call actions from the setting; settings screen edits it.
+  1. Migration with `rename_table`/`rename_column`; `vehicles.kind` string not null default `"aircraft"` (the default is
+     dropped in P7.7 when templates set it); enum values keep their integers.
+  2. `bin/rename-vocabulary --group trip` and `--group permissions`; fix the remainder; Zeitwerk check.
+  3. Regenerate `schema.graphql`; rename Phase 1 specs/fixtures.
+Acceptance criteria (cloud VM):
+  - Zeitwerk check, rspec and rubocop green; `bin/rails db:reset` works; vocabulary check shows 0 `trip`/`permissions`
+    hits outside allowed paths.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: crew columns (`pilot_id`, `gca_id`, `load_master_id` stay until P7.9); `ticket_types.altitude` (P7.8);
+rigs and federations (P7.12, P7.13); weather (stays, owned by the winds-aloft module).
+Risk / rollback: revert; merge with P7.6.
+Size: L
+Fixes: none
+
+### P7.6 — Rename trips, vehicles and participants in the client
+Status: todo
+Repo: client
+Depends on: P7.5
+Branch: modernise/p7-6-trip-client
+Goal: The client uses the P7.5 API; code names follow §3; the route `/load/:loadId` becomes `/trips/:tripId`.
+Context: `screens/authenticated/dropzone/load/*`, `manifest/LoadCard/*`, `configuration/aircrafts/*`, `forms/aircraft/*`,
+`forms/load/*`, `components/chips/PlaneChip.tsx`, `JumpTypeChipSelect.tsx`, `JumpTypeSelect.tsx`, master log screens,
+`calculateWingLoading.ts` (reads `weightKg`), load state enums in `ActionButton.tsx` and `Countdown.tsx`.
+Steps:
+  1. Sync schema; `scripts/rename-vocabulary.mjs --group trip --group permissions`; fix the rest; regenerate code.
+  2. Directory names: `screens/authenticated/dropzone/` → `screens/authenticated/manifest/`, `load/` → `trip/`,
+     `configuration/aircrafts/` → `configuration/vehicles/`.
+  3. Update `scripts/web-smoke.mjs` and the client tests.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export and web smoke test pass; the remaining `trip` hits in the
+    vocabulary check are visible copy only (listed in the PR).
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: visible copy.
+Risk / rollback: revert together with P7.5.
+Size: L
+Fixes: none
+
+### P7.7 — Add industry templates, modules and the presets engine
+Status: todo
+Repo: backend
+Depends on: P7.6
+Branch: modernise/p7-7-industry-templates
+Goal: Every operator has an immutable `industry` and a `modules` set; `createOperator` requires an industry and seeds
+the operator from the template's presets; skydiving behaviour is unchanged; a `generic` template exists.
+Context: GENERALISATION §2, §5 (file layout and YAML), §6 (sequence). Today `Setup::Dropzones::Access::CreateDefaults`
+seeds roles from `config/seed/access.yml`, `global.yml` seeds jump types and APF licences, `Dropzones::Configuration`
+holds default settings, `UserRole::DEFAULT`/`DEFAULT_LICENSED` hard-code `student`/`fun_jumper`, the rig-inspection
+template default is in `rig_inspection.rb:38-106`, and `Setup::Demo::DataGenerator` builds skydiving demo data.
+Steps:
+  1. Migration: `operators.industry` string not null (no default), `operators.modules` jsonb not null default `{}`;
+     drop the `vehicles.kind` default; `time_zone` not null without default.
+  2. `config/industries/{skydiving,generic}/{template.yml,presets.yml,catalogue.yml,locales/en.yml}` and
+     `config/industries/schema.json`. Skydiving content moves from `access.yml` (roles), `global.yml`, the settings
+     defaults, the role defaults and the default inspection form. `access.yml` keeps only the permission list.
+  3. `Industry` registry (`app/models/industry.rb`): loads and validates all templates at boot; `Industry.fetch(slug)`,
+     `#modules`, `#terminology(locale)`, `#units`, `#presets`. `Operator#module?(name)`, `#terminology`, `#units`,
+     `#call_schedule_minutes` merge template defaults with `operators.modules`/`settings`.
+  4. `Presets::Apply` interaction: roles and permissions (with `default`/`default_certified` flags replacing the
+     constants), ticket types, extras, enabled activity types, inspection form templates. Each later Phase 7 task
+     extends it for its own records. `Setup::Operators::Create` takes `industry` and composes `Presets::Apply` inside its
+     transaction.
+  5. GraphQL: `industries` query (`slug`, `name`, `description`, `icon`, `modules`, `presetSummary`), `Industry` enum,
+     `Operator.industry`, `.modules`, `.terminology` (JSON), `.units`; `createOperator(industry: Industry!)`;
+     `updateOperator(modules:)` for optional modules (a module listed as `locked` in the template cannot be turned off).
+  6. Seeds: `global.yml` content is loaded from each template's `catalogue.yml`; the dev seed creates its operator with
+     `industry: "skydiving"`; the demo generator takes the industry (skydiving data only for now).
+  7. `bin/check-industry-branches` added to CI.
+  8. Specs: every template validates against the schema; presets apply idempotently; a skydiving operator created through
+     `createOperator` has exactly the roles, permissions and settings it had before this task (compare with a fixture
+     captured on the parent commit); a `generic` operator can create a vehicle, a trip and a slot.
+Acceptance criteria (cloud VM):
+  - Rspec and rubocop green; `bin/check-industry-branches` exits 0; `bin/rails db:reset` works.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: client wizard (P7.21); scuba (P7.22).
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### P7.8 — Add destinations
+Status: todo
+Repo: both
+Depends on: P7.7
+Branch: modernise/p7-8-destinations
+Goal: Altitude becomes one kind of destination; trips and slots reference destinations according to the template's
+destination scope.
+Context: GENERALISATION §4 (ER, scope note) and §12. `ticket_types.altitude` (int feet); client
+`components/input/dropdown_select/AltitudeSelect.tsx` (hard-coded 4000/14000), `slots_table/UserRow.tsx` ("14k"),
+`configuration/ticket_types/*`, master log altitude.
+Steps:
+  1. backend: `destinations` (`operator_id`, `kind` string `altitude|site|route`, `name`, `altitude_m` decimal(10,2),
+     `location` jsonb, `stops` jsonb array, `min_certification_rank` int null, `discarded_at`); `trip_destinations`
+     (`trip_id`, `destination_id`, `position`, unique per trip/position); `slots.destination_id`;
+     `ticket_types.default_destination_id`; drop `ticket_types.altitude`. Validation: kind allowed by the operator's
+     `destinations.kinds`; per-slot scope requires `slots.destination_id` (defaulted from the ticket type), per-trip scope
+     requires ≥ 1 trip destination when the trip is called.
+  2. Presets: skydiving destinations "Hop n Pop" 1219.2 m and "Full altitude" 4267.2 m, ticket types point at them.
+  3. GraphQL: `Destination` type, `operator.destinations`, `createDestination`/`updateDestination`/`archiveDestination`
+     (`updateOperator` permission), `Trip.destinations`, `Slot.destination`, `TicketType.defaultDestination`; trip
+     create/update accept `destinationIds`.
+  4. client: destinations configuration screen; `DestinationSelect` replaces `AltitudeSelect`; the ticket type form uses
+     it; the trip form shows ordered destinations when the scope is per trip; altitude display uses metres → feet with
+     the "14k" format until units land (P7.11 replaces the formatter).
+  5. Specs/tests for both scopes.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: boarding at intermediate stops (D9).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.9 — Generalise trip crew
+Status: todo
+Repo: both
+Depends on: P7.8
+Branch: modernise/p7-9-crew-roles
+Goal: Pilot, GCA and load master become crew roles defined per operator; required roles are validated from data.
+Context: GENERALISATION §7. `trips.pilot_id`, `gca_id`, `load_master_id`; `validates :gca`, `:pilot` in the trip model;
+permissions `actAsPilot`, `actAsGCA`, `actAsLoadMaster`; client `PilotChip`, `GcaChip`, `LoadMasterChip`, trip form.
+Steps:
+  1. backend: `crew_roles` (`operator_id`, `key`, `name`, `required`, `occupies_slot`, `permission`, `position`),
+     `trip_crew_assignments` (`trip_id`, `crew_role_id`, `membership_id`, unique per trip/role); drop the three columns.
+     Trip validation: every required role assigned to a member holding the role's permission; capacity counts crew with
+     `occupies_slot`. Presets seed skydiving `pilot` (required), `gca` (required), `load_master`.
+  2. GraphQL: `CrewRole`, `operator.crewRoles`, `Trip.crew: [TripCrewAssignment!]!`, trip inputs take
+     `crew: [{crewRoleId, membershipId}]`; CRUD for crew roles (`updateOperator` permission).
+  3. client: one `CrewChip` per crew role (replaces the three chips); trip form generated from `crewRoles`.
+  4. Specs/tests (required role missing, wrong permission, capacity with seat-occupying crew).
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: duty officer on the daily log (stays a single column).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.10 — Make the call schedule configurable
+Status: todo
+Repo: both
+Depends on: P7.9
+Branch: modernise/p7-10-call-schedule
+Goal: Call buttons and countdowns come from `operator.callScheduleMinutes` (template default, editable).
+Context: client `screens/authenticated/manifest/trip/ActionButton.tsx` (was `dropzone/load`, hard-coded 20/15/10),
+`Countdown.tsx`; notification copy.
+Steps:
+  1. backend: `settings.call_schedule_minutes` (array of positive integers, descending, max 6) with the template default;
+     GraphQL `Operator.callScheduleMinutes: [Int!]!`; `updateOperator` accepts it.
+  2. client: ActionButton generates call actions from it; operator settings screen edits it.
   3. Specs/tests.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: none.
@@ -3558,58 +3752,211 @@ Risk / rollback: revert both.
 Size: S
 Fixes: none
 
-### P7.6 — Generalise trip crew roles
-Status: blocked (awaiting decision D5)
+### P7.11 — Store SI units and display the operator's units
+Status: todo
 Repo: both
-Depends on: P7.5
-Branch: modernise/p7-6-crew-roles
-Goal: Pilot, GCA and load master become crew assignments driven by the profile's `trip_crew_roles`.
-Context: GENERALISATION §6 step 5; `loads.pilot_id`, `gca_id`, `load_master_id`; `validates :gca, :pilot`.
+Depends on: P7.10
+Branch: modernise/p7-11-units
+Goal: Quantities are SI in the database and API and shown in the operator's unit system.
+Context: GENERALISATION §12. Remaining non-SI storage after P7.5/P7.8: weather `exit_spot_miles`, `offset_miles`, winds
+JSON speeds (knots), `temperature`; canopy size (ft², moves into equipment attributes in P7.13).
 Steps:
-  1. backend: `trip_crew_assignments` table, backfill, model validation from the profile's required roles; old fields
-     become deprecated mirrors kept in sync by a callback for one release.
-  2. client: crew chips generated per role.
-  3. Specs/tests.
+  1. backend: `Units` module (`to_si`, `from_si`, supported units per quantity); rename/convert weather columns to
+     `exit_spot_m`, `offset_m`, winds speeds to m/s (`*_mps`), `temperature_c`; `settings.units` merged with the template's
+     `units`; GraphQL `Operator.units` (`{altitude, depth, distance, mass, speed, temperature}`) and SI fields only.
+  2. client: `app/i18n/units.ts` (`formatQuantity`, `parseQuantity`, `compactAltitude`); every display/input of weight,
+     altitude, distance, speed and temperature goes through it; operator settings screen picks units.
+  3. Unit tests for every conversion pair; backend spec for the weather calculations in SI.
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test pass.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass; a skydiving operator still
+    sees "14k" and kg.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: none.
-Risk / rollback: mirrors keep old clients working. Revert both.
+Out of scope: per-user unit preferences.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.12 — Generalise certifications
+Status: todo
+Repo: both
+Depends on: P7.11
+Branch: modernise/p7-12-certifications
+Goal: Federations, licences and qualifications become certification bodies, levels and qualifications with comparable
+ranks; operators accept several bodies; requirements are minimum ranks or qualifications.
+Context: GENERALISATION §8. Tables `federations`, `licenses`, `licensed_jump_types`, `user_federations`,
+`qualifications`, `user_federation_qualifications`; `operators.federation_id` (was `dropzones`), `users.license_id`,
+`memberships.license_id`, `users.apf_number`; `Federations::ApfSync`, `Federations::AssignUser`; mutation
+`joinFederation`; client `forms/user_wizard/steps/Federation*.tsx`, `License.tsx`, `FederationCardSelect.tsx`,
+`LicenseCardSelect.tsx`, dropzone wizard `Federation` step.
+Steps:
+  1. backend: rename to `certification_bodies` (+ `industry`, `verification_provider`), `certification_levels`
+     (+ `rank` int not null, `equivalence_key`), `permitted_activities`, `user_certifications` (`number` replaces
+     `license_number`; + `verified_at`, `verified_by_id`), `user_qualifications`; new `operator_certification_bodies`;
+     drop `operators.federation_id`, `users.license_id`, `users.apf_number`; `memberships.license_id` →
+     `memberships.certification_level_id` only if still used (check), else drop. `bin/rename-vocabulary --group
+     certifications` for the rest.
+  2. `ticket_types.min_certification_rank`, `extras.required_qualification_id`; activity-type gating keeps using
+     permitted activities. APF sync becomes `Certifications::Providers::Apf`, chosen by `verification_provider`.
+  3. Catalogue: skydiving `catalogue.yml` gets ranks (No licence 0, Student 10, A 20 … E 60) and `equivalence_key`s.
+  4. GraphQL: `CertificationBody`, `CertificationLevel`, `UserCertification`, `Qualification`; `operator.certificationBodies`
+     (accepted), `certificationBodies(industry:)`; `joinCertificationBody` replaces `joinFederation`.
+  5. client: wizard steps list only the operator's accepted bodies; operator settings edit accepted bodies; renames.
+  6. Specs: rank comparison across two bodies; APF provider unchanged behaviour.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: scuba bodies (P7.22); automated verification for non-APF bodies.
+Risk / rollback: revert both.
 Size: L
 Fixes: none
 
-### P7.7 — Convert manifest and load screens to translated terms
-Status: blocked (awaiting decision D5)
-Repo: client
-Depends on: P7.6
-Branch: modernise/p7-7-i18n-manifest
-Goal: All user-visible strings under `app/screens/authenticated/dropzone/**` and `app/components/{load_card,slots_table}/**`
-use `t()`; the `i18next/no-literal-string` rule is enabled for those directories.
-Context: GENERALISATION §5.
+### P7.13 — Generalise equipment
+Status: todo
+Repo: both
+Depends on: P7.12
+Branch: modernise/p7-13-equipment
+Goal: Rigs become equipment items of operator-defined kinds with validated attributes and service dates; a slot can
+use several items; skydiving specifics live in the skydiving namespace.
+Context: GENERALISATION §9. `rigs` (`rig_type`, `canopy_size`, `repack_expires_at`, `maintained_at`, `pack_value`,
+`packing_card`, `make`, `model`, `serial`, `is_public`), `rig_inspections`, `operators.rig_inspection_template_id`,
+`slots.rig_id`, `packs`, `Slot#wing_loading`, `operator.student_rigs`/`tandem_rigs`; settings `require_equipment`,
+`require_rig_inspection`, `require_reserve_in_date`; client `screens/authenticated/user/equipment/*`,
+`configuration/rigs/*`, `forms/rig*`, `user_wizard/steps/Rig.tsx`, `ReserveRepack.tsx`, `AskForRig.tsx`,
+`calculateWingLoading.ts`.
 Steps:
-  1. Replace literals with keys in `common.json`; skydiving terms via `terms:` keys.
-  2. Enable `i18next/no-literal-string` (mode `jsx-text-only`) for the converted directories in `eslint.config.js`.
+  1. backend: `equipment_kinds` (`operator_id`, `key`, `name`, `attribute_schema` jsonb, `service_interval_days`,
+     `inspection_form_template_id`, `required_for_ticket_types` via join or array); `equipment` (renamed `rigs`: `kind_id`,
+     `ownership` enum personal/operator, `user_id`, `operator_id`, `name`, `make`, `model`, `serial`, `attributes` jsonb
+     validated by the kind schema, `service_due_at`); `equipment_inspections`; `slot_equipment` replaces `slots.rig_id`;
+     settings renamed (`require_equipment_inspection`, `require_equipment_in_service`). Skydiving `rig` kind schema:
+     `rig_type`, `canopy_size_m2` (shown ft²), `pack_value`; `repack_expires_at` → `service_due_at`.
+  2. `app/models/skydiving/` (or `app/services/skydiving/`): wing loading, packing jobs (`packs`), student/tandem rig
+     scopes; reachable only with the `equipment` module and a `rig` kind.
+  3. GraphQL: `EquipmentKind`, `Equipment`, `EquipmentInspection`, `Slot.equipment`; mutations renamed
+     (`createEquipment`, …); `availableEquipment(kind:)` replaces `availableRigs`.
+  4. client: generic equipment screens driven by the kind's attribute schema (string/integer/enum/date fields); skydiving
+     components (`WingLoading`, rig wizard steps) move to `app/features/skydiving/`; manifest form picks one item per
+     required kind.
+  5. Specs/tests: attribute validation, service date expiry, two items on one slot.
 Acceptance criteria (cloud VM):
-  - Client checks, web export and smoke test pass; web smoke screenshots show identical English copy.
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
 Acceptance criteria (owner, real device):
   - none
-Out of scope: other directories (P7.8).
+Out of scope: scuba kinds (P7.22).
+Risk / rollback: revert both.
+Size: L
+Fixes: none
+
+### P7.14 — Generalise escorts
+Status: todo
+Repo: both
+Depends on: P7.13
+Branch: modernise/p7-14-escorts
+Goal: Tandem becomes "requires escort" with a configurable number of guests per escort.
+Context: GENERALISATION §10. `ticket_types.is_tandem`, `slots.passenger_slot_id` (escort → guest, 1:1),
+`Manifest::CreateSlot` tandem branch (was `create_slot.rb:91-114`), `guests` (was `passengers`); client manifest form
+passenger fields, "Tandem Passenger:" row.
+Steps:
+  1. backend: `ticket_types.requires_escort` (replaces `is_tandem`), `escort_capacity` int default 1,
+     `escort_qualification_id` null; `slots.escort_slot_id` on the guest slot (replaces `passenger_slot_id` on the
+     escort slot); guests get `phone`, `email`, `emergency_contact`. Validation: escort slot on the same trip, escort holds
+     the qualification, guests per escort ≤ capacity.
+  2. GraphQL and client: manifest form books n guests with one escort; slots table groups guests under their escort.
+  3. Specs/tests: 1:1 tandem unchanged; 1:4 escort; capacity exceeded.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.15 — Move eligibility into module rules and expose them
+Status: todo
+Repo: both
+Depends on: P7.14
+Branch: modernise/p7-15-eligibility
+Goal: Manifest eligibility is computed once on the server from core and module rules; the client shows the server's
+result instead of re-implementing it.
+Context: GENERALISATION §11. Server: `Manifest::CreateSlot`, `Slot` validations, `Dropzones::Configuration` (now
+`Operators::Configuration`). Client: `app/hooks/useManifestValidator.ts`.
+Steps:
+  1. backend: `Eligibility::Rule` interface (`applies?(operator)`, `check(context) → Result(code, ok, message_key)`),
+     core rules (capacity, membership, credits, double manifesting) and module rules (certification rank/qualification,
+     equipment present/inspected/in service, weight known and within `vehicles.max_payload_kg` (new column), escort);
+     `Eligibility.check(…)` used by slot creation and moves; bypass handling unchanged.
+  2. GraphQL `slotEligibility(tripId, membershipId | guest, ticketTypeId, extraIds, equipmentIds): [EligibilityResult!]!`.
+  3. client: `useManifestValidator` calls it (debounced) and renders results; local rule code removed.
+  4. Specs: one per rule, module off → rule absent.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: recency and waiver rules (GENERALISATION §16).
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.16 — Add i18n to the client with operator terminology
+Status: todo
+Repo: client
+Depends on: P7.15
+Branch: modernise/p7-16-i18n
+Goal: The client has i18next with `common` and `terms` namespaces; `terms` come from the current operator.
+Context: GENERALISATION §13. Libraries: `i18next`, `react-i18next`, `expo-localization` (`npx expo install`),
+`eslint-plugin-i18next` (latest versions at the time of the task).
+Steps:
+  1. `app/i18n/index.ts`: init with the device language, fallback `en`, `en/common.json`, `en/terms.json` (generic
+     template words as fallback).
+  2. `useOperatorTerms()`: on operator change, `i18n.addResourceBundle(lng, 'terms', operator.terminology, true, true)`.
+  3. Convert the tab labels, drawer and settings menu (proof of wiring); tests switching between a skydiving and a
+     generic operator.
+Acceptance criteria (cloud VM):
+  - Client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: converting all strings (P7.17, P7.18).
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### P7.17 — Convert manifest and trip screens to translated terms
+Status: todo
+Repo: client
+Depends on: P7.16
+Branch: modernise/p7-17-i18n-manifest
+Goal: All user-visible strings under `app/screens/authenticated/manifest/**` and the trip, slot and manifest components
+use `t()`; `i18next/no-literal-string` is on for those directories.
+Context: GENERALISATION §13.
+Steps:
+  1. Replace literals with keys in `common.json`; industry words via `terms:` keys.
+  2. Enable `i18next/no-literal-string` (mode `jsx-text-only`) for the converted directories in `eslint.config.js`.
+Acceptance criteria (cloud VM):
+  - Client checks, web export and web smoke test pass; smoke screenshots for the skydiving operator show the same English
+    copy as before.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: other directories (P7.18).
 Risk / rollback: revert.
 Size: L
 Fixes: none
 
-### P7.8 — Convert the remaining screens to translated terms
-Status: blocked (awaiting decision D5)
-Repo: client
-Depends on: P7.7
-Branch: modernise/p7-8-i18n-rest
-Goal: All remaining screens and components use `t()`; the lint rule covers `app/**`.
-Context: As P7.7.
+### P7.18 — Convert the remaining screens and enforce the vocabulary check
+Status: todo
+Repo: both
+Depends on: P7.17
+Branch: modernise/p7-18-i18n-rest
+Goal: Every client screen uses `t()`; the lint rule covers `app/**`; the vocabulary check is enforcing in both repos.
+Context: As P7.17; P7.1 check.
 Steps:
-  1. As P7.7 for every remaining directory; enable the rule for `app/**` (exclude tests and `app/api/**`).
+  1. client: as P7.17 for every remaining directory; rule on `app/**` (excluding tests and `app/api/**`).
+  2. both: CI runs the vocabulary check with `--enforce`; fix or allow-list every remaining hit (allow-list entries need
+     a one-line reason in `config/vocabulary.yml`).
 Acceptance criteria (cloud VM):
-  - Client checks, web export and smoke test pass.
+  - Backend rspec green; client checks, web export and web smoke test pass; both vocabulary checks pass with `--enforce`.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: translations into other languages.
@@ -3617,45 +3964,143 @@ Risk / rollback: revert.
 Size: L
 Fixes: none
 
-### P7.9 — Add the second industry profile
-Status: blocked (awaiting decisions D5, D6)
-Repo: both
-Depends on: P7.8
-Branch: modernise/p7-9-second-profile
-Goal: A second profile (D6; recommendation: `diving`) works end to end in the web smoke test.
-Context: GENERALISATION §3 and §7.
+### P7.19 — Use operator terminology in server-generated copy
+Status: todo
+Repo: backend
+Depends on: P7.18
+Branch: modernise/p7-19-server-copy
+Goal: Notifications, push messages, activity events and emails use Rails I18n with the operator's terms.
+Context: GENERALISATION §13. Literal copy in the trip state machine (`"Load ##{n} take off at …"`), `Trip` model
+notifications, `Activity::CreateEvent` messages in interactions, mailer views.
 Steps:
-  1. backend: `config/industry_profiles/<slug>.yml`; seeds for a demo operator in `db/seeds/dev_baseline.rb`.
-  2. client: hide equipment/licence/winds screens when the profile disables them; conditions module switch.
-  3. Web smoke test: log in as the demo operator's admin, create a trip, manifest two participants; terms show the
-     profile's words.
+  1. `config/locales/en.yml` keys with interpolation; `Operator#term(key, count:)`; replace literals.
+  2. Spec: a skydiving and a generic operator produce "Load #3 …" and "Trip #3 …".
 Acceptance criteria (cloud VM):
-  - Backend rspec green; client checks, `check:graphql`, web export and smoke test (both profiles) pass.
+  - Rspec green; `git grep -nE '"(Load|Dropzone|Jumper|Plane)'` in `app/` prints nothing outside skydiving paths.
 Acceptance criteria (owner, real device):
-  - Owner reviews the second profile's screens on a phone and confirms the terminology.
-Out of scope: further profiles.
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: M
+Fixes: none
+
+### P7.20 — Make navigation module-aware and isolate skydiving features
+Status: blocked (awaiting decision D10)
+Repo: client
+Depends on: P7.19
+Branch: modernise/p7-20-module-aware-ui
+Goal: Screens, tabs and menu entries show only what the operator's modules provide; skydiving-only UI lives in
+`app/features/skydiving/`; icons follow the vehicle kind.
+Context: GENERALISATION §14; D10 (branding).
+Steps:
+  1. Route and menu definitions declare `module`; drawer, tab bar and settings menu filter on `operator.modules`;
+     deep links to a disabled module's screen show a "not available for this operator" state.
+  2. Move winds/jump-run screens, wing loading, packing jobs and remaining skydiving components into
+     `app/features/skydiving/`.
+  3. `VehicleIcon` (`kind` → icon) replaces the hard-coded airplane on the manifest tab and cards; per-template
+     illustrations/Lottie per D10.
+  4. The user profile wizard asks only for what the modules need.
+  5. Tests: a generic operator sees no equipment, certification, weather or daily-log entries.
+Acceptance criteria (cloud VM):
+  - Client checks, web export and web smoke test pass, including a run as a generic operator with no skydiving words on
+    screen.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: none.
+Risk / rollback: revert.
+Size: L
+Fixes: none
+
+### P7.21 — Add the operator wizard with an industry picker
+Status: todo
+Repo: both
+Depends on: P7.20
+Branch: modernise/p7-21-operator-wizard
+Goal: Creating an operator starts with choosing an industry; the rest of the wizard is pre-filled from the template and
+the owner reviews the seeded presets.
+Context: GENERALISATION §6 (sequence and steps); client `screens/wizards/operator_wizard/` (was `dropzone_wizard`).
+Steps:
+  1. backend: `industries` query returns a `presetSummary` (crew roles, ticket types, destinations, roles); `createOperator`
+     accepts `currency`, `units`, `certificationBodyIds`.
+  2. client: steps Industry → Name → Location and time zone → Currency and units → Certification bodies (if module on) →
+     Branding → Review presets (prices, first vehicle) → Done; time zone and currency pre-filled from `expo-localization`.
+  3. Operator settings gain a "Modules" screen for optional modules.
+  4. Web smoke test creates a `generic` operator through the wizard.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test pass.
+Acceptance criteria (owner, real device):
+  - Owner runs the wizard on a phone for skydiving and generic and confirms the steps read well.
+Out of scope: scuba and bus-tour templates.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.22 — Add the scuba template
+Status: todo
+Repo: both
+Depends on: P7.21
+Branch: modernise/p7-22-scuba
+Goal: A dive centre can be created and run a two-site boat trip with certified divers, rental gear and a try-dive guest.
+Context: GENERALISATION §1, §5 (scuba YAML, module matrix), §8.
+Steps:
+  1. backend: `config/industries/scuba/*`: template, presets (roles, crew roles skipper/dive supervisor/divemaster,
+     ticket types, extras incl. nitrox requiring the nitrox qualification, equipment kinds BCD/regulator/wetsuit/cylinder,
+     sites), catalogue (PADI, SSI, NAUI, CMAS, RAID, SDI/TDI, BSAC with their recreational levels, ranks,
+     `equivalence_key`s and a nitrox qualification each; dive types), `locales/en.yml`. The executor checks level names
+     against each agency's public course list and cites the pages in the PR.
+  2. Demo generator and dev seed: a scuba demo operator with a boat, two sites, an instructor, a skipper and divers.
+  3. Web smoke test: create a scuba operator in the wizard; add a boat and two sites; manifest an Advanced diver, an Open
+     Water diver (blocked from a 30 m site), a nitrox extra (blocked without the qualification) and a try-dive guest with
+     an instructor; call, depart, complete.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test (skydiving and scuba) pass.
+Acceptance criteria (owner, real device):
+  - Owner reviews the scuba screens and terminology on a phone (ideally with a dive-centre operator).
+Out of scope: marine conditions, dive logs, booking ahead (GENERALISATION §16).
 Risk / rollback: revert both.
 Size: L
 Fixes: none
 
-### P7.10 — Verify Phase 7
+### P7.23 — Add the bus-tour template
+Status: blocked (awaiting decision D9)
+Repo: both
+Depends on: P7.22
+Branch: modernise/p7-23-bus-tours
+Goal: A tour operator can run a route with a driver and a guide and manifest passengers (children with an adult).
+Context: GENERALISATION §1, §5, §16; D9 decides whether booking ahead, timetables or stop-level boarding are part of it
+(each would add its own task before this one).
+Steps:
+  1. backend: `config/industries/bus_tours/*` (modules: destinations `route` per trip, crew, escorts for children;
+     certifications and equipment off); demo operator.
+  2. client: route destination editor (ordered stops); anything D9 adds.
+  3. Web smoke test: create a tour operator, a bus, a route; manifest adults and a child with an adult; complete.
+Acceptance criteria (cloud VM):
+  - Backend rspec green; client checks, `check:graphql`, web export and web smoke test (all templates) pass.
+Acceptance criteria (owner, real device):
+  - Owner reviews the tour screens on a phone.
+Out of scope: whatever D9 leaves out.
+Risk / rollback: revert both.
+Size: M
+Fixes: none
+
+### P7.24 — Verify Phase 7
 Status: todo
 Repo: both
-Depends on: P7.1, P7.2, P7.3, P7.4, P7.5, P7.6, P7.7, P7.8, P7.9
-Branch: modernise/p7-10-verify
-Goal: Generalisation is proven for both profiles.
-Context: Phase gate. If D5 is decided as "no generalisation", the owner sets P7.1–P7.9 to `done (skipped by D5)` and
-this task only records that.
+Depends on: P7.1, P7.2, P7.3, P7.4, P7.5, P7.6, P7.7, P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, P7.18, P7.19, P7.20, P7.21, P7.22, P7.23
+Branch: modernise/p7-24-verify
+Goal: Generalisation is proven for every shipped template.
+Context: Phase gate. If D9 drops bus tours from this phase, the owner sets P7.23 to `done (deferred by D9)`.
 Steps:
-  1. Run all backend and client checks, web export and smoke test for both profiles.
-  2. Write `docs/verification/phase-7.md`; update GENERALISATION.md with what was built and what remains.
+  1. Run all backend and client checks, web export and the web smoke test for every template.
+  2. Write `docs/verification/phase-7.md`; update GENERALISATION.md (what was built, what remains), the backend and client
+     reference READMEs and both `diagrams.md` files to the new names.
 Acceptance criteria (cloud VM):
   - All commands exit 0; CI green on `staging`.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: none.
 Risk / rollback: none.
-Size: S
+Size: M
 Fixes: none
 
 ---
@@ -3668,7 +4113,7 @@ in D2, with production data migrated per D7.
 ### P8.1 — Add versioning and changelogs
 Status: todo
 Repo: both
-Depends on: P7.10
+Depends on: P7.24
 Branch: modernise/p8-1-versioning
 Goal: Both repos use semantic versions with a changelog; the API reports its version.
 Context: Client version in `package.json` (1.1.60) is the single source since P3.21; backend has no version.
@@ -3806,8 +4251,8 @@ Depends on: P8.1
 Branch: modernise/p8-7-deprecations-smoke
 Goal: Deprecated fields that no supported client uses are removed; the web smoke test runs in client CI against a backend
 started in the same job.
-Context: Deprecated in Phases 6–7 (float money fields, `ticketType.altitude`, crew mirrors), and `loginWithFacebook`
-if D4 removed Facebook. Only remove fields that the client at the version released in P8.8 no longer queries
+Context: P7.2 removed the Phase 6 deprecations and Phase 7 renamed without deprecating (D5), so step 1 should find
+nothing except `loginWithFacebook` if D4 removed Facebook. Only remove fields that the client at the version released in P8.8 no longer queries
 (`check:graphql` proves it).
 Steps:
   1. backend: list deprecated fields (`grep -rn deprecation_reason app/graphql`); remove those not used by
@@ -3824,14 +4269,14 @@ Size: M
 Fixes: none
 
 ### P8.8 — Migrate production data and submit to the stores
-Status: blocked (awaiting decision D7)
+Status: todo
 Repo: both
 Depends on: P8.6, P8.7
 Branch: modernise/p8-8-production-release
 Goal: The production database is migrated (or created fresh per D7), and version 2.0.0 is submitted to the App Store and
 Play Store.
-Context: Data-changing migrations from P6.10, P6.16, P6.23, P7.x. Old money/unit columns are dropped after this release
-in a follow-up.
+Context: D7 = (b): there is no production data, so only the fresh-setup path applies (old money columns were dropped in
+P7.2). The D7 (a) wording below is kept for reference only.
 Steps:
   1. D7 (a): restore the owner-provided dump into a local throwaway database in the VM; run `bin/rails db:migrate`;
      record row counts and the output of every data migration in `docs/verification/production-migration.md`
