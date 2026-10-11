@@ -79,10 +79,14 @@ class Slot < ApplicationRecord
     )
   end
 
+  # What the slot costs: the ticket and the add-ons, in cents
+  def cost_cents
+    extras.sum { |extra| extra.cost_cents || 0 } + (ticket_type.cost_cents || 0)
+  end
+
+  # The same in whole units, for older clients
   def cost
-    extra_cost = extras.sum(&:cost)
-    extra_cost ||= 0
-    extra_cost + ticket_type.cost
+    cost_cents / 100.0
   end
 
   def ready?
@@ -135,7 +139,7 @@ class Slot < ApplicationRecord
     return if is_passenger?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    return unless dropzone_user.slots.where(load: dropzone_user.dropzone.loads.today.active).where.not(id: id).exists?
+    return unless dropzone_user.slots.where(load: dropzone.loads.on(dropzone.today).active).where.not(id: id).exists?
     return if created_by&.can?(:createDoubleSlot) && dropzone.allow_manifest_bypass?
     errors.add(:base, "Double-manifesting is not allowed")
   end
@@ -145,8 +149,8 @@ class Slot < ApplicationRecord
     return if dropzone.allow_negative_credits?
     return unless dropzone.require_credits?
     return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
-    credits = dropzone_user.credits || 0
-    errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
+    credits = dropzone_user.credits_cents || 0
+    errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
   end
 
   def allowed_jump_type?

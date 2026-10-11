@@ -6,7 +6,7 @@ module Types
       argument :status, String, required: false
       argument :message, String, required: false
       argument :dropzone_user_id, Int, required: false
-      argument :amount, Float, required: false
+      money_argument :amount
     end
   end
 end

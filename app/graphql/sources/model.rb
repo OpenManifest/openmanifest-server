@@ -24,8 +24,10 @@ class Sources::Model < GraphQL::Dataloader::Source
     cache_store[klass] ||= {}
   end
 
+  # Attached images come with the records: a list of members or dropzones shows one image each (BUG-049)
   def get_records(ids)
-    klass.where(column => ids)
+    attachments = klass.respond_to?(:reflect_on_all_attachments) ? klass.reflect_on_all_attachments : []
+    attachments.reduce(klass.where(column => ids)) { |scope, attachment| scope.public_send(:"with_attached_#{attachment.name}") }
   end
 
   def cache_store

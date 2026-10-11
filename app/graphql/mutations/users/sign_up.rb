@@ -12,17 +12,20 @@ module Mutations::Users
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
-    # Override devises initializer to allow
-    # signing up on an existing user if the user
-    # was created by staff
+    # A new account is always a new user. The confirmation step is only skipped (outside production) for the account
+    # created here, never for an existing one
     def build_resource(attrs)
-      resource = User.find_or_initialize_by(unconfirmed_email: attrs[:email])
-      resource.assign_attributes(attrs)
+      resource = User.new(attrs)
       resource.skip_confirmation! unless Rails.env.production?
       resource
     end
 
-    def resolve(email:, **attrs)
+    def resolve(email:, confirm_url: nil, **attrs)
+      # An account for this email that nobody confirmed yet (a ghost created by staff, or an earlier sign-up): it is not
+      # touched and no session is started; the email's owner gets the confirmation email again and claims it by
+      # confirming (BUG-012)
+      return claim_pending_account(email, confirm_url) if ::Users::ClaimGhost.pending_account(email)
+
       original_payload = super do |resource|
         # The caller is this user from here on, like after the gem's login: it lets the payload show their own email,
         # phone and push token (Types::Users::User only reveals those to the user themselves and to staff)
@@ -57,6 +60,18 @@ module Mutations::Users
         field_errors: nil,
         errors: [error.message],
       }
+    end
+
+    private
+
+    # The answer looks like a sign-up that needs confirming: no credentials, and nothing about the account
+    def claim_pending_account(email, confirm_url)
+      redirect_url = confirm_url || DeviseTokenAuth.default_confirm_success_url
+      raise_user_error(I18n.t("graphql_devise.registrations.missing_confirm_redirect_url")) if redirect_url.blank?
+      check_redirect_url_whitelist!(redirect_url)
+
+      outcome = ::Users::ClaimGhost.run(email: email, redirect_url: redirect_url)
+      { authenticatable: nil, credentials: nil, errors: outcome.valid? ? nil : outcome.errors.full_messages, field_errors: nil }
     end
   end
 end

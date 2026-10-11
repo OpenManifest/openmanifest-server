@@ -16,6 +16,8 @@ module Types
       argument :load_master, ID, required: false,
                                  prepare: -> (value, ctx) { ::DropzoneUser.find_by(id: value) }
       argument :state, Types::Manifest::LoadState, required: false
+      argument :lock_version, Int, required: false,
+                                   description: "The lockVersion of the load as the client last saw it; an older one is refused with CONFLICT"
     end
   end
 end

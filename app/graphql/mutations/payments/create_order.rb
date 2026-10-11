@@ -12,7 +12,7 @@ module Mutations::Payments
         ::Transactions::CreateOrder,
         :order,
         title: attributes[:title],
-        amount: attributes[:amount],
+        amount_cents: amount_cents(attributes),
         seller: attributes[:seller],
         buyer: attributes[:buyer],
         dropzone: attributes[:dropzone],
@@ -31,7 +31,9 @@ module Mutations::Payments
 
       membership = DropzoneUser.membership(dropzone, context[:current_resource])
       return refuse("You are not a member of this dropzone") unless membership
-      return refuse("Amount must be positive") unless attributes[:amount] > 0
+      cents = amount_cents(attributes)
+      return refuse("An amount is needed") if cents.nil?
+      return refuse("Amount must be positive") unless cents.positive?
 
       buyer = attributes[:buyer]
       seller = attributes[:seller]
@@ -40,7 +42,7 @@ module Mutations::Payments
       return refuse("The dropzone cannot pay itself") if buyer.is_a?(::Dropzone) && seller.is_a?(::Dropzone)
 
       return true if membership.can?(:createUserTransaction)
-      return true if buyer == membership && seller.is_a?(::Dropzone) && can_afford?(buyer, attributes[:amount])
+      return true if buyer == membership && seller.is_a?(::Dropzone) && can_afford?(buyer, cents)
 
       refuse("You don't have permissions to create this order")
     end
@@ -55,8 +57,13 @@ module Mutations::Payments
       end
     end
 
-    def can_afford?(buyer, amount)
-      buyer.dropzone.allow_negative_credits? || (buyer.credits || 0) >= amount
+    # The amount in cents: amountCents, or amount in whole units rounded to the cent
+    def amount_cents(attributes)
+      attributes[:amount_cents] || Money.cents_of(attributes[:amount])
+    end
+
+    def can_afford?(buyer, cents)
+      buyer.dropzone.allow_negative_credits? || (buyer.credits_cents || 0) >= cents
     end
 
     def refuse(message)

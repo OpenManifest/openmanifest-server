@@ -59,6 +59,10 @@ class User < ApplicationRecord
     Appsignal.set_gauge("users.count", User.count)
   end
 
+  # A device has one user: whoever registers a push token takes it from every other user (the previous owner logged out
+  # without clearing it, or the phone changed hands)
+  before_save :release_push_token, if: -> { push_token.present? && will_save_change_to_push_token? }
+
   has_one_base64_attached :avatar
   resize_attached_image :avatar, size: [500, 500]
 
@@ -119,5 +123,11 @@ class User < ApplicationRecord
     else
       users
     end
+  end
+
+  private
+
+  def release_push_token
+    User.where(push_token: push_token).where.not(id: id).update_all(push_token: nil)
   end
 end

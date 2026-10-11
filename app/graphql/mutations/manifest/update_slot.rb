@@ -11,7 +11,7 @@ module Mutations::Manifest
 
     # What can be edited on a slot: who jumps and on which load is not among it (a slot is moved with moveSlot, which
     # checks capacity, credits and the target's dropzone)
-    UPDATABLE = %i(ticket_type jump_type rig exit_weight group_number extras).freeze
+    UPDATABLE = %i(ticket_type jump_type rig exit_weight group_number extras lock_version).freeze
 
     def resolve(attributes:, id:)
       model = Slot.find(id)
@@ -28,6 +28,8 @@ module Mutations::Manifest
         errors: nil,
         field_errors: nil,
       }
+    rescue ActiveRecord::StaleObjectError
+      raise GraphQL::ExecutionError.new("This slot was changed by someone else", extensions: { code: "CONFLICT" })
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {

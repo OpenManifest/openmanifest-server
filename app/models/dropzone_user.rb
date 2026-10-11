@@ -15,6 +15,9 @@
 #  jump_count   :integer          default(0), not null
 #
 class DropzoneUser < ApplicationRecord
+  include MoneyAttributes
+
+  money :credits
   include Discard::Model
   include MasterLogEntry::DropzoneUser
 
@@ -154,6 +157,12 @@ class DropzoneUser < ApplicationRecord
     kept.find_by(dropzone_id: dropzone_id, user_id: user.id)
   end
 
+  # The names of every permission of the member, from their role and granted to them. Reads the `permissions` and
+  # `role_permissions` associations, so a list of members preloads them instead of running queries for each one
+  def permission_names
+    (permissions.map(&:name) + role_permissions.map(&:name)).uniq
+  end
+
   def all_permissions
     Permission.where(
       id: permissions.pluck(:id)
@@ -212,7 +221,7 @@ class DropzoneUser < ApplicationRecord
     return if rig_inspections.any?
     rig = rigs.not_inspected_at(dropzone).first
     return unless rig
-    RequestRigInspectionJob.perform_now(rig, self)
+    RequestRigInspectionJob.perform_later(rig.id, id)
   end
 
   # Push an update to graphql subscriptions over websockets

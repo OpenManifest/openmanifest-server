@@ -140,6 +140,48 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       expect(user.reload.push_token).to eq("ExponentPushToken[abc]")
     end
 
+    it "stores a profile picture" do
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, image: image_data_url("jpg") }, as: user)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.avatar).to be_attached
+      expect(user.avatar.content_type).to eq("image/jpeg")
+    end
+
+    it "refuses a profile picture that is not a PNG, JPEG or WebP" do
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, image: image_data_url("gif") }, as: user)
+
+      expect(json.dig(:data, :updateUser, :fieldErrors, 0)).to include(field: "image", message: "The image must be a PNG, JPEG or WebP")
+      expect(user.reload.avatar).not_to be_attached
+    end
+
+    it "clears the push token when it is sent as null" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, pushToken: nil }, as: user)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.push_token).to be_nil
+    end
+
+    it "clears the push token without a member, as the app does when logging out" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      json = client_operation("UpdateUser", variables: { pushToken: nil }, as: user)
+
+      expect(json[:errors]).to be_nil
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.push_token).to be_nil
+    end
+
+    it "keeps the push token when it is not sent" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, name: "Renamed" }, as: user)
+
+      expect(user.reload.push_token).to eq("ExponentPushToken[abc]")
+    end
+
     it "returns validation errors" do
       json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, phone: "" }, as: user)
 
@@ -210,10 +252,10 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "returns the updated member" do
-      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { creditsCents: 12_300 } }, as: owner_user)
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to be_nil
-      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser, :credits)).to eq(123)
+      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser, :creditsCents)).to eq(12_300)
     end
 
     it "refuses a jumper without updateUser" do
@@ -298,6 +340,14 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
   end
 
   describe "CreateGhost" do
+    around do |example|
+      previous = ENV.fetch("FRONTEND_URL", nil)
+      ENV["FRONTEND_URL"] = "http://front.example.com"
+      example.run
+    ensure
+      ENV["FRONTEND_URL"] = previous
+    end
+
     let(:variables) { { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, dropzone: dropzone.id, exitWeight: 70 } }
 
     it "creates a ghost user and a membership with the given role" do
@@ -326,7 +376,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "does not let the ghost be claimed by anyone who signs up with its email" do
-      pending "BUG-012: sign-up reuses a ghost whose unconfirmed_email matches and skips confirmation outside production"
       client_operation("CreateGhost", variables: variables, as: owner_user)
       ghost = User.find_by!(email: "ghost@example.com")
 

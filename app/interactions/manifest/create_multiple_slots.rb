@@ -74,9 +74,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_credits
     return unless dropzone.is_credit_system_enabled?
 
-    cost = ticket_type.cost + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost)
+    cost = ticket_type.cost_cents.to_i + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost_cents)
     users.each do |user|
-      next unless cost > (user[:dropzone_user].credits || 0)
+      next unless cost > (user[:dropzone_user].credits_cents || 0)
 
       errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
       errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
@@ -91,7 +91,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_double_manifesting
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    Slot.where(load: dropzone.loads.today.active, dropzone_user: dropzone_users).each do |existing_slot|
+    Slot.where(load: dropzone.loads.on(dropzone.today).active, dropzone_user: dropzone_users).each do |existing_slot|
       if !existing_slot.dropzone_user.can?(:createDoubleSlot)
         errors.add(:base, "#{existing_slot.dropzone_user.user.name} can not be double-manifested")
       end

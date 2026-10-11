@@ -30,7 +30,7 @@ class Load < ApplicationRecord
   include MasterLogEntry::Load
 
   belongs_to :plane
-  has_one :dropzone, through: :plane
+  belongs_to :dropzone
 
   belongs_to :load_master, class_name: "DropzoneUser", optional: true
   belongs_to :gca, class_name: "DropzoneUser", optional: true
@@ -44,13 +44,16 @@ class Load < ApplicationRecord
 
   counter_culture :dropzone
 
+  before_validation :set_dropzone_and_date, on: :create
   before_create :set_load_number
   # Once per change, after the transaction (BUG-036)
   after_create_commit :broadcast_create
   after_update_commit :broadcast_update
 
   scope :active, -> { where(dispatch_at: nil) }
-  scope :today, -> { where(created_at: DateTime.current.all_day) }
+  # The loads of a day at a dropzone: its own day, whatever the zone of the server is
+  scope :on, ->(date) { where(load_date: date) }
+  scope :today_at, ->(dropzone) { where(dropzone_id: dropzone.id, load_date: dropzone.today) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
 
   def ready?
@@ -117,9 +120,20 @@ class Load < ApplicationRecord
 
   private
 
+  # A load belongs to the dropzone of its plane, and to the day it was created on in that dropzone's time zone
+  def set_dropzone_and_date
+    self.dropzone ||= plane&.dropzone
+    return unless dropzone
+
+    self.load_date ||= (created_at || Time.current).in_time_zone(dropzone.time_zone).to_date
+  end
+
+  # Numbers count up per dropzone and day, archived loads included (counting the kept loads repeated a number after one
+  # was archived, BUG-022). The dropzone row is locked until the end of the transaction, so concurrent loads of one
+  # dropzone get different numbers; the unique index backs this up.
   def set_load_number
-    Time.use_zone(dropzone.time_zone) do
-      assign_attributes(load_number: plane.dropzone.loads.today.count + 1)
-    end
+    Dropzone.where(id: dropzone_id).lock.pick(:id)
+    highest = Load.where(dropzone_id: dropzone_id, load_date: load_date).maximum(:load_number) || 0
+    assign_attributes(load_number: highest + 1)
   end
 end

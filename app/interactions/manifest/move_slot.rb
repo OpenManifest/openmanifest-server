@@ -81,12 +81,12 @@ class Manifest::MoveSlot < ApplicationInteraction
   def affordable?
     return unless source_slot.load.plane.dropzone.is_credit_system_enabled?
     # Check the cost of the current slot
-    user_funds = source_slot.cost + source_slot.dropzone_user.credits.to_f
+    user_funds = source_slot.cost_cents + source_slot.dropzone_user.credits_cents.to_i
 
     # Check if the user has enough credits
     # to manifest for this jump (taking into consideration the cost)
     # of the previous slot
-    errors.add(:base, "Not enough credits to manifest for this jump") if source_slot.cost > user_funds
+    errors.add(:base, "Not enough credits to manifest for this jump") if source_slot.cost_cents > user_funds
   end
 
   def validate
