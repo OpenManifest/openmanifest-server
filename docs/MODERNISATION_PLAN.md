@@ -2239,7 +2239,7 @@ Size: L
 Fixes: none
 
 ### P4.6 — Move equipment and membership forms to react-hook-form (group 2)
-Status: todo
+Status: owner-check (add a rig, inspect a rig, edit a member's role/expiry on one phone)
 Repo: client
 Depends on: P4.5
 Branch: modernise/p4-6-forms-group-2
