@@ -338,7 +338,8 @@ Environment variables (names only):
 |---|---|
 | `SECRET_KEY_BASE`, `RAILS_MASTER_KEY` | Rails / devise secret (`config/initializers/devise.rb:2`) |
 | `BACKEND_URL` | `default_url_options` host, ActionCable URL (**required** — boot fails in development/production if unset) |
-| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**) |
+| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**); its origin is always allowed by CORS |
+| `CORS_ORIGINS` | browser origins allowed to call the API, comma separated `scheme://host[:port]` (default `http://localhost:19006,http://localhost:8081`; `config/initializers/cors.rb`). Set it on every deployment that serves a web client from another origin than `FRONTEND_URL`; native apps are not affected |
 | `PGUSER`, `PGPASSWORD`, `DBNAME`, `DATABASE_URL` (production via platform) | database |
 | `REDIS_URL` | ActionCable, production cache |
 | `RAILS_MAX_THREADS`, `RAILS_MIN_THREADS`, `WEB_CONCURRENCY`, `PORT`, `PIDFILE` | Puma |

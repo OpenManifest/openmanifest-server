@@ -3332,7 +3332,7 @@ Size: L
 Fixes: BUG-048
 
 ### P6.24 — Close the sign-up takeover and harden CORS and CI secrets
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.23
 Branch: modernise/p6-24-signup-cors

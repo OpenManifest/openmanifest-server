@@ -70,6 +70,11 @@ RSpec.describe MoneyAttributes do
   end
 
   describe "#add_cents!" do
+    it "refuses anything that is not a money attribute" do
+      expect { member.add_cents!(:exit_weight, 100) }.to raise_error(ArgumentError, /not a money attribute/)
+      expect { member.add_cents!("credits_cents; DROP TABLE users", 1) }.to raise_error(ArgumentError)
+    end
+
     before { member.update!(credits_cents: 1000) }
 
     it "adds and subtracts exactly" do

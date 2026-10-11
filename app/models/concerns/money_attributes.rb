@@ -11,8 +11,14 @@
 module MoneyAttributes
   extend ActiveSupport::Concern
 
+  included do
+    class_attribute :money_attribute_names, instance_writer: false, default: []
+  end
+
   class_methods do
     def money(*names)
+      self.money_attribute_names = (money_attribute_names + names.map(&:to_sym)).uniq
+
       names.each do |name|
         cents = :"#{name}_cents"
 
@@ -31,9 +37,14 @@ module MoneyAttributes
   # Adds `delta` cents to a money attribute, in one atomic UPDATE (two requests adding at once both count), and keeps the
   # old column and this object current
   def add_cents!(name, delta)
-    cents = "#{name}_cents"
+    name = name.to_sym
+    raise ArgumentError, "#{name} is not a money attribute of #{self.class.name}" unless money_attribute_names.include?(name)
+
+    cents = :"#{name}_cents"
     delta = Integer(delta)
-    self.class.where(id: id).update_all(["#{cents} = COALESCE(#{cents}, 0) + ?, #{name} = (COALESCE(#{cents}, 0) + ?) / 100.0", delta, delta])
+    table = self.class.arel_table
+    total = Arel::Nodes::NamedFunction.new("COALESCE", [table[cents], Arel::Nodes.build_quoted(0)]) + delta
+    self.class.where(id: id).update_all(cents => total, name => total / Arel::Nodes.build_quoted(100.0))
     # What the row holds now, without marking the attributes as changed (a later save must not write them back)
     fresh = self.class.where(id: id).pick(cents, name)
     write_attribute(cents, fresh[0])

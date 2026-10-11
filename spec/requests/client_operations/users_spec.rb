@@ -340,6 +340,14 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
   end
 
   describe "CreateGhost" do
+    around do |example|
+      previous = ENV.fetch("FRONTEND_URL", nil)
+      ENV["FRONTEND_URL"] = "http://front.example.com"
+      example.run
+    ensure
+      ENV["FRONTEND_URL"] = previous
+    end
+
     let(:variables) { { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, dropzone: dropzone.id, exitWeight: 70 } }
 
     it "creates a ghost user and a membership with the given role" do
@@ -368,7 +376,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "does not let the ghost be claimed by anyone who signs up with its email" do
-      pending "BUG-012: sign-up reuses a ghost whose unconfirmed_email matches and skips confirmation outside production"
       client_operation("CreateGhost", variables: variables, as: owner_user)
       ghost = User.find_by!(email: "ghost@example.com")
 
