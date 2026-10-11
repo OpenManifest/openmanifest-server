@@ -23,52 +23,35 @@ module Mutations::Manifest
       )
     end
 
+    # Manifesting yourself needs createSlot; a group with other people needs createUserSlot, or createUserSlotWithSelf
+    # when you are one of its members (BUG-062: this compared membership ids with the user id).
     def authorized?(attributes: nil)
       dropzone = attributes[:load].plane.dropzone
-      contains_current_user = attributes[:user_group] && attributes[:user_group].any? do |member|
-        member[:id] == context[:current_resource].id
-      end
-      contains_others = attributes[:user_group] && attributes[:user_group].any? do |member|
-        member[:id] != context[:current_resource].id
-      end
+      membership = DropzoneUser.membership(dropzone, context[:current_resource])
+      return refuse("You are not a member of this dropzone") unless membership
 
-      # Check if we're manifesting tandems
-      manifesting_tandems = attributes[:ticket_type].is_tandem?
+      ids = attributes[:user_group].to_a.map { |member| member[:id].to_i }
+      contains_self = ids.include?(membership.id)
+      contains_others = ids.any? { |id| id != membership.id }
 
-      # Check if the user has permissions to manifest others
-      can_manifest_others = context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
+      allowed = if contains_others
+                  membership.can?(:createUserSlot) || (contains_self && membership.can?(:createUserSlotWithSelf))
+                else
+                  membership.can?(:createSlot)
+                end
+      return true if allowed
 
-      if manifesting_tandems && !can_manifest_others && contains_others
-        [
-          false, {
-            load: nil,
-            field_errors: nil,
-            errors: [
-              "You dont have permissions to manifest other people",
-            ],
-          },
-        ]
-      elsif context[:current_resource].can?(:createUserSlot, dropzone_id: dropzone.id)
-        true
-      elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
-        true
-      elsif context[:current_resource].can?(:createUserSlotWithSelf, dropzone_id: dropzone.id) && contains_current_user
-        [
-          false, {
-            errors: [
-              "You can only manifest a group if you're a part of it",
-            ],
-          },
-        ]
-      else
-        [
-          false, {
-            errors: [
-              "You don't have permissions to manifest other users #{required_permission}",
-            ],
-          },
-        ]
-      end
+      refuse(if contains_others
+               "You don't have permissions to manifest other people"
+             else
+               "You don't have permissions to manifest"
+             end)
+    end
+
+    private
+
+    def refuse(message)
+      [false, { load: nil, field_errors: nil, errors: [message] }]
     end
   end
 end

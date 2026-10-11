@@ -21,9 +21,9 @@ class Manifest::DeleteSlot < ApplicationInteraction
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: if is_self?
-                 "#{access_context.subject.user.name} took themselves off load ##{slot.load.load_number}"
+                 "#{access_context.user.name} took themselves off load ##{slot.load.load_number}"
                else
-                 "#{access_context.subject.user.name} removed #{slot.dropzone_user.user.name} from load ##{slot.load.load_number}"
+                 "#{access_context.user.name} removed #{slot.dropzone_user.user.name} from load ##{slot.load.load_number}"
                end
 
     )
@@ -39,9 +39,9 @@ class Manifest::DeleteSlot < ApplicationInteraction
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
       message: if is_self?
-                 "#{access_context.subject.user.name} failed to take themselves off load ##{load.load_number}"
+                 "#{access_context.user.name} failed to take themselves off load ##{load.load_number}"
                else
-                 "#{access_context.subject.user.name} failed to remove a slot on load ##{load.load_number}"
+                 "#{access_context.user.name} failed to remove a slot on load ##{load.load_number}"
                end,
       details: errors.full_messages.join(", ")
     )

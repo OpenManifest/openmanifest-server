@@ -9,7 +9,10 @@ class Manifest::MoveSlot < ApplicationInteraction
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil
 
-  steps :affordable?,
+  validate :same_dropzone
+
+  steps :open_with_room,
+        :affordable?,
         :move_slot,
         :validate,
         :update_order,
@@ -29,7 +32,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       created_at: DateTime.current,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} moved #{source_slot.dropzone_user.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
+      message: "#{access_context.user.name} moved #{source_slot.dropzone_user.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
     )
   end
 
@@ -45,7 +48,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to move #{source_slot.dropzone_user.user.name} from load ##{load.load_number}",
+      message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user.user.name} from load ##{load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -109,17 +112,39 @@ class Manifest::MoveSlot < ApplicationInteraction
     [source_slot.load.reload, destination_load.reload]
   end
 
+  # Moving someone else's slot needs updateUserSlot, your own updateSlot (BUG-007)
+  def required_permissions
+    own = access_context&.subject.present? && access_context.subject == source_slot.dropzone_user
+    return { updateSlot: "You don't have permissions to move your slot (missing updateSlot)" } if own
+
+    { updateUserSlot: "You don't have permissions to move other users (missing updateUserSlot)" }
+  end
+
+  # The target must be open and have room for the slot (and its passenger): slot validations only run on create (BUG-092)
+  def open_with_room
+    return if destination_load == source_slot.load
+
+    unless destination_load.open? || destination_load.boarding_call?
+      errors.add(:base, "Load ##{destination_load.load_number} is not open")
+      return
+    end
+
+    capacity = destination_load.max_slots || destination_load.plane.max_slots
+    needed = source_slot.has_passenger? ? 2 : 1
+    errors.add(:base, "No slots available on load ##{destination_load.load_number}") if capacity - destination_load.slots.count < needed
+  end
+
   private
+
+  # Both loads must belong to the dropzone the caller acts in
+  def same_dropzone
+    dropzone_id = access_context&.dropzone&.id
+    loads = [source_slot.load, destination_load].compact
+    errors.add(:base, "The slot and the load must belong to the same dropzone") unless loads.present? && loads.all? { |load| load.plane.dropzone_id == dropzone_id }
+  end
 
   def destination_load
     return target_slot.load if target_slot
     target_load
-  end
-
-  def authorize
-    # Users are allowed to move their own slot
-    return true if access_context.subject == source_slot.dropzone_user && access_context.subject.can?(:updateOwnSlot)
-    return true if access_context.subject.can?(:updateUserSlot)
-    raise ::ApplicationInteraction::Errors::PermissionDenied, "You don't have permissions to move other users"
   end
 end

@@ -21,7 +21,7 @@ class Manifest::CancelLoad < ApplicationInteraction
       action: :deleted,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} cancelled load ##{load.load_number}"
+      message: "#{access_context.user.name} cancelled load ##{load.load_number}"
     )
   end
 

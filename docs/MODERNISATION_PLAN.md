@@ -2792,7 +2792,7 @@ Size: L
 Fixes: BUG-005, BUG-089
 
 ### P6.5 — Enforce manifest permissions
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.4
 Branch: modernise/p6-5-manifest-authz

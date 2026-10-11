@@ -26,7 +26,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} created load ##{@load.load_number}"
+      message: "#{access_context.user.name} created load ##{@load.load_number}"
     )
   end
 
@@ -40,7 +40,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to create a new load"
+      message: "#{access_context.user.name} failed to create a new load"
     )
   end
 
