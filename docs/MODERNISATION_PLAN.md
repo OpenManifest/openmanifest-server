@@ -1190,7 +1190,7 @@ Size: S
 Fixes: none
 
 ### P2.3 — Upgrade Rails 7.0 → 7.1
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.2
 Branch: modernise/p2-3-rails-7-1
