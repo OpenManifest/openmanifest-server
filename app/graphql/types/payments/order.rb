@@ -12,7 +12,7 @@ module Types::Payments
     def amount_cents
       object.amount_cents.to_i
     end
-    async_field :dropzone, Types::DropzoneType, null: false
+    async_field :operator, Types::OperatorType, null: false
     polymorphic_field :item, Types::Interfaces::SellableItem, null: true
     polymorphic_field :buyer, Types::Interfaces::Wallet, null: true
     polymorphic_field :seller, Types::Interfaces::Wallet, null: true

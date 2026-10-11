@@ -18,12 +18,12 @@ class Manifest::DeleteSlot < ApplicationInteraction
       resource: slot,
       action: :deleted,
       access_level: :user,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
                  "#{access_context.user.name} took themselves off load ##{slot.load.load_number}"
                else
-                 "#{access_context.user.name} removed #{slot.dropzone_user.user.name} from load ##{slot.load.load_number}"
+                 "#{access_context.user.name} removed #{slot.membership.user.name} from load ##{slot.load.load_number}"
                end
 
     )
@@ -36,7 +36,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
       access_context: access_context,
       resource: slot,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
                  "#{access_context.user.name} failed to take themselves off load ##{slot.load.load_number}"
@@ -77,14 +77,14 @@ class Manifest::DeleteSlot < ApplicationInteraction
   end
 
   def is_self?
-    access_context.subject.id == slot.dropzone_user_id
+    access_context.subject.id == slot.membership_id
   end
 
   def authorize_action
     if slot.load.has_landed?
       errors.add(:base, "You can't take slots off a load that has landed")
     elsif is_self? && !access_context.can?(:deleteSlot)
-      errors.add(:base, access_context.subject.manifest_desk_only?(:deleteSlot) ? DropzoneUser::MANIFEST_DESK_MESSAGE : "You cant take yourself off the load")
+      errors.add(:base, access_context.subject.manifest_desk_only?(:deleteSlot) ? Membership::MANIFEST_DESK_MESSAGE : "You cant take yourself off the load")
     elsif !is_self? && !access_context.can?(:deleteUserSlot)
       errors.add(:base, "You cant take somebody else off the load")
     end

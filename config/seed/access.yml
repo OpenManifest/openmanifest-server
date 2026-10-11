@@ -6,10 +6,10 @@ permissions:
     - actAsDZSO
     - actAsRigInspector
   crud: &crud
-    dropzone:
-      - updateDropzone
-      - deleteDropzone
-      - undeleteDropzone
+    operator:
+      - updateOperator
+      - deleteOperator
+      - undeleteOperator
     weather_conditions:
       - updateWeatherConditions
     load:
@@ -54,11 +54,11 @@ permissions:
       - deleteRig
       - readRig
       - undeleteRig
-      - createDropzoneRig
-      - updateDropzoneRig
-      - deleteDropzoneRig
-      - readDropzoneRig
-      - undeleteDropzoneRig
+      - createOperatorRig
+      - updateOperatorRig
+      - deleteOperatorRig
+      - readOperatorRig
+      - undeleteOperatorRig
     permissions:
       - readPermissions
       - updatePermissions
@@ -153,10 +153,10 @@ roles:
       - deleteRig
       - createUser
 
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - createPackjob
       - updatePackjob
@@ -185,10 +185,10 @@ roles:
       - createRig
       - updateRig
       - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - readUserTransactions
       - updateWeatherConditions
@@ -218,10 +218,10 @@ roles:
       - createRig
       - updateRig
       - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - updateWeatherConditions
 
@@ -259,10 +259,10 @@ roles:
       - updateRig
       - deleteRig
 
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - createUserSlot
       - createUserSlotWithSelf

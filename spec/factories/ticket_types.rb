@@ -7,7 +7,7 @@
 #  id                     :bigint           not null, primary key
 #  currency               :string
 #  name                   :string
-#  dropzone_id            :bigint           not null
+#  operator_id            :bigint           not null
 #  altitude               :integer
 #  allow_manifesting_self :boolean
 #  created_at             :datetime         not null
@@ -16,9 +16,9 @@
 #
 FactoryBot.define do
   factory :ticket_type do
-    dropzone
+    operator
     name { ["Height", "Hop n Pop", "Boogie"].sample }
-    initialize_with { TicketType.find_or_initialize_by(name: name, dropzone: dropzone) }
+    initialize_with { TicketType.find_or_initialize_by(name: name, operator: operator) }
     cost { Faker::Number.between(from: 25, to: 60) }
     currency { "AUD" }
     altitude do

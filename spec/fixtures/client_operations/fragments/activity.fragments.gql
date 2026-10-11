@@ -6,18 +6,18 @@ fragment activityEssentials on Event {
   details
   createdAt
   createdBy {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
 }
 
 fragment activityDetails on Event {
   ...activityEssentials
   resource {
-    ...on Dropzone {
-      ...dropzoneEssentials
+    ...on Operator {
+      ...operatorEssentials
     }
-    ...on DropzoneUser {
-      ...dropzoneUserEssentials
+    ...on Membership {
+      ...membershipEssentials
     }
     ...on Load {
       ...loadEssentials

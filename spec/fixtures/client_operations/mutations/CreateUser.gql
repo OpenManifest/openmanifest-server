@@ -5,7 +5,7 @@ mutation CreateGhost(
   $federationNumber: String
   $role: Int!
   $license: Int
-  $dropzone: Int!
+  $operator: Int!
   $exitWeight: Float!
 ) {
   createGhost(
@@ -16,7 +16,7 @@ mutation CreateGhost(
         name: $name
         phone: $phone
         email: $email
-        dropzone: $dropzone
+        operator: $operator
         license: $license
         exitWeight: $exitWeight
       }

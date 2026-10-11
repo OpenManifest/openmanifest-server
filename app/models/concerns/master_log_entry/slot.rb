@@ -8,7 +8,7 @@ module MasterLogEntry::Slot
     # @return [Hash]
     def to_master_log
       slice(:id).merge(
-        name: passenger&.name || dropzone_user&.user&.name,
+        name: passenger&.name || membership&.user&.name,
         altitude: ticket_type.altitude,
         jump_type: jump_type.name,
       )

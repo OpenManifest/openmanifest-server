@@ -15,7 +15,7 @@ class Federation < ApplicationRecord
 
   has_many :licenses
   has_many :users, through: :licenses
-  has_many :dropzones, -> { kept }
+  has_many :operators, -> { kept }
 
   validates_presence_of :slug, on: :create, message: "must be defined"
   validates_presence_of :name, on: :create, message: "must be defined"

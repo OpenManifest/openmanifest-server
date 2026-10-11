@@ -8,8 +8,8 @@ module Types
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
     field :loads, [Types::Manifest::Load], null: true
-    field :dzso, [Types::Users::DropzoneUser], null: true
+    field :dzso, [Types::Users::Membership], null: true
 
-    field :dropzone, Types::DropzoneType, null: true
+    field :operator, Types::OperatorType, null: true
   end
 end

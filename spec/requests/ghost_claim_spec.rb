@@ -5,18 +5,18 @@ require "rails_helper"
 # BUG-012: signing up with the email of an account nobody has confirmed (a ghost staff created) must not hand that
 # account to the person signing up. It is claimed through the confirmation email.
 RSpec.describe "Claiming a ghost account" do
-  include_context "dropzone"
+  include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
-  let(:student_role) { dropzone.user_roles.find_by(name: "student") }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
+  let(:student_role) { operator.user_roles.find_by(name: "student") }
   let(:password) { "Password1!" }
   let(:sign_up) do
     { email: "ghost@example.com", password: password, passwordConfirmation: password, name: "Impostor", phone: "1", exitWeight: 80 }
   end
 
   def create_ghost
-    client_operation("CreateGhost", variables: { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, dropzone: dropzone.id, exitWeight: 70 }, as: owner_user)
+    client_operation("CreateGhost", variables: { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, operator: operator.id, exitWeight: 70 }, as: owner_user)
     User.find_by!(email: "ghost@example.com")
   end
 
@@ -76,7 +76,7 @@ RSpec.describe "Claiming a ghost account" do
     expect(json.dig(:data, :userConfirmRegistrationWithToken, :authenticatable, :id)).to eq(ghost.id.to_s)
     expect(json.dig(:data, :userConfirmRegistrationWithToken, :credentials, :uid)).to eq("ghost@example.com")
     expect(ghost.reload.confirmed_at).to be_present
-    expect(ghost.dropzone_users.pluck(:dropzone_id)).to eq([dropzone.id])
+    expect(ghost.memberships.pluck(:operator_id)).to eq([operator.id])
     expect(ghost.valid_password?(password)).to be(false)
   end
 

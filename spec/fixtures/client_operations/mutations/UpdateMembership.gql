@@ -1,0 +1,14 @@
+mutation UpdateMembership($membershipId: ID!, $attributes: MembershipInput!) {
+  updateMembership(
+    input: { membership: $membershipId, attributes: $attributes }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    membership {
+      ...membershipDetails
+    }
+  }
+}

@@ -10,9 +10,9 @@ class Manifest::UpdateLoad < ApplicationInteraction
   date_time :dispatch_at, default: nil
   string :name, default: nil
   integer :max_slots, default: nil
-  object :gca, class: DropzoneUser, default: nil
-  object :load_master, class: DropzoneUser, default: nil
-  object :pilot, class: DropzoneUser, default: nil
+  object :gca, class: Membership, default: nil
+  object :load_master, class: Membership, default: nil
+  object :pilot, class: Membership, default: nil
   object :plane, class: Plane, default: nil
   string :state, default: nil
   # The version of the load the client based its change on (optimistic locking, BUG-024)
@@ -43,7 +43,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
       )
@@ -54,7 +54,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} cancelled call for load ##{load.load_number}"
       )
@@ -67,7 +67,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} changed the plane for load ##{load.load_number} to #{plane.name} (#{plane.registration})"
       )
@@ -80,7 +80,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} changed the GCA for load ##{load.load_number} to #{gca.user.name}"
       )
@@ -93,7 +93,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} changed the load master for load ##{load.load_number} to #{load_master.user.name}"
       )

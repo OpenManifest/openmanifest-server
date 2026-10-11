@@ -9,15 +9,15 @@ module Types
     field :update_notification,         mutation: Mutations::Users::UpdateNotification
     field :update_role,                 mutation: Mutations::Access::UpdateRole
     field :update_visibility,           mutation: Mutations::Access::UpdateVisibility
-    field :update_master_log,           mutation: Mutations::Dropzone::UpdateMasterLog
+    field :update_master_log,           mutation: Mutations::Operator::UpdateMasterLog
 
     # Users
     field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false,
                                         deprecation_reason: "Facebook login removed (D4)"
     field :login_with_apple,            mutation: Mutations::Users::Login::Apple, authenticate: false
     field :create_ghost,                mutation: Mutations::Users::CreateGhost
-    field :join_dropzone,               mutation: Mutations::Users::JoinDropzone
-    field :update_dropzone_user,        mutation: Mutations::Users::UpdateDropzoneUser
+    field :join_operator,               mutation: Mutations::Users::JoinOperator
+    field :update_membership, mutation: Mutations::Users::UpdateMembership
     field :update_user,                 mutation: Mutations::Users::UpdateUser
     field :delete_user,                 mutation: Mutations::Users::DeleteUser
     field :join_federation,             mutation: Mutations::Users::JoinFederation
@@ -26,11 +26,11 @@ module Types
     field :delete_plane,                mutation: Mutations::Setup::Aircrafts::DeletePlane
     field :create_plane,                mutation: Mutations::Setup::Aircrafts::CreatePlane
     field :update_plane,                mutation: Mutations::Setup::Aircrafts::UpdatePlane
-    field :delete_dropzone,             mutation: Mutations::Setup::Dropzones::DeleteDropzone
-    field :create_dropzone,             mutation: Mutations::Setup::Dropzones::CreateDropzone
-    field :update_dropzone,             mutation: Mutations::Setup::Dropzones::UpdateDropzone
-    field :reload_weather_condition,    mutation: Mutations::Setup::Dropzones::ReloadWeatherCondition
-    field :create_weather_condition,    mutation: Mutations::Setup::Dropzones::CreateWeatherCondition
+    field :delete_operator,             mutation: Mutations::Setup::Operators::DeleteOperator
+    field :create_operator,             mutation: Mutations::Setup::Operators::CreateOperator
+    field :update_operator,             mutation: Mutations::Setup::Operators::UpdateOperator
+    field :reload_weather_condition,    mutation: Mutations::Setup::Operators::ReloadWeatherCondition
+    field :create_weather_condition,    mutation: Mutations::Setup::Operators::CreateWeatherCondition
     field :update_rig,                  mutation: Mutations::Setup::Equipment::UpdateRig
     field :archive_rig,                 mutation: Mutations::Setup::Equipment::DeleteRig
     field :create_rig,                  mutation: Mutations::Setup::Equipment::CreateRig

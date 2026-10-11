@@ -5,8 +5,8 @@ mutation ArchiveUser($id: Int!) {
       field
       message
     }
-    dropzoneUser {
-      ...dropzoneUserEssentials
+    membership {
+      ...membershipEssentials
     }
   }
 }

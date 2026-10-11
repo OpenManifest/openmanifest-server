@@ -6,15 +6,15 @@
 #
 #  id          :bigint           not null, primary key
 #  dzso_id     :bigint
-#  dropzone_id :bigint           not null
+#  operator_id :bigint           not null
 #  notes       :text
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #
 class MasterLog < ApplicationRecord
   belongs_to :dzso, optional: true,
-                    class_name: "DropzoneUser"
-  belongs_to :dropzone
+                    class_name: "Membership"
+  belongs_to :operator
   has_one_attached :json
 
   after_create :store!
@@ -34,7 +34,7 @@ class MasterLog < ApplicationRecord
   # (i) type of descent, i.e. Tandem, AFF, SLD, IAD or experienced; and
   # (j) date of descent.
   def generate_json
-    dropzone.to_master_log(date).merge(
+    operator.to_master_log(date).merge(
       dzso: dzso&.to_master_log || {
         name: 'No DZSO',
       },

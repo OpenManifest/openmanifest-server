@@ -11,7 +11,7 @@ updatePlane(
   plane {
     ...planeEssentials
 
-    dropzone {
+    operator {
       id
       name
       planes {

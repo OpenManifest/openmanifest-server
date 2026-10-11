@@ -16,8 +16,8 @@
 #  is_seen           :boolean          default(FALSE)
 #
 class Notification < ApplicationRecord
-  belongs_to :received_by, class_name: "DropzoneUser"
-  belongs_to :sent_by, class_name: "DropzoneUser", optional: true
+  belongs_to :received_by, class_name: "Membership"
+  belongs_to :sent_by, class_name: "Membership", optional: true
   belongs_to :resource, polymorphic: true
 
   enum :notification_type, {
@@ -47,7 +47,7 @@ class Notification < ApplicationRecord
     response = HTTParty.post(
       EXPO_PUSH_URL,
       headers: { "Content-Type" => "application/json", "Accept" => "application/json" },
-      body: { to: token, title: received_by.dropzone.name, body: message, data: { notificationId: id, type: notification_type } }.to_json
+      body: { to: token, title: received_by.operator.name, body: message, data: { notificationId: id, type: notification_type } }.to_json
     )
     raise HTTParty::ResponseError, response if response.server_error?
 

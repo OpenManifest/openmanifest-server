@@ -13,7 +13,7 @@ module Mutations::Manifest
       mutate(
         Manifest::UpdateLoad,
         :load,
-        access_context: access_context_for(load_by_id(id).plane.dropzone),
+        access_context: access_context_for(load_by_id(id).plane.operator),
         load: load_by_id(id),
         **attributes.to_h.slice(
           :gca,

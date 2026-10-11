@@ -23,9 +23,15 @@ allow:
   - CLAUDE.md
   # Generated or third-party files that are rebuilt rather than edited
   - yarn.lock
+  - .rubocop_todo.yml
   - package.json
   - Gemfile.lock
   - config/vocabulary.yml
+  # The tests of the tools themselves name the old terms on purpose
+  - spec/lib/vocabulary_spec.rb
+  - scripts/__tests__/vocabulary.test.ts
+  # Data examples of earlier migrations run against the schema of their time
+  - spec/migrations/**
   - .github/**
   # Generated from the schema (rebuilt by the dump / codegen, not edited)
   - schema.graphql

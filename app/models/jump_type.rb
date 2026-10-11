@@ -19,17 +19,17 @@ class JumpType < ApplicationRecord
   class << self
     # Find the intersection of jump types allowed for a set of users
     #
-    # @param [Array<DropzoneUser>] dropzone_users
+    # @param [Array<Membership>] memberships
     # @return [ActiveRecord::Collection<JumpType>]
-    def allowed_for(dropzone_users)
-      jump_type_ids = [dropzone_users].flatten.map do |dz_user|
+    def allowed_for(memberships)
+      jump_type_ids = [memberships].flatten.map do |dz_user|
         dz_user.licensed_jump_types.pluck(:jump_type_id)
       end
       JumpType.where(id: jump_type_ids.reduce(&:intersection))
     end
   end
 
-  def allowed_for?(dropzone_user)
-    JumpType.allowed_for([dropzone_user].flatten).exists?(id: id)
+  def allowed_for?(membership)
+    JumpType.allowed_for([membership].flatten).exists?(id: id)
   end
 end

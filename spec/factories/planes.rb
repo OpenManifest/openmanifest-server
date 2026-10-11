@@ -13,11 +13,11 @@
 #  registration           :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  dropzone_id            :bigint           not null
+#  operator_id            :bigint           not null
 #
 FactoryBot.define do
   factory :plane do
-    dropzone { nil }
+    operator { nil }
     name { Faker::Color.color_name }
     registration { Faker::Name.first_name }
     max_slots { Faker::Number.between(from: 4, to: 20) }
@@ -28,8 +28,8 @@ FactoryBot.define do
       end
 
       after(:create) do |plane, evaluator|
-        create_list(:load, evaluator.load_count, plane: plane, gca: plane.dropzone.dropzone_users.first,
-                                                 pilot: plane.dropzone.dropzone_users.first)
+        create_list(:load, evaluator.load_count, plane: plane, gca: plane.operator.memberships.first,
+                                                 pilot: plane.operator.memberships.first)
 
         plane.reload
       end

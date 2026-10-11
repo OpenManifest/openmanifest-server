@@ -4,7 +4,7 @@ mutation ManifestUser(
   $load: ID
   $rig: ID
   $ticketType: ID
-  $dropzoneUser: ID
+  $membership: ID
   $exitWeight: Float
   $passengerName: String
   $groupNumber: Int
@@ -19,7 +19,7 @@ mutation ManifestUser(
         rig: $rig
         groupNumber: $groupNumber
         ticketType: $ticketType
-        dropzoneUser: $dropzoneUser
+        membership: $membership
         exitWeight: $exitWeight
         passengerExitWeight: $passengerExitWeight
         passengerName: $passengerName

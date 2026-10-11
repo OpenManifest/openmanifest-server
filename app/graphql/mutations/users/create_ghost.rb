@@ -14,7 +14,7 @@ module Mutations::Users
         :user,
         license: attributes[:license],
         role: attributes[:role],
-        dropzone: attributes[:dropzone],
+        operator: attributes[:operator],
         exit_weight: attributes[:exit_weight],
         email: attributes[:email],
         phone: attributes[:phone],

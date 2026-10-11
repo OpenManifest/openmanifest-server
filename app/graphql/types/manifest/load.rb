@@ -38,14 +38,14 @@ module Types::Manifest
       # This exludes tandem passengers as they are part
       # of the tandem masters slot
       # In memory: the slots of every load of a list are loaded at once (BUG-049)
-      preload(:slots).slots.reject { |slot| slot.dropzone_user_id.nil? }
+      preload(:slots).slots.reject { |slot| slot.membership_id.nil? }
     end
 
-    async_field :pilot, Types::Users::DropzoneUser, null: true
-    async_field :plane, Types::Dropzone::Aircraft, null: false
-    async_field :load_master, Types::Users::DropzoneUser, null: true
+    async_field :pilot, Types::Users::Membership, null: true
+    async_field :plane, Types::Operator::Aircraft, null: false
+    async_field :load_master, Types::Users::Membership, null: true
     async_field :state, Types::Manifest::LoadState, null: false
-    async_field :gca, Types::Users::DropzoneUser, null: true
+    async_field :gca, Types::Users::Membership, null: true
     field :load_number, Int, null: false
 
     field :is_ready, Boolean, null: false

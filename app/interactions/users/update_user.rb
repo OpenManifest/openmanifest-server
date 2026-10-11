@@ -2,8 +2,8 @@
 
 class Users::UpdateUser < ApplicationInteraction
   # The member whose profile is edited; without one the caller edits their own profile (logging out clears the push token
-  # before any dropzone is chosen)
-  record :dropzone_user, default: nil
+  # before any operator is chosen)
+  record :membership, default: nil
   record :user, default: nil
   string :name, default: nil
   string :nickname, default: nil
@@ -37,7 +37,7 @@ class Users::UpdateUser < ApplicationInteraction
   end
 
   def result
-    dropzone_user
+    membership
   end
 
   def attach_avatar
@@ -65,7 +65,7 @@ class Users::UpdateUser < ApplicationInteraction
 
   def assign_federation
     return unless license
-    # If license id changed, then update all DropzoneUsers
+    # If license id changed, then update all Memberships
     # with the same federation as that license to have the
     # new license:
     compose(
@@ -78,24 +78,24 @@ class Users::UpdateUser < ApplicationInteraction
     )
   end
 
-  # Users can always update their own profile. A profile belongs to the user, not to a dropzone, so staff may edit it
-  # only while the user is a member of no other dropzone than the one the staff member acts in (updateUser there).
+  # Users can always update their own profile. A profile belongs to the user, not to an operator, so staff may edit it
+  # only while the user is a member of no other operator than the one the staff member acts in (updateUser there).
   def authorize
     return errors.add(:base, "Nobody to update") unless target_user
     return if access_context.user&.id == target_user.id
-    return errors.add(:base, "You cant update other users") unless dropzone_user
+    return errors.add(:base, "You cant update other users") unless membership
 
-    dropzone_ids = target_user.dropzone_users.kept.pluck(:dropzone_id)
-    if !access_context.can?(:updateUser) || dropzone_user.dropzone_id != access_context.dropzone&.id
+    operator_ids = target_user.memberships.kept.pluck(:operator_id)
+    if !access_context.can?(:updateUser) || membership.operator_id != access_context.operator&.id
       errors.add(:base, "You cant update other users")
-    elsif dropzone_ids.uniq.size > 1
-      errors.add(:base, "Update failed. User is a member of multiple dropzones")
+    elsif operator_ids.uniq.size > 1
+      errors.add(:base, "Update failed. User is a member of multiple operators")
     end
   end
 
   private
 
   def target_user
-    dropzone_user&.user || user
+    membership&.user || user
   end
 end

@@ -40,10 +40,10 @@ class Transaction < ApplicationRecord
   scope :cancelled, -> { where(status: :cancelled) }
 
   # Tells the member whose account the money moved to or from, once the transaction is completed (a purchase is
-  # reserved when the jumper is manifested and completed when the load lands). Transactions of the dropzone itself, the
+  # reserved when the jumper is manifested and completed when the load lands). Transactions of the operator itself, the
   # other half of every sale, notify nobody.
   def notify!
-    return unless receiver.is_a?(DropzoneUser)
+    return unless receiver.is_a?(Membership)
 
     Notification.create!(
       received_by: receiver,

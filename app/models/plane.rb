@@ -13,7 +13,7 @@
 #  registration           :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  dropzone_id            :bigint           not null
+#  operator_id            :bigint           not null
 #
 class Plane < ApplicationRecord
   include Discard::Model
@@ -21,5 +21,5 @@ class Plane < ApplicationRecord
 
   has_many :loads, dependent: :destroy
   has_many :pilots, through: :loads
-  belongs_to :dropzone
+  belongs_to :operator
 end

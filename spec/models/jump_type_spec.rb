@@ -5,7 +5,7 @@
 # Table name: orders
 #
 #  id           :bigint           not null, primary key
-#  dropzone_id  :bigint           not null
+#  operator_id  :bigint           not null
 #  seller_type  :string           not null
 #  seller_id    :bigint           not null
 #  buyer_type   :string           not null
@@ -20,20 +20,20 @@ require "rails_helper"
 
 RSpec.describe JumpType do
   let!(:federation) { Federation.find_by(slug: :apf) }
-  let!(:dropzone) { create(:dropzone) }
+  let!(:operator) { create(:operator) }
   let!(:user1) { create(:user) }
   let!(:certificate_e_user) do
-    create(:dropzone_user, dropzone: dropzone, user: user1, license: federation.licenses.find_by(name: "Certificate E"))
+    create(:membership, operator: operator, user: user1, license: federation.licenses.find_by(name: "Certificate E"))
   end
 
   let!(:user2) { create(:user) }
   let!(:certificate_a_user) do
-    create(:dropzone_user, dropzone: dropzone, user: user2, license: federation.licenses.find_by(name: "Certificate A"))
+    create(:membership, operator: operator, user: user2, license: federation.licenses.find_by(name: "Certificate A"))
   end
 
   let!(:user3) { create(:user) }
   let!(:certificate_c_user) do
-    create(:dropzone_user, dropzone: dropzone, user: user3, license: federation.licenses.find_by(name: "Certificate C"))
+    create(:membership, operator: operator, user: user3, license: federation.licenses.find_by(name: "Certificate C"))
   end
 
   it "E license user is allowed for any jump" do

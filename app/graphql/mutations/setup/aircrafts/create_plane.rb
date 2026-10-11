@@ -4,7 +4,7 @@ module Mutations::Setup::Aircrafts
   class CreatePlane < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :plane, Types::Dropzone::Aircraft, null: true
+    field :plane, Types::Operator::Aircraft, null: true
 
     argument :attributes, Types::Input::PlaneInput, required: true
 
@@ -12,7 +12,7 @@ module Mutations::Setup::Aircrafts
       mutate(
         ::Setup::Aircrafts::CreateAircraft,
         :plane,
-        access_context: access_context_for(attributes[:dropzone_id]),
+        access_context: access_context_for(attributes[:operator_id]),
         **attributes.to_h.slice(
           :name,
           :min_slots,

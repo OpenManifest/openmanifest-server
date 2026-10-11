@@ -1,5 +1,5 @@
-query AvailableRigs($dropzoneUserId: Int!, $isTandem: Boolean, $loadId: Int) {
-  availableRigs(dropzoneUser: $dropzoneUserId, isTandem: $isTandem, loadId: $loadId) {
+query AvailableRigs($membershipId: Int!, $isTandem: Boolean, $loadId: Int) {
+  availableRigs(membership: $membershipId, isTandem: $isTandem, loadId: $loadId) {
     ...userRigDetailed
   }
 }

@@ -14,8 +14,8 @@ module Mutations::Setup::Equipment
     def resolve(attributes:, id: nil)
       model = Rig.find(id)
 
-      # A rig never moves to another dropzone or owner
-      attrs = attributes.to_h.except(:packing_card, :dropzone_id, :user_id)
+      # A rig never moves to another operator or owner
+      attrs = attributes.to_h.except(:packing_card, :operator_id, :user_id)
       if attrs[:repack_expires_at]
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
       end
@@ -66,11 +66,11 @@ module Mutations::Setup::Equipment
             ],
           },
         ]
-      elsif rig.dropzone_id && !context[:current_resource].can?(:updateDropzoneRig, dropzone_id: rig.dropzone_id)
+      elsif rig.operator_id && !context[:current_resource].can?(:updateOperatorRig, operator_id: rig.operator_id)
         [
           false, {
             errors: [
-              "You can't update rigs for this dropzone",
+              "You can't update rigs for this operator",
             ],
           },
         ]

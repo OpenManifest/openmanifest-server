@@ -38,8 +38,8 @@ RSpec.describe Money do
 end
 
 RSpec.describe MoneyAttributes do
-  let(:dropzone) { create(:dropzone, credits: 0) }
-  let(:member) { create(:dropzone_user, dropzone: dropzone) }
+  let(:operator) { create(:operator, credits: 0) }
+  let(:member) { create(:membership, operator: operator) }
 
   it "stores the units a model is given as cents" do
     member.update!(credits: 12.5)
@@ -92,7 +92,7 @@ RSpec.describe MoneyAttributes do
 
     it "updates the object without making it dirty, so a later save does not write the value back" do
       member.add_cents!(:credits, 100)
-      other = DropzoneUser.find(member.id)
+      other = Membership.find(member.id)
       other.add_cents!(:credits, 200)
 
       member.update!(jump_count: 3)
@@ -102,26 +102,26 @@ RSpec.describe MoneyAttributes do
     end
 
     it "counts every addition of requests at the same time" do
-      ids = Array.new(3) { DropzoneUser.find(member.id) }
+      ids = Array.new(3) { Membership.find(member.id) }
 
       ids.each { |copy| copy.add_cents!(:credits, 100) }
 
       expect(member.reload.credits_cents).to eq(1300)
     end
 
-    it "works for the dropzone's wallet too" do
-      dropzone.add_cents!(:credits, 4250)
+    it "works for the operator's wallet too" do
+      operator.add_cents!(:credits, 4250)
 
-      expect(dropzone.reload.credits_cents).to eq(4250)
-      expect(dropzone.credits).to eq(42.5)
+      expect(operator.reload.credits_cents).to eq(4250)
+      expect(operator.credits).to eq(42.5)
     end
   end
 
   it "prices a slot from the cents of the ticket and the add-ons" do
-    ticket = create(:ticket_type, dropzone: dropzone, cost: 12.5)
-    video = Extra.create!(dropzone: dropzone, name: "Video", cost: 0.1)
-    coach = Extra.create!(dropzone: dropzone, name: "Coach", cost: 0.2)
-    plane_load = create(:load, plane: create(:plane, dropzone: dropzone))
+    ticket = create(:ticket_type, operator: operator, cost: 12.5)
+    video = Extra.create!(operator: operator, name: "Video", cost: 0.1)
+    coach = Extra.create!(operator: operator, name: "Coach", cost: 0.2)
+    plane_load = create(:load, plane: create(:plane, operator: operator))
     slot = Slot.new(load: plane_load, ticket_type: ticket, extras: [video, coach])
 
     expect(slot.cost_cents).to eq(1280)

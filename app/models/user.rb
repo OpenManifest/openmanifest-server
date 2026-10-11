@@ -34,7 +34,7 @@
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
 #  jump_count             :integer          default(0), not null
-#  dropzone_count         :integer          default(0), not null
+#  operator_count         :integer          default(0), not null
 #  plane_count            :integer          default(0), not null
 #
 require "open-uri"
@@ -68,11 +68,11 @@ class User < ApplicationRecord
 
   has_many :rigs, -> { kept }
   has_many :packs
-  has_many :dropzone_users, -> { kept }
-  has_many :dropzones, -> { kept }, through: :dropzone_users
-  has_many :slots, through: :dropzone_users
+  has_many :memberships, -> { kept }
+  has_many :operators, -> { kept }, through: :memberships
+  has_many :slots, through: :memberships
   has_many :loads, -> { kept }, through: :slots
-  has_many :user_roles, through: :dropzone_users
+  has_many :user_roles, through: :memberships
 
   belongs_to :license, optional: true
 
@@ -81,14 +81,14 @@ class User < ApplicationRecord
   has_many :user_federation_qualifications, through: :user_federations
   has_many :qualifications, through: :user_federation_qualifications
 
-  # @return [DropzoneUser, nil] the membership at the dropzone, nil for a user who has not joined it
-  def at(dropzone)
-    DropzoneUser.membership(dropzone, self)
+  # @return [Membership, nil] the membership at the operator, nil for a user who has not joined it
+  def at(operator)
+    Membership.of(operator, self)
   end
 
-  # False for a user who is not a member of the dropzone
-  def can?(permission_name, dropzone_id:)
-    at(dropzone_id)&.can?(permission_name) || false
+  # False for a user who is not a member of the operator
+  def can?(permission_name, operator_id:)
+    at(operator_id)&.can?(permission_name) || false
   end
 
   # Compare moderation levels to get user access level

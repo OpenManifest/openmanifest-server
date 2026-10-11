@@ -10,8 +10,8 @@ module Types::Interfaces
     definition_methods do
       def resolve_type(object, context)
         {
-          ::TicketType => Types::Dropzone::Ticket,
-          ::Extra => Types::Dropzone::Tickets::Addon,
+          ::TicketType => Types::Operator::Ticket,
+          ::Extra => Types::Operator::Tickets::Addon,
           ::Slot => Types::Manifest::Slot,
         }[object.class]
       end

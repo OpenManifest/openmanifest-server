@@ -3,15 +3,15 @@
 require "rails_helper"
 
 RSpec.describe Transactions::Refund do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+  let!(:operator) { create(:operator, credits: 50) }
+  let!(:ticket_type) { create(:ticket_type, operator: operator) }
+  let!(:membership) { create(:membership, operator: operator, credits: 200) }
   let!(:access_context) do
-    u = create(:dropzone_user, dropzone: dropzone)
+    u = create(:membership, operator: operator)
     ApplicationInteraction::AccessContext.new(u)
   end
   let!(:order) do
-    Transactions::Purchase.run(dropzone: dropzone, buyer: dropzone_user, seller: dropzone, purchasable: ticket_type,
+    Transactions::Purchase.run(operator: operator, buyer: membership, seller: operator, purchasable: ticket_type,
                                access_context: access_context)
   end
 
@@ -35,8 +35,8 @@ RSpec.describe Transactions::Refund do
       expect(outcome.result.transactions.sum(:amount_cents)).to eq 0
     end
     it "expect credits to be updated correctly" do
-      expect(dropzone_user.reload.credits).to eq 200
-      expect(dropzone.reload.credits).to eq 50
+      expect(membership.reload.credits).to eq 200
+      expect(operator.reload.credits).to eq 50
     end
   end
 end

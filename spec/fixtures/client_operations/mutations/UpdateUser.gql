@@ -1,5 +1,5 @@
 mutation UpdateUser(
-  $dropzoneUser: ID
+  $membership: ID
   $name: String
   $phone: String
   $email: String
@@ -11,7 +11,7 @@ mutation UpdateUser(
 ) {
   updateUser(
     input: {
-      dropzoneUser: $dropzoneUser
+      membership: $membership
       attributes: {
         pushToken: $pushToken
         name: $name
@@ -29,8 +29,8 @@ mutation UpdateUser(
       field
       message
     }
-    dropzoneUser {
-      ...dropzoneUserDetails
+    membership {
+      ...membershipDetails
     }
   }
 }

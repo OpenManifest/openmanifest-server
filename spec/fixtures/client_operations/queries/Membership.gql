@@ -1,0 +1,53 @@
+#import "../fragments/memberships.fragments.gql"
+query Memberships(
+  $operatorId: ID!,
+  $search: String,
+  $permissions: [Permission!],
+  $first: Int,
+  $after: String,
+  $licensed: Boolean
+) {
+  memberships(operator: $operatorId, licensed: $licensed, search: $search, permissions: $permissions, first: $first, after: $after) {
+    edges {
+      cursor
+      node {
+        ...membershipEssentials
+      }
+    }
+  }
+}
+
+
+query MembershipsDetailed(
+  $operatorId: ID!,
+  $search: String,
+  $permissions: [Permission!],
+  $first: Int,
+  $after: String,
+  $licensed: Boolean
+) {
+  memberships(operator: $operatorId, licensed: $licensed, search: $search, permissions: $permissions, first: $first, after: $after) {
+    edges {
+      cursor
+      node {
+        ...membershipEssentials
+      }
+    }
+  }
+}
+
+query Membership(
+  $id: ID!,
+) {
+  membership(id: $id) {
+    ...membershipEssentials
+  }
+}
+
+query MembershipDetailed(
+  $id: ID!,
+) {
+  membership(id: $id) {
+    ...membershipDetails
+  }
+}

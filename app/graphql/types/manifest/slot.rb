@@ -18,13 +18,13 @@ module Types::Manifest
     end
     field :group_number, Integer, null: false
 
-    async_field :dropzone_user, Types::Users::DropzoneUser, null: true
+    async_field :membership, Types::Users::Membership, null: true
     field :cost_cents, Int, null: false
     def cost_cents
       preload(:ticket_type, :extras).cost_cents
     end
 
-    async_field :ticket_type, Types::Dropzone::Ticket, null: true
+    async_field :ticket_type, Types::Operator::Ticket, null: true
     async_field :load, Types::Manifest::Load, null: false
     async_field :rig, Types::Equipment::Rig, null: true
     async_field :jump_type, Types::Meta::JumpType, null: true
@@ -41,7 +41,7 @@ module Types::Manifest
       object.passenger_slot&.exit_weight
     end
 
-    field :extras, [Types::Dropzone::Tickets::Addon], null: true
+    field :extras, [Types::Operator::Tickets::Addon], null: true
     def extras
       preload(:extras).extras
     end

@@ -3,11 +3,11 @@
 require "rails_helper"
 
 RSpec.describe "Client operations: subscription triggers" do
-  include_context "dropzone"
+  include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
+  let!(:pilot) { create(:membership, operator: operator) }
   let!(:existing_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner) }
 
   def broadcasts(name)
@@ -40,24 +40,24 @@ RSpec.describe "Client operations: subscription triggers" do
   describe "CreateLoad" do
     let(:variables) { { name: "Broadcast load", plane: plane.id, pilot: pilot.id, gca: owner.id } }
 
-    it "broadcasts loadCreated for the dropzone" do
+    it "broadcasts loadCreated for the operator" do
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{dropzone.id}")).not_to be_empty
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{operator.id}")).not_to be_empty
     end
 
-    it "does not broadcast to other dropzones" do
-      other = create(:dropzone)
+    it "does not broadcast to other operators" do
+      other = create(:operator)
 
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{other.id}")).to be_empty
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{other.id}")).to be_empty
     end
 
     it "broadcasts loadCreated exactly once" do
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{dropzone.id}").size).to eq(1)
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{operator.id}").size).to eq(1)
     end
   end
 

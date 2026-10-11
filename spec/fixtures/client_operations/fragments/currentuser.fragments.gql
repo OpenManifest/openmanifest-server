@@ -2,7 +2,7 @@
 #import "./transactions.fragments.gql"
 #import "./users.fragments.gql"
 
-fragment currentUserEssentials on DropzoneUser {
+fragment currentUserEssentials on Membership {
   id
   walletId
   creditsCents
@@ -20,7 +20,7 @@ fragment currentUserEssentials on DropzoneUser {
   }
 }
 
-fragment currentUserDetailed on DropzoneUser {
+fragment currentUserDetailed on Membership {
   ...currentUserEssentials
 
   rigInspections {

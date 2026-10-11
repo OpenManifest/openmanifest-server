@@ -15,12 +15,12 @@ module StateMachines::LoadState
     state_machine :state, initial: :open do
       after_transition any => :cancelled do |record|
         record.slots.each do |slot|
-          next if slot.dropzone_user.blank?
+          next if slot.membership.blank?
 
           Notification.create(
             message: "Load ##{record.load_number} call canceled",
             resource: record,
-            received_by: slot.dropzone_user,
+            received_by: slot.membership,
             notification_type: :boarding_call_canceled
           )
         end
@@ -28,12 +28,12 @@ module StateMachines::LoadState
 
       after_transition any => :boarding_call do |record|
         record.slots.each do |slot|
-          next if slot.dropzone_user.blank?
+          next if slot.membership.blank?
 
           Notification.create(
-            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.plane.dropzone.time_zone).strftime('%H:%M')}",
+            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.plane.operator.time_zone).strftime('%H:%M')}",
             resource: record,
-            received_by: slot.dropzone_user,
+            received_by: slot.membership,
             notification_type: :boarding_call
           )
         end

@@ -47,19 +47,19 @@ module Mutations::Setup::Equipment
       rig = Rig.find_by(id: id)
       return [false, { errors: ["Rig not found"] }] unless rig
 
-      # A dropzone rig is deleted by staff of its dropzone
-      if rig.dropzone_id
-        return true if context[:current_resource].can?(:deleteDropzoneRig, dropzone_id: rig.dropzone_id)
+      # An operator rig is deleted by staff of its operator
+      if rig.operator_id
+        return true if context[:current_resource].can?(:deleteOperatorRig, operator_id: rig.operator_id)
       else
         return true if rig.user_id == context[:current_resource].id
         return true if staff_of_member?(rig.user)
 
-        # Staff of the one dropzone the owner belongs to may archive it too (jumpers hold deleteRig as well, but
+        # Staff of the one operator the owner belongs to may archive it too (jumpers hold deleteRig as well, but
         # only for their own rigs, which the ownership check above covers)
-        dropzone_ids = rig.user.dropzone_users.pluck(:dropzone_id)
-        return true if dropzone_ids.count == 1 && context[:current_resource].can?(
-          :deleteDropzoneRig,
-          dropzone_id: dropzone_ids.first
+        operator_ids = rig.user.memberships.pluck(:operator_id)
+        return true if operator_ids.count == 1 && context[:current_resource].can?(
+          :deleteOperatorRig,
+          operator_id: operator_ids.first
         )
       end
 

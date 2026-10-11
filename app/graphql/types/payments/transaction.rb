@@ -14,7 +14,7 @@ module Types::Payments
 
     polymorphic_field :sender, Types::Interfaces::Wallet, null: true
     polymorphic_field :receiver, Types::Interfaces::Wallet, null: true
-    async_field :dropzone_user, Types::Users::DropzoneUser, null: false
+    async_field :membership, Types::Users::Membership, null: false
     async_field :receipt, Types::Payments::Receipt, null: false
     timestamp_fields
   end

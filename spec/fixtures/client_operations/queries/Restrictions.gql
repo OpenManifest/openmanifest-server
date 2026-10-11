@@ -1,5 +1,5 @@
- query CurrentUserPermissions($dropzoneId: ID!) {
-  dropzone(id: $dropzoneId) {
+ query CurrentUserPermissions($operatorId: ID!) {
+  operator(id: $operatorId) {
     id
     name
     primaryColor

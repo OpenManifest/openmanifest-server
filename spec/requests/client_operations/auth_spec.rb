@@ -142,7 +142,7 @@ RSpec.describe "Client operations: auth and session" do
       json = client_operation("CurrentUser", as: user)
 
       expect(json.dig(:data, :currentUser)).to include(id: user.id.to_s, email: user.email, moderationRole: "user")
-      expect(json.dig(:data, :currentUser, :dropzoneUsers)).to eq([])
+      expect(json.dig(:data, :currentUser, :memberships)).to eq([])
     end
 
     it "requires authentication" do

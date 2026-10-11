@@ -5,12 +5,12 @@ require "rails_helper"
 # BUG-024: two staff editing the same load or slot: the second save is refused with a CONFLICT instead of silently
 # overwriting the first one
 RSpec.describe "Optimistic locking" do
-  include_context "dropzone"
+  include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
+  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
   let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner, name: "Original", max_slots: 10) }
 
   def graphql(query, variables, as: owner_user)
@@ -60,7 +60,7 @@ RSpec.describe "Optimistic locking" do
     end
 
     it "is not bumped when somebody is manifested (the counters change, not the load)" do
-      expect { client_operation("ManifestUser", variables: { load: plane_load.id, dropzoneUser: fun_jumper.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80 }, as: owner_user) }.
+      expect { client_operation("ManifestUser", variables: { load: plane_load.id, membership: fun_jumper.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80 }, as: owner_user) }.
         not_to(change { plane_load.reload.lock_version })
     end
 
@@ -95,7 +95,7 @@ RSpec.describe "Optimistic locking" do
     before { fun_jumper.update!(credits: 300) }
 
     let!(:slot) do
-      create(:slot, load: plane_load, dropzone: dropzone, dropzone_user: fun_jumper, ticket_type: ticket_type, exit_weight: 80,
+      create(:slot, load: plane_load, operator: operator, membership: fun_jumper, ticket_type: ticket_type, exit_weight: 80,
                     jump_type: JumpType.allowed_for([fun_jumper]).first, created_by: owner)
     end
     let(:update_slot) do

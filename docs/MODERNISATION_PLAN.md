@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | Phase 7 stage A: rename | P7.3, P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
+| 1 | Phase 7 stage A: rename | P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
 | 2 | Phase 7: templates and modules | P7.7 | Terminology and modules come from templates; the UI foundations and navigation read them. |
 | 3 | UI foundations | U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
 | 4 | App shell | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
@@ -5090,7 +5090,7 @@ Size: M
 Fixes: none
 
 ### P7.3 — Rename the tenant in the backend: Dropzone → Operator, DropzoneUser → Membership
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.2
 Branch: modernise/p7-3-operator-backend

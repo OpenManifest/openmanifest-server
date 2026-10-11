@@ -47,31 +47,31 @@ class Types::Admin::StatisticsType < Types::Base::Object
 
   field :total_user_count, Integer, null: false
   def total_user_count
-    object.dropzone_users.count
+    object.memberships.count
   end
 
   def active_user_count
-    object.dropzone_users.kept.count
+    object.memberships.kept.count
   end
 
   def inactive_user_count
-    object.dropzone_users.discarded.count
+    object.memberships.discarded.count
   end
 
   def gca_count
-    object.dropzone_users.with_acting_permission(:actAsGCA).count
+    object.memberships.with_acting_permission(:actAsGCA).count
   end
 
   def dzso_count
-    object.dropzone_users.with_acting_permission(:actAsDZSO).count
+    object.memberships.with_acting_permission(:actAsDZSO).count
   end
 
   def pilot_count
-    object.dropzone_users.with_acting_permission(:actAsPilot).count
+    object.memberships.with_acting_permission(:actAsPilot).count
   end
 
   def rig_inspector_count
-    object.dropzone_users.with_acting_permission(:actAsRigInspector).count
+    object.memberships.with_acting_permission(:actAsRigInspector).count
   end
 
   def loads_count(time_range: nil)

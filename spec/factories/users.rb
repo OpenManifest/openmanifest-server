@@ -34,7 +34,7 @@
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
 #  jump_count             :integer          default(0), not null
-#  dropzone_count         :integer          default(0), not null
+#  operator_count         :integer          default(0), not null
 #  plane_count            :integer          default(0), not null
 #
 FactoryBot.define do
