@@ -53,7 +53,7 @@ class User < ApplicationRecord
   # Most users will have 'user', and only users with
   # permissions to manage on an organizational level
   # have anything else
-  enum moderation_role: { :user => 0, :support => 1, :moderator => 2, :administrator => 3 }
+  enum :moderation_role, { :user => 0, :support => 1, :moderator => 2, :administrator => 3 }
 
   after_create do
     Appsignal.set_gauge("users.count", User.count)

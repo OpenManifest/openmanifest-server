@@ -52,7 +52,7 @@ class Load < ApplicationRecord
   scope :today, -> { where(created_at: DateTime.current.all_day) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
 
-  enum state: { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
+  enum :state, { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
 
   # Changes the state of the load, which affects whether
   # users get charged credits or not, and what notifications
