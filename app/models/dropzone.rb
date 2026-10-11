@@ -107,6 +107,6 @@ class Dropzone < ApplicationRecord
   end
 
   def set_appsignal_gauge
-    Appsignal.set_gauge("dropzones.count", User.count)
+    Appsignal.set_gauge("dropzones.count", Dropzone.count)
   end
 end

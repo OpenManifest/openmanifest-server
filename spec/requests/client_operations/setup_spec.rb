@@ -360,12 +360,16 @@ RSpec.describe "Client operations: setup" do
       end.not_to change(RigInspection, :count)
     end
 
-    it "notifies the rig owner about a failed inspection" do
-      pending "BUG-042: rig inspection notifications raise (Notification.create(type:) instead of notification_type:)"
+    it "notifies the rig owner when the rig is cleared to jump" do
+      expect do
+        client_operation("CreateRigInspection", variables: { dropzone: dropzone.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
+      end.to change { Notification.where(notification_type: :rig_inspection_completed).count }.by(1)
+    end
 
+    it "does not tell the rig owner they are cleared when the inspection failed" do
       expect do
         client_operation("CreateRigInspection", variables: { dropzone: dropzone.id, rig: rig.id, isOk: false, definition: "[]" }, as: owner_user)
-      end.to change(Notification, :count).by(1)
+      end.not_to(change(Notification, :count))
     end
   end
 

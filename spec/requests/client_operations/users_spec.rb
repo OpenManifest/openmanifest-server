@@ -140,6 +140,33 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       expect(user.reload.push_token).to eq("ExponentPushToken[abc]")
     end
 
+    it "clears the push token when it is sent as null" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, pushToken: nil }, as: user)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.push_token).to be_nil
+    end
+
+    it "clears the push token without a member, as the app does when logging out" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      json = client_operation("UpdateUser", variables: { pushToken: nil }, as: user)
+
+      expect(json[:errors]).to be_nil
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.push_token).to be_nil
+    end
+
+    it "keeps the push token when it is not sent" do
+      user.update!(push_token: "ExponentPushToken[abc]")
+
+      client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, name: "Renamed" }, as: user)
+
+      expect(user.reload.push_token).to eq("ExponentPushToken[abc]")
+    end
+
     it "returns validation errors" do
       json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, phone: "" }, as: user)
 
