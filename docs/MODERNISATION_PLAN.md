@@ -905,7 +905,7 @@ Size: M
 Fixes: none
 
 ### P1.8 — Commit the server schema and fail CI when it drifts
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-8-schema-dump
