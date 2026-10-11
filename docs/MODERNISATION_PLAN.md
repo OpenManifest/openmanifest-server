@@ -2822,7 +2822,7 @@ Size: M
 Fixes: BUG-006, BUG-007, BUG-062, BUG-092
 
 ### P6.6 — Restrict createOrder to same-dropzone staff purchases
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.5
 Branch: modernise/p6-6-create-order

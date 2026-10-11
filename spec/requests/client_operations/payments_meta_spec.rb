@@ -19,7 +19,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
     it "lets staff with createUserTransaction add funds to a member" do
       json = nil
       expect do
-        json = client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone), as: owner_user)
+        json = client_operation("CreateOrder", variables: order_variables(buyer: dropzone, seller: fun_jumper), as: owner_user)
       end.to change(Order, :count).by(1)
 
       expect(json.dig(:data, :createOrder, :errors)).to be_nil
@@ -35,14 +35,13 @@ RSpec.describe "Client operations: payments, activity and meta" do
     it "refuses a jumper adding funds from the dropzone" do
       json = nil
       expect do
-        json = client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone), as: user)
+        json = client_operation("CreateOrder", variables: order_variables(buyer: dropzone, seller: fun_jumper), as: user)
       end.not_to change(Order, :count)
 
       expect(json.dig(:data, :createOrder, :errors)).to eq(["You don't have permissions to create this order"])
     end
 
     it "does not let a member spend credits they do not have" do
-      pending "BUG-008: a peer-to-peer order has no balance check, so the buyer goes negative while the seller is credited"
       victim = create(:dropzone_user, dropzone: dropzone, credits: 0)
       fun_jumper.update!(credits: 0)
 
@@ -53,12 +52,95 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
 
     it "does not let a member buy from a member of another dropzone" do
-      pending "BUG-008: the seller is resolved from an unsigned GlobalID without checking its dropzone"
       foreign = create(:dropzone_user, dropzone: other_dropzone, credits: 0)
 
       json = client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: foreign), as: user)
 
       expect(json.dig(:data, :createOrder, :order)).to be_nil
+    end
+
+    describe "who may move credits (BUG-008)" do
+      let(:foreign_owner) { create(:user) }
+      let!(:foreign_member) { create(:dropzone_user, dropzone: other_dropzone, credits: 0) }
+
+      def order(buyer:, seller:, as:, amount: 25, **extra)
+        client_operation("CreateOrder", variables: order_variables(buyer: buyer, seller: seller, amount: amount, **extra), as: as)
+      end
+
+      it "refuses an order that pays a member of another dropzone, and one that charges one" do
+        expect { order(buyer: dropzone, seller: foreign_member, as: owner_user) }.not_to change(Order, :count)
+        expect { order(buyer: foreign_member, seller: dropzone, as: owner_user) }.not_to change(Order, :count)
+        expect(foreign_member.reload.credits).to eq(0)
+      end
+
+      it "refuses an order whose dropzone is another dropzone than the parties" do
+        json = order(buyer: other_dropzone, seller: fun_jumper, as: owner_user)
+
+        expect(json.dig(:data, :createOrder, :errors)).to eq(["The buyer and the seller must be the dropzone or its members"])
+      end
+
+      it "refuses transfers between members, even for staff" do
+        other = create(:dropzone_user, dropzone: dropzone, credits: 0)
+        fun_jumper.update!(credits: 100)
+
+        json = order(buyer: fun_jumper, seller: other, as: owner_user)
+
+        expect(json.dig(:data, :createOrder, :errors)).to eq(["Transfers between members are disabled"])
+        expect(fun_jumper.reload.credits).to eq(100)
+        expect(other.reload.credits).to eq(0)
+      end
+
+      it "does not let a jumper pay a member with credits they do not have" do
+        victim = create(:dropzone_user, dropzone: dropzone, credits: 0)
+        fun_jumper.update!(credits: 0)
+
+        order(buyer: fun_jumper, seller: victim, as: user, amount: 1000)
+
+        expect(fun_jumper.reload.credits).to eq(0)
+        expect(victim.reload.credits).to eq(0)
+      end
+
+      it "refuses staff withdrawing more than a member has" do
+        fun_jumper.update!(credits: 10)
+
+        json = order(buyer: fun_jumper, seller: dropzone, as: owner_user, amount: 25)
+
+        expect(json.dig(:data, :createOrder, :fieldErrors, 0)).to include(field: "amount", message: "Not enough credits")
+        expect(fun_jumper.reload.credits).to eq(10)
+      end
+
+      it "lets staff withdraw up to what a member has" do
+        fun_jumper.update!(credits: 40)
+
+        json = order(buyer: fun_jumper, seller: dropzone, as: owner_user, amount: 25)
+
+        expect(json.dig(:data, :createOrder, :errors)).to be_nil
+        expect(fun_jumper.reload.credits).to eq(15)
+      end
+
+      it "lets a member with enough credits pay the dropzone from their own balance" do
+        fun_jumper.update!(credits: 40)
+
+        json = order(buyer: fun_jumper, seller: dropzone, as: user, amount: 25)
+
+        expect(json.dig(:data, :createOrder, :errors)).to be_nil
+        expect(fun_jumper.reload.credits).to eq(15)
+      end
+
+      it "lets staff top up a member and credits the member" do
+        fun_jumper.update!(credits: 0)
+
+        json = order(buyer: dropzone, seller: fun_jumper, as: owner_user, amount: 25)
+
+        expect(json.dig(:data, :createOrder, :errors)).to be_nil
+        expect(fun_jumper.reload.credits).to eq(25)
+      end
+
+      it "refuses a member of another dropzone who is not a member here" do
+        json = order(buyer: dropzone, seller: fun_jumper, as: foreign_owner)
+
+        expect(json.dig(:data, :createOrder)).to be_nil.or include(errors: ["You are not a member of this dropzone"])
+      end
     end
 
     it "keeps fractional amounts" do
@@ -92,7 +174,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
   describe "DropzoneTransactions" do
     it "lists the dropzone's orders for staff who may read transactions" do
-      client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone), as: owner_user)
+      client_operation("CreateOrder", variables: order_variables(buyer: dropzone, seller: fun_jumper), as: owner_user)
 
       json = client_operation("DropzoneTransactions", variables: { dropzoneId: dropzone.id }, as: owner_user)
 
@@ -100,7 +182,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
 
     it "returns no orders to a jumper without transaction rights" do
-      client_operation("CreateOrder", variables: order_variables(buyer: fun_jumper, seller: dropzone), as: owner_user)
+      client_operation("CreateOrder", variables: order_variables(buyer: dropzone, seller: fun_jumper), as: owner_user)
 
       json = client_operation("DropzoneTransactions", variables: { dropzoneId: dropzone.id }, as: user)
 
