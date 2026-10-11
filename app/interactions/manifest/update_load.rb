@@ -91,12 +91,12 @@ class Manifest::UpdateLoad < ApplicationInteraction
 
   def check_max_slots
     return if max_slots.blank?
-    errors.add(:base, "You have too many manifested jumpers") unless max_slots < load.slots.count
+    errors.add(:base, "You have too many manifested jumpers") if max_slots < load.slots.count
   end
 
   def check_plane_change
     return unless plane
-    if plane.max_slots > load.slots.count
+    if plane.max_slots >= load.slots.count
       load.assign_attributes(max_slots: plane.max_slots)
     else
       errors.add(:base, "This plane cannot fit all manifested jumpers")

@@ -9,10 +9,19 @@ module Mutations::Manifest
     argument :attributes, Types::Input::SlotInput, required: true
     argument :id, Int, required: true
 
+    # What can be edited on a slot: who jumps and on which load is not among it (a slot is moved with moveSlot, which
+    # checks capacity, credits and the target's dropzone)
+    UPDATABLE = %i(ticket_type jump_type rig exit_weight group_number extras).freeze
+
     def resolve(attributes:, id:)
       model = Slot.find(id)
+      values = attributes.to_h.slice(*UPDATABLE)
+      dropzone_id = model.load.plane.dropzone_id
 
-      model.update(attributes.to_h)
+      return { slot: nil, field_errors: nil, errors: ["The ticket must belong to the same dropzone"] } if values[:ticket_type] && values[:ticket_type].dropzone_id != dropzone_id
+
+      values[:extras] = values[:extras].where(dropzone_id: dropzone_id) if values[:extras]
+      model.update!(values.compact)
 
       {
         slot: model,
@@ -43,12 +52,13 @@ module Mutations::Manifest
 
     def authorized?(id: nil, attributes: nil)
       slot = Slot.find_by(id: id)
+      return [false, { errors: ["Slot not found"] }] unless slot
 
-      is_current_user = context[:current_resource].id == slot&.user_id
+      is_current_user = slot&.dropzone_user.present? && context[:current_resource].id == slot.dropzone_user.user_id
 
       if context[:current_resource].can?(
         is_current_user ? "updateSlot" : "updateUserSlot",
-        dropzone_id: Slot.find_by(id: id).load.plane.dropzone_id
+        dropzone_id: slot.load.plane.dropzone_id
       )
         true
       else

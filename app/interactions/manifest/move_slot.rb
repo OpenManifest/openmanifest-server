@@ -49,7 +49,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user.user.name} from load ##{load.load_number}",
+      message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user&.user&.name || 'a passenger'} from load ##{source_slot.load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -67,7 +67,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       load: destination_load,
       ticket_type: target_slot&.ticket_type || source_slot.ticket_type,
       jump_type: target_slot&.jump_type || source_slot.jump_type,
-      group_number: target_slot&.group_numner || source_slot.group_number
+      group_number: target_slot&.group_number || source_slot.group_number
     )
   end
 
@@ -81,7 +81,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   def affordable?
     return unless source_slot.load.plane.dropzone.is_credit_system_enabled?
     # Check the cost of the current slot
-    user_funds = source_slot.cost + source_slot.dropzone_user.credits
+    user_funds = source_slot.cost + source_slot.dropzone_user.credits.to_f
 
     # Check if the user has enough credits
     # to manifest for this jump (taking into consideration the cost)

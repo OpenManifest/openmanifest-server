@@ -8,13 +8,14 @@ class Sources::Model < GraphQL::Dataloader::Source
     self.column = column
   end
 
+  # One result per key, in the order of the keys: nil and unknown keys give nil instead of shifting the other results
   def fetch(ids)
     unless (ids.compact - record_cache.keys).empty?
       record_cache.merge!(
-        get_records(ids).index_by(&column)
+        get_records(ids.compact).index_by(&column)
       )
     end
-    record_cache.slice(*ids).values
+    ids.map { |id| record_cache[id] }
   end
 
   private

@@ -2974,7 +2974,7 @@ Size: L
 Fixes: BUG-019, BUG-020, BUG-021, BUG-023
 
 ### P6.11 — Fix manifest interaction crashes
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.10
 Branch: modernise/p6-11-manifest-crashes

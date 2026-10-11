@@ -219,4 +219,22 @@ RSpec.describe Manifest::CreateSlot do
       expect(slots.map(&:dropzone_user_id)).to eq([nil, nil])
     end
   end
+
+  describe "validations of a slot nobody created (BUG-034)" do
+    it "does not raise when the creator is unknown" do
+      slot = Slot.new(load: plane_load, dropzone_user: dropzone_user, ticket_type: ticket_type, exit_weight: 80,
+                      jump_type: JumpType.allowed_for([dropzone_user]).first, created_by: nil)
+
+      expect { slot.valid? }.not_to raise_error
+    end
+
+    it "does not let an unknown creator bypass the credit check" do
+      dropzone_user.update!(credits: 1)
+      slot = Slot.new(load: plane_load, dropzone_user: dropzone_user, ticket_type: ticket_type, exit_weight: 80,
+                      jump_type: JumpType.allowed_for([dropzone_user]).first, created_by: nil)
+
+      expect(slot).not_to be_valid
+      expect(slot.errors.full_messages.join).to match(/credits/i)
+    end
+  end
 end
