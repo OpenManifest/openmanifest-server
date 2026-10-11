@@ -2687,7 +2687,7 @@ Size: S
 Fixes: BUG-001
 
 ### P6.2 — Add tenant checks to dropzone, load and setup queries
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.1
 Branch: modernise/p6-2-query-authz-1

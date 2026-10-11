@@ -51,12 +51,10 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-002: reading another dropzone's data" do
     it "refuses load(id:) of a load in B" do
-      pending "BUG-002"
       expect(refused?(client_operation("Load", variables: { id: load_b.id }, as: member_user), :load)).to be(true)
     end
 
     it "refuses loads(dropzone:) for B" do
-      pending "BUG-002"
       expect(client_operation("Loads", variables: { dropzone: dropzone_b.id }, as: member_user).dig(:data, :loads, :edges).to_a).to be_empty
     end
 
@@ -71,30 +69,25 @@ RSpec.describe "Tenant isolation" do
     end
 
     it "refuses planes(dropzone:) for B" do
-      pending "BUG-002"
       plane_b
       expect(client_operation("Planes", variables: { dropzoneId: dropzone_b.id }, as: member_user).dig(:data, :planes).to_a).to be_empty
     end
 
     it "refuses ticketTypes(dropzone:) for B" do
-      pending "BUG-002"
       expect(client_operation("TicketTypes", variables: { dropzone: dropzone_b.id }, as: member_user).dig(:data, :ticketTypes).to_a).to be_empty
     end
 
     it "refuses extras(dropzone:) for B" do
-      pending "BUG-002"
       Extra.create!(dropzone: dropzone_b, name: "Video", cost: 5)
       expect(client_operation("TicketTypeExtras", variables: { dropzoneId: dropzone_b.id }, as: member_user).dig(:data, :extras).to_a).to be_empty
     end
 
     it "refuses masterLog(dropzone:) for B" do
-      pending "BUG-002"
       json = client_operation("MasterLog", variables: { dropzoneId: dropzone_b.id, date: Date.current.iso8601 }, as: member_user)
       expect(refused?(json, :masterLog)).to be(true)
     end
 
     it "refuses availableRigs(dropzoneUser:) for a member of B" do
-      pending "BUG-002"
       rig = create(:rig, user: member_b.user, dropzone: nil)
       create(:rig_inspection, rig: rig, dropzone_user: member_b, inspected_by: owner_b, is_ok: true)
       expect(client_operation("AvailableRigs", variables: { dropzoneUserId: member_b.id }, as: member_user).dig(:data, :availableRigs).to_a).to be_empty
@@ -103,7 +96,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-003: activity" do
     it "returns no events of B when no dropzone filter is given" do
-      pending "BUG-003"
       Activity::CreateEvent.run!(access_context: ApplicationInteraction::AccessContext.new(owner_b), level: :info, access_level: :user,
                                  message: "event in dropzone B", resource: dropzone_b, action: :created, created_by: owner_b, dropzone: dropzone_b)
       messages = client_operation("Activity", variables: {}, as: member_user).dig(:data, :activity, :edges).map { |e| e.dig(:node, :message) }
@@ -112,11 +104,11 @@ RSpec.describe "Tenant isolation" do
   end
 
   describe "BUG-004: images" do
-    it "refuses image(id:) for a blob of B" do
-      pending "BUG-004"
+    it "has no image(id:) query any more" do
       blob = ActiveStorage::Blob.create_and_upload!(io: StringIO.new("secret master log"), filename: "log.json", content_type: "application/json")
       json = graphql("query($id: Int!) { image(id: $id) }", variables: { id: blob.id }, as: member_user)
-      expect(refused?(json, :image)).to be(true)
+      expect(json[:data]).to be_nil
+      expect(json.dig(:errors, 0, :message)).to include("image")
     end
   end
 

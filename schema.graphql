@@ -2150,11 +2150,6 @@ type Query {
   geocode(search: String!): GeocodedLocation
 
   """
-  Get Base64 images via GraphQL
-  """
-  image(id: Int!): String
-
-  """
   Get all jump types
   """
   jumpTypes(dropzoneUsers: [Int!]): [JumpType!]!

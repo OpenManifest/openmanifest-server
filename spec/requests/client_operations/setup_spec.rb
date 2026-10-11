@@ -23,7 +23,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "does not list another dropzone's aircraft to a stranger" do
-      pending "BUG-002: planes(dropzone:) does not check that the caller belongs to the dropzone"
       foreign_plane = create(:plane, dropzone: other_dropzone)
 
       json = client_operation("Planes", variables: { dropzoneId: other_dropzone.id }, as: user)
@@ -416,13 +415,10 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "requires authentication" do
-      pending "BUG-095: operations using the dropzone argument helper raise NoMethodError for anonymous callers"
-
       expect(client_operation("MasterLog", variables: { dropzoneId: dropzone.id, date: date }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
 
     it "does not return another dropzone's master log to a stranger" do
-      pending "BUG-002: masterLog(dropzone:) does not check that the caller belongs to the dropzone"
       other_dropzone.master_logs.create!(date: Date.current) if other_dropzone.master_logs.respond_to?(:create!)
 
       json = client_operation("MasterLog", variables: { dropzoneId: other_dropzone.id, date: date }, as: user)
