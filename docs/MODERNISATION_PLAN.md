@@ -1017,7 +1017,7 @@ Size: M
 Fixes: none
 
 ### P1.12 — Add client tests for the manifest flows
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-12-tests-manifest
