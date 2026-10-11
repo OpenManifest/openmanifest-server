@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copies the client's GraphQL documents into spec/fixtures/client_operations so request specs can run the exact
+# documents the app sends. Usage: bin/sync-client-operations [path-to-client-repo]   (default ../openmanifest)
+require "fileutils"
+require "open3"
+
+client = File.expand_path(ARGV[0] || "../openmanifest", __dir__ + "/..")
+abort "Client repo not found at #{client}" unless File.directory?(File.join(client, "app/api"))
+
+target = File.expand_path("../spec/fixtures/client_operations", __dir__)
+FileUtils.rm_rf(target)
+
+%w(queries mutations subscriptions fragments).each do |dir|
+  FileUtils.mkdir_p(File.join(target, dir))
+  Dir[File.join(client, "app/api", dir, "*.gql")].each { |f| FileUtils.cp(f, File.join(target, dir)) }
+end
+
+sha, status = Open3.capture2("git", "-C", client, "rev-parse", "HEAD")
+abort "git rev-parse failed in #{client}" unless status.success?
+File.write(File.join(target, "SOURCE_COMMIT"), sha)
+puts "Copied #{Dir[File.join(target, '**/*.gql')].size} documents from #{client} @ #{sha[0, 7]}"

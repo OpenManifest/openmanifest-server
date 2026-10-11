@@ -1,0 +1,44 @@
+mutation CreateTicketType(
+    $attributes: TicketTypeInput!
+) {
+  createTicketType(
+    input: {
+      attributes: $attributes
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    ticketType {
+      id
+      name
+      altitude
+      cost
+      allowManifestingSelf
+      extras {
+        id
+        name
+        cost
+      }
+
+      dropzone {
+        id
+
+        ticketTypes {
+          id
+          name
+          altitude
+          cost
+          allowManifestingSelf
+          extras {
+            id
+            name
+            cost
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+mutation LoginWithFacebook(
+  $token: String!,
+  $pushToken: String
+) {
+  loginWithFacebook(
+    token: $token,
+    pushToken: $pushToken
+    confirmUrl: "https://openmanifest.org/confirm/"
+  ) {
+    authenticatable {
+      id
+      email
+      name
+      phone
+      createdAt
+      updatedAt
+    }
+    credentials {
+      accessToken
+      tokenType
+      client
+      expiry
+      uid
+    }
+  }
+}

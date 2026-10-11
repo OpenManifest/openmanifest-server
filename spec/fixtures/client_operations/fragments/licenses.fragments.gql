@@ -1,0 +1,11 @@
+fragment licenseEssentials on License {
+  id
+  name
+}
+
+fragment licenseDetails on License {
+  ...licenseEssentials
+  federation {
+    ...federationEssentials
+  }
+}

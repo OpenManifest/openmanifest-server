@@ -1,0 +1,29 @@
+#import "../fragments/dropzones.fragments.gql"
+
+query Dropzone($dropzoneId: ID!) {
+  dropzone(id: $dropzoneId) {
+    ...dropzoneExtensive
+  }
+}
+
+query DropzoneStatistics($dropzoneId: ID!, $timeRange: TimeRangeInput) {
+  dropzone(id: $dropzoneId) {
+    ...dropzoneStatistics
+  }
+}
+
+query DropzonesStatistics($timeRange: TimeRangeInput, $after: String) {
+  dropzones(after: $after) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...dropzoneStatistics
+      }
+    }
+  }
+}

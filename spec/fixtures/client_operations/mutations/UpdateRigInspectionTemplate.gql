@@ -1,0 +1,16 @@
+mutation UpdateRigInspectionTemplate($dropzoneId: Int, $formId: Int, $definition: String) {
+  updateFormTemplate(
+    input: { id: $formId, attributes: { dropzoneId: $dropzoneId, definition: $definition } }
+  ) {
+    formTemplate {
+      id
+      name
+      definition
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

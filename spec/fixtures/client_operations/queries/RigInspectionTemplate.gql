@@ -1,0 +1,10 @@
+query RigInspectionTemplate($dropzoneId: ID!) {
+  dropzone(id: $dropzoneId) {
+    id
+    rigInspectionTemplate {
+      id
+      name
+      definition
+    }
+  }
+}

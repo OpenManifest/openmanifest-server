@@ -1,0 +1,34 @@
+mutation UpdateAircraft(
+  $id: Int!
+  $attributes: PlaneInput!
+) {
+updatePlane(
+  input: {
+    id: $id
+    attributes: $attributes
+  }
+) {
+  plane {
+    ...planeEssentials
+
+    dropzone {
+      id
+      name
+      planes {
+        id
+        name
+        registration
+        minSlots
+        maxSlots
+        hours
+        nextMaintenanceHours
+      }
+    }
+  }
+  fieldErrors {
+    field
+    message
+  }
+  errors
+}
+}

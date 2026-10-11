@@ -1,0 +1,6 @@
+fragment location on GeocodedLocation {
+  id
+  lat
+  lng
+  formattedString
+}

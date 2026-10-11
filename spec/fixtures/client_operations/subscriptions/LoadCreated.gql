@@ -1,0 +1,7 @@
+subscription LoadCreated($dropzoneId: ID!) {
+  loadCreated(dropzoneId: $dropzoneId) {
+    load {
+      ...loadDetails
+    }
+  }
+}

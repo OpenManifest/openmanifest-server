@@ -1,0 +1,8 @@
+query Roles($dropzoneId: ID!, $selectable: Boolean) {
+  dropzone(id: $dropzoneId) {
+    id
+    roles(selectable: $selectable) {
+      ...roleDetailed
+    }
+  }
+}

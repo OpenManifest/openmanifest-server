@@ -1,0 +1,7 @@
+fragment planeEssentials on Plane {
+  id
+  minSlots
+  maxSlots
+  name
+  registration
+}

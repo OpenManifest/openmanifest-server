@@ -1,0 +1,16 @@
+mutation CreateRigInspection($dropzone: ID, $rig: ID, $isOk: Boolean, $definition: String) {
+  createRigInspection(
+    input: {
+      attributes: { dropzone: $dropzone, rig: $rig, isOk: $isOk, definition: $definition }
+    }
+  ) {
+    rigInspection {
+      ...rigInspectionMutationEssentials
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

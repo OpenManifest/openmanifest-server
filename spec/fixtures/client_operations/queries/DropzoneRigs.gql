@@ -1,0 +1,8 @@
+query DropzoneRigs($dropzoneId: ID!) {
+  dropzone(id: $dropzoneId) {
+    id
+    rigs {
+      ...rigEssentials
+    }
+  }
+}

@@ -1,0 +1,35 @@
+fragment activityEssentials on Event {
+  action
+  id
+  level
+  message
+  details
+  createdAt
+  createdBy {
+    ...dropzoneUserEssentials
+  }
+}
+
+fragment activityDetails on Event {
+  ...activityEssentials
+  resource {
+    ...on Dropzone {
+      ...dropzoneEssentials
+    }
+    ...on DropzoneUser {
+      ...dropzoneUserEssentials
+    }
+    ...on Load {
+      ...loadEssentials
+    }
+    ...on Slot {
+      ...slotEssentials
+    }
+    ...on Rig {
+      ...rigEssentials
+    }
+    ...on Plane {
+      ...planeEssentials
+    }
+  }
+}

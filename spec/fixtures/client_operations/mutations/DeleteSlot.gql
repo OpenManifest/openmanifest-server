@@ -1,0 +1,12 @@
+mutation DeleteSlot($id: Int!) {
+  deleteSlot(input: { id: $id }) {
+    slot {
+      ...slotExhaustive
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

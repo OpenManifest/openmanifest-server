@@ -1,0 +1,68 @@
+
+#import "./transactions.fragments.gql'
+fragment orderEssentials on Order {
+  id
+  state
+  amount
+  title
+  orderNumber
+  createdAt
+
+  buyer {
+    ... on DropzoneUser {
+      ...dropzoneUserDetails
+    }
+    ... on Dropzone {
+      id
+      name
+      banner
+    }
+  }
+  seller {
+    ... on DropzoneUser {
+      ...dropzoneUserDetails
+    }
+    ... on Dropzone {
+      ...dropzoneEssentials
+    }
+  }
+  item {
+    title
+    cost
+
+    ... on Slot {
+      id
+
+      ticketType {
+        id
+        name
+        cost
+      }
+
+      extras {
+        id
+        name
+        cost
+      }
+    }
+    ... on TicketType {
+      id
+    }
+    ... on Extra {
+      id
+      name
+    }
+  }
+  receipts {
+    ...receiptEssentials
+  }
+}
+fragment receiptEssentials on Receipt {
+  id
+  amountCents
+  createdAt
+  updatedAt
+  transactions {
+    ...transactionEssentials
+  }
+}

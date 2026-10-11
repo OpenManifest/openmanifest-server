@@ -1,0 +1,9 @@
+query Loads($date: ISO8601Date, $dropzone: ID!) {
+  loads(date: $date, dropzone: $dropzone) {
+    edges {
+      node {
+        ...loadEssentials
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+fragment ticketTypeExtraEssentials on Extra {
+  id
+  name
+  createdAt
+  cost
+}
+
+fragment ticketTypeExtraDetailed on Extra {
+  ...ticketTypeExtraEssentials,
+  ticketTypes {
+    ...ticketTypeEssentials
+  }
+}

@@ -1,0 +1,10 @@
+fragment roleEssentials on UserRole {
+  id
+  name
+  dropzoneId
+}
+
+fragment roleDetailed on UserRole {
+  ...roleEssentials
+  permissions
+}

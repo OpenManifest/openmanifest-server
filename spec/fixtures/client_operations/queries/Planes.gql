@@ -1,0 +1,5 @@
+query Planes($dropzoneId: ID!) {
+  planes(dropzone: $dropzoneId) {
+    ...planeEssentials
+  }
+}

@@ -1,0 +1,33 @@
+fragment rigEssentials on Rig {
+  id
+  name
+  make
+  model
+  serial
+  canopySize
+  repackExpiresAt
+  packValue
+  maintainedAt
+  rigType
+  packingCard
+  isPublic
+
+  owner {
+    id
+    name
+  }
+  dropzone {
+    id
+  }
+}
+
+fragment userRigDetailed on Rig {
+  ...rigEssentials
+
+  owner {
+    id
+    rigs {
+      ...rigEssentials
+    }
+  }
+}

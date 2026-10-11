@@ -1,0 +1,62 @@
+query Notifications($dropzoneId: ID!) {
+    dropzone(id: $dropzoneId) {
+      id
+
+      currentUser {
+        id
+
+        notifications {
+          edges {
+            node {
+              id
+              message
+              notificationType
+              createdAt
+              sentBy {
+                id
+                user {
+                  id
+                  name
+                }
+              }
+
+              resource {
+                ... on Load {
+                  ...loadEssentials
+                }
+                ... on Transaction {
+                  id
+                  amount
+                  message
+                  status
+                }
+
+                ... on Slot {
+                  ...slotEssentials
+                }
+
+                ... on Rig {
+                  ...rigEssentials
+                  rigInspections(dropzoneId: $dropzoneId) {
+                    id
+                    createdAt
+                    inspectedBy {
+                      id
+                      user {
+                        id
+                        name
+                      }
+                    }
+                  }
+                }
+
+                ... on RigInspection {
+                  ...rigInspectionEssentials
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }

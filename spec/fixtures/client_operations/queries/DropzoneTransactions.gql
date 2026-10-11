@@ -1,0 +1,14 @@
+#import "../fragments/dropzones.fragments.gql"
+#import "../fragments/orders.fragments.gql"
+query DropzoneTransactions($dropzoneId: ID!, $after: String) {
+  dropzone(id: $dropzoneId) {
+    ...dropzoneEssentials,
+    orders(after: $after) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}

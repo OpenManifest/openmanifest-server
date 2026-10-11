@@ -1,0 +1,38 @@
+mutation ManifestUser(
+  $jumpType: ID
+  $extras: [ID!]
+  $load: ID
+  $rig: ID
+  $ticketType: ID
+  $dropzoneUser: ID
+  $exitWeight: Float
+  $passengerName: String
+  $groupNumber: Int
+  $passengerExitWeight: Float
+) {
+  createSlot(
+    input: {
+      attributes: {
+        jumpType: $jumpType
+        extras: $extras
+        load: $load
+        rig: $rig
+        groupNumber: $groupNumber
+        ticketType: $ticketType
+        dropzoneUser: $dropzoneUser
+        exitWeight: $exitWeight
+        passengerExitWeight: $passengerExitWeight
+        passengerName: $passengerName
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    slot {
+      ...slotExhaustive
+    }
+  }
+}

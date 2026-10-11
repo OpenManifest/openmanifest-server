@@ -1,0 +1,57 @@
+fragment masterLogSlot on MasterLogSlot {
+  id
+  altitude
+  jumpType
+  name
+}
+
+fragment masterLogUser on MasterLogUser {
+  id
+  email
+  name
+  nickname
+  phone
+}
+
+fragment masterLogAircraft on MasterLogAircraft {
+  id
+  name
+  registration
+}
+
+fragment masterLogLoad on MasterLogLoad {
+  id
+  loadNumber
+  dispatchAt
+  aircraft {
+    ...masterLogAircraft
+  }
+  gca {
+    ...masterLogUser
+  }
+  pilot {
+    ...masterLogUser
+  }
+  loadMaster {
+    ...masterLogUser
+  }
+  slots {
+    ...masterLogSlot
+  }
+}
+
+fragment masterLogEntry on MasterLogEntry {
+  id
+  date
+  notes
+  downloadUrl
+  dzso {
+    ...masterLogUser
+  }
+  loads {
+    ...masterLogLoad
+  }
+  location {
+    ...location
+  }
+}

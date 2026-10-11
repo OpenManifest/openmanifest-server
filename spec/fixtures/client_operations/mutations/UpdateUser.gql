@@ -1,0 +1,36 @@
+mutation UpdateUser(
+  $dropzoneUser: ID
+  $name: String
+  $phone: String
+  $email: String
+  $image: String
+  $pushToken: String
+  $nickname: String
+  $license: Int
+  $exitWeight: Float
+) {
+  updateUser(
+    input: {
+      dropzoneUser: $dropzoneUser
+      attributes: {
+        pushToken: $pushToken
+        name: $name
+        phone: $phone
+        email: $email
+        image: $image
+        nickname: $nickname
+        license: $license
+        exitWeight: $exitWeight
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    dropzoneUser {
+      ...dropzoneUserDetails
+    }
+  }
+}

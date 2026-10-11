@@ -1,0 +1,16 @@
+ query CurrentUserPermissions($dropzoneId: ID!) {
+  dropzone(id: $dropzoneId) {
+    id
+    name
+    primaryColor
+    secondaryColor
+
+    currentUser {
+      id
+      role {
+        ...roleEssentials
+      }
+      permissions
+    }
+  }
+}

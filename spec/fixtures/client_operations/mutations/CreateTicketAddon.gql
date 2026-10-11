@@ -1,0 +1,23 @@
+mutation CreateTicketAddon($attributes: ExtraInput!) {
+  createExtra(
+    input: {
+      attributes: $attributes
+    }
+  ) {
+    errors
+    fieldErrors{
+      field
+      message
+    }
+    extra {
+      ...ticketTypeAddonDetails
+
+      dropzone {
+        id
+        extras {
+          ...ticketTypeAddonDetails
+        }
+      }
+    }
+  }
+}

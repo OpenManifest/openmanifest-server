@@ -1,0 +1,26 @@
+mutation ReloadWeather($id: Int!) {
+  reloadWeatherCondition(input: { id: $id }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+
+    weatherCondition {
+      createdAt
+      exitSpotMiles
+      id
+      jumpRun
+      offsetDirection
+      offsetMiles
+      temperature
+      updatedAt
+      winds {
+        altitude
+        direction
+        speed
+        temperature
+      } 
+    }
+  }
+}

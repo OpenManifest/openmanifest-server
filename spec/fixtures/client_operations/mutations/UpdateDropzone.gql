@@ -1,0 +1,20 @@
+mutation UpdateDropzone(
+  $id: Int!
+  $attributes: DropzoneInput!
+) {
+  updateDropzone(
+    input: {
+      id: $id
+      attributes: $attributes
+    }
+  ) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    dropzone {
+      ...dropzoneExtensive
+    }
+  }
+}

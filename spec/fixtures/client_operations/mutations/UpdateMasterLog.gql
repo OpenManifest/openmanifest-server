@@ -1,0 +1,12 @@
+mutation UpdateMasterLog($date: ISO8601Date!, $dropzone: ID!, $attributes: MasterLogInput!) {
+  updateMasterLog(input: { dropzone: $dropzone, date: $date, attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    masterLog {
+      ...masterLogEntry
+    }
+  }
+}

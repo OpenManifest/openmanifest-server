@@ -1,0 +1,14 @@
+#import "../fragments/loads.fragments.gql"
+
+mutation FinalizeLoad($id: Int!, $state: LoadState!) {
+  finalizeLoad(input: { id: $id, state: $state }) {
+    fieldErrors {
+      message
+      field
+    }
+    errors
+    load {
+      ...loadDetails
+    }
+  }
+}

@@ -1,0 +1,4 @@
+fragment jumpTypeEssentials on JumpType {
+  id
+  name
+}

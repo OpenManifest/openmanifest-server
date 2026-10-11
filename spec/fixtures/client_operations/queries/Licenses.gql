@@ -1,0 +1,5 @@
+query Licenses($federationId: Int) {
+  licenses(federationId: $federationId) {
+    ...licenseDetails
+  }
+}
