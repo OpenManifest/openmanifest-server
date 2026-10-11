@@ -90,8 +90,6 @@ document the task links, before changing anything.
 
 - Read the tasks in document order. Pick the first task whose `Status` is `todo` and whose `Depends on` tasks are all
   `done`. Skip tasks that are `blocked (…)` or `owner-check (…)`.
-- Phase U tasks (`UB.n`, `Ux.y`) are picked by the same rule. Before any of them, read the "Phase U rules" at the start of
-  Phase U: they set when the slow UI suites run.
 - If no task qualifies, report that and stop. Do not start a task whose dependencies are `owner-check`; the owner sets
   them to `done` after checking.
 
@@ -3461,6 +3459,9 @@ need the backend industry profile. It replaces P7.2, P7.7 and P7.8 (marked `supe
 forward (U0.2).
 
 ### Phase U rules (in addition to the executor instructions)
+
+Phase U tasks (`UB.n`, `Ux.y`) are picked by the normal rule (first `todo` in document order whose dependencies are
+`done`). Read these rules before starting any of them.
 
 **Test tiers and batches.** Slow UI suites run once per batch, not on every change.
 
