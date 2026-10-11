@@ -46,7 +46,7 @@ Rails.application.configure do
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
   config.action_cable.disable_request_forgery_protection = true
-  config.action_cable.url = "ws://#{URI.parse(ENV.fetch('BACKEND_URL', nil)).host}/subscriptions"
+  config.action_cable.url = "wss://#{URI.parse(ENV.fetch('BACKEND_URL', nil)).host}/subscriptions"
 
   ActionMailer::Base.smtp_settings = {
     port: ENV.fetch("SMTP_PORT", nil),
@@ -85,8 +85,7 @@ Rails.application.configure do
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
 
-  # Use a real queuing backend for Active Job (and separate queues per environment).
-  # config.active_job.queue_adapter     = :resque
+  # Active Job runs on Solid Queue, see config/application.rb (and separate queues per environment).
   # config.active_job.queue_name_prefix = "dz_production"
 
   config.action_mailer.perform_caching = false

@@ -20,7 +20,7 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} created aircraft #{name} (#{registration})"
+      message: "#{access_context.user.name} created aircraft #{name} (#{registration})"
     )
   end
 
@@ -34,7 +34,7 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
       access_level: :admin,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to create aircraft #{name} (#{registration})"
+      message: "#{access_context.user.name} failed to create aircraft #{name} (#{registration})"
     )
   end
 

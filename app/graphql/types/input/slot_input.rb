@@ -22,6 +22,8 @@ module Types
 
       argument :passenger_name, String, required: false
       argument :passenger_exit_weight, Float, required: false
+      argument :lock_version, Int, required: false,
+                                   description: "The lockVersion of the slot as the client last saw it; an older one is refused with CONFLICT"
     end
   end
 end

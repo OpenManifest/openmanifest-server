@@ -15,7 +15,7 @@ flowchart LR
   subgraph Devices
     IOS[iOS app<br/>Expo SDK 47 / RN 0.70]
     AND[Android app<br/>Expo SDK 47 / RN 0.70]
-    WEB[Web app<br/>expo export:web, webpack<br/>GitHub Pages]
+    WEB[Web app<br/>expo export --platform web, Metro<br/>GitHub Pages]
   end
   subgraph Expo[Expo services]
     EAS[EAS Build / Submit]
@@ -403,7 +403,7 @@ sequenceDiagram
   API-->>C: { order }
   M->>FL: cancel load
   FL->>R: for each slot.order: Refund
-  R->>R: negative receipt, reversed transactions, buyer += amount_cents/100 (integer division, BUG-048)
+  R->>R: negative receipt, reversed transactions, buyer.credits_cents += receipt amount_cents (exact since P6.23)
 ```
 
 ## 4. Client navigation map

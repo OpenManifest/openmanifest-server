@@ -16,16 +16,10 @@ module Mutations::Setup::Dropzones
       winds = if attributes[:winds].present?
                 JSON.parse(attributes[:winds] || "[]", symbolize_names: true)
               else
-                puts "Winds were"
-                puts attributes[:winds]
                 []
       end
 
-      puts "-- 1"
-      puts winds
       winds = [] unless winds.is_a? Array
-      puts "-- 2"
-      puts winds
       winds = winds.map do |wind|
         {
           altitude: wind[:altitude] || 0,
@@ -33,8 +27,6 @@ module Mutations::Setup::Dropzones
           direction: wind[:direction] || 0,
         }
       end
-      puts "-- 3"
-      puts winds
 
       model.assign_attributes(attributes.to_h.merge(
         winds: winds.to_json

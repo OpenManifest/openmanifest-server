@@ -11,6 +11,7 @@
 #
 class Permission < ApplicationRecord
   include Config::Yaml::Permissions
+
   scope :without_acting, -> { where("name NOT LIKE (?)", "actAs%") }
   scope :only_acting, -> { where("name LIKE (?)", "actAs%") }
 

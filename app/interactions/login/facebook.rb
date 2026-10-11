@@ -4,6 +4,7 @@ require "active_interaction"
 
 class Login::Facebook < ActiveInteraction::Base
   include ActiveInteraction::Extras::All
+
   run_in_transaction!
   string :token
 

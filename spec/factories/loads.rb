@@ -25,6 +25,7 @@ FactoryBot.define do
       slot_count { 0 }
     end
     plane
+    dropzone { plane.dropzone }
     is_open { true }
     state { "open" }
     max_slots { plane.max_slots }

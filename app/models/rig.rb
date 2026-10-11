@@ -24,6 +24,7 @@
 class Rig < ApplicationRecord
   include Discard::Model
   include ActiveStorageSupport::SupportForBase64
+
   has_one_base64_attached :packing_card
 
   belongs_to :user, optional: true
@@ -34,11 +35,13 @@ class Rig < ApplicationRecord
   has_many :rig_inspections
   has_many :slots, dependent: :nullify
 
-  enum rig_type: { :student => 0, :sport => 1, :tandem => 2 }
+  enum :rig_type, { :student => 0, :sport => 1, :tandem => 2 }
 
   scope :with_inspection_at, -> (dz) { includes(rig_inspections: :inspected_by).where(rig_inspections: { dropzone_users: { dropzone_id: dz } }) }
   scope :inspected_at, -> (dz) { with_inspection_at(dz).where(rig_inspections: { is_ok: true }) }
-  scope :not_inspected_at, -> (dz) { with_inspection_at(dz).where.not(rig_inspections: { is_ok: true }) }
+  # Rigs without an ok inspection at the dropzone, including rigs that were never inspected (the join in `inspected_at`
+  # leaves those out, and `where.not` on it cannot find them either)
+  scope :not_inspected_at, -> (dz) { where.not(id: inspected_at(dz).pluck(:id)) }
   scope :student, -> { where(rig_type: :student) }
   scope :rentable, -> { where(is_public: true) }
 

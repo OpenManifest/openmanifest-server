@@ -38,6 +38,10 @@ class Mutations::Users::Register::Base < GraphqlDevise::Mutations::Base
         )
       end
 
+      # The caller is this user from here on, like after the gem's login: it lets the payload show their own email,
+      # phone and push token (Types::Users::User only reveals those to the user themselves and to staff)
+      context[:current_resource] = resource if context[:current_resource].nil?
+
       response_payload = { authenticatable: resource }
       response_payload[:credentials] = set_auth_headers(resource) if resource.active_for_authentication?
       response_payload

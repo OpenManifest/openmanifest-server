@@ -19,7 +19,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
       action: :created,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} inspected #{rig.user.name}'s #{rig.make} #{rig.model} and marked it as #{is_ok ? 'OK' : 'NOT OK'}"
+      message: "#{access_context.user.name} inspected #{rig.user.name}'s #{rig.make} #{rig.model} and marked it as #{is_ok ? 'OK' : 'NOT OK'}"
     )
   end
 
@@ -34,7 +34,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
       resource: rig,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} failed to inspect #{rig&.user&.name}'s #{rig&.make} #{rig&.model}. It was not marked as #{is_ok ? 'OK' : 'NOT OK'}"
+      message: "#{access_context.user.name} failed to inspect #{rig&.user&.name}'s #{rig&.make} #{rig&.model}. It was not marked as #{is_ok ? 'OK' : 'NOT OK'}"
     )
   end
 
