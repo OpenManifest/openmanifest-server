@@ -84,7 +84,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
     if slot.load.has_landed?
       errors.add(:base, "You can't take slots off a load that has landed")
     elsif is_self? && !access_context.can?(:deleteSlot)
-      errors.add(:base, "You cant take yourself off the load")
+      errors.add(:base, access_context.subject.manifest_desk_only?(:deleteSlot) ? DropzoneUser::MANIFEST_DESK_MESSAGE : "You cant take yourself off the load")
     elsif !is_self? && !access_context.can?(:deleteUserSlot)
       errors.add(:base, "You cant take somebody else off the load")
     end

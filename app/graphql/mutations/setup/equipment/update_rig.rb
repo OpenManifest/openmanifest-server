@@ -2,6 +2,8 @@
 
 module Mutations::Setup::Equipment
   class UpdateRig < Mutations::BaseMutation
+    include OfficeAccess
+
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
     field :rig, Types::Equipment::Rig, null: true
@@ -56,7 +58,7 @@ module Mutations::Setup::Equipment
     def authorized?(id: nil, attributes: nil)
       rig = Rig.find(id)
 
-      if rig.user_id && rig.user_id != context[:current_resource].id
+      if rig.user_id && rig.user_id != context[:current_resource].id && !staff_of_member?(rig.user)
         [
           false, {
             errors: [

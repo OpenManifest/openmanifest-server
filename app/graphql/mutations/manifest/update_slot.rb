@@ -64,9 +64,12 @@ module Mutations::Manifest
       )
         true
       else
+        membership = slot.dropzone_user
         [
           false, {
-            errors: if is_current_user
+            errors: if is_current_user && membership.manifest_desk_only?(:updateSlot)
+                      [DropzoneUser::MANIFEST_DESK_MESSAGE]
+                    elsif is_current_user
                       ["You cant modify a manifested slot"]
                     else
                       ["You cant modify somebody elses slot"]
