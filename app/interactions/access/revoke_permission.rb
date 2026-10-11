@@ -20,11 +20,11 @@ class Access::RevokePermission < ApplicationInteraction
       action: :deleted,
       dropzone: access_context.dropzone,
       created_by: access_context.subject,
-      message: "#{access_context.subject.user.name} revoked permission `#{permission}` for #{dropzone_user.user.name}"
+      message: "#{access_context.user.name} revoked permission `#{permission}` for #{dropzone_user.user.name}"
     )
     Notification.create(
       received_by: dropzone_user,
-      message: "#{access_context.subject.user.name} disabled the `#{permission}` permission for you",
+      message: "#{access_context.user.name} disabled the `#{permission}` permission for you",
       notification_type: :permission_revoked,
       resource: dropzone_user,
       sent_by: access_context.subject

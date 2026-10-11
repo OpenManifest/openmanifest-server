@@ -8,8 +8,10 @@ RSpec.describe Resolvers::Dropzone::Loads, type: :request do
   let!(:plane) { create(:plane, dropzone: dropzone) }
   let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
   let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  # The resolver reads the date in the dropzone's time zone, so the spec must too (UTC is a day behind for part of the day)
+  let(:today) { Time.use_zone(dropzone.time_zone) { Date.current } }
   let!(:load1) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: 1.day.ago) }
-  let!(:load2) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: DateTime.current.beginning_of_day + 5.hours) }
+  let!(:load2) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: Time.use_zone(dropzone.time_zone) { Time.zone.local(today.year, today.month, today.day) + 5.hours }) }
   let!(:load3) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: 1.day.from_now) }
 
   describe ".resolve" do
@@ -26,7 +28,7 @@ RSpec.describe Resolvers::Dropzone::Loads, type: :request do
       let(:query_str) do
         query(
           dropzone: dropzone.id,
-          date: Date.today.iso8601
+          date: today.iso8601
         )
       end
 

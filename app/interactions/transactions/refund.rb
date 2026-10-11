@@ -56,7 +56,7 @@ class Transactions::Refund < ApplicationInteraction
       transaction = Transaction.create(
         sender: transaction.sender,
         receiver: transaction.receiver,
-        amount: transaction.amount * -1,
+        amount_cents: transaction.amount_cents * -1,
         message: "Refunded",
         receipt: @new_receipt,
         transaction_type: :refund,
@@ -66,9 +66,10 @@ class Transactions::Refund < ApplicationInteraction
     end
   end
 
+  # Exactly the cents the order took (the old code divided them by 100 as integers: 12.50 came back as 12)
   def update_credits
-    @receipt.order.buyer.increment!(:credits, @receipt.amount_cents / 100)
-    @receipt.order.seller.decrement!(:credits, @receipt.amount_cents / 100)
+    @receipt.order.buyer.add_cents!(:credits, @receipt.amount_cents)
+    @receipt.order.seller.add_cents!(:credits, -@receipt.amount_cents)
   end
 
   def confirm_order

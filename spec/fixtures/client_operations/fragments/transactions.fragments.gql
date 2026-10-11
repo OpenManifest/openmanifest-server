@@ -1,7 +1,7 @@
 fragment transactionEssentials on Transaction {
   id
   transactionType
-  amount
+  amountCents
   status
   createdAt
   message

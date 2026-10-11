@@ -26,7 +26,8 @@ module Types
     field :primary_color, String, null: true
     field :secondary_color, String, null: true
     field :is_credit_system_enabled, Boolean, null: false, method: :is_credit_system_enabled?
-    field :current_user, Types::Users::DropzoneUser, null: false
+    field :current_user, Types::Users::DropzoneUser, null: true,
+                                                     description: "The caller's membership of this dropzone, or null if they have not joined it (see joinDropzone)"
     field :user_roles, [Types::Access::UserRole], null: false
     field :settings, Types::Dropzone::Settings, null: true
     async_field :federation, Types::Meta::Federation, null: false
@@ -42,6 +43,11 @@ module Types
     end
 
     field :current_conditions, Types::Dropzone::Weather::Condition, null: false
+
+    field :time_zone, String, null: false, description: "The dropzone's time zone (IANA name): its days, and the times of its loads, are in it"
+    def time_zone
+      object.timezone
+    end
 
     field :dropzone_user, Types::Users::DropzoneUser, null: true do
       argument :id, Int, required: false
@@ -90,22 +96,19 @@ module Types
     end
 
     def rigs
-      return [] unless current_user.can?(:readDropzoneRig)
+      return [] unless current_user&.can?(:readDropzoneRig)
       object.rigs.order(rig_type: :asc)
     end
 
     def roles(selectable: nil)
       query = object.user_roles
-      query = query.below(current_user.user_role) if selectable
+      query = (current_user ? query.below(current_user.user_role) : query.none) if selectable
       query.order(id: :asc)
     end
 
     def master_log(date: nil)
-      log = object.master_logs.find_or_initialize_by(created_at: Time.at(date).to_datetime.all_day)
-
-      # Creating log record if none exists
-      log.save! if log.new_record?
-      log
+      # The day the timestamp falls on in the dropzone's time zone
+      object.master_logs.find_or_create_by!(date: Time.zone.at(date).in_time_zone(object.time_zone).to_date)
     end
   end
 end

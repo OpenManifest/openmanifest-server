@@ -11,13 +11,23 @@ module Types::Manifest
     timestamp_fields
     field :id, GraphQL::Types::ID, null: false
     field :exit_weight, Integer, null: false
+    # Send it back with updateSlot: a slot changed by somebody else in the meantime is refused (CONFLICT)
+    field :lock_version, Int, null: false
     def exit_weight
       object.exit_weight.to_i
     end
     field :group_number, Integer, null: false
 
     async_field :dropzone_user, Types::Users::DropzoneUser, null: true
-    field :cost, Float, null: false
+    field :cost_cents, Int, null: false
+    def cost_cents
+      preload(:ticket_type, :extras).cost_cents
+    end
+
+    field :cost, Float, null: false, deprecation_reason: "Use costCents, an integer number of cents"
+    def cost
+      preload(:ticket_type, :extras).cost
+    end
 
     async_field :ticket_type, Types::Dropzone::Ticket, null: true
     async_field :load, Types::Manifest::Load, null: false
@@ -37,5 +47,15 @@ module Types::Manifest
     end
 
     field :extras, [Types::Dropzone::Tickets::Addon], null: true
+    def extras
+      preload(:extras).extras
+    end
+
+    private
+
+    # Loads the associations of this slot together with those of the other slots of the response, and gives the slot back
+    def preload(*associations)
+      dataloader.with(::Sources::AssociationLoader, associations).load(object)
+    end
   end
 end

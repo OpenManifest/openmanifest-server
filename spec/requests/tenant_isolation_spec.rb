@@ -59,12 +59,10 @@ RSpec.describe "Tenant isolation" do
     end
 
     it "refuses dropzoneUser(id:) of a member of B" do
-      pending "BUG-002"
       expect(refused?(client_operation("DropzoneUser", variables: { id: member_b.id }, as: member_user), :dropzoneUser)).to be(true)
     end
 
     it "refuses dropzoneUsers(dropzone:) for B" do
-      pending "BUG-002"
       expect(client_operation("DropzoneUsers", variables: { dropzoneId: dropzone_b.id }, as: member_user).dig(:data, :dropzoneUsers, :edges).to_a).to be_empty
     end
 
@@ -114,7 +112,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-005: authorization checks must not write" do
     it "does not create a membership in B when A's owner updates B's plane" do
-      pending "BUG-005"
       expect { client_operation("UpdateAircraft", variables: { id: plane_b.id, attributes: { name: "Hijacked" } }, as: owner_user) }.
         not_to(change { dropzone_b.dropzone_users.where(user: owner_user).count })
     end
@@ -122,7 +119,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-006: manifesting other people" do
     it "refuses a student manifesting another member" do
-      pending "BUG-006"
       student_user = create(:user)
       create(:dropzone_user, dropzone: dropzone_a, user: student_user, user_role: dropzone_a.user_roles.find_by(name: "student"), credits: 100)
       json = client_operation("ManifestUser",
@@ -137,7 +133,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-007: moving slots between dropzones" do
     it "refuses a student of B moving another member's slot onto a load of A" do
-      pending "BUG-007"
       slot = manifest_b_member_on_load_b
       student_user = create(:user)
       create(:dropzone_user, dropzone: dropzone_b, user: student_user, user_role: dropzone_b.user_roles.find_by(name: "student"))
@@ -148,7 +143,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-008: orders against another dropzone" do
     it "refuses an order that pays a member of B" do
-      pending "BUG-008"
       json = client_operation("CreateOrder",
                               variables: { buyer: member_a.to_gid_param, seller: member_b.to_gid_param, dropzone: dropzone_a.id, title: "x", amount: 100 },
                               as: member_user)
@@ -158,7 +152,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-009: client-supplied dropzone for authorization" do
     it "refuses updating B's form template with dropzoneId set to A" do
-      pending "BUG-009"
       template = create(:form_template, dropzone: dropzone_b, definition: "original")
       dropzone_b.update!(rig_inspection_template: template)
       client_operation("UpdateRigInspectionTemplate", variables: { dropzoneId: dropzone_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
@@ -168,7 +161,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-010: moving records between tenants" do
     it "refuses B's owner moving a ticket type of B into A by sending dropzoneId" do
-      pending "BUG-010"
       client_operation("UpdateTicketType", variables: { id: ticket_b.id, attributes: { dropzoneId: dropzone_a.id, cost: 1.0 } }, as: owner_b_user)
       expect(ticket_b.reload.dropzone).to eq(dropzone_b)
     end
@@ -176,7 +168,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-011: subscriptions" do
     it "refuses subscribing to loadUpdated for a load of B" do
-      pending "BUG-011"
       channel = Struct.new(:params) { def stream_from(*); end }.new({ "channelId" => "tenant-spec" })
       query = "subscription($id: ID!) { loadUpdated(loadId: $id) { load { id } } }"
       result = DzSchema.execute(query: query, variables: { "id" => load_b.id.to_s },
@@ -187,7 +178,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-013: personal data of members of other dropzones" do
     it "hides email, phone and pushToken of a member of B" do
-      pending "BUG-013"
       member_b.user.update!(push_token: "ExponentPushToken[secret]")
       json = graphql("query($id: ID!) { dropzoneUser(id: $id) { user { email phone pushToken } } }", variables: { id: member_b.id }, as: member_user)
       user_data = json.dig(:data, :dropzoneUser, :user)

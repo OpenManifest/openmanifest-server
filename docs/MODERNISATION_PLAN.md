@@ -2725,7 +2725,7 @@ Size: L
 Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090, BUG-095
 
 ### P6.3 — Add tenant checks to user queries and protect personal data
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.2
 Branch: modernise/p6-3-query-authz-2
@@ -2755,7 +2755,7 @@ Size: M
 Fixes: BUG-002 (member resolvers), BUG-013, BUG-093
 
 ### P6.4 — Stop creating memberships during permission checks; add joinDropzone
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.3
 Branch: modernise/p6-4-explicit-membership
@@ -2792,7 +2792,7 @@ Size: L
 Fixes: BUG-005, BUG-089
 
 ### P6.5 — Enforce manifest permissions
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.4
 Branch: modernise/p6-5-manifest-authz
@@ -2822,7 +2822,7 @@ Size: M
 Fixes: BUG-006, BUG-007, BUG-062, BUG-092
 
 ### P6.6 — Restrict createOrder to same-dropzone staff purchases
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.5
 Branch: modernise/p6-6-create-order
@@ -2872,7 +2872,7 @@ Size: M
 Fixes: BUG-008 (peer-to-peer policy)
 
 ### P6.8 — Fix IDOR, tenant moves and broken setup mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.6
 Branch: modernise/p6-8-setup-mutations
@@ -2903,7 +2903,7 @@ Size: L
 Fixes: BUG-009, BUG-010, BUG-039, BUG-061
 
 ### P6.9 — Authenticate the cable connection and authorise subscriptions
-Status: todo
+Status: owner-check (on a phone logged in with Apple, the manifest board updates live when a load is created on the web; client half in the P6.9 client PR)
 Repo: both
 Depends on: P6.8
 Branch: modernise/p6-9-cable-auth
@@ -2937,7 +2937,7 @@ Size: L
 Fixes: BUG-011, BUG-060, BUG-053
 
 ### P6.10 — Count slots correctly and lock capacity and credits
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.9
 Branch: modernise/p6-10-counters-locking
@@ -2974,7 +2974,7 @@ Size: L
 Fixes: BUG-019, BUG-020, BUG-021, BUG-023
 
 ### P6.11 — Fix manifest interaction crashes
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.10
 Branch: modernise/p6-11-manifest-crashes
@@ -3003,7 +3003,7 @@ Size: M
 Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034, BUG-091
 
 ### P6.12 — Enforce load state transitions and fix jump counts
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.11
 Branch: modernise/p6-12-load-states
@@ -3032,7 +3032,7 @@ Size: L
 Fixes: BUG-035, BUG-026, BUG-036, BUG-082
 
 ### P6.13 — Fix group manifesting and store add-ons
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.12
 Branch: modernise/p6-13-groups-extras
@@ -3076,7 +3076,7 @@ Size: S
 Fixes: BUG-033
 
 ### P6.15 — Fix user mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.13
 Branch: modernise/p6-15-user-mutations
@@ -3102,7 +3102,7 @@ Size: M
 Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056, BUG-094
 
 ### P6.16 — Add database constraints, loads.dropzone_id and safe load numbers
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.15
 Branch: modernise/p6-16-constraints
@@ -3137,7 +3137,7 @@ Size: L
 Fixes: BUG-050, BUG-022
 
 ### P6.17 — Move jobs to Solid Queue and schedule recurring work
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.16
 Branch: modernise/p6-17-solid-queue
@@ -3169,7 +3169,7 @@ Size: L
 Fixes: BUG-052, BUG-044
 
 ### P6.18 — Fix notifications and push tokens
-Status: todo
+Status: owner-check (on a phone: request a rig inspection and receive the push; log out, then trigger a notification for that user and no push arrives on the device)
 Repo: backend
 Depends on: P6.17
 Branch: modernise/p6-18-notifications
@@ -3199,7 +3199,7 @@ Size: M
 Fixes: BUG-042, BUG-043, BUG-018, BUG-051
 
 ### P6.19 — Fix weather and server-side time zones
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.18
 Branch: modernise/p6-19-weather-timezones
@@ -3232,7 +3232,7 @@ Size: L
 Fixes: BUG-040, BUG-045, BUG-046, BUG-047, BUG-098
 
 ### P6.20 — Use the dropzone time zone in the client
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.19
 Branch: modernise/p6-20-client-timezone
@@ -3258,7 +3258,7 @@ Size: M
 Fixes: BUG-068
 
 ### P6.21 — Fix uploads
-Status: todo
+Status: owner-check (on a phone: set a dropzone banner and a packing card photo with the camera)
 Repo: backend
 Depends on: P6.20
 Branch: modernise/p6-21-uploads
@@ -3282,7 +3282,7 @@ Size: M
 Fixes: BUG-041
 
 ### P6.22 — Add optimistic locking to loads and slots
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.21
 Branch: modernise/p6-22-optimistic-locking
@@ -3304,7 +3304,7 @@ Size: M
 Fixes: BUG-024
 
 ### P6.23 — Store money as integer cents
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.22
 Branch: modernise/p6-23-money-cents
@@ -3332,7 +3332,7 @@ Size: L
 Fixes: BUG-048
 
 ### P6.24 — Close the sign-up takeover and harden CORS and CI secrets
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.23
 Branch: modernise/p6-24-signup-cors
@@ -3357,7 +3357,7 @@ Size: M
 Fixes: BUG-012, BUG-014 (CORS)
 
 ### P6.25 — Remove N+1 queries on the manifest board
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.24
 Branch: modernise/p6-25-n-plus-one
@@ -3379,7 +3379,7 @@ Size: M
 Fixes: BUG-049
 
 ### P6.26 — Fix client manifest and user UX bugs
-Status: todo
+Status: done
 Repo: client
 Depends on: P6.25
 Branch: modernise/p6-26-client-ux
@@ -3408,7 +3408,7 @@ Size: M
 Fixes: BUG-065, BUG-067, BUG-086, BUG-096
 
 ### P6.27 — Verify Phase 6
-Status: todo
+Status: owner-check (run docs/SMOKE_TEST.md on one iPhone and one Android phone against a staging API; see docs/verification/phase-6.md)
 Repo: both
 Depends on: P6.1, P6.2, P6.3, P6.4, P6.5, P6.6, P6.8, P6.9, P6.10, P6.11, P6.12, P6.13, P6.15, P6.16, P6.17, P6.18, P6.19, P6.20, P6.21, P6.22, P6.23, P6.24, P6.25, P6.26
 Branch: modernise/p6-27-verify

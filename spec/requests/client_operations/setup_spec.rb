@@ -61,8 +61,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "cannot move an aircraft to another dropzone" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateAircraft", variables: { id: plane.id, attributes: { dropzoneId: other_dropzone.id } }, as: owner_user)
 
       expect(plane.reload.dropzone).to eq(dropzone)
@@ -119,13 +117,13 @@ RSpec.describe "Client operations: setup" do
   end
 
   describe "CreateTicketType" do
-    let(:attributes) { { name: "Hop n Pop", cost: 25.0, altitude: 5000, allowManifestingSelf: true, dropzoneId: dropzone.id, currency: "AUD" } }
+    let(:attributes) { { name: "Hop n Pop", costCents: 2500, altitude: 5000, allowManifestingSelf: true, dropzoneId: dropzone.id, currency: "AUD" } }
 
     it "creates a ticket type" do
       json = nil
       expect { json = client_operation("CreateTicketType", variables: { attributes: attributes }, as: owner_user) }.to change(TicketType, :count).by(1)
 
-      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", altitude: 5000, cost: 25.0)
+      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", altitude: 5000, costCents: 2500)
     end
 
     it "refuses a jumper" do
@@ -137,27 +135,24 @@ RSpec.describe "Client operations: setup" do
     let!(:ticket) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
 
     it "updates the ticket type" do
-      json = client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { cost: 55.0, name: "Full height" } }, as: owner_user)
+      json = client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { costCents: 5500, name: "Full height" } }, as: owner_user)
 
-      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(name: "Full height", cost: 55.0)
+      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(name: "Full height", costCents: 5500)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { cost: 0.0 } }, as: user)
+      client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { costCents: 0 } }, as: user)
 
       expect(ticket.reload.cost).to eq(40)
     end
 
     it "cannot move a ticket type to another dropzone" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { dropzoneId: other_dropzone.id } }, as: owner_user)
 
       expect(ticket.reload.dropzone).to eq(dropzone)
     end
 
     it "keeps the extras of other ticket types when one ticket type's extras change" do
-      pending "BUG-061: updating extras deletes the links of other ticket types in the dropzone"
       extra = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
       other_ticket = create(:ticket_type, dropzone: dropzone, name: "Boogie", cost: 60)
       other_ticket.extras << extra
@@ -172,8 +167,6 @@ RSpec.describe "Client operations: setup" do
     let!(:ticket) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
 
     it "archives the ticket type" do
-      pending "BUG-039: archiveTicketType authorizes with Dropzone.find(<ticket type id>) and context[:current_user]"
-
       json = client_operation("ArchiveTicketType", variables: { id: ticket.id }, as: owner_user)
 
       expect(json.dig(:data, :archiveTicketType, :errors)).to be_nil
@@ -198,7 +191,7 @@ RSpec.describe "Client operations: setup" do
       json = client_operation("TicketTypeExtras", variables: { dropzoneId: dropzone.id }, as: user)
 
       expect(json.dig(:data, :extras).pluck(:id)).to eq([extra.id.to_s])
-      expect(json.dig(:data, :extras, 0)).to include(name: "Video", cost: 5.0)
+      expect(json.dig(:data, :extras, 0)).to include(name: "Video", costCents: 500)
     end
 
     it "returns an empty list for a dropzone without extras" do
@@ -212,16 +205,16 @@ RSpec.describe "Client operations: setup" do
     it "creates an extra linked to ticket types" do
       json = nil
       expect do
-        json = client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", cost: 5.0, dropzoneId: dropzone.id, ticketTypeIds: [ticket.id] } }, as: owner_user)
+        json = client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", costCents: 500, dropzoneId: dropzone.id, ticketTypeIds: [ticket.id] } }, as: owner_user)
       end.to change(Extra, :count).by(1)
 
-      expect(json.dig(:data, :createExtra, :extra)).to include(name: "Video", cost: 5.0)
+      expect(json.dig(:data, :createExtra, :extra)).to include(name: "Video", costCents: 500)
       expect(Extra.last.ticket_types).to eq([ticket])
     end
 
     it "refuses a jumper" do
       expect do
-        client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", cost: 5.0, dropzoneId: dropzone.id } }, as: user)
+        client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", costCents: 500, dropzoneId: dropzone.id } }, as: user)
       end.not_to change(Extra, :count)
     end
   end
@@ -230,13 +223,13 @@ RSpec.describe "Client operations: setup" do
     let!(:extra) { Extra.create!(dropzone: dropzone, name: "Video", cost: 5) }
 
     it "updates the extra" do
-      json = client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { name: "HD video", cost: 8.0 } }, as: owner_user)
+      json = client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { name: "HD video", costCents: 800 } }, as: owner_user)
 
-      expect(json.dig(:data, :updateExtra, :extra)).to include(name: "HD video", cost: 8.0)
+      expect(json.dig(:data, :updateExtra, :extra)).to include(name: "HD video", costCents: 800)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { cost: 0.0 } }, as: user)
+      client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { costCents: 0 } }, as: user)
 
       expect(extra.reload.cost).to eq(5)
     end
@@ -297,18 +290,40 @@ RSpec.describe "Client operations: setup" do
       expect { client_operation("CreateRig", variables: variables.merge(userId: staff_user.id), as: user) }.not_to change(Rig, :count)
     end
 
-    it "stores a packing card image" do
-      pending "BUG-041: rig packing card upload raises"
-      card = "data:image/png;base64,#{Base64.strict_encode64(Rails.public_path.join('favicon.ico').binread)}"
+    # The app sends the packing card with UpdateRig; createRig takes it too
+    def create_rig_with_card(card)
+      query = "mutation($attributes: RigInput!) { createRig(input: { attributes: $attributes }) { errors fieldErrors { field message } rig { id } } }"
+      post "/graphql",
+           params: { query: query, variables: { attributes: { make: "Vector", model: "v310", serial: "1", rigType: "sport", canopySize: 129, userId: user.id, packingCard: card } }.to_json },
+           headers: user.create_new_auth_token
+      response.parsed_body.with_indifferent_access
+    end
 
-      json = client_operation("UpdateRig", variables: { id: create(:rig, user: user).id, packingCard: card }, as: user)
+    it "stores a packing card image when the rig is created" do
+      json = create_rig_with_card(image_data_url("jpg"))
 
-      expect(json.dig(:data, :updateRig, :errors)).to be_nil
+      expect(json.dig(:data, :createRig, :errors)).to be_nil
+      expect(Rig.find(json.dig(:data, :createRig, :rig, :id)).packing_card).to be_attached
+    end
+
+    it "refuses a packing card that is not a picture, and creates no rig" do
+      json = nil
+      expect { json = create_rig_with_card(data_url_of("not an image")) }.not_to change(Rig, :count)
+
+      expect(json.dig(:data, :createRig, :fieldErrors, 0, :field)).to eq("packing_card")
     end
   end
 
   describe "UpdateRig" do
     let!(:rig) { create(:rig, user: user, dropzone: nil) }
+
+    it "stores a packing card image" do
+      json = client_operation("UpdateRig", variables: { id: rig.id, packingCard: image_data_url("png") }, as: user)
+
+      expect(json.dig(:data, :updateRig, :errors)).to be_nil
+      expect(rig.reload.packing_card).to be_attached
+      expect(rig.packing_card.content_type).to eq("image/png")
+    end
 
     it "updates the caller's own rig" do
       json = client_operation("UpdateRig", variables: { id: rig.id, name: "Main", canopySize: 119 }, as: user)
@@ -323,8 +338,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "cannot reassign the rig to another user" do
-      pending "BUG-010: update mutations pass dropzoneId/userId through to update!"
-
       client_operation("UpdateRig", variables: { id: rig.id, userId: staff_user.id }, as: user)
 
       expect(rig.reload.user).to eq(user)
@@ -335,7 +348,6 @@ RSpec.describe "Client operations: setup" do
     let!(:rig) { create(:rig, user: user, dropzone: nil) }
 
     it "archives the caller's own rig" do
-      pending "BUG-039: archiveRig authorizes with context[:current_user], which graphql_devise never sets"
       json = client_operation("ArchiveRig", variables: { id: rig.id }, as: user)
 
       expect(json.dig(:data, :archiveRig, :errors)).to be_nil
@@ -343,8 +355,6 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "archives someone else's rig for staff" do
-      pending "BUG-039: archiveRig authorizes with context[:current_user], which is never set"
-
       client_operation("ArchiveRig", variables: { id: rig.id }, as: owner_user)
 
       expect(rig.reload).to be_discarded
@@ -372,35 +382,78 @@ RSpec.describe "Client operations: setup" do
       end.not_to change(RigInspection, :count)
     end
 
-    it "notifies the rig owner about a failed inspection" do
-      pending "BUG-042: rig inspection notifications raise (Notification.create(type:) instead of notification_type:)"
+    it "notifies the rig owner when the rig is cleared to jump" do
+      expect do
+        client_operation("CreateRigInspection", variables: { dropzone: dropzone.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
+      end.to change { Notification.where(notification_type: :rig_inspection_completed).count }.by(1)
+    end
 
+    it "does not tell the rig owner they are cleared when the inspection failed" do
       expect do
         client_operation("CreateRigInspection", variables: { dropzone: dropzone.id, rig: rig.id, isOk: false, definition: "[]" }, as: owner_user)
-      end.to change(Notification, :count).by(1)
+      end.not_to(change(Notification, :count))
     end
   end
 
   describe "ReloadWeather" do
     let!(:weather) { dropzone.current_conditions }
+    let(:winds_url) { WeatherCondition::WINDS_URL }
+    let(:winds_body) do
+      altitudes = %w(0 1000 2000 5000 7000 8000 10000 12000 14000)
+      { speed: altitudes.index_with { 10 }, direction: altitudes.index_with { 270 }, temp: altitudes.index_with { 12 } }.to_json
+    end
 
-    it "reloads the dropzone's weather condition" do
-      pending "BUG-040: reloadWeatherCondition(input: { id }) raises because dropzoneId is required for authorization"
+    it "reloads the dropzone's weather condition from its id alone" do
+      dropzone.update!(lat: -27.5, lng: 152.9)
+      stub = stub_request(:get, winds_url).with(query: hash_including("lat" => "-27.5", "lon" => "152.9")).to_return(status: 200, body: winds_body)
 
       json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
 
       expect(json.dig(:data, :reloadWeatherCondition, :errors)).to be_nil
       expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition, :id)).to eq(weather.id.to_s)
+      expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition, :winds)).to be_present
+      expect(stub).to have_been_requested
+    end
+
+    it "keeps working for a dropzone without a location" do
+      dropzone.update!(lat: nil, lng: nil)
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to be_nil
+      expect(a_request(:get, winds_url).with(query: hash_including({}))).not_to have_been_made
+    end
+
+    it "reports a service that does not answer" do
+      dropzone.update!(lat: -27.5, lng: 152.9)
+      stub_request(:get, winds_url).with(query: hash_including({})).to_timeout
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["The winds could not be fetched, try again in a moment"])
+      expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition)).to be_nil
     end
 
     it "does not let a jumper reload the weather" do
-      begin
-        client_operation("ReloadWeather", variables: { id: weather.id }, as: user)
-      rescue StandardError
-        # BUG-040: the authorization check raises for every caller
-      end
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: user)
 
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["You can't update weather conditions"])
       expect(weather.reload.updated_at).to eq(weather.updated_at)
+    end
+
+    it "does not let staff of another dropzone reload it" do
+      other_owner = create(:user)
+      create(:dropzone_user, dropzone: other_dropzone, user: other_owner, user_role: other_dropzone.user_roles.find_by(name: "owner"))
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: other_owner)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["You can't update weather conditions"])
+    end
+
+    it "answers an unknown weather condition with an error" do
+      json = client_operation("ReloadWeather", variables: { id: 0 }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["Weather condition not found"])
     end
   end
 

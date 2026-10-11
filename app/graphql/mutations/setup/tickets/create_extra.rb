@@ -11,7 +11,8 @@ module Mutations::Setup::Tickets
 
     def resolve(attributes:, id: nil)
       model = find_or_build_model(id)
-      model.attributes = attributes.to_h
+      # An existing add-on never moves to another dropzone
+      model.attributes = id ? attributes.to_h.except(:dropzone_id) : attributes.to_h
 
       model.save!
 
@@ -64,9 +65,13 @@ module Mutations::Setup::Tickets
     end
 
     def authorized?(attributes: nil, id: nil)
+      # With an id this edits an existing add-on: its own dropzone decides (BUG-009), not the one the client says
+      existing = id && Extra.find_by(id: id)
+      return [false, { errors: ["Ticket add-on not found"] }] if id && !existing
+
       if context[:current_resource].can?(
-        "createExtra",
-        dropzone_id: attributes[:dropzone_id]
+        existing ? "updateExtra" : "createExtra",
+        dropzone_id: existing ? existing.dropzone_id : attributes[:dropzone_id]
       )
         true
       else

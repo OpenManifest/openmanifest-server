@@ -61,15 +61,19 @@ RSpec.describe "Client operations: dropzones and access" do
       expect(json.dig(:data, :dropzone, :currentConditions)).to include(:id, :winds)
     end
 
-    it "pins the current behaviour that reading a dropzone joins the caller to it (BUG-005)" do
-      stranger = create(:user)
+    it "returns the dropzone's time zone, for the app to work out the dropzone's day" do
+      dropzone.update!(time_zone: "Australia/Sydney")
 
-      expect { client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: stranger) }.
-        to change { dropzone.dropzone_users.where(user: stranger).count }.from(0).to(1)
+      expect(client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: user).dig(:data, :dropzone, :timeZone)).to eq("Australia/Sydney")
+    end
+
+    it "falls back to Brisbane for a dropzone without a time zone" do
+      dropzone.update_columns(time_zone: nil)
+
+      expect(client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: user).dig(:data, :dropzone, :timeZone)).to eq("Australia/Brisbane")
     end
 
     it "does not create a membership when a stranger reads a dropzone" do
-      pending "BUG-005: dropzone { currentUser } creates a membership through DropzoneUser.for"
       stranger = create(:user)
 
       expect { client_operation("Dropzone", variables: { dropzoneId: dropzone.id }, as: stranger) }.
@@ -160,6 +164,20 @@ RSpec.describe "Client operations: dropzones and access" do
       expect(created.dropzone_users.owner.map(&:user)).to eq([user])
     end
 
+    it "stores the banner" do
+      json = client_operation("CreateDropzone", variables: variables.merge(banner: image_data_url("jpg")), as: user)
+
+      expect(json.dig(:data, :createDropzone, :errors)).to be_nil
+      expect(Dropzone.find(json.dig(:data, :createDropzone, :dropzone, :id)).banner).to be_attached
+    end
+
+    it "creates no dropzone for a banner that is not a PNG, JPEG or WebP" do
+      json = nil
+      expect { json = client_operation("CreateDropzone", variables: variables.merge(banner: image_data_url("gif")), as: user) }.not_to change(Dropzone, :count)
+
+      expect(json.dig(:data, :createDropzone, :fieldErrors, 0)).to include(field: "banner", message: "The image must be a PNG, JPEG or WebP")
+    end
+
     it "requires a name" do
       json = client_operation("CreateDropzone", variables: variables.except(:name), as: user)
 
@@ -190,13 +208,59 @@ RSpec.describe "Client operations: dropzones and access" do
     end
 
     it "uploads a banner image" do
-      pending "BUG-041: updateDropzone raises NameError when a banner is supplied"
-      banner = "data:image/png;base64,#{Base64.strict_encode64(Rails.public_path.join('favicon.ico').binread)}"
-
-      json = client_operation("UpdateDropzone", variables: { id: dropzone.id, attributes: { name: dropzone.name, banner: banner } }, as: moderator)
+      json = client_operation("UpdateDropzone", variables: { id: dropzone.id, attributes: { name: dropzone.name, banner: image_data_url("png") } }, as: moderator)
 
       expect(json.dig(:data, :updateDropzone, :errors)).to be_nil
-      expect(json.dig(:data, :updateDropzone, :dropzone, :banner)).to be_present
+      expect(dropzone.reload.banner).to be_attached
+      expect(dropzone.banner.content_type).to eq("image/png")
+    end
+
+    it "refuses a banner that is not a PNG, JPEG or WebP" do
+      json = client_operation("UpdateDropzone", variables: { id: dropzone.id, attributes: { name: "Renamed", banner: image_data_url("gif") } }, as: moderator)
+
+      expect(json.dig(:data, :updateDropzone, :fieldErrors, 0)).to include(field: "banner", message: "The image must be a PNG, JPEG or WebP")
+      expect(dropzone.reload.banner).not_to be_attached
+      expect(dropzone.name).not_to eq("Renamed")
+    end
+
+    it "refuses a banner that is not an image at all" do
+      json = client_operation("UpdateDropzone", variables: { id: dropzone.id, attributes: { name: dropzone.name, banner: data_url_of("<html></html>") } }, as: moderator)
+
+      expect(json.dig(:data, :updateDropzone, :errors)).to eq(["The image must be a PNG, JPEG or WebP"])
+    end
+
+    describe "requesting publication" do
+      let(:private_dropzone) { create(:dropzone, state: "private") }
+      let(:owner_user) { create(:user) }
+      let!(:owner) { create(:dropzone_user, dropzone: private_dropzone, user: owner_user, user_role: private_dropzone.user_roles.find_by(name: "owner")) }
+      let(:administrator) { create(:user, moderation_role: :administrator) }
+      let!(:administrator_member) { create(:dropzone_user, dropzone: private_dropzone, user: administrator, user_role: private_dropzone.user_roles.find_by(name: "admin")) }
+
+      def request_publication
+        client_operation("UpdateDropzone", variables: { id: private_dropzone.id, attributes: { name: private_dropzone.name, requestPublication: true } }, as: owner_user)
+      end
+
+      it "tells the moderators who are members of the dropzone, and logs it" do
+        json = nil
+        expect { json = request_publication }.to change { Notification.where(notification_type: :publication_requested, received_by: administrator_member).count }.by(1)
+
+        expect(json.dig(:data, :updateDropzone, :errors)).to be_nil
+        expect(private_dropzone.reload.state).to eq("in_review")
+        expect(Notification.last).to have_attributes(sent_by: owner, resource: private_dropzone, message: "Dropzone #{private_dropzone.name} has requested publication")
+        expect(Activity::Event.where(dropzone: private_dropzone).pluck(:message)).to include("#{owner_user.name} requested publication of #{private_dropzone.name}")
+      end
+
+      it "does not tell anybody twice" do
+        request_publication
+
+        expect { request_publication }.not_to(change { Notification.count })
+      end
+
+      it "does not tell people who are not moderators" do
+        request_publication
+
+        expect(Notification.where(notification_type: :publication_requested).pluck(:received_by_id)).to eq([administrator_member.id])
+      end
     end
   end
 
@@ -233,7 +297,6 @@ RSpec.describe "Client operations: dropzones and access" do
     end
 
     it "lets a moderator who is not a member publish a dropzone" do
-      pending "BUG-089: updateVisibility raises NoMethodError when the caller has no membership in the dropzone"
       dropzone.update!(state: "private")
       outsider = create(:user, moderation_role: :moderator)
 

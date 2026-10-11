@@ -11,12 +11,8 @@ module Mutations::Setup::Tickets
     def resolve(id:)
       model = TicketType.find(id)
 
-      # Flag as deleted if any slots use this ticket type
-      if model.slots.empty?
-        model.destroy
-      else
-        model.discard
-      end
+      # Archive rather than destroy: the mutation is called archiveTicketType and past orders and slots keep pointing at it
+      model.discard
 
       {
         ticket_type: model.reload,
@@ -46,13 +42,15 @@ module Mutations::Setup::Tickets
     end
 
     def authorized?(id: nil, attributes: nil)
-      dz_user = Dropzone.find(id).dropzone_users.find_by(user_id: context[:current_user])
-      if dz_user.can? :deleteDropzone
+      ticket_type = TicketType.find_by(id: id)
+      return [false, { errors: ["Ticket type not found"] }] unless ticket_type
+
+      if context[:current_resource].can?(:deleteTicketType, dropzone_id: ticket_type.dropzone_id)
         true
       else
         [
           false, {
-            errors: ["You cant delete this dropzone"],
+            errors: ["You can't delete this ticket type"],
           },
         ]
       end

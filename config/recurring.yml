@@ -1,0 +1,24 @@
+# Recurring jobs, run by Solid Queue's scheduler (bin/jobs, or the Puma plugin with SOLID_QUEUE_IN_PUMA=1).
+# Schedules are in UTC (the server's time zone); the jobs themselves work in each dropzone's time zone.
+default: &default
+  # Loads of past days are landed (when they were called) or cancelled
+  auto_finalize:
+    class: AutoFinalizeJob
+    queue: default
+    schedule: every 15 minutes
+
+  # The master log of yesterday is generated at 02:00-02:59 in the dropzone's time zone: the job runs every hour and
+  # picks the dropzones that are in that hour
+  master_logs:
+    class: MasterLogsJob
+    queue: default
+    schedule: every hour at minute 5
+
+development:
+  <<: *default
+
+production:
+  <<: *default
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12

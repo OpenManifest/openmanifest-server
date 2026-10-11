@@ -80,11 +80,12 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
 |---|---|---|
 | API style | Single GraphQL endpoint, Relay-classic mutations, Apollo batching supported (`params[:_json]`) | `config/routes.rb:10`, `app/controllers/graphql_controller.rb` |
 | Schema | `DzSchema` with `GraphqlDevise::SchemaPlugin` (auth), `GraphQL::Dataloader`, AppSignal tracing, ActionCable subscriptions | `app/graphql/dz_schema.rb` |
+| Avoiding N+1 | `Sources::Model` (belongs_to, with attached images), `Sources::AssociationLoader` (`dataloader.with(Sources::AssociationLoader, :slots).load(record)`, then read the association), `Sources::UnseenNotificationCount`; types use them for every field that reads an association. `spec/requests/n_plus_one_spec.rb` runs Prosopite over the board and the member list | `app/graphql/sources/` |
 | Auth | `devise` + `devise_token_auth` tokens via `graphql_devise`; client sends `access-token`, `client`, `uid` headers. Facebook and Apple sign-in mutations | `app/models/user.rb:46-50`, `app/graphql/mutations/users/login/*`, `app/interactions/login/*` |
 | Business logic | `active_interaction` classes ("interactions") with a custom `steps`/`allow` DSL | `app/interactions/application_interaction*.rb` |
 | Real-time | `GraphqlChannel` over ActionCable at `/subscriptions`; subscriptions `loadCreated(dropzoneId)`, `loadUpdated(loadId)`, `userUpdated(dropzoneUserId)`; triggered from model callbacks | `app/channels/graphql_channel.rb`, `app/graphql/subscriptions/*`, `app/models/load.rb:115-136`, `app/models/dropzone_user.rb:219-228` |
-| Background jobs | ActiveJob with the **default adapter** (no Sidekiq/GoodJob configured → Rails 7.0 default `:async`, in-process). Jobs: `NotifyJob` (Expo push), `RequestRigInspectionJob` (called synchronously), `WindsAloftJob` (empty) | `app/jobs/*` |
-| Scheduled tasks | Rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize`; **no scheduler is configured in either repo** (presumably Heroku Scheduler/cron once) | `lib/tasks/dropzone.rake` |
+| Background jobs | ActiveJob on **Solid Queue** (P6.17; tables in the primary database, `config/queue.yml`; `:test` adapter in the test environment). Run by `bin/jobs` (the `jobs:` line of the `Procfile`) or inside Puma with `SOLID_QUEUE_IN_PUMA=1` (set in `fly*.toml`). Jobs: `NotifyJob` (Expo push, retried on network errors), `AutoFinalizeJob`, `MasterLogsJob`, `RequestRigInspectionJob`, `FetchWindsJob` (winds of a new weather condition, 5 second timeout) | `app/jobs/*`, `config/queue.yml`, `config/puma.rb` |
+| Scheduled tasks | `config/recurring.yml` (Solid Queue's scheduler): `auto_finalize` every 15 minutes, `master_logs` hourly (the job generates yesterday's log for the dropzones that are in their 02:00 hour, in their own time zone). The rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize` run the same jobs once | `config/recurring.yml`, `lib/tasks/dropzone.rake` |
 | Push notifications | `Notification` row → `NotifyJob` → HTTP POST to `https://exp.host/--/api/v2/push/send` with the user's Expo push token | `app/models/notification.rb:31-49` |
 | File storage | ActiveStorage; base64 uploads via `active_storage_base64`; images resized via `image_processing` (vips); services `local`, `test`, `flyio` (`/data`), `google` (GCS) | `config/storage.yml`, `app/models/concerns/image/resizer.rb` |
 | Payments | Internal credit ledger only (Order → Receipt → 2 Transactions). **No external payment provider.** | `app/interactions/transactions/*` |
@@ -115,9 +116,9 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
   security, no Apartment-style schemas).
 - Tenant ownership is expressed through foreign keys: `planes.dropzone_id`, `ticket_types.dropzone_id`, `extras.dropzone_id`,
   `user_roles.dropzone_id`, `dropzone_users.dropzone_id`, `rigs.dropzone_id` (dropzone-owned rigs), `master_logs`,
-  `weather_conditions`, `form_templates`, `orders`, `events`. **`loads` has no `dropzone_id`**: a load belongs to a dropzone
-  only via `loads.plane_id → planes.dropzone_id` (`app/models/load.rb:27-28`). Slots reach the dropzone via
-  `slot → load → plane → dropzone`.
+  `weather_conditions`, `form_templates`, `orders`, `events`. `loads.dropzone_id` (P6.16; it was derived from the plane before) and
+  `loads.load_date` (the day in the dropzone's time zone; load numbers are unique per dropzone and day). Slots reach the
+  dropzone via `slot → load → dropzone`.
 - A `User` is global; membership is `DropzoneUser` (`user_id`, `dropzone_id`, role, credits, membership `expires_at`,
   `license_id`, `jump_count`).
 - Authorization is checked in three inconsistent places:
@@ -163,7 +164,7 @@ ER diagram: [`diagrams.md` §2](diagrams.md#2-entity-relationship-diagram). Sche
 | `Pack` | Pack job (rig packed by user) | `rig_id`, `user_id` | No API exposes it (only `Transactions::Purchase` price stub) |
 | `WeatherCondition` | Weather for a day | `winds` (JSON text: altitude/speed/direction/temperature), `temperature`, `jump_run` (degrees), `exit_spot_miles`, `offset_miles` (**integer** columns), `offset_direction` | Created on first read of `Dropzone#current_conditions`, which calls an external API in `before_create` |
 | `MasterLog` | Daily regulatory log | `date`, `dzso_id`, `notes`, attached JSON file | `after_create :store!` |
-| `Order`, `Receipt`, `Transaction` | Credit ledger | `orders`: polymorphic `buyer`/`seller` (Dropzone or DropzoneUser), polymorphic `item`, `amount` (float), `state` (pending/completed/refunded/cancelled), `order_number` per dropzone; `receipts.amount_cents` (int); `transactions`: `sender`/`receiver`, `amount`, `status` (reserved/completed/cancelled), `transaction_type` (purchase/sale/deposit/withdrawal/refund) | Wallet balance is the denormalised `credits` column, updated with `increment!`/`decrement!` |
+| `Order`, `Receipt`, `Transaction` | Credit ledger | `orders`: polymorphic `buyer`/`seller` (Dropzone or DropzoneUser), polymorphic `item`, `amount_cents` (bigint; `amount` float kept in step until P8.8), `state` (pending/completed/refunded/cancelled), `order_number` per dropzone; `receipts.amount_cents`; `transactions`: `sender`/`receiver`, `amount_cents` (and the old `amount`), `status` (reserved/completed/cancelled), `transaction_type` (purchase/sale/deposit/withdrawal/refund) | Wallet balance is the denormalised `credits_cents` bigint (the old `credits` column is written alongside it until P8.8), moved only with `add_cents!` (one atomic SQL update); see `app/models/money.rb` and `app/models/concerns/money_attributes.rb` |
 | `Notification` | In-app + push notification | `received_by_id` (DropzoneUser), `sent_by_id`, polymorphic `resource`, `notification_type` enum (14 values), `is_seen` | `after_create` enqueues `NotifyJob` |
 | `Activity::Event` (`events`) | Audit/activity log | `resource`, `action`, `level`, `access_level`, `message`, `details`, `dropzone_id`, `dropzone_user_id` | Written by almost every interaction's `success`/`error` block |
 | `AuthenticationProvider` | Facebook/Apple identity link | `provider`, `uid`, `token` | |
@@ -219,7 +220,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 | Move slot (drag & drop, web) | `components/slots_table/DragAndDrop/*.web.tsx` | `moveSlot` | broken | crashes with target slot (`BUG-031`), no authorization (`BUG-007`) |
 | Take off load | slot row delete | `deleteSlot` | partial | Slots without orders crash (`BUG-032`) |
 | Tandem passengers | manifest form passenger fields | `createSlot(passengerName, passengerExitWeight)` | partial | Finalising a load with a tandem crashes (`BUG-030`) |
-| Credits (wallet) | `forms/credits/*`, profile transactions tab, `configuration/transactions` | `createOrder`, `dropzone.orders` | partial | Money stored as floats (`BUG-048`); peer-to-peer credit minting (`BUG-008`) |
+| Credits (wallet) | `forms/credits/*`, profile transactions tab, `configuration/transactions` | `createOrder`, `dropzone.orders` | partial | Money in integer cents (`BUG-048`, fixed in P6.23); peer-to-peer credit minting (`BUG-008`) |
 | Users list / profile / edit | `screens/authenticated/user/*` | `dropzoneUsers`, `dropzoneUser`, `updateUser`, `updateDropzoneUser`, `deleteUser` | broken | `updateDropzoneUser` always errors after saving (`BUG-037`); editing other users' profiles raises (`BUG-038`) |
 | Create user ("ghost") | `forms/create_user/*` | `createGhost` | partial | GitHub issue client#126 "Create Ghost doesn't fire submit button" |
 | Permissions & roles | `configuration/permissions/PermissionsScreen.tsx`, profile badges | `grantPermission`, `revokePermission`, `updateRole` | complete (reading) | |
@@ -228,7 +229,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 | Aircraft, ticket types, add-ons | `configuration/aircrafts`, `ticket_types`, `extras`, `forms/aircraft`, `ticket_type*` | `createPlane`, `updatePlane`, `deletePlane`, `createTicketType`, `updateTicketType`, `archiveTicketType`, `createExtra`, `updateExtra` | partial | `archiveTicketType` crashes (`BUG-039`); add-ons never charged (`BUG-028`) |
 | Weather / winds / jump run | `dropzone/weather_conditions/*`, `manifest/Weather/*` | `dropzone.currentConditions`, `createWeatherCondition`, `reloadWeatherCondition` | broken | Reload fails (`BUG-040`); external HTTP in model callback (`BUG-045`) |
 | Master log | `configuration/master_log/*` | `masterLog`, `updateMasterLog` | partial | Scheduled generation crashes and is not scheduled (`BUG-044`) |
-| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | In-process async jobs, errors swallowed (`BUG-052`) |
+| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | Solid Queue jobs with retries (P6.17) |
 | Activity feed / statistics | `overview/*`, `components/activity/*` | `activity`, `dropzone.statistics` | partial | Activity leaks across tenants (`BUG-003`) |
 | Federation / licence sync (APF) | `forms/user_wizard/steps/Federation*.tsx`, `License.tsx` | `joinFederation`, `federations`, `licenses` | partial (external API unverified) | |
 | Demo data generator | — | `Mutations::Setup::Demo::Generate` | dead | Not mounted in `MutationType` |
@@ -301,9 +302,9 @@ Mutation fields (`app/graphql/types/mutation_type.rb`) plus graphql_devise's `us
 
 | Name | What it does | How it runs | Status |
 |---|---|---|---|
-| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → `:async` adapter | Works when the process stays up; no retries; errors swallowed |
+| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → Solid Queue | Retried (5 attempts, growing waits) on network errors; discarded when the notification is gone; other errors fail the job |
 | `RequestRigInspectionJob` | Notifies rig inspectors | `perform_now(rig, self)` but expects ids; errors swallowed | Dead (`BUG-042`) |
-| `WindsAloftJob` | Empty | never | Dead |
+| `FetchWindsJob` | Fills a new weather condition with the winds of the dropzone's location (P6.19; replaces the empty `WindsAloftJob`) | `after_create_commit` of `WeatherCondition` | Retried on network errors |
 | `dropzone:master_log:generate` | Generates yesterday's master log for dropzones where it is midnight | Rake; needs hourly cron | Crashes (`BUG-044`); no scheduler configured |
 | `dropzone:loads:finalize` | Auto-lands dispatched / auto-cancels undispatched past loads | Rake; needs daily cron | Crashes on tandem loads (`BUG-030`); no scheduler configured |
 
@@ -338,7 +339,8 @@ Environment variables (names only):
 |---|---|
 | `SECRET_KEY_BASE`, `RAILS_MASTER_KEY` | Rails / devise secret (`config/initializers/devise.rb:2`) |
 | `BACKEND_URL` | `default_url_options` host, ActionCable URL (**required** — boot fails in development/production if unset) |
-| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**) |
+| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**); its origin is always allowed by CORS |
+| `CORS_ORIGINS` | browser origins allowed to call the API, comma separated `scheme://host[:port]` (default `http://localhost:19006,http://localhost:8081`; `config/initializers/cors.rb`). Set it on every deployment that serves a web client from another origin than `FRONTEND_URL`; native apps are not affected |
 | `PGUSER`, `PGPASSWORD`, `DBNAME`, `DATABASE_URL` (production via platform) | database |
 | `REDIS_URL` | ActionCable, production cache |
 | `RAILS_MAX_THREADS`, `RAILS_MIN_THREADS`, `WEB_CONCURRENCY`, `PORT`, `PIDFILE` | Puma |
