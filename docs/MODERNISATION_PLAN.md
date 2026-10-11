@@ -961,7 +961,7 @@ Size: S
 Fixes: BUG-080
 
 ### P1.10 — Repair the client Jest harness and re-enable the manifest screen test
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.10
 Branch: modernise/p1-10-jest-harness
