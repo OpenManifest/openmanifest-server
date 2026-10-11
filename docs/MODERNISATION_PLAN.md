@@ -2524,7 +2524,7 @@ Size: L
 Fixes: BUG-072, BUG-074 (load screen), BUG-071 (FABs on manifest)
 
 ### P5.6 — Fix configuration screens
-Status: todo
+Status: owner-check (small Android phone, dark mode: each configuration screen's FAB floats and its last row is reachable)
 Repo: client
 Depends on: P5.5
 Branch: modernise/p5-6-configuration-layout
