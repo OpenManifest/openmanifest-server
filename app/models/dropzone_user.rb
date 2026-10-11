@@ -15,6 +15,9 @@
 #  jump_count   :integer          default(0), not null
 #
 class DropzoneUser < ApplicationRecord
+  include MoneyAttributes
+
+  money :credits
   include Discard::Model
   include MasterLogEntry::DropzoneUser
 

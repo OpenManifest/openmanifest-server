@@ -3304,7 +3304,7 @@ Size: M
 Fixes: BUG-024
 
 ### P6.23 — Store money as integer cents
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.22
 Branch: modernise/p6-23-money-cents

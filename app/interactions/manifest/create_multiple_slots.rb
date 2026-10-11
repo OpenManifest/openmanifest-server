@@ -74,9 +74,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_credits
     return unless dropzone.is_credit_system_enabled?
 
-    cost = ticket_type.cost + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost)
+    cost = ticket_type.cost_cents.to_i + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost_cents)
     users.each do |user|
-      next unless cost > (user[:dropzone_user].credits || 0)
+      next unless cost > (user[:dropzone_user].credits_cents || 0)
 
       errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
       errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")

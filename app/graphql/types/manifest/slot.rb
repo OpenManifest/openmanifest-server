@@ -19,7 +19,8 @@ module Types::Manifest
     field :group_number, Integer, null: false
 
     async_field :dropzone_user, Types::Users::DropzoneUser, null: true
-    field :cost, Float, null: false
+    field :cost_cents, Int, null: false
+    field :cost, Float, null: false, deprecation_reason: "Use costCents, an integer number of cents"
 
     async_field :ticket_type, Types::Dropzone::Ticket, null: true
     async_field :load, Types::Manifest::Load, null: false

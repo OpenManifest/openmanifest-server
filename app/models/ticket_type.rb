@@ -17,6 +17,9 @@
 #  is_deleted             :boolean          default(FALSE)
 #
 class TicketType < ApplicationRecord
+  include MoneyAttributes
+
+  money :cost
   include Discard::Model
 
   belongs_to :dropzone

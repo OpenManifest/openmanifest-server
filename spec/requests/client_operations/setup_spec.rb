@@ -117,13 +117,13 @@ RSpec.describe "Client operations: setup" do
   end
 
   describe "CreateTicketType" do
-    let(:attributes) { { name: "Hop n Pop", cost: 25.0, altitude: 5000, allowManifestingSelf: true, dropzoneId: dropzone.id, currency: "AUD" } }
+    let(:attributes) { { name: "Hop n Pop", costCents: 2500, altitude: 5000, allowManifestingSelf: true, dropzoneId: dropzone.id, currency: "AUD" } }
 
     it "creates a ticket type" do
       json = nil
       expect { json = client_operation("CreateTicketType", variables: { attributes: attributes }, as: owner_user) }.to change(TicketType, :count).by(1)
 
-      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", altitude: 5000, cost: 25.0)
+      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", altitude: 5000, costCents: 2500)
     end
 
     it "refuses a jumper" do
@@ -135,13 +135,13 @@ RSpec.describe "Client operations: setup" do
     let!(:ticket) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
 
     it "updates the ticket type" do
-      json = client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { cost: 55.0, name: "Full height" } }, as: owner_user)
+      json = client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { costCents: 5500, name: "Full height" } }, as: owner_user)
 
-      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(name: "Full height", cost: 55.0)
+      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(name: "Full height", costCents: 5500)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { cost: 0.0 } }, as: user)
+      client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { costCents: 0 } }, as: user)
 
       expect(ticket.reload.cost).to eq(40)
     end
@@ -191,7 +191,7 @@ RSpec.describe "Client operations: setup" do
       json = client_operation("TicketTypeExtras", variables: { dropzoneId: dropzone.id }, as: user)
 
       expect(json.dig(:data, :extras).pluck(:id)).to eq([extra.id.to_s])
-      expect(json.dig(:data, :extras, 0)).to include(name: "Video", cost: 5.0)
+      expect(json.dig(:data, :extras, 0)).to include(name: "Video", costCents: 500)
     end
 
     it "returns an empty list for a dropzone without extras" do
@@ -205,16 +205,16 @@ RSpec.describe "Client operations: setup" do
     it "creates an extra linked to ticket types" do
       json = nil
       expect do
-        json = client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", cost: 5.0, dropzoneId: dropzone.id, ticketTypeIds: [ticket.id] } }, as: owner_user)
+        json = client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", costCents: 500, dropzoneId: dropzone.id, ticketTypeIds: [ticket.id] } }, as: owner_user)
       end.to change(Extra, :count).by(1)
 
-      expect(json.dig(:data, :createExtra, :extra)).to include(name: "Video", cost: 5.0)
+      expect(json.dig(:data, :createExtra, :extra)).to include(name: "Video", costCents: 500)
       expect(Extra.last.ticket_types).to eq([ticket])
     end
 
     it "refuses a jumper" do
       expect do
-        client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", cost: 5.0, dropzoneId: dropzone.id } }, as: user)
+        client_operation("CreateTicketAddon", variables: { attributes: { name: "Video", costCents: 500, dropzoneId: dropzone.id } }, as: user)
       end.not_to change(Extra, :count)
     end
   end
@@ -223,13 +223,13 @@ RSpec.describe "Client operations: setup" do
     let!(:extra) { Extra.create!(dropzone: dropzone, name: "Video", cost: 5) }
 
     it "updates the extra" do
-      json = client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { name: "HD video", cost: 8.0 } }, as: owner_user)
+      json = client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { name: "HD video", costCents: 800 } }, as: owner_user)
 
-      expect(json.dig(:data, :updateExtra, :extra)).to include(name: "HD video", cost: 8.0)
+      expect(json.dig(:data, :updateExtra, :extra)).to include(name: "HD video", costCents: 800)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { cost: 0.0 } }, as: user)
+      client_operation("UpdateTicketAddon", variables: { id: extra.id, attributes: { costCents: 0 } }, as: user)
 
       expect(extra.reload.cost).to eq(5)
     end

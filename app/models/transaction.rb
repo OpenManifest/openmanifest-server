@@ -18,6 +18,9 @@
 #  transaction_type :integer
 #
 class Transaction < ApplicationRecord
+  include MoneyAttributes
+
+  money :amount
   belongs_to :receipt
   has_one :order, through: :receipt
   has_one :item, through: :order
@@ -54,7 +57,7 @@ class Transaction < ApplicationRecord
   private
 
   def notification_message
-    value = format("$%.2f", amount.to_f.abs)
+    value = Money.new(amount_cents.to_i).abs.to_s
     case transaction_type
     when "purchase" then "Payment of #{value} confirmed"
     when "withdrawal" then "#{value} has been taken out of your account"
