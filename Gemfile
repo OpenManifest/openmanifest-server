@@ -52,10 +52,11 @@ gem "search_cop"
 gem "active_interaction"
 gem "active_interaction-extras"
 
-# Count things. Pinned: counter_culture 3.14.0 keeps the in-memory counter current inside a group manifest, which
-# exposes the double counting of BUG-019 (three tandem jumpers fail with "No slots available"). P6.10 fixes BUG-019 and
-# removes this pin.
-gem "counter_culture", "3.3.0"
+# Count things
+gem "counter_culture"
+
+# Background jobs, in the primary database
+gem "solid_queue", "~> 1.7"
 
 # Debugging
 gem "appsignal"
@@ -85,8 +86,8 @@ gem "awesome_print"
 gem 'image_processing'
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem "byebug", platforms: %i(mri windows)
+  # Call `debugger` anywhere in the code to stop execution and get a debugger console
+  gem "debug", platforms: %i(mri windows), require: "debug/prelude"
   gem "factory_bot_rails"
   gem "rspec-json_expectations"
 
@@ -98,18 +99,16 @@ end
 
 group :development do
   # Annotate with database schema
-  gem "annotate"
+  gem "annotaterb"
 
   gem "web-console", ">= 4.1.0"
 
-  # rubocop 1.50 loads these, which are no longer default gems in Ruby 4.0; P2.10 upgrades rubocop and drops them
-  gem "benchmark"
-  gem "ostruct"
   gem "rubocop"
   gem "rubocop-rails"
   gem "rubocop-performance"
   gem "rubocop-graphql"
   gem "rubocop-rspec"
+  gem "rubocop-factory_bot"
 
   # Security
   gem "brakeman"
@@ -119,14 +118,15 @@ group :development do
 
   # Display performance information such as SQL time and flame graphs for each request in your browser.
   # Can be configured to work on production as well see: https://github.com/MiniProfiler/rack-mini-profiler/blob/master/README.md
-  gem "listen", "~> 3.3"
-  gem "rack-mini-profiler", "~> 2.0"
-  # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
-  gem "spring"
+  gem "listen"
+  gem "rack-mini-profiler"
 end
 
 group :test do
   gem "webmock"
+  # Fails request specs that run N+1 queries (spec/requests/n_plus_one_spec.rb)
+  gem "prosopite", "~> 2.2"
+  gem "pg_query"
 end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem

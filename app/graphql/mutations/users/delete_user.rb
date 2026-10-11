@@ -12,7 +12,7 @@ module Mutations::Users
     def resolve(id:)
       model = DropzoneUser.find(id)
 
-      model.discard
+      model.discard!
 
       {
         dropzone_user: model.reload,
@@ -20,10 +20,9 @@ module Mutations::Users
         errors: nil,
       }
     rescue Discard::RecordNotDiscarded
-      # Failed save, return the errors to the client
       {
-        dropzone: nil,
-        field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
+        dropzone_user: nil,
+        field_errors: nil,
         errors: ["Failed to archive this user"],
       }
     rescue ActiveRecord::RecordInvalid => invalid
@@ -49,22 +48,14 @@ module Mutations::Users
     end
 
     def authorized?(id: nil)
-      dz_user = DropzoneUser.find(id)
-      if context[:current_resource].id == dz_user.user.id
-        true
-      # We can't check for dropzones since User isn't directly
-      # linked to any dropzone, but if this user only belongs to
-      # one dropzone, and you have access to :updateUser at that dropzone,
-      # then you can update the users profile. As soon as the user
-      # joins other dropzones, you can no longer edit their profile
-      elsif context[:current_resource].can?(:deleteUser, dropzone_id: dz_user.dropzone_id)
+      dz_user = DropzoneUser.find_by(id: id)
+      return [false, { dropzone_user: nil, field_errors: nil, errors: ["Member not found"] }] unless dz_user
+
+      # Members can remove themselves, staff need deleteUser at the member's dropzone
+      if context[:current_resource].id == dz_user.user_id || context[:current_resource].can?(:deleteUser, dropzone_id: dz_user.dropzone_id)
         true
       else
-        [
-          false, {
-            errors: ["You cant delete this aircraft"],
-          },
-        ]
+        [false, { dropzone_user: nil, field_errors: nil, errors: ["You can't remove this member"] }]
       end
     end
   end

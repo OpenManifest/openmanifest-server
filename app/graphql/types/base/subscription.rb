@@ -1,4 +1,6 @@
 class Types::Base::Subscription < GraphQL::Schema::Subscription
+  include Support::Authorization
+
   # Hook up base classes
   object_class Types::Base::Object
   field_class Types::Base::Field

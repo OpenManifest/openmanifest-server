@@ -3,6 +3,7 @@
 module Types::Interfaces
   module ActiveInteraction
     include Types::Base::Interface
+
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
@@ -30,12 +31,20 @@ module Types::Interfaces
           errors: outcome.errors.full_messages_for(:base),
         }
       end
+    rescue ActiveRecord::StaleObjectError => e
+      raise conflict_error(e)
     rescue ::ApplicationInteraction::Errors::PermissionDenied => e
       {
         field_name => nil,
         field_errors: nil,
         errors: [e.message],
       }
+    end
+
+    # What a client gets when it saved from an older version of a record (optimistic locking): refetch and try again
+    def conflict_error(error)
+      what = error.record.class.model_name.human.downcase
+      GraphQL::ExecutionError.new("This #{what} was changed by someone else", extensions: { code: "CONFLICT" })
     end
   end
 end

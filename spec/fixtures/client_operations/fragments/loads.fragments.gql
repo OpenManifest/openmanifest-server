@@ -2,6 +2,7 @@
 
 fragment loadEssentials on Load {
   id
+  lockVersion
   name
   createdAt
   dispatchAt

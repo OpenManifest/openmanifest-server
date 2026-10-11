@@ -901,7 +901,7 @@ Style/SymbolLiteral:
 Style/SymbolProc:
   Description: Use symbols as procs instead of blocks when possible.
   Enabled: false
-  IgnoredMethods:
+  AllowedMethods:
     - respond_to
 
 Style/TernaryParentheses:
