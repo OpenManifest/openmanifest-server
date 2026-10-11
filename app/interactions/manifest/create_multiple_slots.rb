@@ -91,7 +91,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_double_manifesting
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    Slot.where(load: dropzone.loads.today.active, dropzone_user: dropzone_users).each do |existing_slot|
+    Slot.where(load: dropzone.loads.on(dropzone.today).active, dropzone_user: dropzone_users).each do |existing_slot|
       if !existing_slot.dropzone_user.can?(:createDoubleSlot)
         errors.add(:base, "#{existing_slot.dropzone_user.user.name} can not be double-manifested")
       end

@@ -4,6 +4,7 @@ require "rails_helper"
 require Rails.root.join("db/migrate/20261009110000_add_unique_index_to_dropzone_users_on_user_and_dropzone")
 require Rails.root.join("db/migrate/20261009110100_add_dropzone_and_load_date_to_loads")
 require Rails.root.join("db/migrate/20261009110200_add_unique_order_numbers_and_indexes")
+require Rails.root.join("db/migrate/20261009130000_add_date_to_weather_conditions_and_decimal_miles")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
@@ -120,6 +121,24 @@ RSpec.describe "P6.16 constraint migrations" do
       run_quietly(migration, :renumber_duplicate_order_numbers)
 
       expect([first, second].map { |order| order.reload.order_number }).to eq([1, 2])
+    end
+  end
+
+  describe AddDateToWeatherConditionsAndDecimalMiles do
+    let(:migration) { described_class.new }
+
+    before { connection.remove_index :weather_conditions, name: described_class::INDEX }
+
+    it "keeps the most recently updated condition of a day" do
+      older = WeatherCondition.create!(dropzone: dropzone, date: Date.new(2026, 10, 8))
+      newer = WeatherCondition.create!(dropzone: dropzone, date: Date.new(2026, 10, 9))
+      newer.update_columns(date: Date.new(2026, 10, 8), updated_at: 1.hour.from_now)
+      other_day = WeatherCondition.create!(dropzone: dropzone, date: Date.new(2026, 10, 10))
+
+      run_quietly(migration, :remove_duplicate_days)
+
+      expect(WeatherCondition.where(dropzone: dropzone).pluck(:id)).to contain_exactly(newer.id, other_day.id)
+      expect(WeatherCondition.exists?(older.id)).to be(false)
     end
   end
 end

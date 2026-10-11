@@ -3199,7 +3199,7 @@ Size: M
 Fixes: BUG-042, BUG-043, BUG-018, BUG-051
 
 ### P6.19 — Fix weather and server-side time zones
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.18
 Branch: modernise/p6-19-weather-timezones

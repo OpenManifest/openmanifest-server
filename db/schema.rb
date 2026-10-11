@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_09_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_09_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -709,12 +709,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_09_120000) do
     t.text "winds"
     t.integer "temperature"
     t.integer "jump_run"
-    t.integer "exit_spot_miles"
-    t.integer "offset_miles"
+    t.decimal "exit_spot_miles", precision: 6, scale: 2
+    t.decimal "offset_miles", precision: 6, scale: 2
     t.integer "offset_direction"
     t.bigint "dropzone_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.date "date", null: false
+    t.index ["dropzone_id", "date"], name: "index_weather_conditions_on_dropzone_id_and_date", unique: true
     t.index ["dropzone_id"], name: "index_weather_conditions_on_dropzone_id"
   end
 

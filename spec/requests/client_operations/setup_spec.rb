@@ -375,24 +375,63 @@ RSpec.describe "Client operations: setup" do
 
   describe "ReloadWeather" do
     let!(:weather) { dropzone.current_conditions }
+    let(:winds_url) { WeatherCondition::WINDS_URL }
+    let(:winds_body) do
+      altitudes = %w(0 1000 2000 5000 7000 8000 10000 12000 14000)
+      { speed: altitudes.index_with { 10 }, direction: altitudes.index_with { 270 }, temp: altitudes.index_with { 12 } }.to_json
+    end
 
-    it "reloads the dropzone's weather condition" do
-      pending "BUG-040: reloadWeatherCondition(input: { id }) raises because dropzoneId is required for authorization"
+    it "reloads the dropzone's weather condition from its id alone" do
+      dropzone.update!(lat: -27.5, lng: 152.9)
+      stub = stub_request(:get, winds_url).with(query: hash_including("lat" => "-27.5", "lon" => "152.9")).to_return(status: 200, body: winds_body)
 
       json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
 
       expect(json.dig(:data, :reloadWeatherCondition, :errors)).to be_nil
       expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition, :id)).to eq(weather.id.to_s)
+      expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition, :winds)).to be_present
+      expect(stub).to have_been_requested
+    end
+
+    it "keeps working for a dropzone without a location" do
+      dropzone.update!(lat: nil, lng: nil)
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to be_nil
+      expect(a_request(:get, winds_url).with(query: hash_including({}))).not_to have_been_made
+    end
+
+    it "reports a service that does not answer" do
+      dropzone.update!(lat: -27.5, lng: 152.9)
+      stub_request(:get, winds_url).with(query: hash_including({})).to_timeout
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["The winds could not be fetched, try again in a moment"])
+      expect(json.dig(:data, :reloadWeatherCondition, :weatherCondition)).to be_nil
     end
 
     it "does not let a jumper reload the weather" do
-      begin
-        client_operation("ReloadWeather", variables: { id: weather.id }, as: user)
-      rescue StandardError
-        # BUG-040: the authorization check raises for every caller
-      end
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: user)
 
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["You can't update weather conditions"])
       expect(weather.reload.updated_at).to eq(weather.updated_at)
+    end
+
+    it "does not let staff of another dropzone reload it" do
+      other_owner = create(:user)
+      create(:dropzone_user, dropzone: other_dropzone, user: other_owner, user_role: other_dropzone.user_roles.find_by(name: "owner"))
+
+      json = client_operation("ReloadWeather", variables: { id: weather.id }, as: other_owner)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["You can't update weather conditions"])
+    end
+
+    it "answers an unknown weather condition with an error" do
+      json = client_operation("ReloadWeather", variables: { id: 0 }, as: owner_user)
+
+      expect(json.dig(:data, :reloadWeatherCondition, :errors)).to eq(["Weather condition not found"])
     end
   end
 
