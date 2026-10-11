@@ -43,10 +43,9 @@ RSpec.describe "Tenant isolation" do
     Slot.find(json.dig(:data, :createSlot, :slot, :id))
   end
 
-  describe "BUG-001: the access context is shared by every request" do
-    it "is a process-wide singleton" do
-      # BUG-001: flips to not_to equal in P6.1
-      expect(AccessContext::CurrentUser.for(member_user)).to equal(AccessContext::CurrentUser.for(owner_user))
+  describe "BUG-001: the access context is per request" do
+    it "is not shared between callers" do
+      expect(AccessContext::CurrentUser.for(member_user)).not_to equal(AccessContext::CurrentUser.for(owner_user))
     end
   end
 
