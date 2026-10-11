@@ -1870,7 +1870,7 @@ Size: L
 Fixes: none
 
 ### P3.15 — Upgrade to Expo SDK 54, Reanimated 4 and Node 24
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.14
 Branch: modernise/p3-15-expo-54
