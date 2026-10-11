@@ -6,6 +6,7 @@ require Rails.root.join("db/migrate/20261009110100_add_dropzone_and_load_date_to
 require Rails.root.join("db/migrate/20261009110200_add_unique_order_numbers_and_indexes")
 require Rails.root.join("db/migrate/20261009130000_add_date_to_weather_conditions_and_decimal_miles")
 require Rails.root.join("db/migrate/20261009150000_add_cents_columns_for_money")
+require Rails.root.join("db/migrate/20261011130000_drop_legacy_columns")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
@@ -18,19 +19,37 @@ RSpec.describe "P6.16 constraint migrations" do
     ActiveRecord::Migration.suppress_messages { migration.public_send(step) }
   end
 
+  # P7.2 dropped the old columns of units; the data steps of the earlier migrations still read them, so these examples put
+  # them back (inside the example's transaction) and forget the column information of the models afterwards
+  def legacy_models = [Dropzone, DropzoneUser, TicketType, Extra, Order, Transaction, Plane]
+
+  def restore_legacy_columns
+    ActiveRecord::Migration.suppress_messages { DropLegacyColumns.new.migrate(:down) }
+    legacy_models.each(&:reset_column_information)
+  end
+
   describe AddUniqueIndexToDropzoneUsersOnUserAndDropzone do
     let(:migration) { described_class.new }
     let(:user) { create(:user) }
     let!(:oldest) { create(:dropzone_user, dropzone: dropzone, user: user, credits: 100, jump_count: 5) }
 
-    before { connection.remove_index :dropzone_users, name: described_class::INDEX }
+    before do
+      connection.remove_index :dropzone_users, name: described_class::INDEX
+      restore_legacy_columns
+      DropzoneUser.where(id: oldest.id).update_all(credits: 100)
+    end
 
-    def duplicate_membership(**attrs)
-      DropzoneUser.new(dropzone: dropzone, user: user, user_role: oldest.user_role, license: oldest.license, **attrs).tap { |member| member.save!(validate: false) }
+    after { legacy_models.each(&:reset_column_information) }
+
+    def duplicate_membership(legacy_credits: nil, **attrs)
+      DropzoneUser.new(dropzone: dropzone, user: user, user_role: oldest.user_role, license: oldest.license, **attrs).tap do |member|
+        member.save!(validate: false)
+        DropzoneUser.where(id: member.id).update_all(credits: legacy_credits) if legacy_credits
+      end
     end
 
     it "merges the duplicates into the oldest membership" do
-      duplicate = duplicate_membership(credits: 40, jump_count: 2)
+      duplicate = duplicate_membership(legacy_credits: 40, jump_count: 2)
 
       run_quietly(migration, :merge_duplicate_memberships)
 
@@ -148,6 +167,10 @@ RSpec.describe "P6.16 constraint migrations" do
   describe AddCentsColumnsForMoney do
     let(:migration) { described_class.new }
     let(:member) { create(:dropzone_user, dropzone: dropzone) }
+
+    before { restore_legacy_columns }
+
+    after { legacy_models.each(&:reset_column_information) }
 
     # Rows as they were before: the old columns only
     def legacy(record, **columns)

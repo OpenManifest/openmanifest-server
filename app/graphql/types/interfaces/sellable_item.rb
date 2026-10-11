@@ -5,7 +5,6 @@ module Types::Interfaces
     include Types::Base::Interface
 
     field :cost_cents, Int, null: true
-    field :cost, Float, null: true, deprecation_reason: "Use costCents, an integer number of cents"
     field :title, String, null: true
 
     definition_methods do

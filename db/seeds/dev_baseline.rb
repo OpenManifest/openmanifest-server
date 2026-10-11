@@ -27,9 +27,9 @@ dropzone.update!(state: "public", settings: {
 })
 
 plane = dropzone.planes.find_or_create_by!(name: "Caravan", registration: "VH-ABC", min_slots: 2, max_slots: 14)
-ticket = dropzone.ticket_types.find_or_create_by!(name: "Full altitude", cost: 40, altitude: 14_000,
+ticket = dropzone.ticket_types.find_or_create_by!(name: "Full altitude", cost_cents: 4000, altitude: 14_000,
                                                   allow_manifesting_self: true, currency: "AUD")
-dropzone.ticket_types.find_or_create_by!(name: "Tandem", cost: 0, altitude: 14_000, allow_manifesting_self: false,
+dropzone.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, altitude: 14_000, allow_manifesting_self: false,
                                          is_tandem: true, currency: "AUD")
 roles = dropzone.user_roles.index_by(&:name)
 license = (Federation.find_by(slug: "apf") || Federation.first).licenses.where.not(name: "No license").first

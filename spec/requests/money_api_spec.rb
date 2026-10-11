@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-# BUG-048: the API gives and takes cents (the units fields stay for older clients), and wallets move by exact cents
+# BUG-048: the API gives and takes cents (the fields of units went in P7.2), and wallets move by exact cents
 RSpec.describe "Money in the API" do
   include_context "dropzone"
 
@@ -16,26 +16,21 @@ RSpec.describe "Money in the API" do
   end
 
   describe "ticket types and add-ons" do
-    let(:create_ticket) { "mutation($attributes: TicketTypeInput!) { createTicketType(input: { attributes: $attributes }) { errors ticketType { id cost costCents } } }" }
-    let(:update_ticket) { "mutation($id: Int!, $attributes: TicketTypeInput!) { updateTicketType(input: { id: $id, attributes: $attributes }) { errors ticketType { cost costCents } } }" }
+    let(:create_ticket) { "mutation($attributes: TicketTypeInput!) { createTicketType(input: { attributes: $attributes }) { errors ticketType { id costCents } } }" }
+    let(:update_ticket) { "mutation($id: Int!, $attributes: TicketTypeInput!) { updateTicketType(input: { id: $id, attributes: $attributes }) { errors ticketType { costCents } } }" }
 
     it "creates a ticket type with a price in cents" do
       json = graphql(create_ticket, { attributes: { name: "Height", dropzoneId: dropzone.id, costCents: 1999, altitude: 14_000 } })
 
-      expect(json.dig(:data, :createTicketType, :ticketType)).to include(costCents: 1999, cost: 19.99)
+      expect(json.dig(:data, :createTicketType, :ticketType)).to include(costCents: 1999)
       expect(TicketType.last.cost_cents).to eq(1999)
     end
 
-    it "still takes the price in whole units" do
+    it "no longer takes the price in whole units" do
       json = graphql(create_ticket, { attributes: { name: "Height", dropzoneId: dropzone.id, cost: 12.5, altitude: 14_000 } })
 
-      expect(json.dig(:data, :createTicketType, :ticketType)).to include(costCents: 1250, cost: 12.5)
-    end
-
-    it "uses the cents when both are sent" do
-      json = graphql(create_ticket, { attributes: { name: "Height", dropzoneId: dropzone.id, cost: 99, costCents: 1000, altitude: 14_000 } })
-
-      expect(json.dig(:data, :createTicketType, :ticketType, :costCents)).to eq(1000)
+      expect(json[:errors].to_a.pluck(:message).join).to include("cost")
+      expect(TicketType.where(dropzone: dropzone, name: "Height")).to be_empty
     end
 
     it "updates the price in cents" do
@@ -43,18 +38,18 @@ RSpec.describe "Money in the API" do
 
       json = graphql(update_ticket, { id: ticket.id, attributes: { costCents: 4150 } })
 
-      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(costCents: 4150, cost: 41.5)
+      expect(json.dig(:data, :updateTicketType, :ticketType)).to include(costCents: 4150)
     end
 
     it "prices add-ons in cents" do
-      query = "mutation($attributes: ExtraInput!) { createExtra(input: { attributes: $attributes }) { errors extra { cost costCents } } }"
+      query = "mutation($attributes: ExtraInput!) { createExtra(input: { attributes: $attributes }) { errors extra { costCents } } }"
 
       json = graphql(query, { attributes: { name: "Video", dropzoneId: dropzone.id, costCents: 505 } })
 
-      expect(json.dig(:data, :createExtra, :extra)).to include(costCents: 505, cost: 5.05)
+      expect(json.dig(:data, :createExtra, :extra)).to include(costCents: 505)
     end
 
-    it "lists the price of a ticket in both" do
+    it "lists the price of a ticket in cents" do
       create(:ticket_type, dropzone: dropzone, name: "Height", cost: 12.5)
 
       json = client_operation("TicketTypes", variables: { dropzone: dropzone.id }, as: owner_user)
@@ -65,28 +60,28 @@ RSpec.describe "Money in the API" do
   end
 
   describe "wallets" do
-    it "gives a member's credits in cents and units" do
+    it "gives a member's credits in cents" do
       fun_jumper.update!(credits: 12.5)
 
-      json = graphql("query($id: ID!) { dropzoneUser(id: $id) { credits creditsCents } }", { id: fun_jumper.id })
+      json = graphql("query($id: ID!) { dropzoneUser(id: $id) { creditsCents } }", { id: fun_jumper.id })
 
-      expect(json.dig(:data, :dropzoneUser)).to include("credits" => 12.5, "creditsCents" => 1250)
+      expect(json.dig(:data, :dropzoneUser)).to include("creditsCents" => 1250)
     end
 
     it "keeps a member without a wallet without one" do
       fun_jumper.update!(credits: nil)
 
-      json = graphql("query($id: ID!) { dropzoneUser(id: $id) { credits creditsCents hasCredits } }", { id: fun_jumper.id })
+      json = graphql("query($id: ID!) { dropzoneUser(id: $id) { creditsCents hasCredits } }", { id: fun_jumper.id })
 
-      expect(json.dig(:data, :dropzoneUser)).to include("credits" => nil, "creditsCents" => nil, "hasCredits" => false)
+      expect(json.dig(:data, :dropzoneUser)).to include("creditsCents" => nil, "hasCredits" => false)
     end
 
     it "lets staff set a member's credits in cents" do
-      query = "mutation($id: ID!, $attributes: DropzoneUserInput!) { updateDropzoneUser(input: { dropzoneUser: $id, attributes: $attributes }) { errors dropzoneUser { credits creditsCents } } }"
+      query = "mutation($id: ID!, $attributes: DropzoneUserInput!) { updateDropzoneUser(input: { dropzoneUser: $id, attributes: $attributes }) { errors dropzoneUser { creditsCents } } }"
 
       json = graphql(query, { id: fun_jumper.id, attributes: { creditsCents: 12_345 } })
 
-      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser)).to include("credits" => 123.45, "creditsCents" => 12_345)
+      expect(json.dig(:data, :updateDropzoneUser, :dropzoneUser)).to include("creditsCents" => 12_345)
       expect(fun_jumper.reload.credits_cents).to eq(12_345)
     end
   end
@@ -144,9 +139,9 @@ RSpec.describe "Money in the API" do
 
     it "shows the cents of the slot and its order" do
       manifest
-      json = graphql("query($id: ID!) { load(id: $id) { slots { cost costCents } } }", { id: manifest_load.id })
+      json = graphql("query($id: ID!) { load(id: $id) { slots { costCents } } }", { id: manifest_load.id })
 
-      expect(json.dig(:data, :load, :slots, 0)).to include("cost" => 12.8, "costCents" => 1280)
+      expect(json.dig(:data, :load, :slots, 0)).to include("costCents" => 1280)
     end
 
     it "counts revenue in cents" do

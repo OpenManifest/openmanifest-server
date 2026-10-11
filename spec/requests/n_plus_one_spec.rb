@@ -60,7 +60,7 @@ RSpec.describe "N+1 queries on the board and the member list" do
   # Every field the screens read from a member or a load, not just the fragments of the list queries
   describe "with every computed field selected" do
     let(:member_fields) do
-      "id credits creditsCents expiresAt hasMembership hasCredits hasExitWeight hasLicense hasRigInspection hasReserveInDate " \
+      "id creditsCents expiresAt hasMembership hasCredits hasExitWeight hasLicense hasRigInspection hasReserveInDate " \
         "unseenNotifications permissions role { id name } license { id name } user { id name image } rigInspections { id }"
     end
 

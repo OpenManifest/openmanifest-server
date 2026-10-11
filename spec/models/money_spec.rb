@@ -41,19 +41,17 @@ RSpec.describe MoneyAttributes do
   let(:dropzone) { create(:dropzone, credits: 0) }
   let(:member) { create(:dropzone_user, dropzone: dropzone) }
 
-  it "stores the units a model is given as cents, and keeps the old column current" do
+  it "stores the units a model is given as cents" do
     member.update!(credits: 12.5)
 
     expect(member.reload.credits_cents).to eq(1250)
     expect(member.credits).to eq(12.5)
-    expect(member.read_attribute(:credits)).to eq(12.5)
   end
 
-  it "stores cents as given, and keeps the old column current" do
+  it "stores cents as given" do
     member.update!(credits_cents: 1999)
 
     expect(member.reload.credits).to eq(19.99)
-    expect(member.read_attribute(:credits)).to eq(19.99)
   end
 
   it "keeps nil (a member without a wallet)" do
@@ -82,7 +80,6 @@ RSpec.describe MoneyAttributes do
       member.add_cents!(:credits, -5)
 
       expect(member.reload.credits_cents).to eq(2245)
-      expect(member.read_attribute(:credits)).to eq(22.45)
     end
 
     it "treats a missing wallet as empty" do
@@ -128,6 +125,5 @@ RSpec.describe MoneyAttributes do
     slot = Slot.new(load: plane_load, ticket_type: ticket, extras: [video, coach])
 
     expect(slot.cost_cents).to eq(1280)
-    expect(slot.cost).to eq(12.8)
   end
 end

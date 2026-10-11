@@ -57,9 +57,8 @@ module Mutations::Payments
       end
     end
 
-    # The amount in cents: amountCents, or amount in whole units rounded to the cent
     def amount_cents(attributes)
-      attributes[:amount_cents] || Money.cents_of(attributes[:amount])
+      attributes[:amount_cents]
     end
 
     def can_afford?(buyer, cents)

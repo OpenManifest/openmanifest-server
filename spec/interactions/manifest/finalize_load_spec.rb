@@ -56,7 +56,7 @@ RSpec.describe Manifest::FinalizeLoad do
         expect(slot.order).not_to be nil
         expect(slot.order.receipts.count).to eq 1
         expect(slot.order.transactions.count).to eq 2
-        expect(slot.dropzone_user.credits).to eq (ticket_type.cost * 2) - slot.cost
+        expect(slot.dropzone_user.credits_cents).to eq((ticket_type.cost_cents * 2) - slot.cost_cents)
         expect(slot.order.transactions.where(status: :completed).count).to eq 2
       end
     end

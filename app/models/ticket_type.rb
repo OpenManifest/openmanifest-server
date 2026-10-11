@@ -5,7 +5,6 @@
 # Table name: ticket_types
 #
 #  id                     :bigint           not null, primary key
-#  cost                   :float
 #  currency               :string
 #  name                   :string
 #  dropzone_id            :bigint           not null
@@ -14,7 +13,6 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  is_tandem              :boolean          default(FALSE)
-#  is_deleted             :boolean          default(FALSE)
 #
 class TicketType < ApplicationRecord
   include MoneyAttributes

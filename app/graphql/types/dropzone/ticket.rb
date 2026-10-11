@@ -15,10 +15,6 @@ module Types::Dropzone
     def cost_cents
       object.cost_cents.to_i
     end
-    field :cost, Float, null: false, deprecation_reason: "Use costCents, an integer number of cents"
-    def cost
-      object.cost_cents.to_i / 100.0
-    end
     field :name, String, null: true
     field :altitude, Int, null: true
     field :allow_manifesting_self, Boolean, null: true

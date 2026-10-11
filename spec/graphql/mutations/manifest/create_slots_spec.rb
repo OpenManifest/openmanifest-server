@@ -147,7 +147,7 @@ module Mutations
                     name
                   }
                 }
-                cost
+                costCents
                 order {
                   id
                   buyer {

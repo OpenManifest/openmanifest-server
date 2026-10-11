@@ -246,7 +246,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
 
   describe "UpdateDropzoneUser" do
     it "saves the change" do
-      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
+      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { creditsCents: 12_300 } }, as: owner_user)
 
       expect(fun_jumper.reload.credits).to eq(123)
     end
@@ -259,7 +259,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "refuses a jumper without updateUser" do
-      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: instructor.id, attributes: { credits: 1_000_000 } }, as: user)
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: instructor.id, attributes: { creditsCents: 100_000_000 } }, as: user)
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
       expect(instructor.reload.credits).not_to eq(1_000_000)
@@ -306,20 +306,20 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       outsider = create(:user)
       create(:dropzone_user, dropzone: other_dropzone, user: outsider, user_role: other_dropzone.user_roles.find_by(name: "owner"))
 
-      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 1 } }, as: outsider)
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { creditsCents: 100 } }, as: outsider)
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
       expect(fun_jumper.reload.credits).not_to eq(1)
     end
 
     it "refuses a user who is not a member at all" do
-      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 1 } }, as: create(:user))
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { creditsCents: 100 } }, as: create(:user))
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
     end
 
     it "does not touch the member's profile" do
-      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { name: "Renamed", credits: 10 } }, as: owner_user)
+      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { name: "Renamed", creditsCents: 1000 } }, as: owner_user)
 
       expect(fun_jumper.reload.credits).to eq(10)
       expect(user.reload.name).not_to eq("Renamed")

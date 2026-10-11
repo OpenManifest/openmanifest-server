@@ -129,7 +129,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
                 name
               }
             }
-            cost
+            costCents
             order {
               id
               buyer {

@@ -32,7 +32,7 @@ RSpec.describe Transactions::Refund do
       end
     end
     it "expects sum of transactions to always be 0" do
-      expect(outcome.result.transactions.sum(:amount)).to eq 0
+      expect(outcome.result.transactions.sum(:amount_cents)).to eq 0
     end
     it "expect credits to be updated correctly" do
       expect(dropzone_user.reload.credits).to eq 200

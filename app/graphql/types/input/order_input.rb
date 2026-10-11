@@ -18,7 +18,6 @@ module Types
                description: "Item to attach to order",
                required: false,
                prepare: -> (value, ctx) { ::DzSchema.object_from_id(value, ctx) }
-      # One of amount and amountCents is needed
       money_argument :amount, description: "Total amount of the order"
       argument :dropzone, ID, required: true,
                               prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
