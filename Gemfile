@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby "3.1.6"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 7.0.4"
+gem "rails", "~> 7.0.10"
 
 # Heroku database
 gem "pg"
@@ -52,8 +52,10 @@ gem "search_cop"
 gem "active_interaction"
 gem "active_interaction-extras"
 
-# Count things
-gem "counter_culture"
+# Count things. Pinned: counter_culture 3.14.0 keeps the in-memory counter current inside a group manifest, which
+# exposes the double counting of BUG-019 (three tandem jumpers fail with "No slots available"). P6.10 fixes BUG-019 and
+# removes this pin.
+gem "counter_culture", "3.3.0"
 
 # Debugging
 gem "appsignal"
@@ -66,6 +68,8 @@ gem "state_machines"
 gem "jwt"
 
 gem "sprockets"
+# The rails gem stopped depending on sprockets-rails in 7.0.5; config/application.rb and the environments still use it
+gem "sprockets-rails"
 
 # Bulk import
 gem "activerecord-import"
