@@ -9,6 +9,7 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :gca,           class: DropzoneUser, default: nil
   object  :load_master,   class: DropzoneUser, default: nil
   object  :plane,         class: Plane
+  # Ignored: a new load is always open
   string  :state,         default: "open"
   date_time :created_at,  default: -> { DateTime.current }
 
@@ -51,7 +52,6 @@ class Manifest::CreateLoad < ApplicationInteraction
       pilot: pilot,
       load_master: load_master,
       plane: plane,
-      state: state,
       max_slots: max_slots || plane.max_slots,
       created_at: created_at
     )
@@ -59,7 +59,6 @@ class Manifest::CreateLoad < ApplicationInteraction
 
   def save
     errors.merge!(@load.errors) unless @load.save
-    @load.broadcast_create
     @load
   end
 end

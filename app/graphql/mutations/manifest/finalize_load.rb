@@ -29,6 +29,8 @@ module Mutations::Manifest
             load_by_id(id).dropzone
           )
         )
+      else
+        { load: nil, field_errors: nil, errors: ["A load can only be finalized as landed or cancelled"] }
       end
     end
 
@@ -42,7 +44,7 @@ module Mutations::Manifest
         [
           false, {
             errors: [
-              "You don't have permissions to create ticket addons",
+              "You don't have permissions to update loads",
             ],
           },
         ]
