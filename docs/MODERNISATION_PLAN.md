@@ -1512,7 +1512,7 @@ Size: S
 Fixes: none
 
 ### P3.2 — Remove sentry-expo
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.1
 Branch: modernise/p3-2-remove-sentry
