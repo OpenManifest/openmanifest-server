@@ -1602,7 +1602,7 @@ Size: M
 Fixes: none
 
 ### P3.5 — Upgrade to Expo SDK 48
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.4
 Branch: modernise/p3-5-expo-48
@@ -2028,6 +2028,8 @@ Steps:
      expo-notifications); remove `CAMERA_ROLL`, `MEDIA_LIBRARY`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
      (the image picker uses the system photo picker).
   5. Run `npx expo config --type public` and include the output in the PR.
+  6. `expo-doctor` (P3.5) flags direct installs of `@expo/config-plugins` and `@expo/metro-config`: remove them from
+     `package.json` and import `expo/config-plugins` / `expo/metro-config` instead.
 Acceptance criteria (cloud VM):
   - `npx expo config --type public` exits 0; `test ! -f app.json`; client checks, web export and web smoke test pass;
     `npx expo-doctor` reports no config errors.
