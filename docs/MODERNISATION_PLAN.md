@@ -12,6 +12,9 @@ The client repo's `docs/MODERNISATION_PLAN.md` only points here. Reference mater
 
 Written in pass 1 on 2026-10-08 against backend `b8dc33a` and client `3112795` (both `staging`).
 
+Feature plans that build on this one (booking, webshop and their shared commerce foundation) are in
+[`features/README.md`](features/README.md).
+
 ## Current state
 
 OpenManifest is a skydiving dropzone manifest system: a Rails 7.0.4 / Ruby 3.1.3 GraphQL API (`graphql-ruby` 2.0,
@@ -85,8 +88,9 @@ document the task links, before changing anything.
 
 - Read the tasks in document order. Pick the first task whose `Status` is `todo` and whose `Depends on` tasks are all
   `done`. Skip tasks that are `blocked (…)` or `owner-check (…)`.
-- If no task qualifies, report that and stop. Do not start a task whose dependencies are `owner-check`; the owner sets
-  them to `done` after checking.
+- If no task qualifies, continue with the feature plans in [`features/README.md`](features/README.md) (same rules, in
+  the order listed there). If none of those qualifies either, report that and stop. Do not start a task whose
+  dependencies are `owner-check`; the owner sets them to `done` after checking.
 
 ### Git workflow
 
