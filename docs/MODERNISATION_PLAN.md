@@ -2216,7 +2216,7 @@ Size: M
 Fixes: none
 
 ### P4.5 — Move setup forms to react-hook-form (group 1)
-Status: todo
+Status: owner-check (edit dropzone settings, weather conditions and your own profile on one phone)
 Repo: client
 Depends on: P4.4
 Branch: modernise/p4-5-forms-group-1
