@@ -1483,7 +1483,7 @@ transitively. SDK 57 moves to RN 0.86 with no breaking changes intended; use `ex
 6. Update the version table in `client:docs/reference/README.md` §10.
 
 ### P3.1 — Remove unused client dependencies
-Status: todo
+Status: done
 Repo: client
 Depends on: P2.11
 Branch: modernise/p3-1-remove-unused-deps
