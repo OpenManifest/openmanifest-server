@@ -1254,7 +1254,7 @@ Size: L
 Fixes: none
 
 ### P2.5 — Upgrade Ruby 3.1.6 → 3.4.11
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.4
 Branch: modernise/p2-5-ruby-3-4

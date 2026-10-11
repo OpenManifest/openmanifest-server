@@ -183,6 +183,28 @@ docker run --rm --network host -v "$PWD":/app -w /app \
   ruby:3.4.11-bookworm bash -lc "apt-get update -qq && apt-get install -y -qq libpq-dev libvips42 >/dev/null && bundle install --jobs 4 && bundle exec rspec"
 ```
 
+Verified in the P2.5 session (cloud VM without `cache.ruby-lang.org`): `service docker start` fails (`ulimit: error
+setting limit`), but the daemon runs when started by hand, and Docker Hub is reachable:
+
+```bash
+(nohup dockerd --iptables=false --bridge=none --storage-driver=vfs > /tmp/dockerd.log 2>&1 &); sleep 12
+docker pull ruby:3.4.11-bookworm            # ~50 s; `ruby:4.0.7-bookworm` for P2.9
+docker rm -f rb34 2>/dev/null
+docker run -d --name rb34 --network host -v "$PWD":/app -w /app -v rb34-gems:/usr/local/bundle \
+  -e PGHOST=localhost -e PGUSER=root -e PGPASSWORD=root -e BACKEND_URL=http://local.openmanifest.org:5000/ \
+  -e DISABLE_SPRING=1 -e WEB_CONCURRENCY=0 ruby:3.4.11-bookworm sleep infinity
+docker exec rb34 bash -lc 'cd /app && bundle install --jobs 4'
+docker exec -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app && bundle exec rspec'
+# dev server for the web smoke test (host networking, so the host's Playwright reaches it on :5000)
+docker exec -d -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app && bin/rails s -b 0.0.0.0 -p 5000 > /tmp/rails.log 2>&1'
+```
+
+Notes: Postgres and Redis keep running on the host (`--network host`). `apt-get` inside the container does not work
+(`deb.debian.org` is blocked), so only what the image ships is available: the full (not `-slim`) image has `libpq-dev`,
+but **no libvips**; Rails boots and the whole suite passes without it (image variants are therefore not verified in
+this fallback). A stale Puma on the host also keeps :5000 busy: `ps aux | grep puma` and kill it before starting the container's
+server (`ss` prints nothing in this VM).
+
 ## 5. What changes as the phases progress
 
 | From task | Change |
