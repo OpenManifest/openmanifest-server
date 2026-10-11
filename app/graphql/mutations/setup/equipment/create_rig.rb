@@ -2,6 +2,8 @@
 
 module Mutations::Setup::Equipment
   class CreateRig < Mutations::BaseMutation
+    include OfficeAccess
+
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
     field :rig, Types::Equipment::Rig, null: true
@@ -12,7 +14,7 @@ module Mutations::Setup::Equipment
       model = if attributes[:user_id]
                 User.find(attributes[:user_id]).rigs.new
               else
-                Dropzone.find(attributes[:dropzone_id]).rigs.new
+                Operator.find(attributes[:operator_id]).rigs.new
               end
 
       attrs = attributes.to_h.except(:packing_card)
@@ -57,7 +59,7 @@ module Mutations::Setup::Equipment
     end
 
     def authorized?(attributes: nil)
-      if attributes[:user_id] && attributes[:user_id] != context[:current_resource].id
+      if attributes[:user_id] && attributes[:user_id] != context[:current_resource].id && !staff_of_member?(User.find_by(id: attributes[:user_id]))
         [
           false, {
             errors: [
@@ -65,11 +67,11 @@ module Mutations::Setup::Equipment
             ],
           },
         ]
-      elsif attributes[:dropzone_id] && !context[:current_resource].can?("createRig", dropzone_id: attributes[:dropzone_id])
+      elsif attributes[:operator_id] && !context[:current_resource].can?("createRig", operator_id: attributes[:operator_id])
         [
           false, {
             errors: [
-              "You can't create rigs for this dropzone",
+              "You can't create rigs for this operator",
             ],
           },
         ]

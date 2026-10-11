@@ -1,6 +1,6 @@
-mutation UpdateRigInspectionTemplate($dropzoneId: Int, $formId: Int, $definition: String) {
+mutation UpdateRigInspectionTemplate($operatorId: Int, $formId: Int, $definition: String) {
   updateFormTemplate(
-    input: { id: $formId, attributes: { dropzoneId: $dropzoneId, definition: $definition } }
+    input: { id: $formId, attributes: { operatorId: $operatorId, definition: $definition } }
   ) {
     formTemplate {
       id

@@ -4,7 +4,7 @@ require "rails_helper"
 
 # BUG-035: the load state may only change through the state machine. BUG-026: landing counts the jumps exactly once.
 RSpec.describe Load, "state machine" do
-  include_context "dropzone_with_load"
+  include_context "operator_with_load"
 
   # Every event with the states it may start from
   events = {
@@ -56,15 +56,15 @@ RSpec.describe Load, "state machine" do
   end
 
   describe "jump counters" do
-    let(:ticket_type) { create(:ticket_type, dropzone: dropzone, cost: 10) }
-    let(:jumper) { create(:dropzone_user, dropzone: dropzone, credits: 100, jump_count: 0) }
+    let(:ticket_type) { create(:ticket_type, operator: operator, cost: 10) }
+    let(:jumper) { create(:membership, operator: operator, credits: 100, jump_count: 0) }
     let!(:slot) do
-      create(:slot, load: load, dropzone: dropzone, dropzone_user: jumper, ticket_type: ticket_type,
+      create(:slot, load: load, operator: operator, membership: jumper, ticket_type: ticket_type,
                     jump_type: JumpType.allowed_for([jumper]).first)
     end
 
     def counts
-      [jumper.reload.jump_count, jumper.user.reload.jump_count, jumper.user.dropzone_count]
+      [jumper.reload.jump_count, jumper.user.reload.jump_count, jumper.user.operator_count]
     end
 
     it "counts the jump once when the load lands" do
@@ -89,18 +89,18 @@ RSpec.describe Load, "state machine" do
       expect { load.cancel }.not_to(change { counts })
     end
 
-    it "keeps the dropzone count of a returning jumper" do
+    it "keeps the operator count of a returning jumper" do
       jumper.update!(jump_count: 5)
-      jumper.user.update!(jump_count: 5, dropzone_count: 1)
+      jumper.user.update!(jump_count: 5, operator_count: 1)
 
       expect { load.mark_as_landed }.to change { counts }.from([5, 5, 1]).to([6, 6, 1])
     end
   end
 
   describe "notifications" do
-    let(:jumper) { create(:dropzone_user, dropzone: dropzone, credits: 100) }
+    let(:jumper) { create(:membership, operator: operator, credits: 100) }
     let!(:slot) do
-      create(:slot, load: load, dropzone: dropzone, dropzone_user: jumper, ticket_type: create(:ticket_type, dropzone: dropzone, cost: 10),
+      create(:slot, load: load, operator: operator, membership: jumper, ticket_type: create(:ticket_type, operator: operator, cost: 10),
                     jump_type: JumpType.allowed_for([jumper]).first)
     end
 

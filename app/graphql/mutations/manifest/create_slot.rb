@@ -13,11 +13,11 @@ module Mutations::Manifest
         Manifest::CreateSlot,
         :slot,
         access_context: access_context_for(
-          attributes[:dropzone_user].dropzone
+          attributes[:membership].operator
         ),
         **attributes.to_h.slice(
           :ticket_type,
-          :dropzone_user,
+          :membership,
           :jump_type,
           :exit_weight,
           :rig,

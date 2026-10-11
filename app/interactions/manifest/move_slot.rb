@@ -9,7 +9,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil
 
-  validate :same_dropzone
+  validate :same_operator
 
   steps :lock_rows,
         :open_with_room,
@@ -31,9 +31,9 @@ class Manifest::MoveSlot < ApplicationInteraction
       action: :created,
       access_level: :user,
       created_at: DateTime.current,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} moved #{source_slot.dropzone_user.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
+      message: "#{access_context.user.name} moved #{source_slot.membership.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
     )
   end
 
@@ -47,9 +47,9 @@ class Manifest::MoveSlot < ApplicationInteraction
       created_at: DateTime.current,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user&.user&.name || 'a passenger'} from load ##{source_slot.load.load_number}",
+      message: "#{access_context.user.name} failed to move #{source_slot.membership&.user&.name || 'a passenger'} from load ##{source_slot.load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -59,7 +59,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   def lock_rows
     [source_slot.load, destination_load].compact.uniq.sort_by(&:id).each(&:lock!)
     source_slot.reload
-    source_slot.dropzone_user&.lock!
+    source_slot.membership&.lock!
   end
 
   def move_slot
@@ -79,9 +79,9 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affordable?
-    return unless source_slot.load.plane.dropzone.is_credit_system_enabled?
+    return unless source_slot.load.plane.operator.is_credit_system_enabled?
     # Check the cost of the current slot
-    user_funds = source_slot.cost_cents + source_slot.dropzone_user.credits_cents.to_i
+    user_funds = source_slot.cost_cents + source_slot.membership.credits_cents.to_i
 
     # Check if the user has enough credits
     # to manifest for this jump (taking into consideration the cost)
@@ -110,8 +110,8 @@ class Manifest::MoveSlot < ApplicationInteraction
     # Create a new order
     compose(
       Transactions::Purchase,
-      buyer: source_slot.dropzone_user,
-      seller: access_context.dropzone,
+      buyer: source_slot.membership,
+      seller: access_context.operator,
       purchasable: source_slot,
       access_context: access_context
     )
@@ -123,8 +123,15 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   # Moving someone else's slot needs updateUserSlot, your own updateSlot (BUG-007)
   def required_permissions
-    own = access_context&.subject.present? && access_context.subject == source_slot.dropzone_user
-    return { updateSlot: "You don't have permissions to move your slot (missing updateSlot)" } if own
+    own = access_context&.subject.present? && access_context.subject == source_slot.membership
+    if own
+      message = if access_context.subject.manifest_desk_only?(:updateSlot)
+                  Membership::MANIFEST_DESK_MESSAGE
+                else
+                  "You don't have permissions to move your slot (missing updateSlot)"
+                end
+      return { updateSlot: message }
+    end
 
     { updateUserSlot: "You don't have permissions to move other users (missing updateUserSlot)" }
   end
@@ -145,11 +152,11 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   private
 
-  # Both loads must belong to the dropzone the caller acts in
-  def same_dropzone
-    dropzone_id = access_context&.dropzone&.id
+  # Both loads must belong to the operator the caller acts in
+  def same_operator
+    operator_id = access_context&.operator&.id
     loads = [source_slot.load, destination_load].compact
-    errors.add(:base, "The slot and the load must belong to the same dropzone") unless loads.present? && loads.all? { |load| load.plane.dropzone_id == dropzone_id }
+    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.plane.operator_id == operator_id }
   end
 
   def destination_load

@@ -3,20 +3,20 @@
 require "rails_helper"
 
 RSpec.describe "Client operations: manifest" do
-  include_context "dropzone"
+  include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone, name: "Height", cost: 40) }
-  let!(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, name: "Tandem", cost: 200).tap { |t| t.update!(is_tandem: true, allow_manifesting_self: false) } }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
+  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
+  let!(:tandem_ticket) { create(:ticket_type, operator: operator, name: "Tandem", cost: 200).tap { |t| t.update!(is_tandem: true, allow_manifesting_self: false) } }
   let(:load_variables) { { name: "Load A", plane: plane.id, pilot: pilot.id, gca: owner.id, maxSlots: 10 } }
   let!(:manifest_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner, name: "Existing", max_slots: 10) }
 
   before { fun_jumper.update!(credits: 300) }
 
   def slot_variables(dz_user, **extra)
-    { load: manifest_load.id, dropzoneUser: dz_user.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([dz_user]).first.id, exitWeight: 80 }.merge(extra)
+    { load: manifest_load.id, membership: dz_user.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([dz_user]).first.id, exitWeight: 80 }.merge(extra)
   end
 
   def manifest!(dz_user, as: owner_user, **extra)
@@ -25,28 +25,28 @@ RSpec.describe "Client operations: manifest" do
   end
 
   describe "Loads" do
-    it "lists the loads of the dropzone" do
-      json = client_operation("Loads", variables: { dropzone: dropzone.id }, as: user)
+    it "lists the loads of the operator" do
+      json = client_operation("Loads", variables: { operator: operator.id }, as: user)
 
       expect(json.dig(:data, :loads, :edges).map { |e| e.dig(:node, :id) }).to eq([manifest_load.id.to_s])
       expect(json.dig(:data, :loads, :edges, 0, :node)).to include(name: "Existing", state: "open", maxSlots: 10, availableSlots: 10)
     end
 
-    it "filters by date in the dropzone's time zone" do
+    it "filters by date in the operator's time zone" do
       old_load = create(:load, plane: plane, pilot: pilot, gca: owner, created_at: 3.days.ago)
 
-      past = client_operation("Loads", variables: { dropzone: dropzone.id, date: 3.days.ago.in_time_zone(dropzone.time_zone).to_date.iso8601 }, as: user)
-      today = client_operation("Loads", variables: { dropzone: dropzone.id, date: Time.current.in_time_zone(dropzone.time_zone).to_date.iso8601 }, as: user)
-      unfiltered = client_operation("Loads", variables: { dropzone: dropzone.id }, as: user)
+      past = client_operation("Loads", variables: { operator: operator.id, date: 3.days.ago.in_time_zone(operator.time_zone).to_date.iso8601 }, as: user)
+      today = client_operation("Loads", variables: { operator: operator.id, date: Time.current.in_time_zone(operator.time_zone).to_date.iso8601 }, as: user)
+      unfiltered = client_operation("Loads", variables: { operator: operator.id }, as: user)
 
       expect(past.dig(:data, :loads, :edges).map { |e| e.dig(:node, :id) }).to eq([old_load.id.to_s])
       expect(today.dig(:data, :loads, :edges).map { |e| e.dig(:node, :id) }).to eq([manifest_load.id.to_s])
-      # Without a date the resolver returns every load of the dropzone, not only today's
+      # Without a date the resolver returns every load of the operator, not only today's
       expect(unfiltered.dig(:data, :loads, :edges).size).to eq(2)
     end
 
     it "requires authentication" do
-      expect(client_operation("Loads", variables: { dropzone: dropzone.id }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
+      expect(client_operation("Loads", variables: { operator: operator.id }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
   end
 
@@ -59,7 +59,7 @@ RSpec.describe "Client operations: manifest" do
       load = json.dig(:data, :load)
       expect(load).to include(id: manifest_load.id.to_s, name: "Existing", state: "open")
       expect(load.dig(:plane, :id)).to eq(plane.id.to_s)
-      expect(load[:slots].map { |slot| slot.dig(:dropzoneUser, :id) }).to eq([fun_jumper.id.to_s])
+      expect(load[:slots].map { |slot| slot.dig(:membership, :id) }).to eq([fun_jumper.id.to_s])
     end
 
     it "returns the jumpers of a load that has no load master" do
@@ -68,7 +68,7 @@ RSpec.describe "Client operations: manifest" do
 
       json = client_operation("Load", variables: { id: no_master_load.id }, as: user)
 
-      expect(json.dig(:data, :load, :slots).map { |slot| slot.dig(:dropzoneUser, :id) }).to eq([fun_jumper.id.to_s])
+      expect(json.dig(:data, :load, :slots).map { |slot| slot.dig(:membership, :id) }).to eq([fun_jumper.id.to_s])
     end
 
     it "returns null for an unknown load" do
@@ -122,7 +122,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "changes the plane" do
-      other_plane = create(:plane, dropzone: dropzone, max_slots: 12)
+      other_plane = create(:plane, operator: operator, max_slots: 12)
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: other_plane.id } }, as: owner_user)
 
@@ -137,7 +137,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "refuses fewer slots than are already manifested" do
-      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+      2.times { manifest!(create(:membership, operator: operator, credits: 300)) }
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 1 } }, as: owner_user)
 
@@ -146,7 +146,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "allows exactly as many slots as are manifested" do
-      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
+      2.times { manifest!(create(:membership, operator: operator, credits: 300)) }
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 2 } }, as: owner_user)
 
@@ -155,8 +155,8 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "changes to a plane that seats exactly the manifested jumpers" do
-      2.times { manifest!(create(:dropzone_user, dropzone: dropzone, credits: 300)) }
-      small_plane = create(:plane, dropzone: dropzone, max_slots: 2)
+      2.times { manifest!(create(:membership, operator: operator, credits: 300)) }
+      small_plane = create(:plane, operator: operator, max_slots: 2)
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: small_plane.id } }, as: owner_user)
 
@@ -263,7 +263,7 @@ RSpec.describe "Client operations: manifest" do
       json = client_operation("ManifestUser", variables: slot_variables(fun_jumper), as: owner_user)
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
-      expect(json.dig(:data, :createSlot, :slot, :dropzoneUser, :id)).to eq(fun_jumper.id.to_s)
+      expect(json.dig(:data, :createSlot, :slot, :membership, :id)).to eq(fun_jumper.id.to_s)
       expect(json.dig(:data, :createSlot, :slot, :costCents)).to eq(4000)
       expect(fun_jumper.reload.credits).to eq(260)
     end
@@ -272,7 +272,7 @@ RSpec.describe "Client operations: manifest" do
       json = client_operation("ManifestUser", variables: slot_variables(fun_jumper), as: user)
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
-      expect(manifest_load.slots.map(&:dropzone_user)).to eq([fun_jumper])
+      expect(manifest_load.slots.map(&:membership)).to eq([fun_jumper])
     end
 
     it "rejects a jumper without enough credits" do
@@ -306,7 +306,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "does not let a student manifest another member" do
       student = create(:user)
-      create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"), credits: 100)
+      create(:membership, operator: operator, user: student, user_role: operator.user_roles.find_by(name: "student"), credits: 100)
 
       json = client_operation("ManifestUser", variables: slot_variables(fun_jumper), as: student)
 
@@ -320,9 +320,9 @@ RSpec.describe "Client operations: manifest" do
     end
 
     context "with add-ons" do
-      let!(:video) { Extra.create!(dropzone: dropzone, name: "Video", cost: 5) }
-      let!(:coach) { Extra.create!(dropzone: dropzone, name: "Coach", cost: 12) }
-      let!(:unrelated) { Extra.create!(dropzone: dropzone, name: "Not on this ticket", cost: 1) }
+      let!(:video) { Extra.create!(operator: operator, name: "Video", cost: 5) }
+      let!(:coach) { Extra.create!(operator: operator, name: "Coach", cost: 12) }
+      let!(:unrelated) { Extra.create!(operator: operator, name: "Not on this ticket", cost: 1) }
 
       before { ticket_type.extras << [video, coach] }
 
@@ -342,7 +342,7 @@ RSpec.describe "Client operations: manifest" do
       it "charges the ticket and the add-ons in one order" do
         slot = manifest!(fun_jumper, extras: [video.id, coach.id])
 
-        expect(slot.reload.cost).to eq(57)
+        expect(slot.reload.cost_cents).to eq(5700)
         expect(slot.order.amount).to eq(57)
         expect(fun_jumper.reload.credits).to eq(243)
       end
@@ -369,11 +369,11 @@ RSpec.describe "Client operations: manifest" do
 
         expect(json.dig(:data, :createSlot, :slot)).to be_nil
         expect(json.dig(:data, :createSlot, :fieldErrors, 0, :field)).to eq("extras")
-        expect(Slot.where(dropzone_user: fun_jumper)).to be_empty
+        expect(Slot.where(membership: fun_jumper)).to be_empty
       end
 
-      it "refuses an add-on of another dropzone" do
-        foreign = Extra.create!(dropzone: create(:dropzone), name: "Video", cost: 5)
+      it "refuses an add-on of another operator" do
+        foreign = Extra.create!(operator: create(:operator), name: "Video", cost: 5)
 
         json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, extras: [foreign.id]), as: owner_user)
 
@@ -390,7 +390,7 @@ RSpec.describe "Client operations: manifest" do
   end
 
   describe "ManifestGroup" do
-    let(:second) { create(:dropzone_user, dropzone: dropzone, credits: 300) }
+    let(:second) { create(:membership, operator: operator, credits: 300) }
     let(:group) { [{ id: fun_jumper.id, exitWeight: 80 }, { id: second.id, exitWeight: 75 }] }
     let(:group_variables) { { load: manifest_load.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([fun_jumper, second]).first.id, userGroup: group } }
 
@@ -398,7 +398,7 @@ RSpec.describe "Client operations: manifest" do
       json = client_operation("ManifestGroup", variables: group_variables, as: owner_user)
 
       expect(json.dig(:data, :createSlots, :errors)).to be_nil
-      expect(manifest_load.slots.map(&:dropzone_user)).to match_array([fun_jumper, second])
+      expect(manifest_load.slots.map(&:membership)).to match_array([fun_jumper, second])
     end
 
     it "rejects the whole group when a member cannot afford the jump" do
@@ -418,14 +418,14 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "gives a group of three one group number, and the next group the next one" do
-      third = create(:dropzone_user, dropzone: dropzone, credits: 300)
-      other_group = Array.new(2) { create(:dropzone_user, dropzone: dropzone, credits: 300) }
+      third = create(:membership, operator: operator, credits: 300)
+      other_group = Array.new(2) { create(:membership, operator: operator, credits: 300) }
       [[fun_jumper, second, third], other_group].each do |members|
         variables = group_variables.merge(jumpType: JumpType.allowed_for(members).first.id, userGroup: members.map { |member| { id: member.id, exitWeight: 80 } })
         expect(client_operation("ManifestGroup", variables: variables, as: owner_user).dig(:data, :createSlots, :errors)).to be_blank
       end
 
-      groups = manifest_load.slots.group_by(&:group_number).values.map { |slots| slots.map(&:dropzone_user) }
+      groups = manifest_load.slots.group_by(&:group_number).values.map { |slots| slots.map(&:membership) }
       expect(groups).to match_array([match_array([fun_jumper, second, third]), match_array(other_group)])
     end
 
@@ -436,7 +436,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "charges the add-ons to every member of the group" do
-      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      video = Extra.create!(operator: operator, name: "Video", cost: 5)
       ticket_type.extras << video
 
       client_operation("ManifestGroup", variables: group_variables.merge(extras: [video.id]), as: owner_user)
@@ -446,7 +446,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "counts the add-ons in the credit check of the group" do
-      video = Extra.create!(dropzone: dropzone, name: "Video", cost: 5)
+      video = Extra.create!(operator: operator, name: "Video", cost: 5)
       ticket_type.extras << video
       second.update!(credits: 42)
 
@@ -461,7 +461,7 @@ RSpec.describe "Client operations: manifest" do
     let!(:second_load) { create(:load, plane: plane, pilot: pilot, gca: owner) }
     let!(:slot) { manifest!(fun_jumper) }
 
-    it "moves a slot to another load of the dropzone" do
+    it "moves a slot to another load of the operator" do
       json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
 
       expect(json.dig(:data, :moveSlot, :errors)).to be_nil
@@ -470,7 +470,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "keeps the slot when the target load is full" do
       second_load.update!(max_slots: 1)
-      other = create(:dropzone_user, dropzone: dropzone, credits: 300)
+      other = create(:membership, operator: operator, credits: 300)
       client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user)
 
       client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
@@ -480,7 +480,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "does not let a student move someone else's slot" do
       student = create(:user)
-      create(:dropzone_user, dropzone: dropzone, user: student, user_role: dropzone.user_roles.find_by(name: "student"))
+      create(:membership, operator: operator, user: student, user_role: operator.user_roles.find_by(name: "student"))
 
       client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: student)
 
@@ -488,7 +488,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "moves a slot of a jumper whose credit balance is empty (nil)" do
-      fun_jumper.update_columns(credits: nil)
+      fun_jumper.update_columns(credits_cents: nil)
 
       json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
 
@@ -497,7 +497,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "moves next to a target slot, into its load and group" do
-      other = create(:dropzone_user, dropzone: dropzone, credits: 300)
+      other = create(:membership, operator: operator, credits: 300)
       target = Slot.find(client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user).dig(:data, :createSlot, :slot, :id))
       target.update_column(:group_number, 7)
 
@@ -529,7 +529,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "refuses another jumper" do
       stranger = create(:user)
-      create(:dropzone_user, dropzone: dropzone, user: stranger, user_role: dropzone.user_roles.find_by(name: "fun_jumper"))
+      create(:membership, operator: operator, user: stranger, user_role: operator.user_roles.find_by(name: "fun_jumper"))
 
       client_operation("DeleteSlot", variables: { id: slot.id }, as: stranger)
 

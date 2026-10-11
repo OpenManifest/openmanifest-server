@@ -4,14 +4,14 @@ require "rails_helper"
 
 # BUG-019: slots_count must count each slot once, ready_slots_count must count the ready ones.
 RSpec.describe Slot, "counter caches" do
-  let(:dropzone) { create(:dropzone, credits: 0) }
-  let(:plane) { create(:plane, dropzone: dropzone, max_slots: 14) }
+  let(:operator) { create(:operator, credits: 0) }
+  let(:plane) { create(:plane, operator: operator, max_slots: 14) }
   let(:plane_load) { create(:load, plane: plane) }
   let(:other_load) { create(:load, plane: plane) }
 
   def add_slot(load, **attrs)
-    member = create(:dropzone_user, dropzone: dropzone, credits: 500)
-    create(:slot, load: load, dropzone: dropzone, dropzone_user: member, jump_type: JumpType.allowed_for([member]).first, **attrs)
+    member = create(:membership, operator: operator, credits: 500)
+    create(:slot, load: load, operator: operator, membership: member, jump_type: JumpType.allowed_for([member]).first, **attrs)
   end
 
   def counts(record)
@@ -31,13 +31,13 @@ RSpec.describe Slot, "counter caches" do
     expect(plane_load.slots.count).to eq(3)
   end
 
-  it "counts the slots of a dropzone once" do
-    expect { Array.new(2) { add_slot(plane_load) } }.to change { dropzone.reload.slots_count }.by(2)
+  it "counts the slots of an operator once" do
+    expect { Array.new(2) { add_slot(plane_load) } }.to change { operator.reload.slots_count }.by(2)
   end
 
   it "counts a tandem passenger's slot as a slot and as ready" do
-    passenger = Passenger.create!(name: "Pat Passenger", exit_weight: 70, dropzone: dropzone)
-    ticket_type = create(:ticket_type, dropzone: dropzone).tap { |t| t.update!(is_tandem: true) }
+    passenger = Passenger.create!(name: "Pat Passenger", exit_weight: 70, operator: operator)
+    ticket_type = create(:ticket_type, operator: operator).tap { |t| t.update!(is_tandem: true) }
     jump_type = JumpType.first
 
     Slot.create!(load: plane_load, passenger: passenger, ticket_type: ticket_type, jump_type: jump_type, exit_weight: 70)
@@ -65,7 +65,7 @@ RSpec.describe Slot, "counter caches" do
   it "does not count a slot as ready while nobody is manifested on it" do
     slot = add_slot(plane_load)
 
-    slot.update_columns(dropzone_user_id: nil)
+    slot.update_columns(membership_id: nil)
     Slot.counter_culture_fix_counts
 
     expect(counts(plane_load)).to eq(slots_count: 1, ready_slots_count: 0)

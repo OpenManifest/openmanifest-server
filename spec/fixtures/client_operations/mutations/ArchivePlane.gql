@@ -1,5 +1,5 @@
 mutation ArchivePlane($id: Int!) {
-  deletePlane(input: { id: $id  }) {
+  deletePlane(input: { id: $id }) {
     fieldErrors {
       field
       message

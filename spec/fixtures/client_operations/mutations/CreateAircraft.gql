@@ -1,15 +1,9 @@
-mutation CreateAircraft(
-  $attributes: PlaneInput!
-) {
-  createPlane(
-    input: {
-      attributes: $attributes
-    }
-  ) {
+mutation CreateAircraft($attributes: PlaneInput!) {
+  createPlane(input: { attributes: $attributes }) {
     plane {
       ...planeEssentials
 
-      dropzone {
+      operator {
         id
         planes {
           ...planeEssentials

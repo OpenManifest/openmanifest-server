@@ -3,16 +3,16 @@
 require "rails_helper"
 
 RSpec.describe Manifest::MoveSlot do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
-  let!(:plane) { create(:plane, dropzone: dropzone) }
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+  let!(:operator) { create(:operator, credits: 50) }
+  let!(:ticket_type) { create(:ticket_type, operator: operator) }
+  let!(:membership) { create(:membership, operator: operator, credits: 200) }
+  let!(:plane) { create(:plane, operator: operator) }
+  let!(:gca) { create(:membership, operator: operator) }
+  let!(:pilot) { create(:membership, operator: operator) }
   let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:target_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
   let!(:access_context) do
-    u = create(:dropzone_user, dropzone: dropzone)
+    u = create(:membership, operator: operator)
     u.grant! :createSlot
     u.grant! :createUserSlot
     # P6.5: moving somebody else's slot needs updateUserSlot
@@ -26,10 +26,10 @@ RSpec.describe Manifest::MoveSlot do
         Manifest::CreateSlot.run!(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
       let!(:outcome) do

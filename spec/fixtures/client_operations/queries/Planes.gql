@@ -1,5 +1,5 @@
-query Planes($dropzoneId: ID!) {
-  planes(dropzone: $dropzoneId) {
+query Planes($operatorId: ID!) {
+  planes(operator: $operatorId) {
     ...planeEssentials
   }
 }

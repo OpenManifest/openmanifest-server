@@ -18,7 +18,7 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
       access_context: access_context,
       resource: @aircraft,
       action: :created,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} created aircraft #{name} (#{registration})"
     )
@@ -32,14 +32,14 @@ class Setup::Aircrafts::CreateAircraft < ApplicationInteraction
       level: :error,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} failed to create aircraft #{name} (#{registration})"
     )
   end
 
   def build_aircraft
-    @aircraft = access_context.dropzone.planes.new(
+    @aircraft = access_context.operator.planes.new(
       name: name,
       registration: registration,
       min_slots: min_slots,

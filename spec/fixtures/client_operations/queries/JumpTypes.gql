@@ -1,14 +1,14 @@
-query JumpTypes($allowedForDropzoneUserIds: [Int!]) {
-  jumpTypes(dropzoneUsers: $allowedForDropzoneUserIds) {
+query JumpTypes($allowedForMembershipIds: [Int!]) {
+  jumpTypes(memberships: $allowedForMembershipIds) {
     ...jumpTypeEssentials
   }
 }
 
-query AllowedJumpTypes($dropzoneId: ID!, $allowedForDropzoneUserIds: [Int!]!, $isPublic: Boolean) {
-  dropzone(id: $dropzoneId) {
+query AllowedJumpTypes($operatorId: ID!, $allowedForMembershipIds: [Int!]!, $isPublic: Boolean) {
+  operator(id: $operatorId) {
     id
 
-    allowedJumpTypes(userId: $allowedForDropzoneUserIds) {
+    allowedJumpTypes(userId: $allowedForMembershipIds) {
       ...jumpTypeEssentials
     }
 

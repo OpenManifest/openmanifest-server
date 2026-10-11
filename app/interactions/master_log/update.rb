@@ -1,10 +1,10 @@
 class MasterLog::Update < ApplicationInteraction
-  record :dropzone
+  record :operator
   date :date, default: -> { DateTime.current }
   string :notes, default: nil
-  record :dzso, class: ::DropzoneUser, default: nil
+  record :dzso, class: ::Membership, default: nil
 
-  allow updateDropzone: 'You are not authorized to update the master log'
+  allow updateOperator: 'You are not authorized to update the master log'
 
   success do
     compose(
@@ -14,7 +14,7 @@ class MasterLog::Update < ApplicationInteraction
       resource: entry,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} updated master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
     )
@@ -28,7 +28,7 @@ class MasterLog::Update < ApplicationInteraction
       resource: entry,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} failed to update master log #{date.iso8601} with #{{ dzso: dzso&.user&.name, notes: notes }.compact.to_json}",
       details: errors.full_messages.join(", ")
@@ -52,6 +52,6 @@ class MasterLog::Update < ApplicationInteraction
   private
 
   def entry
-    @entry ||= dropzone.master_logs.at(date)
+    @entry ||= operator.master_logs.at(date)
   end
 end

@@ -1,0 +1,57 @@
+fragment membershipEssentials on Membership {
+  id
+  walletId
+  expiresAt
+  hasCredits
+  hasMembership
+  hasLicense
+  hasExitWeight
+  role {
+    ...roleEssentials
+  }
+  license {
+    ...licenseEssentials
+  }
+  user {
+    ...userEssentials
+  }
+}
+
+fragment membershipDetails on Membership {
+  ...membershipEssentials
+  creditsCents
+  license {
+    ...licenseDetails
+  }
+  user {
+    ...userDetailed
+  }
+  availableRigs {
+    ...rigEssentials
+  }
+}
+
+fragment membershipProfile on Membership {
+  ...membershipDetails
+  permissions
+
+  rigInspections {
+    ...rigInspectionEssentials
+  }
+
+  orders {
+    edges {
+      node {
+        ...orderEssentials
+      }
+    }
+  }
+
+  slots {
+    edges {
+      node {
+        ...userSlotDetails
+      }
+    }
+  }
+}

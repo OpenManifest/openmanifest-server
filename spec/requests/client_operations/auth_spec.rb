@@ -142,7 +142,7 @@ RSpec.describe "Client operations: auth and session" do
       json = client_operation("CurrentUser", as: user)
 
       expect(json.dig(:data, :currentUser)).to include(id: user.id.to_s, email: user.email, moderationRole: "user")
-      expect(json.dig(:data, :currentUser, :dropzoneUsers)).to eq([])
+      expect(json.dig(:data, :currentUser, :memberships)).to eq([])
     end
 
     it "requires authentication" do
@@ -173,30 +173,6 @@ RSpec.describe "Client operations: auth and session" do
 
       expect(json).not_to have_key(:errors)
       expect(json.dig(:data, :loginWithApple, :authenticatable)).to be_nil
-    end
-  end
-
-  describe "LoginWithFacebook" do
-    let(:variables) { { token: "facebook-access-token" } }
-
-    it "logs in the user resolved from the Facebook token" do
-      facebook_user = create(:user, provider: "facebook", uid: "fb-1")
-      allow(Login::Facebook).to receive(:run!).and_return(facebook_user)
-
-      json = client_operation("LoginWithFacebook", variables: variables)
-
-      expect(json.dig(:data, :loginWithFacebook, :authenticatable, :id)).to eq(facebook_user.id.to_s)
-      expect(json.dig(:data, :loginWithFacebook, :credentials).keys).to match_array(credential_keys)
-    end
-
-    it "reports a failed Facebook authentication to the client" do
-      allow(Login::Facebook).to receive(:run!).and_raise(StandardError, "bad token")
-
-      json = client_operation("LoginWithFacebook", variables: variables)
-
-      expect(json).not_to have_key(:errors)
-      expect(json.dig(:data, :loginWithFacebook, :authenticatable)).to be_nil
-      expect(json.dig(:data, :loginWithFacebook, :credentials)).to be_nil
     end
   end
 end

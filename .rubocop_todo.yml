@@ -26,7 +26,7 @@ FactoryBot/FactoryAssociationWithStrategy:
 # SupportedStylesAlignWith: keyword, variable, start_of_line
 Layout/EndAlignment:
   Exclude:
-    - 'app/graphql/mutations/setup/dropzones/create_weather_condition.rb'
+    - 'app/graphql/mutations/setup/operators/create_weather_condition.rb'
 
 # Offense count: 169
 # This cop supports safe autocorrection (--autocorrect).
@@ -104,14 +104,14 @@ Lint/UselessOr:
 Naming/PredicateMethod:
   Exclude:
     - 'app/graphql/types/manifest/load.rb'
-    - 'app/graphql/types/users/dropzone_user.rb'
+    - 'app/graphql/types/users/membership.rb'
 
 # Offense count: 2
 # Configuration parameters: EnforcedStyle, AllowedIdentifiers, AllowedPatterns, ForbiddenIdentifiers, ForbiddenPatterns.
 # SupportedStyles: snake_case, camelCase
 Naming/VariableName:
   Exclude:
-    - 'app/models/dropzone_user.rb'
+    - 'app/models/membership.rb'
 
 # Offense count: 5
 # Configuration parameters: MinSize.
@@ -144,7 +144,7 @@ Rails/I18nLocaleTexts:
 # SupportedStyles: conservative, aggressive
 Rails/PluckInWhere:
   Exclude:
-    - 'app/models/dropzone_user.rb'
+    - 'app/models/membership.rb'
     - 'spec/interactions/manifest/create_multiple_slots.rb'
     - 'spec/interactions/manifest/create_slot_spec.rb'
 
@@ -192,7 +192,7 @@ Rails/ThreeStateBooleanColumn:
 # Offense count: 1
 Rails/UniqueValidationWithoutIndex:
   Exclude:
-    - 'app/models/dropzone_user.rb'
+    - 'app/models/membership.rb'
 
 # Offense count: 1
 Rails/WhereNotWithMultipleConditions:

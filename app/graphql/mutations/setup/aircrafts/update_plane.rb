@@ -4,7 +4,7 @@ module Mutations::Setup::Aircrafts
   class UpdatePlane < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :plane, Types::Dropzone::Aircraft, null: true
+    field :plane, Types::Operator::Aircraft, null: true
 
     argument :attributes, Types::Input::PlaneInput, required: true
     argument :id, Int, required: true
@@ -12,8 +12,8 @@ module Mutations::Setup::Aircrafts
     def resolve(attributes:, id:)
       model = Plane.find(id)
 
-      # A plane never moves to another dropzone
-      model.update!(attributes.to_h.except(:dropzone_id))
+      # A plane never moves to another operator
+      model.update!(attributes.to_h.except(:operator_id))
       {
         plane: model,
         errors: nil,
@@ -44,7 +44,7 @@ module Mutations::Setup::Aircrafts
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].can?(
         "updatePlane",
-        dropzone_id: Plane.find(id).dropzone_id
+        operator_id: Plane.find(id).operator_id
       )
         true
       else

@@ -3,16 +3,16 @@
 require "rails_helper"
 
 RSpec.describe Manifest::CreateSlot do
-  let(:dropzone) { create(:dropzone, credits: 50) }
-  let(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
+  let(:operator) { create(:operator, credits: 50) }
+  let(:ticket_type) { create(:ticket_type, operator: operator) }
 
-  let(:gca) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "GCA")) }
-  let(:pilot) { create(:dropzone_user, dropzone: dropzone, user: create(:user, name: "Pilot")) }
-  let(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
-  let(:plane) { create(:plane, dropzone: dropzone) }
+  let(:gca) { create(:membership, operator: operator, user: create(:user, name: "GCA")) }
+  let(:pilot) { create(:membership, operator: operator, user: create(:user, name: "Pilot")) }
+  let(:membership) { create(:membership, operator: operator, credits: 200) }
+  let(:plane) { create(:plane, operator: operator) }
   let(:plane_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
   let(:access_context) do
-    u = create(:dropzone_user, dropzone: dropzone)
+    u = create(:membership, operator: operator)
     u.grant! :createSlot
     u.grant! :createUserSlot
     ApplicationInteraction::AccessContext.new(u)
@@ -24,10 +24,10 @@ RSpec.describe Manifest::CreateSlot do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -41,17 +41,17 @@ RSpec.describe Manifest::CreateSlot do
 
     context "when the user doesnt have enough credits" do
       before do
-        dropzone_user.update(credits: ticket_type.cost - 10)
+        membership.update(credits: ticket_type.cost - 10)
       end
 
       let!(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -62,19 +62,19 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "when the user isnt allowed to manifest with the requested jump type" do
-      let!(:dropzone_user) do
-        create(:dropzone_user, dropzone: dropzone, credits: 200, federation: Federation.find_by(slug: :apf),
-                               license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A"))
+      let!(:membership) do
+        create(:membership, operator: operator, credits: 200, federation: Federation.find_by(slug: :apf),
+                            license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A"))
       end
-      let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([dropzone_user]).pluck(:id)).sample }
+      let!(:forbidden_jump_type) { JumpType.where.not(id: JumpType.allowed_for([membership]).pluck(:id)).sample }
       let!(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
+          membership: membership,
           jump_type: forbidden_jump_type,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -89,25 +89,25 @@ RSpec.describe Manifest::CreateSlot do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
-      let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-      let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:gca) { create(:membership, operator: operator) }
+      let!(:pilot) { create(:membership, operator: operator) }
       let!(:second_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
 
       let!(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: second_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -124,10 +124,10 @@ RSpec.describe Manifest::CreateSlot do
         Manifest::CreateSlot.run!(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: second_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -135,16 +135,16 @@ RSpec.describe Manifest::CreateSlot do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
         access_context.subject.grant! :createDoubleSlot
       end
 
-      let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-      let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
+      let!(:gca) { create(:membership, operator: operator) }
+      let!(:pilot) { create(:membership, operator: operator) }
       let!(:second_load) { create(:load, plane: plane, gca: gca, pilot: pilot) }
 
       it { is_expected.to be_a Slot }
@@ -152,16 +152,16 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "with a tandem passenger" do
-      let(:tandem_ticket) { create(:ticket_type, dropzone: dropzone, is_tandem: true) }
+      let(:tandem_ticket) { create(:ticket_type, operator: operator, is_tandem: true) }
       let(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: tandem_ticket,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight,
-          passenger_exit_weight: dropzone_user.exit_weight,
+          exit_weight: membership.exit_weight,
+          passenger_exit_weight: membership.exit_weight,
           passenger_name: Faker::Name.first_name
         )
       end
@@ -180,10 +180,10 @@ RSpec.describe Manifest::CreateSlot do
         Manifest::CreateSlot.run(
           access_context: access_context,
           ticket_type: ticket_type,
-          dropzone_user: dropzone_user,
-          jump_type: JumpType.allowed_for([dropzone_user]).first,
+          membership: membership,
+          jump_type: JumpType.allowed_for([membership]).first,
           load: plane_load,
-          exit_weight: dropzone_user.exit_weight
+          exit_weight: membership.exit_weight
         )
       end
 
@@ -198,40 +198,40 @@ RSpec.describe Manifest::CreateSlot do
       end
 
       it "does not charge the member" do
-        expect { outcome }.not_to(change { dropzone_user.reload.credits })
+        expect { outcome }.not_to(change { membership.reload.credits })
       end
     end
   end
 
   describe "the unique index on (load, person)" do
     it "refuses two slots for the same person on one load" do
-      slot = create(:slot, load: plane_load, dropzone: dropzone, dropzone_user: dropzone_user, jump_type: JumpType.allowed_for([dropzone_user]).first)
+      slot = create(:slot, load: plane_load, operator: operator, membership: membership, jump_type: JumpType.allowed_for([membership]).first)
 
       duplicate = slot.dup
       expect { duplicate.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
     end
 
     it "does not constrain passenger slots, which have no member" do
-      passenger = Passenger.create!(name: "Pat", exit_weight: 70, dropzone: dropzone)
-      ticket = create(:ticket_type, dropzone: dropzone, is_tandem: true)
+      passenger = Passenger.create!(name: "Pat", exit_weight: 70, operator: operator)
+      ticket = create(:ticket_type, operator: operator, is_tandem: true)
       slots = Array.new(2) { Slot.create!(load: plane_load, passenger: passenger, ticket_type: ticket, jump_type: JumpType.first, exit_weight: 70) }
 
-      expect(slots.map(&:dropzone_user_id)).to eq([nil, nil])
+      expect(slots.map(&:membership_id)).to eq([nil, nil])
     end
   end
 
   describe "validations of a slot nobody created (BUG-034)" do
     it "does not raise when the creator is unknown" do
-      slot = Slot.new(load: plane_load, dropzone_user: dropzone_user, ticket_type: ticket_type, exit_weight: 80,
-                      jump_type: JumpType.allowed_for([dropzone_user]).first, created_by: nil)
+      slot = Slot.new(load: plane_load, membership: membership, ticket_type: ticket_type, exit_weight: 80,
+                      jump_type: JumpType.allowed_for([membership]).first, created_by: nil)
 
       expect { slot.valid? }.not_to raise_error
     end
 
     it "does not let an unknown creator bypass the credit check" do
-      dropzone_user.update!(credits: 1)
-      slot = Slot.new(load: plane_load, dropzone_user: dropzone_user, ticket_type: ticket_type, exit_weight: 80,
-                      jump_type: JumpType.allowed_for([dropzone_user]).first, created_by: nil)
+      membership.update!(credits: 1)
+      slot = Slot.new(load: plane_load, membership: membership, ticket_type: ticket_type, exit_weight: 80,
+                      jump_type: JumpType.allowed_for([membership]).first, created_by: nil)
 
       expect(slot).not_to be_valid
       expect(slot.errors.full_messages.join).to match(/credits/i)

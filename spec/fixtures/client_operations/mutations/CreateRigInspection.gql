@@ -1,8 +1,6 @@
-mutation CreateRigInspection($dropzone: ID, $rig: ID, $isOk: Boolean, $definition: String) {
+mutation CreateRigInspection($operator: ID, $rig: ID, $isOk: Boolean, $definition: String) {
   createRigInspection(
-    input: {
-      attributes: { dropzone: $dropzone, rig: $rig, isOk: $isOk, definition: $definition }
-    }
+    input: { attributes: { operator: $operator, rig: $rig, isOk: $isOk, definition: $definition } }
   ) {
     rigInspection {
       ...rigInspectionMutationEssentials

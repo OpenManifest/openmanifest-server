@@ -1,0 +1,81 @@
+# The rename map of GENERALISATION.md §3 in machine-readable form. The client keeps a copy (config/vocabulary.yml,
+# synced by scripts/sync-vocabulary.mjs); edit this file, not the copy.
+#
+# Entries are words in snake_case. The tools split every identifier into words (snake, kebab, camel, Pascal, SCREAMING)
+# and rewrite word sequences, so `dropzone_user` also matches `dropzoneUser`, `DropzoneUser`, `dropzone-user` and
+# `DROPZONE_USER`, and the plural `dropzone_users` (`s` or `es` on the last word) maps to the plural of `new`.
+# Unrelated words that merely contain an old word (`airplane`, `bigrig`) are untouched.
+#
+# Not in the map (renamed by hand in the task that owns them): `Load` and `load_number`/`load_date` (unchanged by D5),
+# aircraft class names and `kind: aircraft`, load states (`boarding_call`, `in_flight`, `landed`), `max_slots`,
+# `plane_count`, `passenger_slot_id`, `pilot_id`/`gca_id`/`load_master_id`, `apf_number`, `canopy_size`.
+allow:
+  # Skydiving keeps its own words
+  - config/industries/skydiving/**
+  - app/**/skydiving/**
+  - app/features/skydiving/**
+  # History and prose
+  - db/migrate/**
+  - docs/**
+  - CHANGELOG.md
+  - LICENSE*
+  - README.md
+  - CLAUDE.md
+  # Generated or third-party files that are rebuilt rather than edited
+  - yarn.lock
+  - .rubocop_todo.yml
+  - package.json
+  - Gemfile.lock
+  - config/vocabulary.yml
+  # The tests of the tools themselves name the old terms on purpose
+  - spec/lib/vocabulary_spec.rb
+  - scripts/__tests__/vocabulary.test.ts
+  # Data examples of earlier migrations run against the schema of their time
+  - spec/migrations/**
+  - .github/**
+  # Generated from the schema (rebuilt by the dump / codegen, not edited)
+  - schema.graphql
+  - app/api/schema.d.ts
+  - app/api/operations.ts
+  - app/api/reflection.tsx
+  - app/api/openmanifest.graphql
+  - app/api/openmanifest.json
+
+groups:
+  tenant:
+    - { old: dropzone_user, new: membership }
+    - { old: dropzone, new: operator }
+  vehicle:
+    - { old: plane, new: vehicle }
+    - { old: passenger, new: guest }
+    - { old: jump_type, new: activity_type }
+    - { old: master_log, new: daily_log }
+    - { old: dzso, new: duty_officer }
+    - { old: exit_weight, new: body_mass_kg }
+    - { old: jump_count, new: load_count }
+  certifications:
+    - { old: user_federation_qualification, new: user_qualification }
+    - { old: user_federation, new: user_certification }
+    - { old: licensed_jump_type, new: permitted_activity }
+    - { old: federation, new: certification_body }
+    - { old: license, new: certification_level }
+  equipment:
+    - { old: rig_inspection, new: equipment_inspection }
+    - { old: repack_expires_at, new: service_due_at }
+    - { old: rig, new: equipment }
+  settings:
+    - { old: require_rig_inspection, new: require_equipment_inspection }
+    - { old: require_reserve_in_date, new: require_equipment_in_service }
+    - { old: require_license, new: require_certification }
+  permissions:
+    - { old: act_as_rig_inspector, new: act_as_equipment_inspector }
+    - { old: act_as_dzso, new: act_as_duty_officer }
+    - { old: create_plane, new: create_vehicle }
+    - { old: update_plane, new: update_vehicle }
+    - { old: delete_plane, new: delete_vehicle }
+    - { old: undelete_plane, new: undelete_vehicle }
+    - { old: create_rig, new: create_equipment }
+    - { old: update_rig, new: update_equipment }
+    - { old: delete_rig, new: delete_equipment }
+    - { old: undelete_rig, new: undelete_equipment }
+    - { old: read_rig, new: read_equipment }

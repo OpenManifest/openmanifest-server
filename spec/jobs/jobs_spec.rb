@@ -33,15 +33,15 @@ RSpec.describe "Background jobs" do
   end
 
   describe NotifyJob do
-    let(:dropzone) { create(:dropzone) }
-    let(:member) { create(:dropzone_user, dropzone: dropzone) }
+    let(:operator) { create(:operator) }
+    let(:member) { create(:membership, operator: operator) }
     let!(:notification) do
       member.user.update!(push_token: "ExponentPushToken[abc]")
-      Notification.create!(received_by: member, message: "Load #1 take off at 10:00", resource: dropzone, notification_type: :system)
+      Notification.create!(received_by: member, message: "Load #1 take off at 10:00", resource: operator, notification_type: :system)
     end
 
     it "is enqueued when a notification is created" do
-      expect { Notification.create!(received_by: member, message: "Hi", resource: dropzone, notification_type: :system) }.to have_enqueued_job(described_class)
+      expect { Notification.create!(received_by: member, message: "Hi", resource: operator, notification_type: :system) }.to have_enqueued_job(described_class)
     end
 
     it "sends the push notification" do
@@ -84,8 +84,8 @@ RSpec.describe "Background jobs" do
 
   describe AutoFinalizeJob do
     it "lands the called loads of past days and cancels the rest" do
-      dropzone = create(:dropzone)
-      plane = create(:plane, dropzone: dropzone)
+      operator = create(:operator)
+      plane = create(:plane, operator: operator)
       called = create(:load, plane: plane, created_at: 2.days.ago, dispatch_at: 2.days.ago)
       never_called = create(:load, plane: plane, created_at: 2.days.ago)
       today = create(:load, plane: plane)
@@ -97,14 +97,14 @@ RSpec.describe "Background jobs" do
   end
 
   describe MasterLogsJob do
-    let(:brisbane) { create(:dropzone, time_zone: "Australia/Brisbane") }
-    let(:los_angeles) { create(:dropzone, time_zone: "America/Los_Angeles") }
+    let(:brisbane) { create(:operator, time_zone: "Australia/Brisbane") }
+    let(:los_angeles) { create(:operator, time_zone: "America/Los_Angeles") }
     # 16:30 UTC is 02:30 on 9 October in Brisbane (UTC+10) and 09:30 on 9 October in Los Angeles (UTC-7)
     let(:now) { Time.utc(2026, 10, 8, 16, 30) }
 
     before { [brisbane, los_angeles] }
 
-    it "generates yesterday's log for the dropzones that are in their 02:00 hour" do
+    it "generates yesterday's log for the operators that are in their 02:00 hour" do
       described_class.perform_now(now)
 
       expect(brisbane.master_logs.pluck(:date)).to eq([Date.new(2026, 10, 8)])
@@ -112,7 +112,7 @@ RSpec.describe "Background jobs" do
     end
 
     it "stores the log with its loads" do
-      plane = create(:plane, dropzone: brisbane)
+      plane = create(:plane, operator: brisbane)
       load = create(:load, plane: plane, dispatch_at: Time.utc(2026, 10, 8, 3, 0))
       create(:load, plane: plane, dispatch_at: Time.utc(2026, 10, 7, 3, 0))
 
@@ -125,22 +125,22 @@ RSpec.describe "Background jobs" do
 
     it "refreshes the log when it exists" do
       log = brisbane.master_logs.create!(date: Date.new(2026, 10, 8))
-      plane = create(:plane, dropzone: brisbane)
+      plane = create(:plane, operator: brisbane)
       create(:load, plane: plane, dispatch_at: Time.utc(2026, 10, 8, 3, 0))
 
       expect { described_class.perform_now(now) }.not_to change(MasterLog, :count)
       expect(JSON.parse(log.reload.json.download)["loads"].size).to eq(1)
     end
 
-    it "catches up when a dropzone is past 02:59, flew yesterday and has no log" do
-      create(:load, plane: create(:plane, dropzone: brisbane), dispatch_at: Time.utc(2026, 10, 8, 3, 0))
+    it "catches up when an operator is past 02:59, flew yesterday and has no log" do
+      create(:load, plane: create(:plane, operator: brisbane), dispatch_at: Time.utc(2026, 10, 8, 3, 0))
 
       described_class.perform_now(Time.utc(2026, 10, 8, 18, 0)) # 04:00 in Brisbane
 
       expect(brisbane.master_logs.pluck(:date)).to eq([Date.new(2026, 10, 8)])
     end
 
-    it "does not catch up for a dropzone that did not fly" do
+    it "does not catch up for an operator that did not fly" do
       described_class.perform_now(Time.utc(2026, 10, 8, 18, 0))
 
       expect(MasterLog.count).to eq(0)

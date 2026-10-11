@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Demo::DataGenerator < ApplicationInteraction
-  record :dropzone, default: nil
+  record :operator, default: nil
   date_time :start_date, default: -> { 3.months.ago.to_datetime }
 
   import_filters Demo::Generators::Users
@@ -12,12 +12,12 @@ class Demo::DataGenerator < ApplicationInteraction
         :create_loads
 
   def check_eligibility
-    errors.add(:base, "You cannot add demo data to a live dropzone") if dropzone.state == "public"
+    errors.add(:base, "You cannot add demo data to a live operator") if operator.state == "public"
   end
 
   def dz
-    @dz ||= dropzone || compose(
-      ::Setup::Dropzones::CreateDropzone,
+    @dz ||= operator || compose(
+      ::Setup::Operators::CreateOperator,
       owner: User.create_fake,
       name: "Skydive #{Faker::Address.city}",
       lat: Faker::Address.latitude,
@@ -29,16 +29,16 @@ class Demo::DataGenerator < ApplicationInteraction
     )
   end
 
-  def dropzone_owner
-    @dropzone_owner ||= dz.dropzone_users.reload.includes(:user_role).find_by(user_roles: { name: :owner })
+  def operator_owner
+    @operator_owner ||= dz.memberships.reload.includes(:user_role).find_by(user_roles: { name: :owner })
   end
 
   def owner_access_context
-    ::ApplicationInteraction::AccessContext.new(dropzone_owner)
+    ::ApplicationInteraction::AccessContext.new(operator_owner)
   end
 
   def create_tickets
-    return nil if dropzone.ticket_types.any?
+    return nil if operator.ticket_types.any?
     compose(
       ::Demo::Generators::Tickets,
       access_context: owner_access_context
@@ -46,7 +46,7 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_aircrafts
-    return nil if dropzone.planes.any?
+    return nil if operator.planes.any?
     compose(
       ::Demo::Generators::Aircrafts,
       access_context: owner_access_context
@@ -54,7 +54,7 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_users
-    return if owner_access_context.dropzone.dropzone_users.count > 20
+    return if owner_access_context.operator.memberships.count > 20
     compose(
       ::Demo::Generators::Users,
       gca_count: gca_count,

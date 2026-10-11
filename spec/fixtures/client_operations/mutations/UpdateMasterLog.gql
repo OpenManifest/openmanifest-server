@@ -1,5 +1,5 @@
-mutation UpdateMasterLog($date: ISO8601Date!, $dropzone: ID!, $attributes: MasterLogInput!) {
-  updateMasterLog(input: { dropzone: $dropzone, date: $date, attributes: $attributes }) {
+mutation UpdateMasterLog($date: ISO8601Date!, $operator: ID!, $attributes: MasterLogInput!) {
+  updateMasterLog(input: { operator: $operator, date: $date, attributes: $attributes }) {
     errors
     fieldErrors {
       field

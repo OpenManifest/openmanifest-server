@@ -23,13 +23,13 @@ fragment loadDetails on Load {
     ...planeEssentials
   }
   gca {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   pilot {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   loadMaster {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   slots {
     ...slotDetails

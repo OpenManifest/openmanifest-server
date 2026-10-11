@@ -6,7 +6,7 @@
 #
 #  id               :bigint           not null, primary key
 #  form_template_id :bigint           not null
-#  dropzone_user_id :bigint           not null
+#  membership_id :bigint           not null
 #  rig_id           :bigint           not null
 #  is_ok            :boolean          default(FALSE), not null
 #  definition       :text
@@ -16,11 +16,11 @@
 #
 class RigInspection < ApplicationRecord
   belongs_to :form_template
-  belongs_to :inspected_by, class_name: "DropzoneUser"
-  belongs_to :dropzone_user
+  belongs_to :inspected_by, class_name: "Membership"
+  belongs_to :membership
   belongs_to :rig
 
-  scope :at_dropzone, -> (dropzone) { includes(:inspected_by).where(dropzone_users: { dropzone_id: dropzone.id }) }
+  scope :at_operator, -> (operator) { includes(:inspected_by).where(memberships: { operator_id: operator.id }) }
   after_save :notify!
 
   # Tells the owner when the rig is cleared to jump: when an inspection is created as ok, or becomes ok
@@ -28,7 +28,7 @@ class RigInspection < ApplicationRecord
     return unless is_ok? && saved_change_to_is_ok?
 
     Notification.create!(
-      received_by: dropzone_user,
+      received_by: membership,
       message: "Your equipment has been cleared to jump",
       notification_type: :rig_inspection_completed,
       resource: self
