@@ -1625,7 +1625,7 @@ Size: M
 Fixes: none
 
 ### P3.6 — Upgrade to Expo SDK 49
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.5
 Branch: modernise/p3-6-expo-49
