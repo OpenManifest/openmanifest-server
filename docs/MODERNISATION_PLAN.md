@@ -2470,7 +2470,7 @@ Size: M
 Fixes: BUG-076, BUG-071 (login, limbo, error screens)
 
 ### P5.4 — Fix bottom sheets and dialogs
-Status: todo
+Status: owner-check (small Android phone: in each sheet (manifest user, group, credits, aircraft, ticket type, rig) focus the last input; the input and the save button stay visible; say whether the save button needs a pinned footer)
 Repo: client
 Depends on: P5.3
 Branch: modernise/p5-4-bottom-sheets
@@ -2486,7 +2486,7 @@ Steps:
      that renders `BottomSheetTextInput` (Paper `TextInput` with `render` prop); delete keyboard padding hacks
      (`grep -rn "400" app/components | grep -i padding`).
 Acceptance criteria (cloud VM):
-  - Client checks, web export and web smoke test pass; `grep -rn "<BottomSheetModal" app | grep -v layout/Sheet.tsx` prints nothing.
+  - Client checks, web export and web smoke test pass; `grep -rn "<BottomSheetModal[^P]" app | grep -v layout/Sheet.tsx` prints nothing (`[^P]` excludes `<BottomSheetModalProvider>`).
 Acceptance criteria (owner, real device):
   - Small Android phone: in each sheet (manifest user, group, credits, aircraft, ticket type, rig) focus the last input;
     the input and the save button stay visible.
