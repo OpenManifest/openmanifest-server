@@ -1131,7 +1131,7 @@ Standard procedure for a Rails step (referred to as **"Rails step procedure"** b
    dev_baseline seed and run the client web smoke test (P0.8) against it.
 
 ### P2.1 — Remove dead code and unused gems from the backend
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.14
 Branch: modernise/p2-1-backend-cleanup
