@@ -1735,7 +1735,7 @@ Size: L
 Fixes: BUG-083
 
 ### P3.10 — Upgrade to Expo SDK 52
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.9
 Branch: modernise/p3-10-expo-52
@@ -1769,7 +1769,8 @@ Steps:
   1. `yarn add react-native-paper@5.15.3 react-native-paper-dates@0.24.0 react-native-paper-tabs@latest`.
   2. Build the combined themes from `MD2LightTheme`/`MD2DarkTheme` (Paper) and the React Navigation themes; keep the font
      names; keep `primary`/`accent` colours.
-  3. Fix every type error under `app/components/`, `app/entrypoint/`, `app/providers/`, `app/forms/` caused by Paper 5
+  3. Delete `app/types/react-native-legacy-props.d.ts` (added in P3.10 to make Paper 4's typings compile against RN 0.76).
+  4. Fix every type error under `app/components/`, `app/entrypoint/`, `app/providers/`, `app/forms/` caused by Paper 5
      (e.g. `Provider` → `PaperProvider`, `Button color` → `buttonColor`/`textColor`, `Colors` export removed, `IconButton color` → `iconColor`,
      `Appbar.Content` subtitle removal, `Chip` styles).
 Acceptance criteria (cloud VM):
@@ -2028,8 +2029,9 @@ Steps:
      expo-notifications); remove `CAMERA_ROLL`, `MEDIA_LIBRARY`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
      (the image picker uses the system photo picker).
   5. Run `npx expo config --type public` and include the output in the PR.
-  6. `expo-doctor` (P3.5) flags direct installs of `@expo/config-plugins` and `@expo/metro-config`: remove them from
-     `package.json` and import `expo/config-plugins` / `expo/metro-config` instead.
+  6. (Done in P3.10: the direct `@expo/config-plugins` and `@expo/metro-config` installs were removed because the old
+     metro-config broke `expo export` on SDK 52; `metro.config.js` already uses `expo/metro-config` since P3.7.) Verify that
+     `grep -n "@expo/config-plugins\|@expo/metro-config" package.json` still prints nothing.
 Acceptance criteria (cloud VM):
   - `npx expo config --type public` exits 0; `test ! -f app.json`; client checks, web export and web smoke test pass;
     `npx expo-doctor` reports no config errors.
