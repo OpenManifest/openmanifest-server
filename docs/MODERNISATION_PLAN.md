@@ -1960,7 +1960,7 @@ Size: S
 Fixes: none
 
 ### P3.19 — Upgrade Apollo Client, graphql-js and code generation
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.18
 Branch: modernise/p3-19-apollo-codegen
@@ -1971,9 +1971,10 @@ is a separate breaking upgrade and is deliberately not done here; it is reconsid
 in Phase 4).
 Steps:
   1. `yarn add @apollo/client@3.14.1 graphql@^16`.
-  2. `yarn add -D @graphql-codegen/cli@latest @graphql-codegen/typescript@latest @graphql-codegen/typescript-operations@latest
-     @graphql-codegen/typescript-react-apollo@latest @graphql-codegen/import-types-preset@latest @graphql-codegen/add@latest
-     @graphql-codegen/introspection@latest @graphql-codegen/schema-ast@latest`.
+  2. `yarn add -D` the codegen packages. Done with `cli@^5.0.7 typescript@^4.1.6 typescript-operations@^4.6.1
+     typescript-react-apollo@^4.4.2 import-types-preset@^3.0.1 add@^5.0.3 introspection@^4 schema-ast@^4` instead of `@latest`:
+     cli 7 / operations 6 stop emitting `__typename?` and re-declare enums as string literals (100+ type errors in fixtures and
+     production code). Migrating to cli 7 is a separate task (see the deferred note in Phase 4).
   3. `yarn sync:schema && yarn ts:graphql`. Fix type errors from the regenerated code without changing documents.
   4. Remove `zen-observable`/`zen-observable-ts` if unused after the upgrade (`grep -rn zen-observable app`).
 Acceptance criteria (cloud VM):
@@ -2333,7 +2334,10 @@ Context: Phase gate.
 Steps:
   1. Run client checks, web export, web smoke test and `check:graphql`; record test counts.
   2. Write `backend:docs/verification/phase-4.md`. Add a "Backlog" line: "Apollo Client 4 (`@apollo/client` 4.x) —
-     reconsider after Phase 6; requires `useQuery` callback removal and new error types."
+     reconsider after Phase 6; requires `useQuery` callback removal and new error types." Add a second Backlog line:
+     "graphql-codegen 7 (cli 7, typescript-operations 6) — P3.19 stayed on cli 5 / plugins 4 because the 6.x operations plugin
+     stops emitting `__typename?` and re-declares enums as string literals; migrate with `nonOptionalTypename` decisions for the
+     fixtures and mocks."
   3. Update `client:docs/reference/README.md` §3 (store shape) and `client:docs/reference/diagrams.md` §2 to describe the
      zustand stores and remove the Redux diagram.
 Acceptance criteria (cloud VM):
