@@ -3,11 +3,6 @@
 module Types::Equipment
   class Rig < Types::Base::Object
     implements Types::Interfaces::Polymorphic
-    lookahead do |scope|
-      scope = scope.includes(:dropzone) if selects?(:dropzone)
-      scope = scope.includes(:rig_inspections) if selects?(:rig_inspections)
-      scope
-    end
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :make, String, null: true

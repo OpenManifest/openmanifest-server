@@ -29,10 +29,9 @@ class Resolvers::Dropzone::Activity < Resolvers::Base
     levels: nil,
     actions: nil,
     access_levels: nil,
-    time_range: nil,
-    lookahead: nil
+    time_range: nil
   )
-    query = apply_lookaheads(lookahead, visible_events(dropzone))
+    query = visible_events(dropzone)
 
     query = query.where(dropzone: dropzone)                 if dropzone
     query = query.where(level: levels)                      if levels

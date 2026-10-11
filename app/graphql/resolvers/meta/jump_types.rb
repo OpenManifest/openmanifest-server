@@ -6,7 +6,7 @@ class Resolvers::Meta::JumpTypes < Resolvers::Base
   argument :dropzone_users, [Int], required: false,
                                    prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
 
-  def resolve(dropzone_users: nil, lookahead: nil)
+  def resolve(dropzone_users: nil)
     if dropzone_users
       JumpType.allowed_for(dropzone_users)
     else

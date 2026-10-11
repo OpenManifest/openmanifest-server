@@ -95,5 +95,46 @@ RSpec.describe "N+1 queries on the board and the member list" do
       expect(json[:errors]).to be_nil
       expect(json.dig(:data, :loads, :edges, 0, :node, :slots).size).to eq(10)
     end
+
+    # These lists used to be eager loaded by a lookahead on each resolver; the fields load their associations themselves
+    it "lists ticket types, add-ons, aircraft and roles of a dropzone" do
+      add_ons = Array.new(6) { |i| Extra.create!(dropzone: dropzone, name: "Extra #{i}", cost_cents: 500) }
+      ticket_types = Array.new(6) { |i| create(:ticket_type, dropzone: dropzone, name: "Ticket #{i}") }
+      ticket_types.each_with_index { |ticket, i| ticket.extras << add_ons[i] }
+      Array.new(5) { |i| create(:plane, dropzone: dropzone, name: "Plane #{i}") }
+      query = <<~GQL
+        query($id: ID!) {
+          dropzone(id: $id) {
+            id
+            userRoles { id name }
+            roles { id name }
+            planes { id name dropzone { id } }
+            extras { id name costCents ticketTypes { id } }
+            ticketTypes(isPublic: null) { id name costCents extras { id name } }
+          }
+        }
+      GQL
+      json = nil
+      without_n_plus_one { json = graphql_as(owner_user, query, id: dropzone.id) }
+
+      expect(json[:errors]).to be_nil
+      expect(json.dig(:data, :dropzone, :ticketTypes).size).to be >= 6
+      expect(json.dig(:data, :dropzone, :extras).size).to eq(6)
+    end
+
+    it "lists the members' own associations: rigs, licences, memberships and federations" do
+      query = <<~GQL
+        query($dropzone: ID!) {
+          dropzoneUsers(dropzone: $dropzone, first: 100, licensed: false) {
+            edges { node { id jumpTypes { id } user { id rigs { id name } licenses { id } dropzoneUsers { id } userFederations { id } } } }
+          }
+        }
+      GQL
+      json = nil
+      without_n_plus_one { json = graphql_as(owner_user, query, dropzone: dropzone.id) }
+
+      expect(json[:errors]).to be_nil
+      expect(json.dig(:data, :dropzoneUsers, :edges).size).to be >= 50
+    end
   end
 end

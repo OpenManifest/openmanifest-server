@@ -12,8 +12,7 @@ class Resolvers::Dropzone::MasterLog < Resolvers::Base
 
   def resolve(
     dropzone: nil,
-    date: nil,
-    lookahead: nil
+    date: nil
   )
     return nil unless dropzone
 

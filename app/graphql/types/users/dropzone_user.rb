@@ -5,16 +5,6 @@ module Types::Users
     implements Types::Interfaces::Polymorphic
     implements Types::Interfaces::Wallet
     timestamp_fields
-    lookahead do |query|
-      query = query.includes(:dropzone)   if selects?(:dropzone)
-      query = query.includes(:jump_types) if selects?(:jump_type)
-      query = query.includes(:slots)      if selects?(:slots)
-      query = query.includes(:user)       if selects?(:user)
-      query = query.includes(:license)    if selects?(:license)
-      query = query.includes(:user_role)  if selects?(:role)
-      query
-    end
-
     field :id, GraphQL::Types::ID, null: false
     field :slots, Types::Manifest::Slot.connection_type, null: true
     field :unseen_notifications, Int, null: false
@@ -53,7 +43,7 @@ module Types::Users
     async_field :license, Types::Meta::License, null: true
     async_field :user, Types::Users::User, null: false
 
-    field :jump_types, [Types::Meta::JumpType], null: true
+    async_field :jump_types, [Types::Meta::JumpType], null: true
     field :user_federation, Types::Users::UserFederation, null: true
     def user_federation
       ::UserFederation.find_by(
@@ -63,7 +53,6 @@ module Types::Users
     end
 
     def slots
-      # TODO: Lookahead
       object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)
     end
 

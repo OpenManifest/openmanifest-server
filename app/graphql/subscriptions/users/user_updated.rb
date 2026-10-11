@@ -2,8 +2,6 @@ class Subscriptions::Users::UserUpdated < Types::Base::Subscription
   argument :dropzone_user_id, ID, required: true
   field :dropzone_user, Types::Users::DropzoneUser, null: true
 
-  extras [:lookahead]
-
   # A member follows their own membership; anybody else's needs readUser at that dropzone (BUG-011)
   def authorized?(dropzone_user_id:, **)
     super
@@ -13,19 +11,13 @@ class Subscriptions::Users::UserUpdated < Types::Base::Subscription
   end
 
   # It's passed to other methods as `load`
-  def subscribe(dropzone_user_id:, lookahead: nil)
-    query = ::Types::Users::DropzoneUser.apply_lookaheads(
-      lookahead,
-      ::DropzoneUser.all
-    )
+  def subscribe(dropzone_user_id:)
+    query = ::DropzoneUser.all
     { dropzone_user: query.find_by(id: dropzone_user_id) }
   end
 
-  def update(dropzone_user_id:, lookahead: nil)
-    query = ::Types::Users::DropzoneUser.apply_lookaheads(
-      lookahead,
-      ::DropzoneUser.all
-    )
+  def update(dropzone_user_id:)
+    query = ::DropzoneUser.all
     { dropzone_user: query.find_by(id: dropzone_user_id) }
   end
 end

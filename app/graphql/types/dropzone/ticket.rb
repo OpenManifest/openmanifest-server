@@ -5,10 +5,6 @@ module Types::Dropzone
     graphql_name 'TicketType'
     implements Types::Interfaces::Polymorphic
     implements Types::Interfaces::SellableItem
-    lookahead do |query|
-      query = query.includes(ticket_type_extras: :extra) if selects?(:extras)
-      query
-    end
     def title
       "#{object.name} ticket"
     end

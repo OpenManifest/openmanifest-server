@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 class Types::System::Events::Event < Types::Base::Object
-  lookahead do |query|
-    query = query.includes(:created_by) if selects?(:created_by)
-    query
-  end
   field :id, GraphQL::Types::ID, null: false
 
   field :level, Types::System::Events::EventLevel, null: true

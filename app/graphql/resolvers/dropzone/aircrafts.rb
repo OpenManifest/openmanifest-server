@@ -5,11 +5,11 @@ class Resolvers::Dropzone::Aircrafts < Resolvers::Base
   description "Get Aircrafts for a dropzone"
   dropzone :dropzone, required: true
 
-  def resolve(dropzone: nil, lookahead: nil)
+  def resolve(dropzone: nil)
     return nil unless dropzone
 
     authorize_dropzone!(dropzone)
-    query = apply_lookaheads(lookahead, dropzone.planes.kept)
+    query = dropzone.planes.kept
 
     query.order(name: :asc)
   end

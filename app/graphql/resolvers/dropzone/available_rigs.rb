@@ -12,8 +12,7 @@ class Resolvers::Dropzone::AvailableRigs < Resolvers::Base
   def resolve(
     dropzone_user: nil,
     is_tandem: nil,
-    load_id: nil,
-    lookahead: nil
+    load_id: nil
   )
     authorize_record!(dropzone_user)
     return dropzone_user.dropzone.tandem_rigs if is_tandem

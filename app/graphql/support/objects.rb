@@ -3,6 +3,5 @@ module Support::Objects
 
   included do
     include Support::Objects::Fields
-    include Support::Lookahead
   end
 end

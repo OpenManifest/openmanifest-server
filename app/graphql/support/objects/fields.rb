@@ -33,7 +33,9 @@ module Support::Objects::Fields
       end
     end
 
-    # Creates a dataloaded field for a belongs_to association
+    # Creates a dataloaded field for an association: a belongs_to is loaded with the others of its kind in the response by
+    # Sources::Model, any other association (has_many, has_one, through) with Sources::AssociationLoader. Something that is
+    # not an association is read as it is. Nothing is eager loaded by the resolvers: the fields ask for what they need.
     def async_field(name, type, opts = { null: true })
       field name, type, **opts
       define_method(name) do
@@ -41,10 +43,13 @@ module Support::Objects::Fields
         column = opts[:method]
         column ||= name
         reflection = object.class.reflections[column.to_s]
-        return object.send(column) if reflection.nil? || reflection.macro != :belongs_to
-        return nil unless reflection
+        return object.send(column) if reflection.nil? || reflection.polymorphic?
 
-        dataloader.with(::Sources::Model, reflection.class_name.constantize).load(object.send(reflection.foreign_key))
+        if reflection.macro == :belongs_to
+          dataloader.with(::Sources::Model, reflection.class_name.constantize).load(object.send(reflection.foreign_key))
+        else
+          dataloader.with(::Sources::AssociationLoader, [column.to_sym]).load(object).public_send(column)
+        end
       end
     end
   end

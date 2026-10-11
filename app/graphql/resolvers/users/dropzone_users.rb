@@ -10,11 +10,11 @@ class Resolvers::Users::DropzoneUsers < Resolvers::Base
   argument :permissions, [Types::Access::PermissionType], required: false
   argument :search, String, required: false
 
-  def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true, lookahead: nil)
+  def resolve(dropzone: nil, permissions: nil, search: nil, licensed: true)
     return nil unless dropzone
 
     authorize_dropzone!(dropzone, :readUser)
-    query = apply_lookaheads(lookahead, dropzone.dropzone_users)
+    query = dropzone.dropzone_users
     query = query.includes(user_permissions: :permission) if permissions.present?
 
     query = query.where.not(license_id: nil) if licensed

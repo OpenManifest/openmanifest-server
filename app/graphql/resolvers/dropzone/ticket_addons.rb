@@ -7,11 +7,11 @@ class Resolvers::Dropzone::TicketAddons < Resolvers::Base
   argument :ticket_type, GraphQL::Types::ID, required: false,
                                              prepare: -> (value, ctx) { ::TicketType.find_by(id: value) }
 
-  def resolve(dropzone: nil, ticket_type: nil, lookahead: nil)
+  def resolve(dropzone: nil, ticket_type: nil)
     return nil unless dropzone || ticket_type
     dropzone ||= ticket_type.dropzone
     authorize_dropzone!(dropzone)
-    query = apply_lookaheads(lookahead, dropzone.extras)
+    query = dropzone.extras
     query.order(name: :asc)
   end
 end

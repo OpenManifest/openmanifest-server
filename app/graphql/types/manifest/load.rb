@@ -3,15 +3,6 @@
 module Types::Manifest
   class Load < Types::Base::Object
     implements Types::Interfaces::Polymorphic
-    lookahead do |query|
-      query = query.includes(slots: :dropzone_user)  if selects?(:slots)
-      query = query.includes(:gca)                   if selects?(:gca)
-      query = query.includes(:load_master)           if selects?(:load_master)
-      query = query.includes(:pilot)                 if selects?(:pilot)
-      query = query.includes(:plane)                 if selects?(:plane)
-      query
-    end
-
     field :id, GraphQL::Types::ID, null: false
     field :dispatch_at, Int, null: true
     field :name, String, null: true
