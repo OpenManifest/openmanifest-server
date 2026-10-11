@@ -4,7 +4,7 @@ mutation CreateOrder(
   $seller: ID!
   $dropzone: ID!
   $title: String
-  $amount: Float!
+  $amountCents: Int!
 ) {
   createOrder(
     input: {
@@ -13,7 +13,7 @@ mutation CreateOrder(
         title: $title
         buyer: $buyer
         seller: $seller
-        amount: $amount
+        amountCents: $amountCents
       }
     }
   ) {

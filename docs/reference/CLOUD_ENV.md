@@ -103,11 +103,12 @@ Reachable already (verified): `github.com`, `raw.githubusercontent.com`, `rubyge
 |---|---|---|
 | `BASH_DEFAULT_TIMEOUT_MS` | `300000` | yarn installs, web exports and spec runs exceed the 2-minute default |
 | `BASH_MAX_TIMEOUT_MS` | `600000` | allow 10-minute foreground commands |
-| `SENTRYCLI_SKIP_DOWNLOAD` | `1` | `yarn install` fails otherwise (sentry-cli binary host blocked) |
+| `SENTRYCLI_SKIP_DOWNLOAD` | `1` | only needed until P3.2 removed `sentry-expo` (its postinstall downloaded a binary from a blocked host); harmless afterwards |
 | `DISABLE_SPRING` | `1` | Spring forks a background server that confuses repeated runs |
 | `PGHOST` / `PGUSER` / `PGPASSWORD` | `localhost` / `root` / `root` | local throwaway Postgres role created by the setup script (not a secret) |
-| `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes) |
+| `BACKEND_URL` | `http://local.openmanifest.org:5000/` | Rails boot requires it (`config/environments/development.rb`, routes); `bundle exec rspec` needs it too (the master-log specs build blob URLs and fail with "Missing host to link to" without it; CI sets `http://localhost:5000/`) |
 | `WEB_CONCURRENCY` | `0` | single-process Puma in the VM |
+| `CORS_ORIGINS` | *(unset)* | optional: the default (`http://localhost:19006,http://localhost:8081`) covers the Expo web dev server and the served web export used by the smoke test; set it only to test another origin |
 | `EXPO_NO_TELEMETRY` | `1` | avoid blocked telemetry calls |
 | `CI` | `1` | non-interactive Expo/Jest |
 
@@ -152,20 +153,23 @@ Login for seeded data (after P0.5): `owner@example.com` / `Password1!`.
 
 ```bash
 cd /home/user/openmanifest
-export PATH=/opt/node20/bin:$PATH              # Phases 0-2. From P3.15: /opt/node24/bin
+export PATH=/opt/node24/bin:$PATH              # since P3.15 (Phases 0-2 and P3.1-P3.14 used /opt/node20/bin); yarn 1 is preinstalled for node24
 yarn install --frozen-lockfile                 # ~1 min
 yarn check:types && yarn check:linting
 npx jest --ci                                  # after P0.6: yarn check:testing
-EXPO_ENV=local npx expo export:web             # SDK 47-49 (webpack) -> web-build/ ; ~5 min, run in background
-# From P3.7 (SDK 50, Metro web): EXPO_ENV=local npx expo export --platform web  -> dist/
+EXPO_ENV=local npx expo export --platform web  # Metro (since P3.7) -> dist/ ; ~1 min. Before P3.7 (SDK 47-49): `npx expo export:web` -> web-build/ (webpack, ~5 min)
 ```
 
 Serving the web build and running the smoke script (both added by P0.8):
 
 ```bash
-python3 scripts/serve-web-build.py web-build 19006 &      # SPA server with index.html fallback
-node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
+python3 scripts/serve-web-build.py dist 19006 &           # SPA server with index.html fallback (web-build before P3.7)
+TZ=Australia/Brisbane node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
 ```
+
+Run the smoke test with `TZ=Australia/Brisbane`: the board asks for loads for the *device's* date (BUG-068) while the
+seeded dropzone lives in Brisbane, so a browser in UTC sees "No loads so far today" for several hours of every day and
+the smoke test fails at the load step.
 
 Headless Chromium must bypass the agent proxy for the API host, otherwise the websocket gets 403:
 `--proxy-bypass-list=local.openmanifest.org,localhost` (the smoke script passes it).
@@ -179,6 +183,28 @@ docker run --rm --network host -v "$PWD":/app -w /app \
   ruby:3.4.11-bookworm bash -lc "apt-get update -qq && apt-get install -y -qq libpq-dev libvips42 >/dev/null && bundle install --jobs 4 && bundle exec rspec"
 ```
 
+Verified in the P2.5 session (cloud VM without `cache.ruby-lang.org`): `service docker start` fails (`ulimit: error
+setting limit`), but the daemon runs when started by hand, and Docker Hub is reachable:
+
+```bash
+(nohup dockerd --iptables=false --bridge=none --storage-driver=vfs > /tmp/dockerd.log 2>&1 &); sleep 12
+docker pull ruby:3.4.11-bookworm            # ~50 s; `ruby:4.0.7-bookworm` for P2.9
+docker rm -f rb34 2>/dev/null
+docker run -d --name rb34 --network host -v "$PWD":/app -w /app -v rb34-gems:/usr/local/bundle \
+  -e PGHOST=localhost -e PGUSER=root -e PGPASSWORD=root -e BACKEND_URL=http://local.openmanifest.org:5000/ \
+  -e DISABLE_SPRING=1 -e WEB_CONCURRENCY=0 ruby:3.4.11-bookworm sleep infinity
+docker exec rb34 bash -lc 'cd /app && bundle install --jobs 4'
+docker exec -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app && bundle exec rspec'
+# dev server for the web smoke test (host networking, so the host's Playwright reaches it on :5000)
+docker exec -d -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app && bin/rails s -b 0.0.0.0 -p 5000 > /tmp/rails.log 2>&1'
+```
+
+Notes: Postgres and Redis keep running on the host (`--network host`). `apt-get` inside the container does not work
+(`deb.debian.org` is blocked), so only what the image ships is available: the full (not `-slim`) image has `libpq-dev`,
+but **no libvips**; Rails boots and the whole suite passes without it (image variants are therefore not verified in
+this fallback). A stale Puma on the host also keeps :5000 busy: `ps aux | grep puma` and kill it before starting the container's
+server (`ss` prints nothing in this VM).
+
 ## 5. What changes as the phases progress
 
 | From task | Change |
@@ -189,6 +215,6 @@ docker run --rm --network host -v "$PWD":/app -w /app \
 | P2.5 | Setup script version B; Ruby 3.4.11 (`.ruby-version`) |
 | P2.9 | Setup script version C; Ruby 4.0.7 |
 | P3.5 | `api.expo.dev` should be allowlisted for `npx expo-doctor` (otherwise `EXPO_OFFLINE=1`) |
-| P3.7 | Web export command becomes `npx expo export --platform web` (output `dist/`); serve `dist` instead of `web-build` |
+| P3.7 | done: web export command is `npx expo export --platform web` (output `dist/`); serve `dist` instead of `web-build` |
 | P3.15 | Client uses `/opt/node24/bin` |
 | P6.17 (Solid Queue) | Start the job worker in a second process: `bin/jobs` |

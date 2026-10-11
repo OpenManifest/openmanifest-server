@@ -23,7 +23,8 @@ module Mutations::Manifest
           :dispatch_at,
           :plane,
           :state,
-          :name
+          :name,
+          :lock_version
         )
       )
     end

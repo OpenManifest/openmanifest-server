@@ -50,7 +50,7 @@ class MasterLog < ApplicationRecord
   def store!
     json.attach(
       io: StringIO.new(generate_json.to_json),
-      filename: "master-log-#{created_at.to_date.iso8601}.json",
+      filename: "master-log-#{date.iso8601}.json",
       content_type: 'application/json'
     )
   end

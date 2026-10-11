@@ -40,12 +40,13 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
+  config.include ActiveSupport::Testing::TimeHelpers
   config.include RSpec::JsonExpectations::Matchers
   config.include GraphqlClient
   config.example_status_persistence_file_path = "tmp/rspec_examples.txt"
   config.shared_context_metadata_behavior = :apply_to_host_groups
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
-  config.fixture_path = "#{Rails.root}/spec/fixtures"
+  config.fixture_paths = ["#{Rails.root}/spec/fixtures"]
   config.filter_run focus: true
   config.run_all_when_everything_filtered = true
 
@@ -59,10 +60,9 @@ RSpec.configure do |config|
     Setup::Global::Seeds.run!
   end
 
-  config.around(:suite) do |example|
-    Time.use_zone('Australia/Brisbane') do
-      example.run
-    end
+  # The dropzone default zone: examples about days run in it (an `around(:suite)` hook is not supported by RSpec, BUG-098)
+  config.around(:each) do |example|
+    Time.use_zone("Australia/Brisbane") { example.run }
   end
 
   config.before(:each) do
@@ -71,6 +71,12 @@ RSpec.configure do |config|
 
   config.before(:each, js: true) do
     DatabaseCleaner.strategy = :truncation
+  end
+
+  # Examples that run several database connections at once (row locks) need committed data: delete what they created and
+  # keep the global seeds
+  config.before(:each, :concurrent) do
+    DatabaseCleaner.strategy = [:deletion, { except: %w(ar_internal_metadata schema_migrations federations jump_types licensed_jump_types licenses permissions) }]
   end
 
   config.before(:each) do

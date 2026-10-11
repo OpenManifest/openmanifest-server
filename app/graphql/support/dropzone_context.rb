@@ -9,11 +9,10 @@ module Support::DropzoneContext
     #
     # @return [GraphQL::Schema::Argument]
     def dropzone(symbol, **opts)
-      argument symbol, GraphQL::Types::ID, **opts.merge(
-        prepare: -> (value, ctx) {
-                   ctx[:access_context].at_dropzone(value).dropzone
-                 }
-      )
+      argument symbol, GraphQL::Types::ID, **opts, prepare: -> (value, ctx) {
+        # Anonymous callers have no access context: the authentication check answers them
+        ctx[:access_context]&.at_dropzone(value)&.dropzone
+      }
     end
   end
 end

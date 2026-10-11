@@ -5,7 +5,6 @@ module Types
     include GraphQL::Types::Relay::HasNodeField
     include Geokit::Geocoders
 
-    field :image,           resolver: Resolvers::Image
     field :federations,     extras: [:lookahead],   resolver: Resolvers::Meta::Federations
     field :jump_types,      extras: [:lookahead],   resolver: Resolvers::Meta::JumpTypes
     field :licenses,        extras: [:lookahead],   resolver: Resolvers::Meta::Licenses

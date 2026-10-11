@@ -1,13 +1,5 @@
-mutation UpdateTicketType(
-  $id: Int!
-  $attributes: TicketTypeInput!
-) {
-  updateTicketType(
-    input: {
-      id: $id
-      attributes: $attributes
-    }
-  ) {
+mutation UpdateTicketType($id: Int!, $attributes: TicketTypeInput!) {
+  updateTicketType(input: { id: $id, attributes: $attributes }) {
     errors
     fieldErrors {
       field
@@ -18,12 +10,12 @@ mutation UpdateTicketType(
       id
       name
       altitude
-      cost
+      costCents
       allowManifestingSelf
       extras {
         id
         name
-        cost
+        costCents
       }
 
       dropzone {

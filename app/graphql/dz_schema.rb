@@ -9,13 +9,16 @@ class DzSchema < GraphQL::Schema
     resource_loaders: [
       GraphqlDevise::ResourceLoader.new(
         User,
-        operations: { register: Mutations::Users::SignUp },
+        operations: {
+          register: Mutations::Users::SignUp,
+          confirm_registration_with_token: Mutations::Users::ConfirmRegistration,
+        },
         authenticatable_type: Types::Users::User,
       ),
     ]
   )
   use(GraphQL::Dataloader)
-  use(GraphQL::Tracing::AppsignalTracing)
+  trace_with(GraphQL::Tracing::AppsignalTrace)
 
   # Fields are broadcastable unless broadcastable: false,
   # which pretty much only applies to Session since nothing

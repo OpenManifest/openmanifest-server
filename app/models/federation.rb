@@ -12,6 +12,7 @@
 #
 class Federation < ApplicationRecord
   include Config::Yaml::Federations
+
   has_many :licenses
   has_many :users, through: :licenses
   has_many :dropzones, -> { kept }

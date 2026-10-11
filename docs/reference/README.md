@@ -80,16 +80,17 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
 |---|---|---|
 | API style | Single GraphQL endpoint, Relay-classic mutations, Apollo batching supported (`params[:_json]`) | `config/routes.rb:10`, `app/controllers/graphql_controller.rb` |
 | Schema | `DzSchema` with `GraphqlDevise::SchemaPlugin` (auth), `GraphQL::Dataloader`, AppSignal tracing, ActionCable subscriptions | `app/graphql/dz_schema.rb` |
+| Avoiding N+1 | `Sources::Model` (belongs_to, with attached images), `Sources::AssociationLoader` (`dataloader.with(Sources::AssociationLoader, :slots).load(record)`, then read the association), `Sources::UnseenNotificationCount`; types use them for every field that reads an association. `spec/requests/n_plus_one_spec.rb` runs Prosopite over the board and the member list | `app/graphql/sources/` |
 | Auth | `devise` + `devise_token_auth` tokens via `graphql_devise`; client sends `access-token`, `client`, `uid` headers. Facebook and Apple sign-in mutations | `app/models/user.rb:46-50`, `app/graphql/mutations/users/login/*`, `app/interactions/login/*` |
 | Business logic | `active_interaction` classes ("interactions") with a custom `steps`/`allow` DSL | `app/interactions/application_interaction*.rb` |
 | Real-time | `GraphqlChannel` over ActionCable at `/subscriptions`; subscriptions `loadCreated(dropzoneId)`, `loadUpdated(loadId)`, `userUpdated(dropzoneUserId)`; triggered from model callbacks | `app/channels/graphql_channel.rb`, `app/graphql/subscriptions/*`, `app/models/load.rb:115-136`, `app/models/dropzone_user.rb:219-228` |
-| Background jobs | ActiveJob with the **default adapter** (no Sidekiq/GoodJob configured → Rails 7.0 default `:async`, in-process). Jobs: `NotifyJob` (Expo push), `RequestRigInspectionJob` (called synchronously), `WindsAloftJob` (empty) | `app/jobs/*` |
-| Scheduled tasks | Rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize`; **no scheduler is configured in either repo** (presumably Heroku Scheduler/cron once) | `lib/tasks/dropzone.rake` |
+| Background jobs | ActiveJob on **Solid Queue** (P6.17; tables in the primary database, `config/queue.yml`; `:test` adapter in the test environment). Run by `bin/jobs` (the `jobs:` line of the `Procfile`) or inside Puma with `SOLID_QUEUE_IN_PUMA=1` (set in `fly*.toml`). Jobs: `NotifyJob` (Expo push, retried on network errors), `AutoFinalizeJob`, `MasterLogsJob`, `RequestRigInspectionJob`, `FetchWindsJob` (winds of a new weather condition, 5 second timeout) | `app/jobs/*`, `config/queue.yml`, `config/puma.rb` |
+| Scheduled tasks | `config/recurring.yml` (Solid Queue's scheduler): `auto_finalize` every 15 minutes, `master_logs` hourly (the job generates yesterday's log for the dropzones that are in their 02:00 hour, in their own time zone). The rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize` run the same jobs once | `config/recurring.yml`, `lib/tasks/dropzone.rake` |
 | Push notifications | `Notification` row → `NotifyJob` → HTTP POST to `https://exp.host/--/api/v2/push/send` with the user's Expo push token | `app/models/notification.rb:31-49` |
 | File storage | ActiveStorage; base64 uploads via `active_storage_base64`; images resized via `image_processing` (vips); services `local`, `test`, `flyio` (`/data`), `google` (GCS) | `config/storage.yml`, `app/models/concerns/image/resizer.rb` |
 | Payments | Internal credit ledger only (Order → Receipt → 2 Transactions). **No external payment provider.** | `app/interactions/transactions/*` |
 | Third-party services | AppSignal (APM, both repos), Google Geocoding (`geocode` query), markschulze.net winds aloft API (`WeatherCondition#from_coordinates`), APF member API (`Federations::ApfSync`), randomuser.me / picsum.photos (demo seeds only) | |
-| Static web app | The API also serves a **stale 2021 web build** at `/` (`app/views/web-build/index.html`, `public/static/js/*`) | `app/controllers/application_controller.rb:7-9` |
+| Static web app | The API also serves a **stale 2021 web build** at `/` (`app/views/web-build/index.html`, `public/static/js/*`) | `app/controllers/application_controller.rb:7-9` (removed in P2.1) |
 
 ### How the two repos interact
 
@@ -115,9 +116,9 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
   security, no Apartment-style schemas).
 - Tenant ownership is expressed through foreign keys: `planes.dropzone_id`, `ticket_types.dropzone_id`, `extras.dropzone_id`,
   `user_roles.dropzone_id`, `dropzone_users.dropzone_id`, `rigs.dropzone_id` (dropzone-owned rigs), `master_logs`,
-  `weather_conditions`, `form_templates`, `orders`, `events`. **`loads` has no `dropzone_id`**: a load belongs to a dropzone
-  only via `loads.plane_id → planes.dropzone_id` (`app/models/load.rb:27-28`). Slots reach the dropzone via
-  `slot → load → plane → dropzone`.
+  `weather_conditions`, `form_templates`, `orders`, `events`. `loads.dropzone_id` (P6.16; it was derived from the plane before) and
+  `loads.load_date` (the day in the dropzone's time zone; load numbers are unique per dropzone and day). Slots reach the
+  dropzone via `slot → load → dropzone`.
 - A `User` is global; membership is `DropzoneUser` (`user_id`, `dropzone_id`, role, credits, membership `expires_at`,
   `license_id`, `jump_count`).
 - Authorization is checked in three inconsistent places:
@@ -163,7 +164,7 @@ ER diagram: [`diagrams.md` §2](diagrams.md#2-entity-relationship-diagram). Sche
 | `Pack` | Pack job (rig packed by user) | `rig_id`, `user_id` | No API exposes it (only `Transactions::Purchase` price stub) |
 | `WeatherCondition` | Weather for a day | `winds` (JSON text: altitude/speed/direction/temperature), `temperature`, `jump_run` (degrees), `exit_spot_miles`, `offset_miles` (**integer** columns), `offset_direction` | Created on first read of `Dropzone#current_conditions`, which calls an external API in `before_create` |
 | `MasterLog` | Daily regulatory log | `date`, `dzso_id`, `notes`, attached JSON file | `after_create :store!` |
-| `Order`, `Receipt`, `Transaction` | Credit ledger | `orders`: polymorphic `buyer`/`seller` (Dropzone or DropzoneUser), polymorphic `item`, `amount` (float), `state` (pending/completed/refunded/cancelled), `order_number` per dropzone; `receipts.amount_cents` (int); `transactions`: `sender`/`receiver`, `amount`, `status` (reserved/completed/cancelled), `transaction_type` (purchase/sale/deposit/withdrawal/refund) | Wallet balance is the denormalised `credits` column, updated with `increment!`/`decrement!` |
+| `Order`, `Receipt`, `Transaction` | Credit ledger | `orders`: polymorphic `buyer`/`seller` (Dropzone or DropzoneUser), polymorphic `item`, `amount_cents` (bigint; `amount` float kept in step until P8.8), `state` (pending/completed/refunded/cancelled), `order_number` per dropzone; `receipts.amount_cents`; `transactions`: `sender`/`receiver`, `amount_cents` (and the old `amount`), `status` (reserved/completed/cancelled), `transaction_type` (purchase/sale/deposit/withdrawal/refund) | Wallet balance is the denormalised `credits_cents` bigint (the old `credits` column is written alongside it until P8.8), moved only with `add_cents!` (one atomic SQL update); see `app/models/money.rb` and `app/models/concerns/money_attributes.rb` |
 | `Notification` | In-app + push notification | `received_by_id` (DropzoneUser), `sent_by_id`, polymorphic `resource`, `notification_type` enum (14 values), `is_seen` | `after_create` enqueues `NotifyJob` |
 | `Activity::Event` (`events`) | Audit/activity log | `resource`, `action`, `level`, `access_level`, `message`, `details`, `dropzone_id`, `dropzone_user_id` | Written by almost every interaction's `success`/`error` block |
 | `AuthenticationProvider` | Facebook/Apple identity link | `provider`, `uid`, `token` | |
@@ -219,7 +220,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 | Move slot (drag & drop, web) | `components/slots_table/DragAndDrop/*.web.tsx` | `moveSlot` | broken | crashes with target slot (`BUG-031`), no authorization (`BUG-007`) |
 | Take off load | slot row delete | `deleteSlot` | partial | Slots without orders crash (`BUG-032`) |
 | Tandem passengers | manifest form passenger fields | `createSlot(passengerName, passengerExitWeight)` | partial | Finalising a load with a tandem crashes (`BUG-030`) |
-| Credits (wallet) | `forms/credits/*`, profile transactions tab, `configuration/transactions` | `createOrder`, `dropzone.orders` | partial | Money stored as floats (`BUG-048`); peer-to-peer credit minting (`BUG-008`) |
+| Credits (wallet) | `forms/credits/*`, profile transactions tab, `configuration/transactions` | `createOrder`, `dropzone.orders` | partial | Money in integer cents (`BUG-048`, fixed in P6.23); peer-to-peer credit minting (`BUG-008`) |
 | Users list / profile / edit | `screens/authenticated/user/*` | `dropzoneUsers`, `dropzoneUser`, `updateUser`, `updateDropzoneUser`, `deleteUser` | broken | `updateDropzoneUser` always errors after saving (`BUG-037`); editing other users' profiles raises (`BUG-038`) |
 | Create user ("ghost") | `forms/create_user/*` | `createGhost` | partial | GitHub issue client#126 "Create Ghost doesn't fire submit button" |
 | Permissions & roles | `configuration/permissions/PermissionsScreen.tsx`, profile badges | `grantPermission`, `revokePermission`, `updateRole` | complete (reading) | |
@@ -228,7 +229,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 | Aircraft, ticket types, add-ons | `configuration/aircrafts`, `ticket_types`, `extras`, `forms/aircraft`, `ticket_type*` | `createPlane`, `updatePlane`, `deletePlane`, `createTicketType`, `updateTicketType`, `archiveTicketType`, `createExtra`, `updateExtra` | partial | `archiveTicketType` crashes (`BUG-039`); add-ons never charged (`BUG-028`) |
 | Weather / winds / jump run | `dropzone/weather_conditions/*`, `manifest/Weather/*` | `dropzone.currentConditions`, `createWeatherCondition`, `reloadWeatherCondition` | broken | Reload fails (`BUG-040`); external HTTP in model callback (`BUG-045`) |
 | Master log | `configuration/master_log/*` | `masterLog`, `updateMasterLog` | partial | Scheduled generation crashes and is not scheduled (`BUG-044`) |
-| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | In-process async jobs, errors swallowed (`BUG-052`) |
+| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | Solid Queue jobs with retries (P6.17) |
 | Activity feed / statistics | `overview/*`, `components/activity/*` | `activity`, `dropzone.statistics` | partial | Activity leaks across tenants (`BUG-003`) |
 | Federation / licence sync (APF) | `forms/user_wizard/steps/Federation*.tsx`, `License.tsx` | `joinFederation`, `federations`, `licenses` | partial (external API unverified) | |
 | Demo data generator | — | `Mutations::Setup::Demo::Generate` | dead | Not mounted in `MutationType` |
@@ -301,9 +302,9 @@ Mutation fields (`app/graphql/types/mutation_type.rb`) plus graphql_devise's `us
 
 | Name | What it does | How it runs | Status |
 |---|---|---|---|
-| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → `:async` adapter | Works when the process stays up; no retries; errors swallowed |
+| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → Solid Queue | Retried (5 attempts, growing waits) on network errors; discarded when the notification is gone; other errors fail the job |
 | `RequestRigInspectionJob` | Notifies rig inspectors | `perform_now(rig, self)` but expects ids; errors swallowed | Dead (`BUG-042`) |
-| `WindsAloftJob` | Empty | never | Dead |
+| `FetchWindsJob` | Fills a new weather condition with the winds of the dropzone's location (P6.19; replaces the empty `WindsAloftJob`) | `after_create_commit` of `WeatherCondition` | Retried on network errors |
 | `dropzone:master_log:generate` | Generates yesterday's master log for dropzones where it is midnight | Rake; needs hourly cron | Crashes (`BUG-044`); no scheduler configured |
 | `dropzone:loads:finalize` | Auto-lands dispatched / auto-cancels undispatched past loads | Rake; needs daily cron | Crashes on tandem loads (`BUG-030`); no scheduler configured |
 
@@ -338,7 +339,8 @@ Environment variables (names only):
 |---|---|
 | `SECRET_KEY_BASE`, `RAILS_MASTER_KEY` | Rails / devise secret (`config/initializers/devise.rb:2`) |
 | `BACKEND_URL` | `default_url_options` host, ActionCable URL (**required** — boot fails in development/production if unset) |
-| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**) |
+| `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**); its origin is always allowed by CORS |
+| `CORS_ORIGINS` | browser origins allowed to call the API, comma separated `scheme://host[:port]` (default `http://localhost:19006,http://localhost:8081`; `config/initializers/cors.rb`). Set it on every deployment that serves a web client from another origin than `FRONTEND_URL`; native apps are not affected |
 | `PGUSER`, `PGPASSWORD`, `DBNAME`, `DATABASE_URL` (production via platform) | database |
 | `REDIS_URL` | ActionCable, production cache |
 | `RAILS_MAX_THREADS`, `RAILS_MIN_THREADS`, `WEB_CONCURRENCY`, `PORT`, `PIDFILE` | Puma |
@@ -353,7 +355,7 @@ Environment variables (names only):
 
 See the client reference. Summary: `yarn` 1, Expo CLI via `npx expo`, `EXPO_ENV` ∈ {`local`,`staging`,`production`}
 chooses the API URL; EAS Build profiles `development`/`staging`/`production` (`eas.json`); EAS Update channel per
-environment; web built with `expo export:web` (webpack) and pushed to GitHub Pages repos
+environment; web built with `expo export --platform web` (Metro, since P3.7; webpack before) and pushed to GitHub Pages repos
 `OpenManifest/openmanifest-web` / `openmanifest-web-staging` (`.github/workflows/publish.yml`).
 
 ---
@@ -395,52 +397,54 @@ are summarised, not exhaustively checked.
 
 | Package | Current | Latest stable | Gap | EOL / deprecated | Breaking-change notes | Verified |
 |---|---|---|---|---|---|---|
-| Ruby | 3.1.3 | 4.0.7 (3.4.11 latest 3.x) | 1 major, 3 minors | 3.1 EOL 2025-03-26; 3.2 EOL 2026-04-01; 3.3 security-only until 2027-03-31 | Ruby 3.4: frozen string literal warnings, `it` block param; 4.0: check gem native extensions | yes |
-| Rails | 7.0.4 | 8.1.4 (2026-09-24) | 1 major + 3 minors | 7.0 and 7.1 EOL (final 7.0.10, 7.1.6 — *web*: rubyonrails.org 2025-10-29); 7.2 security support ended 2026-08-09 *(web)*; 8.0 security until 2026-11-07 *(web)*; 8.1 security until 2027-10-10 *(web)* | Step 7.0→7.1→7.2→8.0→8.1 with `new_framework_defaults_*`; 8.0 requires Ruby ≥ 3.2 | yes |
+| Ruby | 4.0.7 (was 3.1.3; P2.5, P2.9) | 4.0.7 (3.4.11 latest 3.x) | current | 3.1 EOL 2025-03-26; 3.2 EOL 2026-04-01; 3.3 security-only until 2027-03-31 | Ruby 3.4: frozen string literal warnings, `it` block param; 4.0: check gem native extensions | yes |
+| Rails | 8.1.4 (was 7.0.4; P2.2-P2.7) | 8.1.4 (2026-09-24) | current | 7.0 and 7.1 EOL (final 7.0.10, 7.1.6 — *web*: rubyonrails.org 2025-10-29); 7.2 security support ended 2026-08-09 *(web)*; 8.0 security until 2026-11-07 *(web)*; 8.1 security until 2027-10-10 *(web)* | Step 7.0→7.1→7.2→8.0→8.1 with `new_framework_defaults_*`; 8.0 requires Ruby ≥ 3.2 | yes |
 | Node (client tooling) | CI used 16/18 | 24.21.0 LTS "Krypton" (EOL 2028-04-30); 26.x becomes LTS 2026-10-28 | — | 16, 18 EOL; 20 EOL 2026-04-30; 22 EOL 2027-04-30 | | yes |
 | PostgreSQL | 16 in VM (prod unknown) | — | — | — | `pg` gem 1.4.5 → 1.7.0 | partial |
 | Redis | 7 in VM | — | — | — | `redis` gem 4.8 → 6.0 (ActionCable on Rails ≥ 7.1 supports redis-client) | partial |
 
 ### Backend gems (Gemfile.lock)
 
+Updated in P2.11 (2026-10-08): "Current" is the version in `Gemfile.lock` after Phase 2; "(was …)" is the pass-1 version. `counter_culture` is deliberately held at 3.3.0 until P6.10 (BUG-019).
+
 | Gem | Current | Latest | Gap | EOL / security | Notes | Verified |
 |---|---|---|---|---|---|---|
-| rails | 7.0.4 | 8.1.4 | 1 major | see above; bundle-audit lists advisories in actionpack, activerecord (SQL injection via comments, PG DoS), activestorage, activesupport, actionview, actiontext, actionmailer | | yes |
-| graphql | 2.0.16 | 2.6.11 | 6 minors | **critical** advisory (RCE when loading crafted schema), unsafe Marshal in parser cache | graphql_devise caps graphql (see next row) | yes |
-| graphql_devise | 1.2.0 | 2.4.0 | 1 major | — | Compatibility: 1.2 → rails < 7.1, graphql < 2.1; 1.5.0 → rails < 7.2, graphql < 2.4; 2.0.0 → rails < 7.3, graphql < 2.5; 2.1.0 → rails < 8.1, graphql < 2.6; 2.4.0 → rails < 8.2, graphql < 2.7 | yes |
-| devise_token_auth | 1.2.1 | 1.3.0 | minor | — | 1.3.0: rails < 8.3, devise < 6 | yes |
-| devise | 4.8.1 | 5.0.4 | 1 major | 2 medium advisories (confirmable race, open redirect) | | yes |
-| puma | 6.0.2 | 8.0.2 | 2 majors | 2 high + 3 medium advisories | | yes |
-| rack | 2.2.5 | (follows rails) | — | 12 high, 11 medium advisories | Rails 7.1+ allows Rack 3 | yes |
-| pg | 1.4.5 | 1.7.0 | minor | — | needs `libpq-dev` to build | yes |
-| redis | 4.8.0 | 6.0.0 | 2 majors | — | | yes |
-| active_interaction | 5.2.0 | 5.5.0 | minor | — | activesupport < 9 | yes |
-| active_interaction-extras | 1.0.4 | 1.1.0 | minor | — | | yes |
-| counter_culture | 3.3.0 | 3.14.0 | minor | — | | yes |
-| state_machines-activerecord | 0.8.0 | 0.200.0 | — | — | 0.200.0 requires activerecord ≥ 7.2 and Ruby ≥ 3.2 | yes |
-| discard | 1.2.1 | 2.0.0 | 1 major | — | activerecord ≥ 7.0, < 9 | yes |
-| appsignal | 3.3.1 | 5.0.2 | 2 majors | — | native agent download blocked in VM | yes |
-| geokit-rails | 2.3.2 | 2.5.0 | minor | **high**: command injection | | yes |
-| httparty | 0.21.0 | 0.24.3 | minor | high: SSRF/API key leakage | | yes |
-| jwt | 2.6.0 | 3.3.0 | 1 major | high: empty-key HMAC bypass | used by Apple login (`JWT.decode`, `JWT::JWK.import`) | yes |
-| rack-cors | 1.1.1 | 3.0.0 | 2 majors | — | | yes |
-| bootsnap | 1.15.0 | 1.26.0 | minor | — | | yes |
-| search_cop | 1.2.3 | 1.6.0 | minor | — | | yes |
-| activerecord-import | 1.4.1 | 2.3.0 | 1 major | — | used by seeds/defaults | yes |
-| active_storage_base64 | 2.0.0 | 3.0.1 | 1 major | — | activestorage > 7.0 | yes |
-| image_processing | 1.12.2 | 2.2.0 | 1 major | — | | yes |
-| google-cloud-storage | 1.44.0 | 1.62.1 | minor | — | | yes |
-| sprockets | 4.2.0 | 4.4.1 | minor | — | only needed for graphiql-rails assets | yes |
-| graphiql-rails | 1.8.0 | 1.10.5 | minor | — | | yes |
-| dotenv-rails | 2.8.1 | 3.2.0 | 1 major | — | | yes |
-| bcrypt | 3.1.18 | 3.1.22 | patch | JRuby-only advisory | | yes |
-| nokogiri | 1.14.3 | (follows rails) | — | 2 high + many | | yes |
-| faker | 3.1.0 | 3.8.0 | minor | — | runtime dependency (Gemfile top level) | yes |
-| rspec-rails | 5.1.2 | 8.0.4 | 3 majors | — | | yes |
-| factory_bot_rails | 6.2.0 | 6.5.1 | minor | — | | yes |
-| rubocop | 1.50.2 | 1.91.0 | minor | — | | yes |
-| yard | 0.9.24 (pinned) | — | — | high + 2 medium | dev only; remove | partial |
-| selenium-webdriver, webdrivers, capybara | locked | — | — | selenium high | no system specs exist; remove | partial |
+| rails | 8.1.4 (was 7.0.4) | 8.1.4 | current | none (bundle-audit clean in P2.11; was: see above; bundle-audit lists advisories in actionpack, activerecord (SQL injection via comments, PG DoS), activestorage, activesupport, actionview, actiontext, actionmailer) |  | yes |
+| graphql | 2.6.11 (was 2.0.16) | 2.6.11 | current | none (bundle-audit clean in P2.11; was: **critical** advisory (RCE when loading crafted schema), unsafe Marshal in parser cache) | graphql_devise caps graphql (see next row) | yes |
+| graphql_devise | 2.4.0 (was 1.2.0) | 2.4.0 | current | — | Compatibility: 1.2 → rails < 7.1, graphql < 2.1; 1.5.0 → rails < 7.2, graphql < 2.4; 2.0.0 → rails < 7.3, graphql < 2.5; 2.1.0 → rails < 8.1, graphql < 2.6; 2.4.0 → rails < 8.2, graphql < 2.7 | yes |
+| devise_token_auth | 1.3.0 (was 1.2.1) | 1.3.0 | current | — | 1.3.0: rails < 8.3, devise < 6 | yes |
+| devise | 5.0.4 (was 4.8.1) | 5.0.4 | current | none (bundle-audit clean in P2.11; was: 2 medium advisories (confirmable race, open redirect)) |  | yes |
+| puma | 8.0.2 (was 6.0.2) | 8.0.2 | current | none (bundle-audit clean in P2.11; was: 2 high + 3 medium advisories) |  | yes |
+| rack | 3.2.7 (was 2.2.5) | (follows rails) | current | none (bundle-audit clean in P2.11; was: 12 high, 11 medium advisories) | Rails 7.1+ allows Rack 3 | yes |
+| pg | 1.7.0 (was 1.4.5) | 1.7.0 | current | — | needs `libpq-dev` to build | yes |
+| redis | 6.0.0 (was 4.8.0) | 6.0.0 | current | — |  | yes |
+| active_interaction | 5.5.0 (was 5.2.0) | 5.5.0 | current | — | activesupport < 9 | yes |
+| active_interaction-extras | 1.1.0 (was 1.0.4) | 1.1.0 | current | — |  | yes |
+| counter_culture | 3.3.0 (held) | 3.14.0 | minor | — | pinned until P6.10: 3.14.0 exposes BUG-019 in group manifests | yes |
+| state_machines-activerecord | 0.200.0 (was 0.8.0) | 0.200.0 | current | — | 0.200.0 requires activerecord ≥ 7.2 and Ruby ≥ 3.2 | yes |
+| discard | 2.0.0 (was 1.2.1) | 2.0.0 | current | — | activerecord ≥ 7.0, < 9 | yes |
+| appsignal | 5.0.3 (was 3.3.1) | 5.0.3 | current | — | native agent download blocked in VM | yes |
+| geokit-rails | 2.5.0 (was 2.3.2) | 2.5.0 | current | none (bundle-audit clean in P2.11; was: **high**: command injection) |  | yes |
+| httparty | 0.24.3 (was 0.21.0) | 0.24.3 | current | none (bundle-audit clean in P2.11; was: high: SSRF/API key leakage) |  | yes |
+| jwt | 3.3.0 (was 2.6.0) | 3.3.0 | current | none (bundle-audit clean in P2.11; was: high: empty-key HMAC bypass) | used by Apple login (`JWT.decode`, `JWT::JWK.import`) | yes |
+| rack-cors | 3.0.0 (was 1.1.1) | 3.0.0 | current | — |  | yes |
+| bootsnap | 1.26.0 (was 1.15.0) | 1.26.0 | current | — |  | yes |
+| search_cop | 1.6.0 (was 1.2.3) | 1.6.0 | current | — |  | yes |
+| activerecord-import | 2.3.0 (was 1.4.1) | 2.3.0 | current | — | used by seeds/defaults | yes |
+| active_storage_base64 | 3.0.1 (was 2.0.0) | 3.0.1 | current | — | activestorage > 7.0 | yes |
+| image_processing | 2.2.0 (was 1.12.2) | 2.2.0 | current | — |  | yes |
+| google-cloud-storage | 1.62.1 (was 1.44.0) | 1.62.1 | current | — |  | yes |
+| sprockets | 4.4.1 (was 4.2.0) | 4.4.1 | current | — | only needed for graphiql-rails assets | yes |
+| graphiql-rails | 1.10.5 (was 1.8.0) | 1.10.5 | current | — |  | yes |
+| dotenv-rails | 3.2.0 (was 2.8.1) | 3.2.0 | current | — |  | yes |
+| bcrypt | 3.1.22 (was 3.1.18) | 3.1.22 | current | JRuby-only advisory |  | yes |
+| nokogiri | 1.19.4 (was 1.14.3) | (follows rails) | current | none (bundle-audit clean in P2.11; was: 2 high + many) |  | yes |
+| faker | 3.8.0 (was 3.1.0) | 3.8.0 | current | — | runtime dependency (Gemfile top level) | yes |
+| rspec-rails | 8.0.4 (was 5.1.2) | 8.0.4 | current | — |  | yes |
+| factory_bot_rails | 6.5.1 (was 6.2.0) | 6.5.1 | current | — |  | yes |
+| rubocop | 1.91.0 (was 1.50.2) | 1.91.0 | current | — |  | yes |
+| yard | removed in P2.1 | — | — | high + 2 medium | dev only; remove | partial |
+| selenium-webdriver, webdrivers, capybara | removed in P2.1 | — | — | selenium high | no system specs exist; removed in P2.1 | partial |
 
 ### Client packages
 
@@ -453,4 +457,4 @@ Headline numbers:
 | react-native | 0.70.8 | 0.86.3 (pinned by SDK 57) | 16 minors | yes |
 | react | 18.1.0 | 19.2.3 (pinned by SDK 57) | 1 major | yes |
 | @apollo/client | 3.7.11 | 4.3.2 | 1 major | yes |
-| yarn audit | 715 advisories (61 critical, 452 high, 161 moderate, 41 low) in 2078 packages | | | yes |
+| yarn audit | 715 advisories (61 critical, 452 high, 161 moderate, 41 low) in 2078 packages | | | yes (historical: the backend's `package.json`/`yarn.lock` were removed in P2.1) |

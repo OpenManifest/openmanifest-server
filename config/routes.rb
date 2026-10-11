@@ -11,13 +11,6 @@ Rails.application.routes.draw do
   get "/graphql", to: "graphql#index"
   get "/.well-known/apple-app-site-association", to: "resource#aasa"
 
-  get "/confirm", to: "application#index"
-  get "/", to: "application#index"
-  get "/index.html", to: "application#index"
-
   mount ActionCable.server, at: "/subscriptions"
-  # get '*path', to: 'application#index', constraints: ->(request) do
-  #  !request.xhr? && !request.format.html?
-  # end
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 end

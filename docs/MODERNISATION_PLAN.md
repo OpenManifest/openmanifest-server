@@ -748,7 +748,7 @@ Size: M
 Fixes: none
 
 ### P1.2 — Cover dropzone and access operations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-2-spec-dropzones
@@ -775,7 +775,7 @@ Size: M
 Fixes: none
 
 ### P1.3 — Cover manifest operations and subscription triggers
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-3-spec-manifest
@@ -806,7 +806,7 @@ Size: L
 Fixes: none
 
 ### P1.4 — Cover user, permission, federation and notification operations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-4-spec-users
@@ -829,7 +829,7 @@ Size: M
 Fixes: none
 
 ### P1.5 — Cover setup operations (aircraft, tickets, extras, rigs, inspections, weather, master log)
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-5-spec-setup
@@ -851,7 +851,7 @@ Size: L
 Fixes: none
 
 ### P1.6 — Cover payments, activity and meta operations; enforce full coverage
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.2, P1.3, P1.4, P1.5
 Branch: modernise/p1-6-spec-payments-meta
@@ -874,7 +874,7 @@ Size: M
 Fixes: none
 
 ### P1.7 — Add tenant-isolation characterisation specs
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.6
 Branch: modernise/p1-7-spec-tenancy
@@ -905,7 +905,7 @@ Size: M
 Fixes: none
 
 ### P1.8 — Commit the server schema and fail CI when it drifts
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-8-schema-dump
@@ -932,7 +932,7 @@ Size: S
 Fixes: none
 
 ### P1.9 — Replace the client's broken GraphQL check with an offline contract check
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.8
 Branch: modernise/p1-9-contract-check
@@ -961,7 +961,7 @@ Size: S
 Fixes: BUG-080
 
 ### P1.10 — Repair the client Jest harness and re-enable the manifest screen test
-Status: todo
+Status: done
 Repo: client
 Depends on: P0.10
 Branch: modernise/p1-10-jest-harness
@@ -990,7 +990,7 @@ Size: S
 Fixes: BUG-081
 
 ### P1.11 — Add client tests for login, logout and dropzone selection
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-11-tests-auth
@@ -1017,7 +1017,7 @@ Size: M
 Fixes: none
 
 ### P1.12 — Add client tests for the manifest flows
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-12-tests-manifest
@@ -1046,7 +1046,7 @@ Size: L
 Fixes: none
 
 ### P1.13 — Add client tests for users, credits and setup forms
-Status: todo
+Status: done
 Repo: client
 Depends on: P1.10
 Branch: modernise/p1-13-tests-users-setup
@@ -1073,7 +1073,7 @@ Size: M
 Fixes: none
 
 ### P1.14 — Verify Phase 1
-Status: todo
+Status: done
 Repo: both
 Depends on: P1.1, P1.2, P1.3, P1.4, P1.5, P1.6, P1.7, P1.8, P1.9, P1.10, P1.11, P1.12, P1.13
 Branch: modernise/p1-14-verify
@@ -1131,7 +1131,7 @@ Standard procedure for a Rails step (referred to as **"Rails step procedure"** b
    dev_baseline seed and run the client web smoke test (P0.8) against it.
 
 ### P2.1 — Remove dead code and unused gems from the backend
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.14
 Branch: modernise/p2-1-backend-cleanup
@@ -1165,7 +1165,7 @@ Size: M
 Fixes: BUG-059
 
 ### P2.2 — Update to Rails 7.0.10 and patch-level security releases
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.1
 Branch: modernise/p2-2-rails-7-0-10
@@ -1190,7 +1190,7 @@ Size: S
 Fixes: none
 
 ### P2.3 — Upgrade Rails 7.0 → 7.1
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.2
 Branch: modernise/p2-3-rails-7-1
@@ -1227,7 +1227,7 @@ Size: L
 Fixes: none
 
 ### P2.4 — Upgrade Rails 7.1 → 7.2
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.3
 Branch: modernise/p2-4-rails-7-2
@@ -1254,7 +1254,7 @@ Size: L
 Fixes: none
 
 ### P2.5 — Upgrade Ruby 3.1.6 → 3.4.11
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.4
 Branch: modernise/p2-5-ruby-3-4
@@ -1280,7 +1280,7 @@ Size: M
 Fixes: none
 
 ### P2.6 — Upgrade Rails 7.2 → 8.0
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.5
 Branch: modernise/p2-6-rails-8-0
@@ -1305,7 +1305,7 @@ Size: L
 Fixes: none
 
 ### P2.7 — Upgrade Rails 8.0 → 8.1
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.6
 Branch: modernise/p2-7-rails-8-1
@@ -1326,28 +1326,29 @@ Size: M
 Fixes: none
 
 ### P2.8 — Upgrade the remaining runtime gems to current majors
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.7
 Branch: modernise/p2-8-runtime-gems
 Goal: Every runtime gem is on its current major version.
 Context: Targets (RubyGems 2026-10-08): puma 8.0.2, pg 1.7.0, redis 6.0.0 (ActionCable's adapter allows `< 7`),
 devise 5.0.4, appsignal 5.0.2, jwt 3.3.0 (used in `app/interactions/login/apple.rb`: `JWT::JWK.import`, `JWT.decode`),
-discard 2.0.0, state_machines-activerecord 0.200.0 (requires activerecord ≥ 7.2), counter_culture 3.14.0,
-active_interaction 5.5.0, active_interaction-extras 1.1.0, active_storage_base64 3.0.1, image_processing 2.2.0,
+discard 2.0.0, state_machines-activerecord 0.200.0 (requires activerecord ≥ 7.2), active_interaction 5.5.0, active_interaction-extras 1.1.0, active_storage_base64 3.0.1, image_processing 2.2.0,
 rack-cors 3.0.0, dotenv-rails 3.2.0, activerecord-import 2.3.0, geokit-rails 2.5.0, httparty 0.24.3, search_cop 1.6.0,
-google-cloud-storage 1.62.1, bootsnap 1.26.0, graphiql-rails 1.10.5, faker 3.8.0.
+google-cloud-storage 1.62.1, bootsnap 1.26.0, graphiql-rails 1.10.5, faker 3.8.0. `counter_culture` is deliberately
+left at 3.3.0 (pinned in P2.2): 3.14.0 makes the double counting of BUG-019 fail three-tandem group manifests, so P6.10
+fixes the counters and then moves the gem to 3.14.0.
 Steps:
   1. Remove version constraints for these gems in `Gemfile` where a constraint blocks the target (e.g. `puma "~> 6.0"`,
      `redis "~> 4.0"`, `discard "~> 1.2"`). Upgrade in this order, running `bundle exec rspec` after each:
      (a) `bundle update puma pg redis bootsnap`; (b) `bundle update devise devise_token_auth`; (c) `bundle update jwt`
      (adapt `Login::Apple` to jwt 3: `JWT::JWK.import(key).verify_key` / `JWT.decode(token, nil, true, algorithms: [alg], jwks: …)`
-     as the jwt 3 upgrade guide in the gem's `UPGRADING.md` describes); (d) `bundle update state_machines state_machines-activerecord discard counter_culture`;
+     as the jwt 3 upgrade guide in the gem's `UPGRADING.md` describes); (d) `bundle update state_machines state_machines-activerecord discard`;
      (e) `bundle update active_interaction active_interaction-extras active_storage_base64 image_processing activerecord-import`;
      (f) `bundle update rack-cors dotenv-rails geokit-rails httparty search_cop google-cloud-storage graphiql-rails faker appsignal`.
   2. Update `config/puma.rb` for Puma 8 if it warns about removed options.
 Acceptance criteria (cloud VM):
-  - `bundle outdated --only-explicit --strict` lists only gems handled in P2.10 (development/test group).
+  - `bundle outdated --only-explicit --strict` lists only gems handled in P2.10 (development/test group) and `counter_culture` (P6.10).
   - Specs, rubocop, schema check and web smoke test pass. `bundle-audit check --update` lists no advisories, or the PR
     lists each remaining one with the reason.
 Acceptance criteria (owner, real device):
@@ -1356,10 +1357,10 @@ Out of scope: dev/test gems; Ruby 4.
 Risk / rollback: Apple login (jwt 3) is covered only by stubbed specs. The owner re-tests Apple login on a device in
 Phase 3 verification. Revert per gem group.
 Size: L
-Fixes: none
+Fixes: BUG-097
 
 ### P2.9 — Upgrade Ruby 3.4.11 → 4.0.7
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.8
 Branch: modernise/p2-9-ruby-4
@@ -1381,7 +1382,7 @@ Size: M
 Fixes: none
 
 ### P2.10 — Upgrade development and test tooling
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.9
 Branch: modernise/p2-10-dev-gems
@@ -1410,7 +1411,7 @@ Size: M
 Fixes: none
 
 ### P2.11 — Verify Phase 2
-Status: todo
+Status: owner-check (merge the Phase 0, 1 and 2 stacks in order and confirm CI on staging in both repos; phone-browser smoke run as in docs/verification/phase-2.md)
 Repo: both
 Depends on: P2.1, P2.2, P2.3, P2.4, P2.5, P2.6, P2.7, P2.8, P2.9, P2.10
 Branch: modernise/p2-11-verify
@@ -1482,7 +1483,7 @@ transitively. SDK 57 moves to RN 0.86 with no breaking changes intended; use `ex
 6. Update the version table in `client:docs/reference/README.md` §10.
 
 ### P3.1 — Remove unused client dependencies
-Status: todo
+Status: done
 Repo: client
 Depends on: P2.11
 Branch: modernise/p3-1-remove-unused-deps
@@ -1511,7 +1512,7 @@ Size: S
 Fixes: none
 
 ### P3.2 — Remove sentry-expo
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.1
 Branch: modernise/p3-2-remove-sentry
@@ -1569,7 +1570,7 @@ Size: M
 Fixes: BUG-084
 
 ### P3.4 — Replace libraries built on the Reanimated 1 API
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.2
 Branch: modernise/p3-4-replace-reanimated1-libs
@@ -1590,8 +1591,9 @@ Steps:
   3. `yarn remove react-native-skeleton-content react-native-animated-nav-tab-bar styled-components`.
   4. Add a render test `app/__tests__/components/Skeleton.test.tsx` (loading shows N blocks, loaded shows children).
 Acceptance criteria (cloud VM):
-  - Client checks pass; the web export log no longer contains `interpolate' is not exported`; web smoke test passes and
-    the screenshots show the tab bar.
+  - Client checks pass; web smoke test passes and the screenshots show the tab bar. (The `interpolate' is not exported`
+    line in the web export log does not come from these libraries: it comes from `@react-navigation/drawer`'s legacy
+    overlay and goes away in P3.9, whose criteria now include it.)
 Acceptance criteria (owner, real device):
   - none (checked in P3.22)
 Out of scope: visual redesign.
@@ -1600,7 +1602,7 @@ Size: M
 Fixes: none
 
 ### P3.5 — Upgrade to Expo SDK 48
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.4
 Branch: modernise/p3-5-expo-48
@@ -1623,7 +1625,7 @@ Size: M
 Fixes: none
 
 ### P3.6 — Upgrade to Expo SDK 49
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.5
 Branch: modernise/p3-6-expo-49
@@ -1645,7 +1647,7 @@ Size: M
 Fixes: none
 
 ### P3.7 — Upgrade to Expo SDK 50 and move web builds to Metro
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.6
 Branch: modernise/p3-7-expo-50-metro-web
@@ -1679,7 +1681,7 @@ Size: L
 Fixes: none
 
 ### P3.8 — Upgrade to Expo SDK 51
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.7
 Branch: modernise/p3-8-expo-51
@@ -1700,7 +1702,7 @@ Size: M
 Fixes: none
 
 ### P3.9 — Upgrade React Navigation 6 → 7
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.8
 Branch: modernise/p3-9-react-navigation-7
@@ -1722,6 +1724,7 @@ Steps:
      `Configuration.AircraftScreen`, `Unauthenticated.SignUpWizard`) or register them (BUG-083).
   4. Update `app/__mocks__/@react-navigation/core.js` (rename/move to `native.js` if imports changed).
 Acceptance criteria (cloud VM):
+  - The web export log does not contain `interpolate' is not exported` (left over from P3.4: `@react-navigation/drawer` legacy overlay).
   - Client checks and web smoke test pass. Deep links `/dropzone/manifest` and `/dropzone/load/1` open the right screens
     in the web build (smoke test visits both URLs directly).
 Acceptance criteria (owner, real device):
@@ -1732,12 +1735,12 @@ Size: L
 Fixes: BUG-083
 
 ### P3.10 — Upgrade to Expo SDK 52
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.9
 Branch: modernise/p3-10-expo-52
 Goal: The client runs on Expo SDK 52 (RN 0.76.9, React 18.3.1).
-Context: SDK step procedure with N = 52. `react-native-screens` moves to 4.x. Keep the legacy architecture explicitly for
+Context: SDK step procedure with N = 52. `react-native-screens` moves to 4.x (React Navigation 7, installed in P3.9, declares it as a peer `>= 4.0.0`; until this task yarn prints three peer warnings and the native behaviour with screens 3.31 is untested). Keep the legacy architecture explicitly for
 this step (`"newArchEnabled": false` in `app.json` under `expo`) so that the New Architecture switch happens alone in P3.14.
 Steps:
   1. SDK step procedure (N = 52), with `react-test-renderer@18.3.1`.
@@ -1752,7 +1755,7 @@ Size: M
 Fixes: none
 
 ### P3.11 — Upgrade react-native-paper 4 → 5 (infrastructure and shared components)
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.10
 Branch: modernise/p3-11-paper-5-core
@@ -1766,7 +1769,8 @@ Steps:
   1. `yarn add react-native-paper@5.15.3 react-native-paper-dates@0.24.0 react-native-paper-tabs@latest`.
   2. Build the combined themes from `MD2LightTheme`/`MD2DarkTheme` (Paper) and the React Navigation themes; keep the font
      names; keep `primary`/`accent` colours.
-  3. Fix every type error under `app/components/`, `app/entrypoint/`, `app/providers/`, `app/forms/` caused by Paper 5
+  3. Delete `app/types/react-native-legacy-props.d.ts` (added in P3.10 to make Paper 4's typings compile against RN 0.76).
+  4. Fix every type error under `app/components/`, `app/entrypoint/`, `app/providers/`, `app/forms/` caused by Paper 5
      (e.g. `Provider` → `PaperProvider`, `Button color` → `buttonColor`/`textColor`, `Colors` export removed, `IconButton color` → `iconColor`,
      `Appbar.Content` subtitle removal, `Chip` styles).
 Acceptance criteria (cloud VM):
@@ -1781,12 +1785,16 @@ Size: L
 Fixes: none
 
 ### P3.12 — Upgrade react-native-paper 4 → 5 (screens)
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.11
 Branch: modernise/p3-12-paper-5-screens
 Goal: The whole app compiles and runs with Paper 5.
-Context: The remaining type errors from P3.11 are under `app/screens/`.
+Context: The remaining type errors from P3.11 are under `app/screens/` (28: 21× `theme.colors.text` → use `useAppTheme()`
+from `app/hooks/useAppTheme`, 3× dialog-opener `onPress` signatures, 2× `Tabs` (wrap in `TabsProvider`; drop the `theme` prop),
+1× `IconButton color` → `iconColor`, 1× `Appbar.Content title`). Paper 5's `ProgressBar` fills its parent's height on web;
+P3.11 added `app/components/ProgressBar.tsx` (a 4 px wrapper) and used it outside `app/screens/`. Replace the Paper `ProgressBar`
+imports in `app/screens/` (`grep -rln "ProgressBar" app/screens`) with it, otherwise the manifest board renders empty on web.
 Steps:
   1. Fix all remaining Paper 5 type errors and runtime warnings under `app/screens/`.
   2. Run the web smoke test and compare its screenshots with the Phase 2 ones; fix any obviously broken layout (missing
@@ -1798,10 +1806,10 @@ Acceptance criteria (owner, real device):
 Out of scope: redesign.
 Risk / rollback: revert together with P3.11.
 Size: L
-Fixes: none
+Fixes: BUG-099
 
 ### P3.13 — Replace remaining unmaintained UI libraries
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.12
 Branch: modernise/p3-13-replace-unmaintained-libs
@@ -1834,7 +1842,7 @@ Size: L
 Fixes: none
 
 ### P3.14 — Upgrade to Expo SDK 53, React 19 and the New Architecture
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.13
 Branch: modernise/p3-14-expo-53-new-arch
@@ -1862,7 +1870,7 @@ Size: L
 Fixes: none
 
 ### P3.15 — Upgrade to Expo SDK 54, Reanimated 4 and Node 24
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.14
 Branch: modernise/p3-15-expo-54
@@ -1889,7 +1897,7 @@ Size: L
 Fixes: none
 
 ### P3.16 — Upgrade to Expo SDK 55
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.15
 Branch: modernise/p3-16-expo-55
@@ -1909,7 +1917,7 @@ Size: M
 Fixes: none
 
 ### P3.17 — Upgrade to Expo SDK 56
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.16
 Branch: modernise/p3-17-expo-56
@@ -1931,7 +1939,7 @@ Size: M
 Fixes: none
 
 ### P3.18 — Upgrade to Expo SDK 57
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.17
 Branch: modernise/p3-18-expo-57
@@ -1952,7 +1960,7 @@ Size: S
 Fixes: none
 
 ### P3.19 — Upgrade Apollo Client, graphql-js and code generation
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.18
 Branch: modernise/p3-19-apollo-codegen
@@ -1963,9 +1971,10 @@ is a separate breaking upgrade and is deliberately not done here; it is reconsid
 in Phase 4).
 Steps:
   1. `yarn add @apollo/client@3.14.1 graphql@^16`.
-  2. `yarn add -D @graphql-codegen/cli@latest @graphql-codegen/typescript@latest @graphql-codegen/typescript-operations@latest
-     @graphql-codegen/typescript-react-apollo@latest @graphql-codegen/import-types-preset@latest @graphql-codegen/add@latest
-     @graphql-codegen/introspection@latest @graphql-codegen/schema-ast@latest`.
+  2. `yarn add -D` the codegen packages. Done with `cli@^5.0.7 typescript@^4.1.6 typescript-operations@^4.6.1
+     typescript-react-apollo@^4.4.2 import-types-preset@^3.0.1 add@^5.0.3 introspection@^4 schema-ast@^4` instead of `@latest`:
+     cli 7 / operations 6 stop emitting `__typename?` and re-declare enums as string literals (100+ type errors in fixtures and
+     production code). Migrating to cli 7 is a separate task (see the deferred note in Phase 4).
   3. `yarn sync:schema && yarn ts:graphql`. Fix type errors from the regenerated code without changing documents.
   4. Remove `zen-observable`/`zen-observable-ts` if unused after the upgrade (`grep -rn zen-observable app`).
 Acceptance criteria (cloud VM):
@@ -1979,12 +1988,12 @@ Size: M
 Fixes: none
 
 ### P3.20 — Upgrade TypeScript and linting; drop Rome
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.19
 Branch: modernise/p3-20-ts-eslint
 Goal: TypeScript 5.9.3 and ESLint 9-style flat config (`eslint-config-expo` for SDK 57) replace the old toolchain; Rome (unmaintained, last release 2024) is removed in favour of Prettier.
-Context: `typescript` ^4.6.3 (4.9.4 installed), `.eslintrc.js` (only react-hooks rules), `rome.json`, `.prettierrc`.
+Context: `typescript` is already 5.9.3 and `ts-node` 10.9.2 since P3.9 (React Navigation 7's types need TS 5), so step 1 only adds the ESLint/Prettier packages; `.eslintrc.js` (only react-hooks rules), `rome.json`, `.prettierrc`.
 TypeScript 7.0 exists but is a new native compiler; use 5.9.3, the newest 5.x, for compatibility with Expo tooling.
 Steps:
   1. `yarn add -D typescript@5.9.3 eslint@^9 eslint-config-expo@~57 prettier@latest eslint-config-prettier@latest`.
@@ -2004,7 +2013,7 @@ Size: M
 Fixes: none
 
 ### P3.21 — Modernise app configuration and EAS build profiles
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.20
 Branch: modernise/p3-21-eas-config
@@ -2025,6 +2034,9 @@ Steps:
      expo-notifications); remove `CAMERA_ROLL`, `MEDIA_LIBRARY`, `READ_EXTERNAL_STORAGE`, `WRITE_EXTERNAL_STORAGE`
      (the image picker uses the system photo picker).
   5. Run `npx expo config --type public` and include the output in the PR.
+  6. (Done in P3.10: the direct `@expo/config-plugins` and `@expo/metro-config` installs were removed because the old
+     metro-config broke `expo export` on SDK 52; `metro.config.js` already uses `expo/metro-config` since P3.7.) Verify that
+     `grep -n "@expo/config-plugins\|@expo/metro-config" package.json` still prints nothing.
 Acceptance criteria (cloud VM):
   - `npx expo config --type public` exits 0; `test ! -f app.json`; client checks, web export and web smoke test pass;
     `npx expo-doctor` reports no config errors.
@@ -2036,7 +2048,7 @@ Size: M
 Fixes: BUG-088
 
 ### P3.22 — Verify Phase 3
-Status: todo
+Status: owner-check (answer D4, merge the Phase 0–3 stacks in order and confirm CI on staging; device smoke run with EAS development builds — see docs/verification/phase-3.md)
 Repo: both
 Depends on: P3.1, P3.2, P3.4, P3.5, P3.6, P3.7, P3.8, P3.9, P3.10, P3.11, P3.12, P3.13, P3.14, P3.15, P3.16, P3.17, P3.18, P3.19, P3.20, P3.21
 Branch: modernise/p3-22-verify
@@ -2084,7 +2096,7 @@ Libraries: `zustand` 5.0.15 (`persist` middleware with `createJSONStorage`), `ex
 P4.9 records Apollo 4 as backlog.
 
 ### P4.1 — Introduce the session store and move credentials to secure storage
-Status: todo
+Status: owner-check (install the previous dev build, log in, install this build over it on iOS and Android: still logged in; log out and in works)
 Repo: client
 Depends on: P3.22
 Branch: modernise/p4-1-session-store
@@ -2127,7 +2139,7 @@ Size: L
 Fixes: BUG-017
 
 ### P4.2 — Replace the Redux theme state with a theme hook
-Status: todo
+Status: owner-check (dark mode toggle in Settings → Appearance and system dark mode on one phone)
 Repo: client
 Depends on: P4.1
 Branch: modernise/p4-2-theme-hook
@@ -2157,7 +2169,7 @@ Size: M
 Fixes: none
 
 ### P4.3 — Remove deprecated user and dropzone snapshots from global state
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.2
 Branch: modernise/p4-3-remove-snapshots
@@ -2180,7 +2192,7 @@ Size: S
 Fixes: none
 
 ### P4.4 — Move screen slices and the image viewer to local state
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.3
 Branch: modernise/p4-4-screen-state
@@ -2204,7 +2216,7 @@ Size: M
 Fixes: none
 
 ### P4.5 — Move setup forms to react-hook-form (group 1)
-Status: todo
+Status: owner-check (edit dropzone settings, weather conditions and your own profile on one phone)
 Repo: client
 Depends on: P4.4
 Branch: modernise/p4-5-forms-group-1
@@ -2227,7 +2239,7 @@ Size: L
 Fixes: none
 
 ### P4.6 — Move equipment and membership forms to react-hook-form (group 2)
-Status: todo
+Status: owner-check (add a rig, inspect a rig, edit a member's role/expiry on one phone)
 Repo: client
 Depends on: P4.5
 Branch: modernise/p4-6-forms-group-2
@@ -2248,7 +2260,7 @@ Size: L
 Fixes: none
 
 ### P4.7 — Move manifest forms into the manifest context
-Status: todo
+Status: owner-check (on a phone: manifest a group from the load screen's speed dial and from an "available" row; edit a slot by tapping it)
 Repo: client
 Depends on: P4.6
 Branch: modernise/p4-7-manifest-dialogs
@@ -2261,14 +2273,15 @@ Steps:
   1. Add a `dialogs` object to `app/providers/manifest/provider.tsx` with state `{ open: boolean, load, slot?, users? }`
      per dialog and render `ManifestUserSheet` and `ManifestGroupSheet` once inside the provider.
   2. Board actions (`ManifestScreen.tsx` 194-207, `LoadCard/Large/Card.tsx` 140-150) and `LoadScreen` slot taps call the
-     context; remove the FIXMEs. Fix the permission branch: open the slot editor when the user has `updateSlot`, or
-     `updateUserSlot` and the slot is their own.
+     context; remove the FIXMEs. Fix the permission branch: open the slot editor when the user has `updateSlot` and the
+     slot is their own, or `updateUserSlot` (the API checks `updateSlot` for your own slot and `updateUserSlot` for
+     someone else's, `update_slot.rb:50`).
   3. Delete `forms.manifest` and `forms.manifestGroup` slices.
   4. Tests: from the board, "Manifest group" opens the group sheet; tapping a slot on the load screen opens the user
-     sheet; a user with only `updateUserSlot` can open their own slot but not others.
+     sheet; a user with only `updateUserSlot` can open someone else's slot, one with only `updateSlot` cannot.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test pass; `grep -rnE "forms\.(manifest|manifestGroup)\b" app` prints nothing.
-  - Web smoke test extended: open the group sheet from the board.
+  - Web smoke test extended: open the group sheet (from the load screen's speed dial: neither board display mode has a group action, see BUG-066).
 Acceptance criteria (owner, real device):
   - On a phone: manifest a group from the board and from the load screen; edit a slot by tapping it.
 Out of scope: group manifest server bugs (P6.13).
@@ -2277,7 +2290,7 @@ Size: L
 Fixes: BUG-066, BUG-079
 
 ### P4.8 — Remove Redux and make logout reset everything
-Status: todo
+Status: owner-check (on a phone: log out and log in as a different user without killing the app; the second user must not receive the first user's push notifications, which also needs P6.18)
 Repo: client
 Depends on: P4.7
 Branch: modernise/p4-8-remove-redux
@@ -2313,7 +2326,7 @@ Size: L
 Fixes: BUG-063, BUG-064, BUG-069
 
 ### P4.9 — Verify Phase 4
-Status: todo
+Status: owner-check (merge the Phase 0–4 stacks in order and confirm CI on staging; run SMOKE_TEST Login and Manifest on an iPhone and an Android phone, including logging in as a second user without restarting the app — see docs/verification/phase-4.md)
 Repo: both
 Depends on: P4.1, P4.2, P4.3, P4.4, P4.5, P4.6, P4.7, P4.8
 Branch: modernise/p4-9-verify
@@ -2322,7 +2335,10 @@ Context: Phase gate.
 Steps:
   1. Run client checks, web export, web smoke test and `check:graphql`; record test counts.
   2. Write `backend:docs/verification/phase-4.md`. Add a "Backlog" line: "Apollo Client 4 (`@apollo/client` 4.x) —
-     reconsider after Phase 6; requires `useQuery` callback removal and new error types."
+     reconsider after Phase 6; requires `useQuery` callback removal and new error types." Add a second Backlog line:
+     "graphql-codegen 7 (cli 7, typescript-operations 6) — P3.19 stayed on cli 5 / plugins 4 because the 6.x operations plugin
+     stops emitting `__typename?` and re-declares enums as string literals; migrate with `nonOptionalTypename` decisions for the
+     fixtures and mocks."
   3. Update `client:docs/reference/README.md` §3 (store shape) and `client:docs/reference/diagrams.md` §2 to describe the
      zustand stores and remove the Redux diagram.
 Acceptance criteria (cloud VM):
@@ -2368,7 +2384,7 @@ The web smoke test (P0.8) gains a layout check in P5.1 that every later task ext
 can be scrolled into view and clicked.
 
 ### P5.1 — Add layout primitives and the layout smoke check
-Status: todo
+Status: done
 Repo: client
 Depends on: P4.9
 Branch: modernise/p5-1-layout-primitives
@@ -2402,7 +2418,7 @@ Size: M
 Fixes: none
 
 ### P5.2 — Fix the wizards
-Status: todo
+Status: owner-check (small Android phone at font scale 2.0: complete sign-up and dropzone setup with the keyboard open on each field; close client#133 and client#134 if they no longer reproduce)
 Repo: client
 Depends on: P5.1
 Branch: modernise/p5-2-wizards
@@ -2416,7 +2432,7 @@ Steps:
      `variant="headlineMedium"`.
   2. `Wizard.tsx`/`HookFormWizard.tsx`: remove `KeyboardAvoidingView`; page width from `onLayout` of the container, not
      `Dimensions`; the next/back buttons go in a `KeyboardStickyView` footer inside `ScreenContainer`.
-  3. Add `testID`s `wizard-next-primary-action` and run `checkLayout` for `/signup` and `/wizards/dropzone` (with
+  3. Add `testID`s `wizard-next-primary-action` and run `checkLayout` for `/signup` and `/setup` (the dropzone wizard; with
      the dev seed's admin user) in the web smoke test.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (with the new routes) pass.
@@ -2429,7 +2445,7 @@ Size: L
 Fixes: BUG-070, BUG-073 (wizards)
 
 ### P5.3 — Fix login, sign-up entry and dropzone selection
-Status: todo
+Status: owner-check (small Android phone and iPhone with notch: login with keyboard open, Apple button and "Sign up" reachable; dropzone list not under the status bar)
 Repo: client
 Depends on: P5.2
 Branch: modernise/p5-3-login-limbo
@@ -2454,7 +2470,7 @@ Size: M
 Fixes: BUG-076, BUG-071 (login, limbo, error screens)
 
 ### P5.4 — Fix bottom sheets and dialogs
-Status: todo
+Status: owner-check (small Android phone: in each sheet (manifest user, group, credits, aircraft, ticket type, rig) focus the last input; the input and the save button stay visible; say whether the save button needs a pinned footer)
 Repo: client
 Depends on: P5.3
 Branch: modernise/p5-4-bottom-sheets
@@ -2470,7 +2486,7 @@ Steps:
      that renders `BottomSheetTextInput` (Paper `TextInput` with `render` prop); delete keyboard padding hacks
      (`grep -rn "400" app/components | grep -i padding`).
 Acceptance criteria (cloud VM):
-  - Client checks, web export and web smoke test pass; `grep -rn "<BottomSheetModal" app | grep -v layout/Sheet.tsx` prints nothing.
+  - Client checks, web export and web smoke test pass; `grep -rn "<BottomSheetModal[^P]" app | grep -v layout/Sheet.tsx` prints nothing (`[^P]` excludes `<BottomSheetModalProvider>`).
 Acceptance criteria (owner, real device):
   - Small Android phone: in each sheet (manifest user, group, credits, aircraft, ticket type, rig) focus the last input;
     the input and the save button stay visible.
@@ -2480,7 +2496,7 @@ Size: L
 Fixes: BUG-073 (sheets)
 
 ### P5.5 — Fix the manifest board and load screen
-Status: todo
+Status: owner-check (small Android phone: board scrolls to the last load above the tab bar; load screen scrolls to the last jumper; FABs float above the gesture bar)
 Repo: client
 Depends on: P5.4
 Branch: modernise/p5-5-manifest-layout
@@ -2508,7 +2524,7 @@ Size: L
 Fixes: BUG-072, BUG-074 (load screen), BUG-071 (FABs on manifest)
 
 ### P5.6 — Fix configuration screens
-Status: todo
+Status: owner-check (small Android phone, dark mode: each configuration screen's FAB floats and its last row is reachable)
 Repo: client
 Depends on: P5.5
 Branch: modernise/p5-6-configuration-layout
@@ -2532,7 +2548,7 @@ Size: M
 Fixes: BUG-075, BUG-087, BUG-074 (dropzones table)
 
 ### P5.7 — Fix the weather, wind and jump-run screens
-Status: todo
+Status: owner-check (small Android phone: edit temperature, winds and jump run with the keyboard open)
 Repo: client
 Depends on: P5.6
 Branch: modernise/p5-7-weather-layout
@@ -2554,7 +2570,7 @@ Size: M
 Fixes: BUG-078, BUG-070 (weather), BUG-073 (weather)
 
 ### P5.8 — Support large font scales
-Status: todo
+Status: owner-check (Android at font scale 2.0 and iOS at the largest accessibility text size: board, load, profile, login are readable without clipped text in rows)
 Repo: client
 Depends on: P5.7
 Branch: modernise/p5-8-font-scale
@@ -2566,7 +2582,7 @@ Steps:
      `minHeight` with vertical padding; remove `numberOfLines={1}` on names where it truncates essential data, or add
      `ellipsizeMode="tail"` plus an accessibility label with the full text.
   2. Set `maxFontSizeMultiplier={1.6}` on tab bar labels and FAB labels only (navigation chrome).
-  3. Web smoke: run the board and a load at `html { font-size: 200% }` and check `checkLayout`.
+  3. Web smoke: run the board and a load with every font size doubled (react-native-web writes px, so `html { font-size: 200% }` changes nothing; the script scales each element's computed font size) and check `checkLayout`.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (with the 200% run) pass.
 Acceptance criteria (owner, real device):
@@ -2578,7 +2594,7 @@ Size: M
 Fixes: BUG-077
 
 ### P5.9 — Add a lint guard against the layout root causes
-Status: todo
+Status: done
 Repo: client
 Depends on: P5.8
 Branch: modernise/p5-9-layout-lint
@@ -2600,7 +2616,7 @@ Size: S
 Fixes: none
 
 ### P5.10 — Verify Phase 5
-Status: todo
+Status: owner-check (the "Layout" section of client:docs/SMOKE_TEST.md on a small Android phone, a large Android phone, an iPhone and an iPad, each at default and maximum font size, dark mode on one; merge the Phase 0–5 stacks and confirm CI on `staging`)
 Repo: both
 Depends on: P5.1, P5.2, P5.3, P5.4, P5.5, P5.6, P5.7, P5.8, P5.9
 Branch: modernise/p5-10-verify
@@ -2641,7 +2657,7 @@ Rules for every Phase 6 task:
 - Mark each fixed bug in BUGS.md as `FIXED in P6.n:` (Executor instructions, status tracking).
 
 ### P6.1 — Make the access context per request
-Status: todo
+Status: done
 Repo: backend
 Depends on: P5.10
 Branch: modernise/p6-1-request-access-context
@@ -2671,7 +2687,7 @@ Size: S
 Fixes: BUG-001
 
 ### P6.2 — Add tenant checks to dropzone, load and setup queries
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.1
 Branch: modernise/p6-2-query-authz-1
@@ -2692,7 +2708,12 @@ Steps:
      dropzone, `readActivity` (or the closest existing permission name) otherwise.
   4. Remove the `image` query field and resolver (BUG-004); the schema dump (P1.8) and contract check (P1.9) must stay
      green because the client does not use it.
-  5. Un-pend the P1.7 specs for these resolvers; they must now pass.
+  5. `Resolvers::Dropzones`: apply the `state` argument (`context[:access_context].dropzones.where(state: state)` when
+     given) (BUG-090); un-pend its example in `spec/requests/client_operations/dropzones_spec.rb`.
+  6. `Support::DropzoneContext`: return nil from the `prepare` lambda when `ctx[:access_context]` is nil so anonymous
+     callers get `AUTHENTICATION_ERROR` instead of `NoMethodError` (BUG-095); un-pend its example in
+     `spec/requests/client_operations/setup_spec.rb`.
+  7. Un-pend the P1.7 specs for these resolvers; they must now pass.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; `bundle exec rails graphql:schema:dump` diff only removes `image`;
     client `check:graphql` (P1.9) passes against the new schema.
@@ -2701,10 +2722,10 @@ Acceptance criteria (owner, real device):
 Out of scope: user/member queries (P6.3).
 Risk / rollback: over-restricting breaks screens; P1 client-operation specs catch it. Revert.
 Size: L
-Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004
+Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090, BUG-095
 
 ### P6.3 — Add tenant checks to user queries and protect personal data
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.2
 Branch: modernise/p6-3-query-authz-2
@@ -2720,7 +2741,10 @@ Steps:
      `object == current_user`; `email`/`phone` for self or a user who has `readUser` at a dropzone where both are
      members (one query: `DropzoneUser.kept.where(user: object).where(dropzone_id: caller_staff_dropzone_ids)`).
      Return `nil` (not an error) when unauthorised so lists still render.
-  3. Specs per field and per resolver; un-pend the P1.7 member specs.
+  3. `Resolvers::Users::DropzoneUsers` `permissions` filter: find the roles that grant the permission through
+     `UserRolePermission` first, then members by `user_role_id` (BUG-093); un-pend its example in
+     `spec/requests/client_operations/users_spec.rb`.
+  4. Specs per field and per resolver; un-pend the P1.7 member specs.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; client web smoke test against this branch passes (profile and user list).
 Acceptance criteria (owner, real device):
@@ -2728,10 +2752,10 @@ Acceptance criteria (owner, real device):
 Out of scope: subscriptions (P6.9).
 Risk / rollback: as P6.2.
 Size: M
-Fixes: BUG-002 (member resolvers), BUG-013
+Fixes: BUG-002 (member resolvers), BUG-013, BUG-093
 
 ### P6.4 — Stop creating memberships during permission checks; add joinDropzone
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.3
 Branch: modernise/p6-4-explicit-membership
@@ -2752,7 +2776,10 @@ Steps:
   3. client: add `app/api/mutations/JoinDropzone.gql`, run codegen; in dropzone selection, when the selected dropzone's
      `currentUser` is null, call `joinDropzone` then refetch. Handle `currentUser: null` everywhere it is read
      (`yarn check:types` shows them).
-  4. Specs: `can?` on a non-member creates no rows (`expect { … }.not_to change(DropzoneUser, :count)`); join is
+  4. `Setup::Dropzones::UpdateVisibility`: decide moderator rights from `access_context.user` instead of the membership
+     (BUG-089: today it raises `NoMethodError` for a moderator who is not a member, which this task makes reachable);
+     un-pend that example in `spec/requests/client_operations/dropzones_spec.rb`.
+  5. Specs: `can?` on a non-member creates no rows (`expect { … }.not_to change(DropzoneUser, :count)`); join is
      idempotent; joining a private dropzone fails. Client test: selecting an unjoined dropzone calls `joinDropzone`.
 Acceptance criteria (cloud VM):
   - Backend: `bundle exec rspec` green; schema dump updated. Client: client checks, `check:graphql`, web export and web
@@ -2762,10 +2789,10 @@ Acceptance criteria (owner, real device):
 Out of scope: dropzone invitations.
 Risk / rollback: changes onboarding flow. Merge backend first; client PR must merge before any deploy. Revert both.
 Size: L
-Fixes: BUG-005
+Fixes: BUG-005, BUG-089
 
 ### P6.5 — Enforce manifest permissions
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.4
 Branch: modernise/p6-5-manifest-authz
@@ -2778,8 +2805,9 @@ Permissions: `createSlot`, `createUserSlot`, `createDoubleSlot`, `createUserSlot
 Steps:
   1. `CreateSlot`: call `authorize` as a step; self-manifest requires `createSlot`, manifesting another member requires
      `createUserSlot`; the load and the member must belong to the same dropzone as the context.
-  2. `MoveSlot`: require `updateSlot` (others) or `updateUserSlot` (own slot); source and target load must share the
-     dropzone; target load must be open.
+  2. `MoveSlot`: require `updateUserSlot` (others) or `updateSlot` (own slot); source and target load must share the
+     dropzone; target load must be open and have capacity for the slot (BUG-092: validations run only on create today;
+     un-pend "keeps the slot when the target load is full" in `manifest_spec.rb`).
   3. `CreateSlots#authorized?`: rewrite using membership ids: all members == caller's membership → `createSlot`;
      includes others → `createUserSlot`; remove dead branches.
   4. Specs for each permission combination (student self, student other → forbidden; manifest staff other → ok;
@@ -2791,10 +2819,10 @@ Acceptance criteria (owner, real device):
 Out of scope: crash fixes in the same interactions (P6.11).
 Risk / rollback: staff with odd role setups lose abilities; seeds define default roles. Revert.
 Size: M
-Fixes: BUG-006, BUG-007, BUG-062
+Fixes: BUG-006, BUG-007, BUG-062, BUG-092
 
 ### P6.6 — Restrict createOrder to same-dropzone staff purchases
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.5
 Branch: modernise/p6-6-create-order
@@ -2844,7 +2872,7 @@ Size: M
 Fixes: BUG-008 (peer-to-peer policy)
 
 ### P6.8 — Fix IDOR, tenant moves and broken setup mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.6
 Branch: modernise/p6-8-setup-mutations
@@ -2861,8 +2889,8 @@ Steps:
   2. Strip `dropzone_id`, `user_id`, `owner_id` from attributes passed to `update!` (`input.to_h.except(...)`).
   3. Replace `context[:current_user]` with `context[:current_resource]`/access context everywhere
      (`grep -rn "context\[:current_user\]" app` must print nothing).
-  4. Extras links: `record.ticket_type_extras.where.not(extra_id: ids).destroy_all` then create missing links; scope to
-     the record.
+  4. Extras links: scope the cleanup to the record (`record.ticket_type_extras.where.not(extra_id: ids).destroy_all`); the
+     association assignment in `update!(extra_ids:)` already creates the links, so delete the dead `Array#-` block.
   5. Specs per mutation: other tenant's record → forbidden; `dropzoneId` change ignored; archive ticket type works;
      updating ticket type A leaves ticket type B's extras intact.
 Acceptance criteria (cloud VM):
@@ -2875,7 +2903,7 @@ Size: L
 Fixes: BUG-009, BUG-010, BUG-039, BUG-061
 
 ### P6.9 — Authenticate the cable connection and authorise subscriptions
-Status: todo
+Status: owner-check (on a phone logged in with Apple, the manifest board updates live when a load is created on the web; client half in the P6.9 client PR)
 Repo: both
 Depends on: P6.8
 Branch: modernise/p6-9-cable-auth
@@ -2909,7 +2937,7 @@ Size: L
 Fixes: BUG-011, BUG-060, BUG-053
 
 ### P6.10 — Count slots correctly and lock capacity and credits
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.9
 Branch: modernise/p6-10-counters-locking
@@ -2919,6 +2947,10 @@ Context: BUG-019 (`models/slot.rb:48-55` counter_culture without `column_name:`)
 `create_multiple_slots.rb:47-54` capacity read-then-insert), BUG-021 (no unique `slots(load_id, dropzone_user_id)`),
 BUG-023 (`slot.rb:143-150`, `purchase.rb:70-73` credit check without lock). Pass-1 dev DB showed `slots_count=4` for 2 slots.
 Steps:
+  0. Remove the `counter_culture` pin from `Gemfile` (P2.2 pinned 3.3.0, see the comment there) and
+     `bundle update counter_culture` (3.14.0) in the same commit as step 1; the tandem group-manifest example in
+     `spec/graphql/mutations/manifest/create_slots_spec.rb` ("successfully with tandem") fails on 3.14.0 until the
+     counters are fixed.
   1. `counter_culture :load` (plain `slots_count`) and a second
      `counter_culture :load, column_name: proc { |s| s.ready? ? "ready_slots_count" : nil }, column_names: { Slot.ready => :ready_slots_count }`.
   2. Data migration `FixLoadSlotCounters`: `Slot.counter_culture_fix_counts` (prints fixes).
@@ -2942,7 +2974,7 @@ Size: L
 Fixes: BUG-019, BUG-020, BUG-021, BUG-023
 
 ### P6.11 — Fix manifest interaction crashes
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.10
 Branch: modernise/p6-11-manifest-crashes
@@ -2957,7 +2989,10 @@ Steps:
   3. Finalize: skip receipts for slots without an order; auto-finalize uses the same interaction.
   4. Move: fix typo, `credits.to_f`, use `slot.load` in messages. Delete: guard nil order (no refund), fix messages.
   5. Slot validations: `created_by&.can?(...)`.
-  6. Specs for each bug; the pass-1 failing spec files for finalize and available rigs pass without `pending`.
+  6. `Sources::Model#fetch` returns `ids.map { |id| record_cache[id] }` so nil and missing keys keep their position
+     (BUG-091: with a nil `load_master`, `slots { dropzoneUser }` resolves to null); un-pend its example in
+     `spec/requests/client_operations/manifest_spec.rb`.
+  7. Specs for each bug; the pass-1 failing spec files for finalize and available rigs pass without `pending`.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; `grep -rn "pending \"BUG-0\(25\|29\|30\|31\|32\|34\)" spec` prints nothing.
 Acceptance criteria (owner, real device):
@@ -2965,10 +3000,10 @@ Acceptance criteria (owner, real device):
 Out of scope: load state rules (P6.12).
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034
+Fixes: BUG-025, BUG-029, BUG-030, BUG-031, BUG-032, BUG-034, BUG-091
 
 ### P6.12 — Enforce load state transitions and fix jump counts
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.11
 Branch: modernise/p6-12-load-states
@@ -2997,7 +3032,7 @@ Size: L
 Fixes: BUG-035, BUG-026, BUG-036, BUG-082
 
 ### P6.13 — Fix group manifesting and store add-ons
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.12
 Branch: modernise/p6-13-groups-extras
@@ -3041,7 +3076,7 @@ Size: S
 Fixes: BUG-033
 
 ### P6.15 — Fix user mutations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.13
 Branch: modernise/p6-15-user-mutations
@@ -3053,8 +3088,10 @@ BUG-055 (`join_federation.rb:17-20` nil membership), BUG-056 (`delete_user.rb:22
 Steps:
   1. Fix each as described in BUGS.md "Suggested fix"; `UpdateUser` only touches `User` attributes; role/expiry go
      through `updateDropzoneUser` (client already does this — verify in `client:app/api/mutations/UpdateUser.gql`).
-  2. `joinFederation` accepts optional `dropzone` (ID) and falls back to the first kept membership or none.
-  3. Specs per mutation including staff editing another user's profile with `updateUser` permission.
+  2. `Users::UpdateUser`: return a `fieldErrors` entry for an email that already belongs to another user instead of raising
+     `RecordNotUnique` (BUG-094).
+  3. `joinFederation` accepts optional `dropzone` (ID) and falls back to the first kept membership or none.
+  4. Specs per mutation including staff editing another user's profile with `updateUser` permission.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; schema dump diff only adds the optional `dropzone` argument.
 Acceptance criteria (owner, real device):
@@ -3062,10 +3099,10 @@ Acceptance criteria (owner, real device):
 Out of scope: sign-up takeover (P6.24).
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056
+Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056, BUG-094
 
 ### P6.16 — Add database constraints, loads.dropzone_id and safe load numbers
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.15
 Branch: modernise/p6-16-constraints
@@ -3100,7 +3137,7 @@ Size: L
 Fixes: BUG-050, BUG-022
 
 ### P6.17 — Move jobs to Solid Queue and schedule recurring work
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.16
 Branch: modernise/p6-17-solid-queue
@@ -3132,7 +3169,7 @@ Size: L
 Fixes: BUG-052, BUG-044
 
 ### P6.18 — Fix notifications and push tokens
-Status: todo
+Status: owner-check (on a phone: request a rig inspection and receive the push; log out, then trigger a notification for that user and no push arrives on the device)
 Repo: backend
 Depends on: P6.17
 Branch: modernise/p6-18-notifications
@@ -3162,7 +3199,7 @@ Size: M
 Fixes: BUG-042, BUG-043, BUG-018, BUG-051
 
 ### P6.19 — Fix weather and server-side time zones
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.18
 Branch: modernise/p6-19-weather-timezones
@@ -3183,6 +3220,8 @@ Steps:
      `weather_conditions.date` column (backfilled) keyed by the dropzone's local date.
   4. client: `ReloadWeather.gql` unchanged if step 1 keeps `id`; add a test that reload succeeds against the mock.
   5. Specs: Brisbane dropzone at 23:00 UTC (09:00 local next day) → today's loads/weather are the local day.
+  6. BUG-098: `spec/rails_helper.rb` uses `config.around(:suite)`, which RSpec ignores; run the examples inside
+     `Time.use_zone("Australia/Brisbane")` with `config.around(:each)` and fix whatever then fails.
 Acceptance criteria (cloud VM):
   - Backend `bundle exec rspec` green; client checks and `check:graphql` pass.
 Acceptance criteria (owner, real device):
@@ -3190,10 +3229,10 @@ Acceptance criteria (owner, real device):
 Out of scope: client time zone handling (P6.20).
 Risk / rollback: revert both.
 Size: L
-Fixes: BUG-040, BUG-045, BUG-046, BUG-047
+Fixes: BUG-040, BUG-045, BUG-046, BUG-047, BUG-098
 
 ### P6.20 — Use the dropzone time zone in the client
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.19
 Branch: modernise/p6-20-client-timezone
@@ -3219,7 +3258,7 @@ Size: M
 Fixes: BUG-068
 
 ### P6.21 — Fix uploads
-Status: todo
+Status: owner-check (on a phone: set a dropzone banner and a packing card photo with the camera)
 Repo: backend
 Depends on: P6.20
 Branch: modernise/p6-21-uploads
@@ -3243,7 +3282,7 @@ Size: M
 Fixes: BUG-041
 
 ### P6.22 — Add optimistic locking to loads and slots
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.21
 Branch: modernise/p6-22-optimistic-locking
@@ -3265,7 +3304,7 @@ Size: M
 Fixes: BUG-024
 
 ### P6.23 — Store money as integer cents
-Status: todo
+Status: done
 Repo: both
 Depends on: P6.22
 Branch: modernise/p6-23-money-cents
@@ -3293,7 +3332,7 @@ Size: L
 Fixes: BUG-048
 
 ### P6.24 — Close the sign-up takeover and harden CORS and CI secrets
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.23
 Branch: modernise/p6-24-signup-cors
@@ -3318,7 +3357,7 @@ Size: M
 Fixes: BUG-012, BUG-014 (CORS)
 
 ### P6.25 — Remove N+1 queries on the manifest board
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.24
 Branch: modernise/p6-25-n-plus-one
@@ -3340,7 +3379,7 @@ Size: M
 Fixes: BUG-049
 
 ### P6.26 — Fix client manifest and user UX bugs
-Status: todo
+Status: done
 Repo: client
 Depends on: P6.25
 Branch: modernise/p6-26-client-ux
@@ -3348,13 +3387,16 @@ Goal: Pull-to-refresh refreshes loads; manifest staff can create loads without t
 a ghost user submits.
 Context: BUG-065 (`ManifestScreen.tsx:289` calls the dropzone query's `fetchMore`), BUG-067 (`app/forms/load/useForm.tsx:77-108`
 runs the staff member's own `canManifest()`; server base errors not shown), BUG-086 (client#126, `app/forms/create_user/*`
-submit button does nothing).
+submit button does nothing; P1.13 found the cause: `RoleSelect` / `FederationSelect` drop the `error` prop), BUG-096 (aircraft and
+ticket dialogs pass `undefined` for untouched fields, overriding the form defaults).
 Steps:
   1. `onRefresh={loads.refetch}`, `refreshing={loads.networkStatus === NetworkStatus.refetch}`.
   2. Remove the `canManifest()` gate from load creation; show `errors` from the `createLoad` payload in the form.
   3. Create ghost: un-skip `app/__tests__/users/CreateGhost.test.tsx` from P1.13 (or write it if P1.13 found it passing); fix the cause (wiring of
-     `handleSubmit` / button `onPress`); close client#126 in the PR body.
-  4. Tests for each.
+     `handleSubmit` / button `onPress`; P1.13: forward `error` through `RoleSelect` and `FederationSelect`); close client#126 in the PR body.
+  4. BUG-096: un-skip the tests in `app/__tests__/setup/{AircraftForm,TicketTypeForm}.test.tsx`; stop the aircraft and ticket
+     dialogs from overriding form defaults with `undefined`.
+  5. Tests for each.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test (create a ghost user, create a load as a staff user without
     membership) pass.
@@ -3363,10 +3405,10 @@ Acceptance criteria (owner, real device):
 Out of scope: none.
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-065, BUG-067, BUG-086
+Fixes: BUG-065, BUG-067, BUG-086, BUG-096
 
 ### P6.27 — Verify Phase 6
-Status: todo
+Status: owner-check (run docs/SMOKE_TEST.md on one iPhone and one Android phone against a staging API; see docs/verification/phase-6.md)
 Repo: both
 Depends on: P6.1, P6.2, P6.3, P6.4, P6.5, P6.6, P6.8, P6.9, P6.10, P6.11, P6.12, P6.13, P6.15, P6.16, P6.17, P6.18, P6.19, P6.20, P6.21, P6.22, P6.23, P6.24, P6.25, P6.26
 Branch: modernise/p6-27-verify
@@ -3835,3 +3877,4 @@ Bugs not in any task's `Fixes:` line, with the reason.
 | Bug | Reason | Where it is handled |
 |---|---|---|
 | BUG-085 | Suspected only (client#127, maps not loading on web/Android); cannot be confirmed without valid `GOOGLE_MAPS_*` keys, which the VM does not have. | Owner checks maps in P3.22. If confirmed, the executor adds a task after P5.10 (replace `react-native-maps` web shim / configure keys via EAS secrets) with `Fixes: BUG-085`. |
+| BUG-100 | Cold loads of permission-gated tab URLs (`/users`, `/user/<id>`) end on `/`. The fix needs a decision: always register the tabs and show a no-access state, or hold the navigator until permissions are loaded. | The executor adds a task after P4.8 (when the session store makes permissions available before navigation mounts); until then the smoke test only deep-links ungated routes. |

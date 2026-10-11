@@ -12,14 +12,14 @@ module Mutations::Setup::Equipment
     def resolve(attributes:, id: nil)
       model = Rig.find(id)
 
-      attrs = attributes.to_h.except(:packing_card)
+      # A rig never moves to another dropzone or owner
+      attrs = attributes.to_h.except(:packing_card, :dropzone_id, :user_id)
       if attrs[:repack_expires_at]
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
       end
 
       if attributes[:packing_card]
-        model.packing_card.attach(data: image)
-        model.packing_card.variant(resize_to_limit: [1920, 1920])
+        Support::ImageUpload.attach(model.packing_card, attributes[:packing_card], name: "packing-card")
       end
       model.assign_attributes(attrs.to_h)
       model.save!
@@ -29,6 +29,8 @@ module Mutations::Setup::Equipment
         errors: nil,
         field_errors: nil,
       }
+    rescue Support::ImageUpload::Invalid => e
+      { rig: nil, field_errors: [{ field: "packing_card", message: e.message }], errors: [e.message] }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {

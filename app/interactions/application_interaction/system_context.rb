@@ -1,23 +1,19 @@
-class ApplicationInteraction::SystemContext < ApplicationInteraction::AccessContext
-  def initialize(dropzone = nil)
-    @dropzone = dropzone
-  end
+# frozen_string_literal: true
 
-  def subject
-    Struct.new(
-      user: user
-    )
+# The context of work the system does by itself (scheduled jobs): no member acts, it may do everything, and it is named
+# "System" in the audit log.
+class ApplicationInteraction::SystemContext < ApplicationInteraction::AccessContext
+  SYSTEM_USER = Struct.new(:id, :name).new(nil, "System").freeze
+
+  def initialize(dropzone = nil)
+    super(nil, dropzone: dropzone)
   end
 
   def user
-    Struct.new(
-      name: 'System'
-    )
+    SYSTEM_USER
   end
 
-  def can?(*args)
+  def can?(*)
     true
   end
-
-  attr_reader :dropzone
 end
