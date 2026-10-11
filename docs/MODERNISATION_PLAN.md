@@ -806,7 +806,7 @@ Size: L
 Fixes: none
 
 ### P1.4 — Cover user, permission, federation and notification operations
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-4-spec-users
@@ -2722,7 +2722,10 @@ Steps:
      `object == current_user`; `email`/`phone` for self or a user who has `readUser` at a dropzone where both are
      members (one query: `DropzoneUser.kept.where(user: object).where(dropzone_id: caller_staff_dropzone_ids)`).
      Return `nil` (not an error) when unauthorised so lists still render.
-  3. Specs per field and per resolver; un-pend the P1.7 member specs.
+  3. `Resolvers::Users::DropzoneUsers` `permissions` filter: find the roles that grant the permission through
+     `UserRolePermission` first, then members by `user_role_id` (BUG-093); un-pend its example in
+     `spec/requests/client_operations/users_spec.rb`.
+  4. Specs per field and per resolver; un-pend the P1.7 member specs.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; client web smoke test against this branch passes (profile and user list).
 Acceptance criteria (owner, real device):
@@ -2730,7 +2733,7 @@ Acceptance criteria (owner, real device):
 Out of scope: subscriptions (P6.9).
 Risk / rollback: as P6.2.
 Size: M
-Fixes: BUG-002 (member resolvers), BUG-013
+Fixes: BUG-002 (member resolvers), BUG-013, BUG-093
 
 ### P6.4 — Stop creating memberships during permission checks; add joinDropzone
 Status: todo
@@ -3062,8 +3065,10 @@ BUG-055 (`join_federation.rb:17-20` nil membership), BUG-056 (`delete_user.rb:22
 Steps:
   1. Fix each as described in BUGS.md "Suggested fix"; `UpdateUser` only touches `User` attributes; role/expiry go
      through `updateDropzoneUser` (client already does this — verify in `client:app/api/mutations/UpdateUser.gql`).
-  2. `joinFederation` accepts optional `dropzone` (ID) and falls back to the first kept membership or none.
-  3. Specs per mutation including staff editing another user's profile with `updateUser` permission.
+  2. `Users::UpdateUser`: return a `fieldErrors` entry for an email that already belongs to another user instead of raising
+     `RecordNotUnique` (BUG-094).
+  3. `joinFederation` accepts optional `dropzone` (ID) and falls back to the first kept membership or none.
+  4. Specs per mutation including staff editing another user's profile with `updateUser` permission.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; schema dump diff only adds the optional `dropzone` argument.
 Acceptance criteria (owner, real device):
@@ -3071,7 +3076,7 @@ Acceptance criteria (owner, real device):
 Out of scope: sign-up takeover (P6.24).
 Risk / rollback: revert.
 Size: M
-Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056
+Fixes: BUG-037, BUG-038, BUG-054, BUG-055, BUG-056, BUG-094
 
 ### P6.16 — Add database constraints, loads.dropzone_id and safe load numbers
 Status: todo
