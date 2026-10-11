@@ -2260,7 +2260,7 @@ Size: L
 Fixes: none
 
 ### P4.7 — Move manifest forms into the manifest context
-Status: todo
+Status: owner-check (on a phone: manifest a group from the load screen's speed dial and from an "available" row; edit a slot by tapping it)
 Repo: client
 Depends on: P4.6
 Branch: modernise/p4-7-manifest-dialogs
@@ -2273,14 +2273,15 @@ Steps:
   1. Add a `dialogs` object to `app/providers/manifest/provider.tsx` with state `{ open: boolean, load, slot?, users? }`
      per dialog and render `ManifestUserSheet` and `ManifestGroupSheet` once inside the provider.
   2. Board actions (`ManifestScreen.tsx` 194-207, `LoadCard/Large/Card.tsx` 140-150) and `LoadScreen` slot taps call the
-     context; remove the FIXMEs. Fix the permission branch: open the slot editor when the user has `updateSlot`, or
-     `updateUserSlot` and the slot is their own.
+     context; remove the FIXMEs. Fix the permission branch: open the slot editor when the user has `updateSlot` and the
+     slot is their own, or `updateUserSlot` (the API checks `updateSlot` for your own slot and `updateUserSlot` for
+     someone else's, `update_slot.rb:50`).
   3. Delete `forms.manifest` and `forms.manifestGroup` slices.
   4. Tests: from the board, "Manifest group" opens the group sheet; tapping a slot on the load screen opens the user
-     sheet; a user with only `updateUserSlot` can open their own slot but not others.
+     sheet; a user with only `updateUserSlot` can open someone else's slot, one with only `updateSlot` cannot.
 Acceptance criteria (cloud VM):
   - Client checks, web export and web smoke test pass; `grep -rnE "forms\.(manifest|manifestGroup)\b" app` prints nothing.
-  - Web smoke test extended: open the group sheet from the board.
+  - Web smoke test extended: open the group sheet (from the load screen's speed dial: neither board display mode has a group action, see BUG-066).
 Acceptance criteria (owner, real device):
   - On a phone: manifest a group from the board and from the load screen; edit a slot by tapping it.
 Out of scope: group manifest server bugs (P6.13).
@@ -2804,7 +2805,7 @@ Permissions: `createSlot`, `createUserSlot`, `createDoubleSlot`, `createUserSlot
 Steps:
   1. `CreateSlot`: call `authorize` as a step; self-manifest requires `createSlot`, manifesting another member requires
      `createUserSlot`; the load and the member must belong to the same dropzone as the context.
-  2. `MoveSlot`: require `updateSlot` (others) or `updateUserSlot` (own slot); source and target load must share the
+  2. `MoveSlot`: require `updateUserSlot` (others) or `updateSlot` (own slot); source and target load must share the
      dropzone; target load must be open and have capacity for the slot (BUG-092: validations run only on create today;
      un-pend "keeps the slot when the target load is full" in `manifest_spec.rb`).
   3. `CreateSlots#authorized?`: rewrite using membership ids: all members == caller's membership → `createSlot`;
