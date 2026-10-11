@@ -3258,7 +3258,7 @@ Size: M
 Fixes: BUG-068
 
 ### P6.21 — Fix uploads
-Status: todo
+Status: owner-check (on a phone: set a dropzone banner and a packing card photo with the camera)
 Repo: backend
 Depends on: P6.20
 Branch: modernise/p6-21-uploads

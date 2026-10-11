@@ -16,6 +16,8 @@ module Mutations::Setup::Equipment
               end
 
       attrs = attributes.to_h.except(:packing_card)
+      # Checked before anything is saved: a bad picture creates no rig
+      packing_card = Support::ImageUpload.attachable(attributes[:packing_card], name: "packing-card") if attributes[:packing_card]
 
       if attrs.key?(:repack_expires_at)
         attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
@@ -23,16 +25,15 @@ module Mutations::Setup::Equipment
       model.assign_attributes(attrs)
 
       model.save!
-      if attributes[:packing_card]
-        model.packing_card.attach(data: image)
-        model.packing_card.variant(resize_to_limit: [1920, 1920])
-      end
+      model.packing_card.attach(**packing_card) if packing_card
 
       {
         rig: model,
         errors: nil,
         field_errors: nil,
       }
+    rescue Support::ImageUpload::Invalid => e
+      { rig: nil, field_errors: [{ field: "packing_card", message: e.message }], errors: [e.message] }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
