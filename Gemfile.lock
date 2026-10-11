@@ -210,6 +210,9 @@ GEM
       googleauth (~> 1.9)
       mini_mime (~> 1.0)
     google-logging-utils (0.2.0)
+    google-protobuf (4.36.2-x86_64-linux-gnu)
+      bigdecimal
+      rake (~> 13.3)
     googleauth (1.17.4)
       faraday (>= 1.0, < 3.a)
       google-cloud-env (~> 2.2)
@@ -297,11 +300,14 @@ GEM
       ast (~> 2.4.1)
       racc
     pg (1.7.0)
+    pg_query (6.2.5)
+      google-protobuf (>= 4.34.0)
     polyglot (0.3.5)
     pp (0.6.4)
       prettyprint
     prettyprint (0.2.1)
     prism (1.9.0)
+    prosopite (2.2.0)
     pry (0.16.0)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -534,6 +540,8 @@ DEPENDENCIES
   listen
   parallel_tests
   pg
+  pg_query
+  prosopite (~> 2.2)
   pry
   puma
   rack-cors

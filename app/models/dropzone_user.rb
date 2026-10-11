@@ -157,6 +157,12 @@ class DropzoneUser < ApplicationRecord
     kept.find_by(dropzone_id: dropzone_id, user_id: user.id)
   end
 
+  # The names of every permission of the member, from their role and granted to them. Reads the `permissions` and
+  # `role_permissions` associations, so a list of members preloads them instead of running queries for each one
+  def permission_names
+    (permissions.map(&:name) + role_permissions.map(&:name)).uniq
+  end
+
   def all_permissions
     Permission.where(
       id: permissions.pluck(:id)
