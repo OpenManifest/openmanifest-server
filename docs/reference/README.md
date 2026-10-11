@@ -83,8 +83,8 @@ Full diagram: [`diagrams.md` §1](diagrams.md#1-system-context).
 | Auth | `devise` + `devise_token_auth` tokens via `graphql_devise`; client sends `access-token`, `client`, `uid` headers. Facebook and Apple sign-in mutations | `app/models/user.rb:46-50`, `app/graphql/mutations/users/login/*`, `app/interactions/login/*` |
 | Business logic | `active_interaction` classes ("interactions") with a custom `steps`/`allow` DSL | `app/interactions/application_interaction*.rb` |
 | Real-time | `GraphqlChannel` over ActionCable at `/subscriptions`; subscriptions `loadCreated(dropzoneId)`, `loadUpdated(loadId)`, `userUpdated(dropzoneUserId)`; triggered from model callbacks | `app/channels/graphql_channel.rb`, `app/graphql/subscriptions/*`, `app/models/load.rb:115-136`, `app/models/dropzone_user.rb:219-228` |
-| Background jobs | ActiveJob with the **default adapter** (no Sidekiq/GoodJob configured → Rails 7.0 default `:async`, in-process). Jobs: `NotifyJob` (Expo push), `RequestRigInspectionJob` (called synchronously), `WindsAloftJob` (empty) | `app/jobs/*` |
-| Scheduled tasks | Rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize`; **no scheduler is configured in either repo** (presumably Heroku Scheduler/cron once) | `lib/tasks/dropzone.rake` |
+| Background jobs | ActiveJob on **Solid Queue** (P6.17; tables in the primary database, `config/queue.yml`; `:test` adapter in the test environment). Run by `bin/jobs` (the `jobs:` line of the `Procfile`) or inside Puma with `SOLID_QUEUE_IN_PUMA=1` (set in `fly*.toml`). Jobs: `NotifyJob` (Expo push, retried on network errors), `AutoFinalizeJob`, `MasterLogsJob`, `RequestRigInspectionJob` (called synchronously, P6.18), `WindsAloftJob` (empty) | `app/jobs/*`, `config/queue.yml`, `config/puma.rb` |
+| Scheduled tasks | `config/recurring.yml` (Solid Queue's scheduler): `auto_finalize` every 15 minutes, `master_logs` hourly (the job generates yesterday's log for the dropzones that are in their 02:00 hour, in their own time zone). The rake tasks `dropzone:master_log:generate` and `dropzone:loads:finalize` run the same jobs once | `config/recurring.yml`, `lib/tasks/dropzone.rake` |
 | Push notifications | `Notification` row → `NotifyJob` → HTTP POST to `https://exp.host/--/api/v2/push/send` with the user's Expo push token | `app/models/notification.rb:31-49` |
 | File storage | ActiveStorage; base64 uploads via `active_storage_base64`; images resized via `image_processing` (vips); services `local`, `test`, `flyio` (`/data`), `google` (GCS) | `config/storage.yml`, `app/models/concerns/image/resizer.rb` |
 | Payments | Internal credit ledger only (Order → Receipt → 2 Transactions). **No external payment provider.** | `app/interactions/transactions/*` |
@@ -228,7 +228,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 | Aircraft, ticket types, add-ons | `configuration/aircrafts`, `ticket_types`, `extras`, `forms/aircraft`, `ticket_type*` | `createPlane`, `updatePlane`, `deletePlane`, `createTicketType`, `updateTicketType`, `archiveTicketType`, `createExtra`, `updateExtra` | partial | `archiveTicketType` crashes (`BUG-039`); add-ons never charged (`BUG-028`) |
 | Weather / winds / jump run | `dropzone/weather_conditions/*`, `manifest/Weather/*` | `dropzone.currentConditions`, `createWeatherCondition`, `reloadWeatherCondition` | broken | Reload fails (`BUG-040`); external HTTP in model callback (`BUG-045`) |
 | Master log | `configuration/master_log/*` | `masterLog`, `updateMasterLog` | partial | Scheduled generation crashes and is not scheduled (`BUG-044`) |
-| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | In-process async jobs, errors swallowed (`BUG-052`) |
+| Notifications (in-app & push) | `screens/authenticated/notifications/*`, `entrypoint/providers/PushNotificationProvider.tsx` | `dropzone.currentUser.notifications`, `updateUser(pushToken)` | partial | Solid Queue jobs with retries (P6.17) |
 | Activity feed / statistics | `overview/*`, `components/activity/*` | `activity`, `dropzone.statistics` | partial | Activity leaks across tenants (`BUG-003`) |
 | Federation / licence sync (APF) | `forms/user_wizard/steps/Federation*.tsx`, `License.tsx` | `joinFederation`, `federations`, `licenses` | partial (external API unverified) | |
 | Demo data generator | — | `Mutations::Setup::Demo::Generate` | dead | Not mounted in `MutationType` |
@@ -301,7 +301,7 @@ Mutation fields (`app/graphql/types/mutation_type.rb`) plus graphql_devise's `us
 
 | Name | What it does | How it runs | Status |
 |---|---|---|---|
-| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → `:async` adapter | Works when the process stays up; no retries; errors swallowed |
+| `NotifyJob` | Sends Expo push for a `Notification` | `perform_later` from `Notification#after_create` → Solid Queue | Retried (5 attempts, growing waits) on network errors; discarded when the notification is gone; other errors fail the job |
 | `RequestRigInspectionJob` | Notifies rig inspectors | `perform_now(rig, self)` but expects ids; errors swallowed | Dead (`BUG-042`) |
 | `WindsAloftJob` | Empty | never | Dead |
 | `dropzone:master_log:generate` | Generates yesterday's master log for dropzones where it is midnight | Rake; needs hourly cron | Crashes (`BUG-044`); no scheduler configured |

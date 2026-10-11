@@ -3,9 +3,6 @@
 class WindsAloftJob < ApplicationJob
   queue_as :default
 
-  def perform(dropzone)
-  rescue
-    # TODO: Handle these errors
-    # Ignore if notification is removed before sending
-  end
+  # TODO: fetch the winds aloft for the dropzone
+  def perform(dropzone); end
 end

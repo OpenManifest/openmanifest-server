@@ -3137,7 +3137,7 @@ Size: L
 Fixes: BUG-050, BUG-022
 
 ### P6.17 — Move jobs to Solid Queue and schedule recurring work
-Status: todo
+Status: done
 Repo: backend
 Depends on: P6.16
 Branch: modernise/p6-17-solid-queue
