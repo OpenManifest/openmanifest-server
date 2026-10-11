@@ -16,7 +16,7 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
       access_context: access_context,
       level: :info,
       access_level: :admin,
-      message: "Dropzone (#{dropzone.name}) visibility was set to #{dropzone.state} by #{@access_context.subject.user.name}",
+      message: "Dropzone (#{dropzone.name}) visibility was set to #{dropzone.state} by #{access_context.user.name}",
       resource: dropzone,
       action: :created,
       created_by: access_context.subject,
@@ -30,7 +30,7 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
       access_context: access_context,
       level: :error,
       access_level: :admin,
-      message: "#{access_context.subject.user.name} is not allowed to #{event} #{dropzone.name}",
+      message: "#{access_context.user.name} is not allowed to #{event} #{dropzone.name}",
       resource: access_context.dropzone,
       action: :created,
       created_by: access_context.subject,
@@ -54,11 +54,12 @@ class Setup::Dropzones::UpdateVisibility < ApplicationInteraction
 
   private
 
+  # Moderators are decided from the acting user: they need not be members of the dropzone (BUG-089)
   def moderator?
-    access_context.subject.user.is_moderator?
+    access_context.user.is_moderator?
   end
 
   def owner?
-    dropzone.dropzone_users.owner.include?(access_context.subject)
+    access_context.subject.present? && dropzone.dropzone_users.owner.include?(access_context.subject)
   end
 end

@@ -39,7 +39,7 @@ class Slot < ApplicationRecord
 
   belongs_to :passenger_slot, optional: true, class_name: "Slot"
 
-  has_many :slot_extras
+  has_many :slot_extras, dependent: :destroy
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
   scope :ready, -> {
@@ -47,13 +47,12 @@ class Slot < ApplicationRecord
                 }
 
   counter_culture %i(load plane dropzone), column_name: :slots_count
-  counter_culture :load, column_name: :slots_count
+  # The load's counters: every slot counts in slots_count, only the ready ones in ready_slots_count. The second counter
+  # needs its own column_name, without it counter_culture also increments slots_count (BUG-019).
+  counter_culture :load
   counter_culture :load,
-                  column_names: -> {
-                                  {
-                                    Slot.ready => "ready_slots_count",
-                                  }
-                                }
+                  column_name: proc { |slot| slot.ready? ? "ready_slots_count" : nil },
+                  column_names: -> { { Slot.ready => "ready_slots_count" } }
 
   validate :available?,
            :double_manifest?,
@@ -80,10 +79,14 @@ class Slot < ApplicationRecord
     )
   end
 
+  # What the slot costs: the ticket and the add-ons, in cents
+  def cost_cents
+    extras.sum { |extra| extra.cost_cents || 0 } + (ticket_type.cost_cents || 0)
+  end
+
+  # The same in whole units, for older clients
   def cost
-    extra_cost = extras.sum(&:cost)
-    extra_cost ||= 0
-    extra_cost + ticket_type.cost
+    cost_cents / 100.0
   end
 
   def ready?
@@ -127,7 +130,7 @@ class Slot < ApplicationRecord
     return if is_passenger?
     return if (dropzone_user.expires_at || 1.second.ago) > DateTime.current
     return unless dropzone.require_membership?
-    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
+    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
     errors.add(:base, "#{dropzone_user.user.name}'s membership has expired")
   end
 
@@ -136,8 +139,8 @@ class Slot < ApplicationRecord
     return if is_passenger?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    return unless dropzone_user.slots.where(load: dropzone_user.dropzone.loads.today.active).where.not(id: id).exists?
-    return if created_by.can?(:createDoubleSlot) && dropzone.allow_manifest_bypass?
+    return unless dropzone_user.slots.where(load: dropzone.loads.on(dropzone.today).active).where.not(id: id).exists?
+    return if created_by&.can?(:createDoubleSlot) && dropzone.allow_manifest_bypass?
     errors.add(:base, "Double-manifesting is not allowed")
   end
 
@@ -145,16 +148,16 @@ class Slot < ApplicationRecord
     return true if is_passenger?
     return if dropzone.allow_negative_credits?
     return unless dropzone.require_credits?
-    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
-    credits = dropzone_user.credits || 0
-    errors.add(:base, "Not enough credits to manifest for this jump") if cost > credits
+    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
+    credits = dropzone_user.credits_cents || 0
+    errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
   end
 
   def allowed_jump_type?
     return true if is_passenger? && ticket_type.is_tandem?
     return if jump_type.allowed_for?(dropzone_user)
     return unless dropzone.require_license?
-    return if created_by.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
+    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
     errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
   end
 end

@@ -10,9 +10,9 @@ class Resolvers::Dropzones < Resolvers::Base
     state: nil,
     lookahead: nil
   )
-    apply_lookaheads(
-      lookahead,
-      context[:access_context].dropzones
-    ).distinct.order(id: :asc)
+    query = context[:access_context].dropzones
+    query = query.where(state: state.map(&:to_s)) if state.present?
+
+    apply_lookaheads(lookahead, query).distinct.order(id: :asc)
   end
 end

@@ -35,7 +35,8 @@ class Types::Access::SessionType < Types::Base::Object
       # If the user has no rigs inspected at this dropzone,
       # notify a staff member if no previous notifications
       unless RigInspection.exists?(dropzone_user: @current_dropzone_user)
-        RequestRigInspectionJob.perform_now(@current_dropzone_user.rigs.find { |rig| !rig.inspected_at?(object) }, dz_user)
+        rig = @current_dropzone_user.rigs.find { |candidate| !candidate.inspected_at?(object) }
+        RequestRigInspectionJob.perform_later(rig.id, dz_user.id) if rig
       end
     end
 

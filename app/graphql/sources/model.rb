@@ -8,13 +8,14 @@ class Sources::Model < GraphQL::Dataloader::Source
     self.column = column
   end
 
+  # One result per key, in the order of the keys: nil and unknown keys give nil instead of shifting the other results
   def fetch(ids)
     unless (ids.compact - record_cache.keys).empty?
       record_cache.merge!(
-        get_records(ids).index_by(&column)
+        get_records(ids.compact).index_by(&column)
       )
     end
-    record_cache.slice(*ids).values
+    ids.map { |id| record_cache[id] }
   end
 
   private
@@ -23,8 +24,10 @@ class Sources::Model < GraphQL::Dataloader::Source
     cache_store[klass] ||= {}
   end
 
+  # Attached images come with the records: a list of members or dropzones shows one image each (BUG-049)
   def get_records(ids)
-    klass.where(column => ids)
+    attachments = klass.respond_to?(:reflect_on_all_attachments) ? klass.reflect_on_all_attachments : []
+    attachments.reduce(klass.where(column => ids)) { |scope, attachment| scope.public_send(:"with_attached_#{attachment.name}") }
   end
 
   def cache_store

@@ -10,23 +10,12 @@ module Mutations::Setup::Tickets
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = find_or_build_model(id)
-      model.attributes = attributes.to_h.except("ticket_type_ids")
+      model = Extra.find(id)
 
-      model.save!
-      unless attributes[:ticket_type_ids].nil?
-        ::TicketTypeExtra.includes(:extra, :ticket_type).where(
-          ticket_types: { dropzone_id: attributes[:dropzone_id] }
-        ).where.not(
-          ticket_types: { id: attributes[:ticket_type_ids] }
-        ).destroy_all
-
-        attributes[:ticket_type_ids] - TicketTypeExtra.where(
-          ticket_type_id: attributes[:ticket_type_ids]
-        ).pluck(:ticket_type_id).to_a do |i|
-          ::TicketTypeExtra.create(extra: model, ticket_type_id: i)
-        end
-      end
+      # An add-on never moves to another dropzone, and only this dropzone's ticket types can be linked to it
+      attrs = attributes.to_h.except(:dropzone_id, :ticket_type_ids)
+      attrs[:ticket_type_ids] = model.dropzone.ticket_types.where(id: attributes[:ticket_type_ids]).pluck(:id) unless attributes[:ticket_type_ids].nil?
+      model.update!(attrs)
 
       {
         extra: model,
@@ -55,28 +44,22 @@ module Mutations::Setup::Tickets
       }
     end
 
+    # The add-on's own dropzone decides. The id stays optional in the schema (the client's document declares it
+    # nullable) but updating needs one.
     def authorized?(id: nil, attributes: nil)
-      if context[:current_resource].can?(
-        "updateExtra",
-        dropzone_id: Extra.find(id).dropzone_id
-      )
+      extra = Extra.find_by(id: id)
+      return [false, { errors: ["Ticket add-on not found"] }] unless extra
+
+      if context[:current_resource].can?("updateExtra", dropzone_id: extra.dropzone_id)
         true
       else
         [
           false, {
             errors: [
-              "You don't have permissions to create ticket addons",
+              "You don't have permissions to update ticket addons",
             ],
           },
         ]
-      end
-    end
-
-    def find_or_build_model(id)
-      if id
-        Extra.find(id)
-      else
-        Extra.new
       end
     end
   end
