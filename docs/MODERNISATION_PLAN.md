@@ -1280,7 +1280,7 @@ Size: M
 Fixes: none
 
 ### P2.6 — Upgrade Rails 7.2 → 8.0
-Status: todo
+Status: done
 Repo: backend
 Depends on: P2.5
 Branch: modernise/p2-6-rails-8-0

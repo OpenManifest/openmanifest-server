@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby "3.4.11"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 7.2.4"
+gem "rails", "~> 8.0.5"
 
 # Heroku database
 gem "pg"
@@ -29,8 +29,8 @@ gem "discard", "~> 1.2"
 gem "foreman"
 
 # GraphQL queries
-gem "graphql", "~> 2.4.18"
-gem "graphql_devise", "~> 2.0.0"
+gem "graphql", "~> 2.5.26"
+gem "graphql_devise", "~> 2.1.0"
 
 # Send HTTP requests easily
 gem "httparty"
@@ -91,7 +91,7 @@ group :development, :test do
   gem "rspec-json_expectations"
 
   gem "database_cleaner"
-  gem "rspec-rails", "~> 7.1.1"
+  gem "rspec-rails", "~> 8.0.4"
   gem "parallel_tests"
   gem "rspec_junit_formatter"
 end
