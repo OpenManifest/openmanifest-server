@@ -30,7 +30,7 @@ module Types::Users
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
     field :moderation_role, Types::Users::ModerationRole, null: true
-    field :push_token, String, null: true
+    field :push_token, String, null: true, broadcastable: false
     field :exit_weight, String, null: true
     field :nickname, String, null: true
     field :email, String, null: true, broadcastable: false

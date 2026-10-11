@@ -2903,7 +2903,7 @@ Size: L
 Fixes: BUG-009, BUG-010, BUG-039, BUG-061
 
 ### P6.9 — Authenticate the cable connection and authorise subscriptions
-Status: todo
+Status: owner-check (on a phone logged in with Apple, the manifest board updates live when a load is created on the web; client half in the P6.9 client PR)
 Repo: both
 Depends on: P6.8
 Branch: modernise/p6-9-cable-auth

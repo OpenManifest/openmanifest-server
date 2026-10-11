@@ -168,7 +168,6 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-011: subscriptions" do
     it "refuses subscribing to loadUpdated for a load of B" do
-      pending "BUG-011"
       channel = Struct.new(:params) { def stream_from(*); end }.new({ "channelId" => "tenant-spec" })
       query = "subscription($id: ID!) { loadUpdated(loadId: $id) { load { id } } }"
       result = DzSchema.execute(query: query, variables: { "id" => load_b.id.to_s },
