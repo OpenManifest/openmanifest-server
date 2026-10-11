@@ -2,6 +2,8 @@
 
 module Mutations::Setup::Equipment
   class DeleteRig < Mutations::BaseMutation
+    include OfficeAccess
+
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
     field :rig, Types::Equipment::Rig, null: true
@@ -50,6 +52,7 @@ module Mutations::Setup::Equipment
         return true if context[:current_resource].can?(:deleteDropzoneRig, dropzone_id: rig.dropzone_id)
       else
         return true if rig.user_id == context[:current_resource].id
+        return true if staff_of_member?(rig.user)
 
         # Staff of the one dropzone the owner belongs to may archive it too (jumpers hold deleteRig as well, but
         # only for their own rigs, which the ownership check above covers)

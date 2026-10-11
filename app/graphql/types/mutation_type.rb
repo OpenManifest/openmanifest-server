@@ -12,7 +12,8 @@ module Types
     field :update_master_log,           mutation: Mutations::Dropzone::UpdateMasterLog
 
     # Users
-    field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false
+    field :login_with_facebook,         mutation: Mutations::Users::Login::Facebook, authenticate: false,
+                                        deprecation_reason: "Facebook login removed (D4)"
     field :login_with_apple,            mutation: Mutations::Users::Login::Apple, authenticate: false
     field :create_ghost,                mutation: Mutations::Users::CreateGhost
     field :join_dropzone,               mutation: Mutations::Users::JoinDropzone

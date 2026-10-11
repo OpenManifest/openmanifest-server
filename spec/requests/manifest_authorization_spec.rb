@@ -177,4 +177,98 @@ RSpec.describe "Manifest authorization" do
       expect(slot.reload.load).to eq(manifest_load)
     end
   end
+
+  # UB.1: a dropzone can switch off self-manifesting; the manifest desk does everything
+  describe "when the dropzone does not allow self-manifesting" do
+    let(:desk_message) { "Manifesting is done by the manifest desk at this dropzone" }
+    let!(:own_slot) { Slot.find(manifest(fun_jumper, as: manifest_user).dig(:data, :createSlot, :slot, :id)) }
+    let(:permissions_query) { "query($id: ID!) { dropzoneUser(id: $id) { permissions } }" }
+
+    def permissions_of(member)
+      post "/graphql", params: { query: permissions_query, variables: { id: member.id }.to_json }, headers: owner.user.create_new_auth_token
+      response.parsed_body.dig("data", "dropzoneUser", "permissions")
+    end
+
+    before do
+      fun_jumper.grant!(:updateSlot)
+      fun_jumper.grant!(:deleteSlot)
+      dropzone.update!(settings: { allow_self_manifest: false })
+    end
+
+    it "refuses a member manifesting themselves, with the manifest desk message" do
+      json = manifest(student, as: student_user)
+
+      expect(json.dig(:data, :createSlot, :slot)).to be_nil
+      expect(json.dig(:data, :createSlot, :errors, 0)).to eq(desk_message)
+    end
+
+    it "refuses a member manifesting a group of only themselves" do
+      other = create(:load, plane: plane, pilot: pilot, gca: owner, max_slots: 10)
+      json = client_operation("ManifestGroup",
+                              variables: {
+                                load: other.id, ticketType: ticket_type.id,
+                                jumpType: JumpType.allowed_for([student]).first.id,
+                                userGroup: [{ id: student.id, exitWeight: 80 }],
+                              },
+                              as: student_user)
+
+      expect(json.dig(:data, :createSlots, :load)).to be_nil
+      expect(json.dig(:data, :createSlots, :errors, 0)).to eq(desk_message)
+    end
+
+    it "refuses a member taking themselves off a load" do
+      json = client_operation("DeleteSlot", variables: { id: own_slot.id }, as: user)
+
+      expect(json.dig(:data, :deleteSlot, :slot)).to be_nil
+      expect(json.dig(:data, :deleteSlot, :errors, 0)).to eq(desk_message)
+      expect(Slot.exists?(own_slot.id)).to be(true)
+    end
+
+    it "refuses a member editing their own slot" do
+      post "/graphql",
+           params: {
+             query: "mutation($id: Int!) { updateSlot(input: { id: $id, attributes: { exitWeight: 90 } }) { slot { id } errors } }",
+             variables: { id: own_slot.id }.to_json,
+           },
+           headers: user.create_new_auth_token
+      json = response.parsed_body.with_indifferent_access
+
+      expect(json.dig(:data, :updateSlot, :errors, 0)).to eq(desk_message)
+      expect(own_slot.reload.exit_weight).to eq(80)
+    end
+
+    it "refuses a member moving their own slot" do
+      json = client_operation("MoveSlot", variables: { sourceSlot: own_slot.id, targetLoad: second_load.id }, as: user)
+
+      expect(json.dig(:data, :moveSlot, :errors, 0)).to eq(desk_message)
+      expect(own_slot.reload.load).to eq(manifest_load)
+    end
+
+    it "lets manifest staff manifest, move, edit and take off a jumper, and manifest themselves" do
+      moved = client_operation("MoveSlot", variables: { sourceSlot: own_slot.id, targetLoad: second_load.id }, as: manifest_user)
+      expect(moved.dig(:data, :moveSlot, :errors)).to be_blank
+      expect(own_slot.reload.load).to eq(second_load)
+
+      removed = client_operation("DeleteSlot", variables: { id: own_slot.id }, as: manifest_user)
+      expect(removed.dig(:data, :deleteSlot, :errors)).to be_blank
+
+      expect(manifest(other_member, as: manifest_user).dig(:data, :createSlot, :slot, :id)).to be_present
+      expect(manifest(manifest_staff, as: manifest_user).dig(:data, :createSlot, :slot, :id)).to be_present
+    end
+
+    it "omits the self-service slot permissions of a member and keeps the staff ones" do
+      expect(permissions_of(fun_jumper)).not_to include("createSlot", "updateSlot", "deleteSlot")
+      expect(fun_jumper.permission_names).not_to include("createSlot", "updateSlot", "deleteSlot")
+      expect(permissions_of(manifest_staff)).to include("createSlot", "createUserSlot", "updateSlot", "updateUserSlot", "deleteSlot")
+      expect(fun_jumper.can?(:createSlot)).to be(false)
+      expect(manifest_staff.can?(:createSlot)).to be(true)
+    end
+
+    it "changes nothing when the setting is on again" do
+      dropzone.update!(settings: { allow_self_manifest: true })
+
+      expect(fun_jumper.reload.permission_names).to include("createSlot", "updateSlot", "deleteSlot")
+      expect(manifest(student, as: student_user).dig(:data, :createSlot, :slot, :id)).to be_present
+    end
+  end
 end

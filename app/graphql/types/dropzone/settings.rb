@@ -17,4 +17,6 @@ class Types::Dropzone::Settings < Types::Base::Object
                                            description: 'When this is enabled, users cannot manifest if their reserve is out of date'
   field :require_equipment, Boolean, null: true,
                                      description: 'When this is enabled, users cannot manifest if they have no equipment'
+  field :allow_self_manifest, Boolean, null: true,
+                                       description: 'When this is disabled, only manifest staff can add, move or remove people on loads'
 end

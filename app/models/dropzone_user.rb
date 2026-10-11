@@ -119,8 +119,33 @@ class DropzoneUser < ApplicationRecord
     query.where("repack_expires_at > ?", DateTime.now).distinct
   end
 
+  # Slot permissions a member uses on themselves, and the staff permission that keeps them when the dropzone does not
+  # allow self-manifesting (Dropzone setting allow_self_manifest)
+  SELF_SERVICE_PERMISSIONS = {
+    "createSlot" => "createUserSlot",
+    "createUserSlotWithSelf" => "createUserSlot",
+    "createDoubleSlot" => "createUserDoubleSlot",
+    "updateSlot" => "updateUserSlot",
+    "deleteSlot" => "deleteUserSlot",
+  }.freeze
+
+  MANIFEST_DESK_MESSAGE = "Manifesting is done by the manifest desk at this dropzone"
+
   def can?(permission)
-    all_permissions.exists?(name: permission)
+    name = permission.to_s
+    return false unless all_permissions.exists?(name: name)
+
+    counterpart = SELF_SERVICE_PERMISSIONS[name]
+    counterpart.nil? || dropzone.allow_self_manifest? || all_permissions.exists?(name: counterpart)
+  end
+
+  # True when the member holds the self-service permission through their role, but the dropzone has switched
+  # self-manifesting off and the member has no staff counterpart: refusals then explain why
+  def manifest_desk_only?(permission)
+    counterpart = SELF_SERVICE_PERMISSIONS[permission.to_s]
+    return false if counterpart.nil? || dropzone.allow_self_manifest?
+
+    all_permissions.exists?(name: permission.to_s) && !all_permissions.exists?(name: counterpart)
   end
 
   # Grant the user a permission, specifically for this user
@@ -160,7 +185,10 @@ class DropzoneUser < ApplicationRecord
   # The names of every permission of the member, from their role and granted to them. Reads the `permissions` and
   # `role_permissions` associations, so a list of members preloads them instead of running queries for each one
   def permission_names
-    (permissions.map(&:name) + role_permissions.map(&:name)).uniq
+    names = (permissions.map(&:name) + role_permissions.map(&:name)).uniq
+    return names if dropzone.allow_self_manifest?
+
+    names.reject { |name| SELF_SERVICE_PERMISSIONS.key?(name) && names.exclude?(SELF_SERVICE_PERMISSIONS[name]) }
   end
 
   def all_permissions
