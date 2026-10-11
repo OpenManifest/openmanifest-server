@@ -1411,7 +1411,7 @@ Size: M
 Fixes: none
 
 ### P2.11 — Verify Phase 2
-Status: todo
+Status: owner-check (merge the Phase 0, 1 and 2 stacks in order and confirm CI on staging in both repos; phone-browser smoke run as in docs/verification/phase-2.md)
 Repo: both
 Depends on: P2.1, P2.2, P2.3, P2.4, P2.5, P2.6, P2.7, P2.8, P2.9, P2.10
 Branch: modernise/p2-11-verify

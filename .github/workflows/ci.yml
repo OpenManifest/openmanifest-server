@@ -39,7 +39,6 @@ jobs:
       - run: bundle exec rspec
   audit:
     runs-on: ubuntu-24.04
-    continue-on-error: true   # made blocking in P2.11
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1

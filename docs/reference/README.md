@@ -395,52 +395,54 @@ are summarised, not exhaustively checked.
 
 | Package | Current | Latest stable | Gap | EOL / deprecated | Breaking-change notes | Verified |
 |---|---|---|---|---|---|---|
-| Ruby | 3.1.3 | 4.0.7 (3.4.11 latest 3.x) | 1 major, 3 minors | 3.1 EOL 2025-03-26; 3.2 EOL 2026-04-01; 3.3 security-only until 2027-03-31 | Ruby 3.4: frozen string literal warnings, `it` block param; 4.0: check gem native extensions | yes |
-| Rails | 7.0.4 | 8.1.4 (2026-09-24) | 1 major + 3 minors | 7.0 and 7.1 EOL (final 7.0.10, 7.1.6 — *web*: rubyonrails.org 2025-10-29); 7.2 security support ended 2026-08-09 *(web)*; 8.0 security until 2026-11-07 *(web)*; 8.1 security until 2027-10-10 *(web)* | Step 7.0→7.1→7.2→8.0→8.1 with `new_framework_defaults_*`; 8.0 requires Ruby ≥ 3.2 | yes |
+| Ruby | 4.0.7 (was 3.1.3; P2.5, P2.9) | 4.0.7 (3.4.11 latest 3.x) | current | 3.1 EOL 2025-03-26; 3.2 EOL 2026-04-01; 3.3 security-only until 2027-03-31 | Ruby 3.4: frozen string literal warnings, `it` block param; 4.0: check gem native extensions | yes |
+| Rails | 8.1.4 (was 7.0.4; P2.2-P2.7) | 8.1.4 (2026-09-24) | current | 7.0 and 7.1 EOL (final 7.0.10, 7.1.6 — *web*: rubyonrails.org 2025-10-29); 7.2 security support ended 2026-08-09 *(web)*; 8.0 security until 2026-11-07 *(web)*; 8.1 security until 2027-10-10 *(web)* | Step 7.0→7.1→7.2→8.0→8.1 with `new_framework_defaults_*`; 8.0 requires Ruby ≥ 3.2 | yes |
 | Node (client tooling) | CI used 16/18 | 24.21.0 LTS "Krypton" (EOL 2028-04-30); 26.x becomes LTS 2026-10-28 | — | 16, 18 EOL; 20 EOL 2026-04-30; 22 EOL 2027-04-30 | | yes |
 | PostgreSQL | 16 in VM (prod unknown) | — | — | — | `pg` gem 1.4.5 → 1.7.0 | partial |
 | Redis | 7 in VM | — | — | — | `redis` gem 4.8 → 6.0 (ActionCable on Rails ≥ 7.1 supports redis-client) | partial |
 
 ### Backend gems (Gemfile.lock)
 
+Updated in P2.11 (2026-10-08): "Current" is the version in `Gemfile.lock` after Phase 2; "(was …)" is the pass-1 version. `counter_culture` is deliberately held at 3.3.0 until P6.10 (BUG-019).
+
 | Gem | Current | Latest | Gap | EOL / security | Notes | Verified |
 |---|---|---|---|---|---|---|
-| rails | 7.0.4 | 8.1.4 | 1 major | see above; bundle-audit lists advisories in actionpack, activerecord (SQL injection via comments, PG DoS), activestorage, activesupport, actionview, actiontext, actionmailer | | yes |
-| graphql | 2.0.16 | 2.6.11 | 6 minors | **critical** advisory (RCE when loading crafted schema), unsafe Marshal in parser cache | graphql_devise caps graphql (see next row) | yes |
-| graphql_devise | 1.2.0 | 2.4.0 | 1 major | — | Compatibility: 1.2 → rails < 7.1, graphql < 2.1; 1.5.0 → rails < 7.2, graphql < 2.4; 2.0.0 → rails < 7.3, graphql < 2.5; 2.1.0 → rails < 8.1, graphql < 2.6; 2.4.0 → rails < 8.2, graphql < 2.7 | yes |
-| devise_token_auth | 1.2.1 | 1.3.0 | minor | — | 1.3.0: rails < 8.3, devise < 6 | yes |
-| devise | 4.8.1 | 5.0.4 | 1 major | 2 medium advisories (confirmable race, open redirect) | | yes |
-| puma | 6.0.2 | 8.0.2 | 2 majors | 2 high + 3 medium advisories | | yes |
-| rack | 2.2.5 | (follows rails) | — | 12 high, 11 medium advisories | Rails 7.1+ allows Rack 3 | yes |
-| pg | 1.4.5 | 1.7.0 | minor | — | needs `libpq-dev` to build | yes |
-| redis | 4.8.0 | 6.0.0 | 2 majors | — | | yes |
-| active_interaction | 5.2.0 | 5.5.0 | minor | — | activesupport < 9 | yes |
-| active_interaction-extras | 1.0.4 | 1.1.0 | minor | — | | yes |
-| counter_culture | 3.3.0 | 3.14.0 | minor | — | | yes |
-| state_machines-activerecord | 0.8.0 | 0.200.0 | — | — | 0.200.0 requires activerecord ≥ 7.2 and Ruby ≥ 3.2 | yes |
-| discard | 1.2.1 | 2.0.0 | 1 major | — | activerecord ≥ 7.0, < 9 | yes |
-| appsignal | 3.3.1 | 5.0.2 | 2 majors | — | native agent download blocked in VM | yes |
-| geokit-rails | 2.3.2 | 2.5.0 | minor | **high**: command injection | | yes |
-| httparty | 0.21.0 | 0.24.3 | minor | high: SSRF/API key leakage | | yes |
-| jwt | 2.6.0 | 3.3.0 | 1 major | high: empty-key HMAC bypass | used by Apple login (`JWT.decode`, `JWT::JWK.import`) | yes |
-| rack-cors | 1.1.1 | 3.0.0 | 2 majors | — | | yes |
-| bootsnap | 1.15.0 | 1.26.0 | minor | — | | yes |
-| search_cop | 1.2.3 | 1.6.0 | minor | — | | yes |
-| activerecord-import | 1.4.1 | 2.3.0 | 1 major | — | used by seeds/defaults | yes |
-| active_storage_base64 | 2.0.0 | 3.0.1 | 1 major | — | activestorage > 7.0 | yes |
-| image_processing | 1.12.2 | 2.2.0 | 1 major | — | | yes |
-| google-cloud-storage | 1.44.0 | 1.62.1 | minor | — | | yes |
-| sprockets | 4.2.0 | 4.4.1 | minor | — | only needed for graphiql-rails assets | yes |
-| graphiql-rails | 1.8.0 | 1.10.5 | minor | — | | yes |
-| dotenv-rails | 2.8.1 | 3.2.0 | 1 major | — | | yes |
-| bcrypt | 3.1.18 | 3.1.22 | patch | JRuby-only advisory | | yes |
-| nokogiri | 1.14.3 | (follows rails) | — | 2 high + many | | yes |
-| faker | 3.1.0 | 3.8.0 | minor | — | runtime dependency (Gemfile top level) | yes |
-| rspec-rails | 5.1.2 | 8.0.4 | 3 majors | — | | yes |
-| factory_bot_rails | 6.2.0 | 6.5.1 | minor | — | | yes |
-| rubocop | 1.50.2 | 1.91.0 | minor | — | | yes |
-| yard | 0.9.24 (pinned) | — | — | high + 2 medium | dev only; remove | partial |
-| selenium-webdriver, webdrivers, capybara | locked | — | — | selenium high | no system specs exist; removed in P2.1 | partial |
+| rails | 8.1.4 (was 7.0.4) | 8.1.4 | current | none (bundle-audit clean in P2.11; was: see above; bundle-audit lists advisories in actionpack, activerecord (SQL injection via comments, PG DoS), activestorage, activesupport, actionview, actiontext, actionmailer) |  | yes |
+| graphql | 2.6.11 (was 2.0.16) | 2.6.11 | current | none (bundle-audit clean in P2.11; was: **critical** advisory (RCE when loading crafted schema), unsafe Marshal in parser cache) | graphql_devise caps graphql (see next row) | yes |
+| graphql_devise | 2.4.0 (was 1.2.0) | 2.4.0 | current | — | Compatibility: 1.2 → rails < 7.1, graphql < 2.1; 1.5.0 → rails < 7.2, graphql < 2.4; 2.0.0 → rails < 7.3, graphql < 2.5; 2.1.0 → rails < 8.1, graphql < 2.6; 2.4.0 → rails < 8.2, graphql < 2.7 | yes |
+| devise_token_auth | 1.3.0 (was 1.2.1) | 1.3.0 | current | — | 1.3.0: rails < 8.3, devise < 6 | yes |
+| devise | 5.0.4 (was 4.8.1) | 5.0.4 | current | none (bundle-audit clean in P2.11; was: 2 medium advisories (confirmable race, open redirect)) |  | yes |
+| puma | 8.0.2 (was 6.0.2) | 8.0.2 | current | none (bundle-audit clean in P2.11; was: 2 high + 3 medium advisories) |  | yes |
+| rack | 3.2.7 (was 2.2.5) | (follows rails) | current | none (bundle-audit clean in P2.11; was: 12 high, 11 medium advisories) | Rails 7.1+ allows Rack 3 | yes |
+| pg | 1.7.0 (was 1.4.5) | 1.7.0 | current | — | needs `libpq-dev` to build | yes |
+| redis | 6.0.0 (was 4.8.0) | 6.0.0 | current | — |  | yes |
+| active_interaction | 5.5.0 (was 5.2.0) | 5.5.0 | current | — | activesupport < 9 | yes |
+| active_interaction-extras | 1.1.0 (was 1.0.4) | 1.1.0 | current | — |  | yes |
+| counter_culture | 3.3.0 (held) | 3.14.0 | minor | — | pinned until P6.10: 3.14.0 exposes BUG-019 in group manifests | yes |
+| state_machines-activerecord | 0.200.0 (was 0.8.0) | 0.200.0 | current | — | 0.200.0 requires activerecord ≥ 7.2 and Ruby ≥ 3.2 | yes |
+| discard | 2.0.0 (was 1.2.1) | 2.0.0 | current | — | activerecord ≥ 7.0, < 9 | yes |
+| appsignal | 5.0.3 (was 3.3.1) | 5.0.3 | current | — | native agent download blocked in VM | yes |
+| geokit-rails | 2.5.0 (was 2.3.2) | 2.5.0 | current | none (bundle-audit clean in P2.11; was: **high**: command injection) |  | yes |
+| httparty | 0.24.3 (was 0.21.0) | 0.24.3 | current | none (bundle-audit clean in P2.11; was: high: SSRF/API key leakage) |  | yes |
+| jwt | 3.3.0 (was 2.6.0) | 3.3.0 | current | none (bundle-audit clean in P2.11; was: high: empty-key HMAC bypass) | used by Apple login (`JWT.decode`, `JWT::JWK.import`) | yes |
+| rack-cors | 3.0.0 (was 1.1.1) | 3.0.0 | current | — |  | yes |
+| bootsnap | 1.26.0 (was 1.15.0) | 1.26.0 | current | — |  | yes |
+| search_cop | 1.6.0 (was 1.2.3) | 1.6.0 | current | — |  | yes |
+| activerecord-import | 2.3.0 (was 1.4.1) | 2.3.0 | current | — | used by seeds/defaults | yes |
+| active_storage_base64 | 3.0.1 (was 2.0.0) | 3.0.1 | current | — | activestorage > 7.0 | yes |
+| image_processing | 2.2.0 (was 1.12.2) | 2.2.0 | current | — |  | yes |
+| google-cloud-storage | 1.62.1 (was 1.44.0) | 1.62.1 | current | — |  | yes |
+| sprockets | 4.4.1 (was 4.2.0) | 4.4.1 | current | — | only needed for graphiql-rails assets | yes |
+| graphiql-rails | 1.10.5 (was 1.8.0) | 1.10.5 | current | — |  | yes |
+| dotenv-rails | 3.2.0 (was 2.8.1) | 3.2.0 | current | — |  | yes |
+| bcrypt | 3.1.22 (was 3.1.18) | 3.1.22 | current | JRuby-only advisory |  | yes |
+| nokogiri | 1.19.4 (was 1.14.3) | (follows rails) | current | none (bundle-audit clean in P2.11; was: 2 high + many) |  | yes |
+| faker | 3.8.0 (was 3.1.0) | 3.8.0 | current | — | runtime dependency (Gemfile top level) | yes |
+| rspec-rails | 8.0.4 (was 5.1.2) | 8.0.4 | current | — |  | yes |
+| factory_bot_rails | 6.5.1 (was 6.2.0) | 6.5.1 | current | — |  | yes |
+| rubocop | 1.91.0 (was 1.50.2) | 1.91.0 | current | — |  | yes |
+| yard | removed in P2.1 | — | — | high + 2 medium | dev only; remove | partial |
+| selenium-webdriver, webdrivers, capybara | removed in P2.1 | — | — | selenium high | no system specs exist; removed in P2.1 | partial |
 
 ### Client packages
 
