@@ -16,9 +16,9 @@ def dev_user(email, name, weight = 80)
 end
 
 owner = dev_user("owner@example.com", "Olive Owner")
-operator = Operator.find_by(name: "Demo Operator")
+operator = Operator.find_by(name: "Demo Dropzone")
 operator ||= Setup::Operators::CreateOperator.run!(
-  name: "Demo Operator", owner: owner, federation: Federation.find_by(slug: "apf") || Federation.first,
+  name: "Demo Dropzone", owner: owner, federation: Federation.find_by(slug: "apf") || Federation.first,
   lat: nil, lng: nil, is_credit_system_enabled: true, primary_color: "#1D3557", secondary_color: "#E63946"
 )
 operator.update!(state: "public", settings: {
