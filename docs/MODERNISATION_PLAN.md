@@ -829,7 +829,7 @@ Size: M
 Fixes: none
 
 ### P1.5 — Cover setup operations (aircraft, tickets, extras, rigs, inspections, weather, master log)
-Status: todo
+Status: done
 Repo: backend
 Depends on: P1.1
 Branch: modernise/p1-5-spec-setup
@@ -2694,7 +2694,10 @@ Steps:
      green because the client does not use it.
   5. `Resolvers::Dropzones`: apply the `state` argument (`context[:access_context].dropzones.where(state: state)` when
      given) (BUG-090); un-pend its example in `spec/requests/client_operations/dropzones_spec.rb`.
-  6. Un-pend the P1.7 specs for these resolvers; they must now pass.
+  6. `Support::DropzoneContext`: return nil from the `prepare` lambda when `ctx[:access_context]` is nil so anonymous
+     callers get `AUTHENTICATION_ERROR` instead of `NoMethodError` (BUG-095); un-pend its example in
+     `spec/requests/client_operations/setup_spec.rb`.
+  7. Un-pend the P1.7 specs for these resolvers; they must now pass.
 Acceptance criteria (cloud VM):
   - Backend env: `bundle exec rspec` green; `bundle exec rails graphql:schema:dump` diff only removes `image`;
     client `check:graphql` (P1.9) passes against the new schema.
@@ -2703,7 +2706,7 @@ Acceptance criteria (owner, real device):
 Out of scope: user/member queries (P6.3).
 Risk / rollback: over-restricting breaks screens; P1 client-operation specs catch it. Revert.
 Size: L
-Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090
+Fixes: BUG-002 (dropzone/load/setup resolvers), BUG-003, BUG-004, BUG-090, BUG-095
 
 ### P6.3 — Add tenant checks to user queries and protect personal data
 Status: todo
@@ -2870,8 +2873,8 @@ Steps:
   2. Strip `dropzone_id`, `user_id`, `owner_id` from attributes passed to `update!` (`input.to_h.except(...)`).
   3. Replace `context[:current_user]` with `context[:current_resource]`/access context everywhere
      (`grep -rn "context\[:current_user\]" app` must print nothing).
-  4. Extras links: `record.ticket_type_extras.where.not(extra_id: ids).destroy_all` then create missing links; scope to
-     the record.
+  4. Extras links: scope the cleanup to the record (`record.ticket_type_extras.where.not(extra_id: ids).destroy_all`); the
+     association assignment in `update!(extra_ids:)` already creates the links, so delete the dead `Array#-` block.
   5. Specs per mutation: other tenant's record → forbidden; `dropzoneId` change ignored; archive ticket type works;
      updating ticket type A leaves ticket type B's extras intact.
 Acceptance criteria (cloud VM):
