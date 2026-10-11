@@ -31,7 +31,7 @@ flowchart LR
     STALE[GET /<br/>stale 2021 web build]
   end
   PG[(PostgreSQL)]
-  REDIS[(Redis<br/>cable pub/sub)]
+  CABLETABLE[(PostgreSQL<br/>solid_cable_messages,<br/>solid_cache_entries)]
   STORE[(ActiveStorage<br/>Disk /data or GCS)]
   APF[APF member API]
   WINDS[markschulze.net<br/>winds aloft]
@@ -45,7 +45,7 @@ flowchart LR
   IOS & AND -->|OTA bundles| UPD
   GQL --> INT --> PG
   INT --> JOBS -->|HTTP| PUSH --> IOS & AND
-  CABLE <--> REDIS
+  CABLE <--> CABLETABLE
   INT -->|model callbacks trigger subscriptions| CABLE
   GQL --> STORE
   INT --> APF

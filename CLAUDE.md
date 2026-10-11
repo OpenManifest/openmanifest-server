@@ -12,14 +12,14 @@ Before doing any work:
    PRs, status updates in this file's plan, stop conditions).
 2. Then read the task you picked and every document it links.
 
-Feature plans (commerce foundation, booking, webshop) follow the same executor rules:
-[`docs/features/README.md`](docs/features/README.md).
+Every task (modernisation, generalisation, UI, commerce, booking, webshop) is in that one plan; pick from its
+**Execution order**. Feature designs: [`docs/features/README.md`](docs/features/README.md).
 
 Reference: [`docs/reference/README.md`](docs/reference/README.md) (system reference),
 [`BUGS.md`](docs/reference/BUGS.md) (bug register for both repos), [`diagrams.md`](docs/reference/diagrams.md),
 [`GENERALISATION.md`](docs/reference/GENERALISATION.md), [`CLOUD_ENV.md`](docs/reference/CLOUD_ENV.md) (cloud VM
 setup script, allowlist, env vars, per-session commands).
 
-Quick commands (see CLOUD_ENV §4 for the environment variables): `service postgresql start && service redis-server start`,
+Quick commands (see CLOUD_ENV §4 for the environment variables): `service postgresql start`,
 `bundle exec rspec`, `bundle exec rubocop`, `bin/rails s -p 5000`.
 Never commit secrets, `.env` files, `vendor/bundle` or `.bundle/`.

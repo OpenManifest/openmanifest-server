@@ -651,9 +651,11 @@ last because they exercise everything before them. Scuba is the first new templa
 skydiving (certifications, equipment, escorts) and proves the abstraction; bus tours are last because they gain the
 most from the booking plan.
 
-**Relation to the feature plans.** The executor picks modernisation-plan tasks before feature-plan tasks
-(`features/README.md`), so Phase 7 runs before booking and commerce unless Phase 7 is blocked. That suits both: the
-booking tasks then use the new names, and their check-in task finds the seam from P7.17 ready.
+**Relation to the rest of the plan.** Since 2026-10-11 the plan's Execution order interleaves these stages with the UI
+modernisation (Phase U): stage A and P7.7 run first, then Phase U's foundations, then P7.8–P7.17, then Phase U's
+screens (built once for the generic model), then P7.22, P7.20 and P7.21, then stage D. P7.18 and P7.19 are superseded
+by U0.6 and U3, and P7.22's navigation step moved to U1.1. Commerce, booking and the webshop (Phases C, B, S) come
+after Phase 7, so their tasks use the new names and B3.2 finds the P7.17 seam ready.
 
 ## 16. Not in this phase
 

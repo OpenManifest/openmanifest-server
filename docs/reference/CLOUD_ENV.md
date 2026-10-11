@@ -123,7 +123,6 @@ Repos are checked out side by side (e.g. `/home/user/openmanifest-server` and `/
 
 ```bash
 service postgresql start
-service redis-server start
 export SECRET_KEY_BASE=$(openssl rand -hex 64)
 ```
 
@@ -199,7 +198,7 @@ docker exec -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app &&
 docker exec -d -e SECRET_KEY_BASE=$(openssl rand -hex 64) rb34 bash -lc 'cd /app && bin/rails s -b 0.0.0.0 -p 5000 > /tmp/rails.log 2>&1'
 ```
 
-Notes: Postgres and Redis keep running on the host (`--network host`). `apt-get` inside the container does not work
+Notes: Postgres keeps running on the host (`--network host`). `apt-get` inside the container does not work
 (`deb.debian.org` is blocked), so only what the image ships is available: the full (not `-slim`) image has `libpq-dev`,
 but **no libvips**; Rails boots and the whole suite passes without it (image variants are therefore not verified in
 this fallback). A stale Puma on the host also keeps :5000 busy: `ps aux | grep puma` and kill it before starting the container's

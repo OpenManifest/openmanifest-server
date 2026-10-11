@@ -1,12 +1,17 @@
+# Solid Cable: messages go through a table of the primary database, and every process polls it.
+default: &default
+  adapter: solid_cable
+  polling_interval: 0.1.seconds
+  message_retention: 1.day
+
 development:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
-  channel_prefix: openmanifest_development
+  <<: *default
 
 test:
   adapter: test
 
+staging:
+  <<: *default
+
 production:
-  adapter: redis
-  url: <%= ENV.fetch("REDIS_URL", "redis://localhost:6379/0") %>
-  channel_prefix: openmanifest_production
+  <<: *default

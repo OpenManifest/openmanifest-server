@@ -13,7 +13,6 @@ gem "pg"
 
 # Use Puma as the app server
 gem "puma"
-gem "redis"
 # Use Active Model has_secure_password
 gem "bcrypt", "~> 3.1.7"
 
@@ -57,6 +56,8 @@ gem "counter_culture"
 
 # Background jobs, in the primary database
 gem "solid_queue", "~> 1.7"
+gem "solid_cache", "~> 1.0"
+gem "solid_cable", "~> 4.1"
 
 # Debugging
 gem "appsignal"

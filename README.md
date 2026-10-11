@@ -14,7 +14,7 @@ This is the backend server for OpenManifest, written with Rails using GraphQL an
 ## Requirements
 
 - Ruby from `.ruby-version` (3.1.6) with Bundler 2.3.26
-- PostgreSQL 16 and Redis 7
+- PostgreSQL 16 (it also holds the job queue, the cache and Action Cable's messages: Solid Queue, Solid Cache and Solid Cable)
 - System packages: `libpq-dev`, `libvips` (Debian/Ubuntu: `apt-get install -y libpq-dev libvips42`)
 
 ## Getting started
@@ -23,7 +23,7 @@ Configuration comes from environment variables; `.env.example` lists them (copy 
 commit `.env`). The database user is taken from `PGUSER`/`PGPASSWORD`.
 
 ```
-$ service postgresql start && service redis-server start
+$ service postgresql start
 $ export PGHOST=localhost PGUSER=root PGPASSWORD=root SECRET_KEY_BASE=$(openssl rand -hex 64) \
          BACKEND_URL=http://local.openmanifest.org:5000/ DISABLE_SPRING=1
 $ gem install bundler -v 2.3.26

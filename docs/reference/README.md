@@ -68,7 +68,7 @@ dropzones (`app/interactions/setup/dropzones/update_visibility.rb`).
 ```
 Expo app (iOS / Android / web)  ──HTTPS POST /graphql (batched)──▶  Rails 7.0 API (GraphQL, graphql-ruby)
         │                       ◀──JSON──                               │  ├─ PostgreSQL (all data)
-        └──WebSocket /subscriptions (ActionCable, GraphqlChannel)──▶    │  ├─ Redis (ActionCable pub/sub, prod cache)
+        └──WebSocket /subscriptions (ActionCable, GraphqlChannel)──▶    │  ├─ Solid Queue / Solid Cache / Solid Cable (tables in PostgreSQL)
                                                                         │  ├─ ActiveStorage: Disk (dev/fly) or GCS (prod)
                                                                         │  └─ outbound HTTP: Expo push, APF, winds aloft,
                                                                         │       Google geocoder, Apple/Facebook token checks
@@ -342,7 +342,6 @@ Environment variables (names only):
 | `FRONTEND_URL` | mailer URLs, confirmation redirect (**required in production**); its origin is always allowed by CORS |
 | `CORS_ORIGINS` | browser origins allowed to call the API, comma separated `scheme://host[:port]` (default `http://localhost:19006,http://localhost:8081`; `config/initializers/cors.rb`). Set it on every deployment that serves a web client from another origin than `FRONTEND_URL`; native apps are not affected |
 | `PGUSER`, `PGPASSWORD`, `DBNAME`, `DATABASE_URL` (production via platform) | database |
-| `REDIS_URL` | ActionCable, production cache |
 | `RAILS_MAX_THREADS`, `RAILS_MIN_THREADS`, `WEB_CONCURRENCY`, `PORT`, `PIDFILE` | Puma |
 | `RAILS_ENV`, `RAILS_LOG_TO_STDOUT`, `RAILS_SERVE_STATIC_FILES`, `BACKTRACE` | Rails |
 | `SMTP_SERVER`, `SMTP_PORT`, `SMTP_DOMAIN`, `SMTP_USERNAME`, `SMTP_PASSWORD` | mail |
@@ -371,7 +370,7 @@ Nothing below was committed. Each item becomes a Phase 0 task.
 | `pg` gem | Failed: `libpq-fe.h` missing | `apt-get install -y libpq-dev` |
 | Images | `image_processing` needs libvips | `apt-get install -y libvips42 imagemagick` |
 | AppSignal | Native extension download blocked (`appsignal-agent-releases.global.ssl.fastly.net`); gem prints `LoadError: cannot load such file -- appsignal_extension` but the app boots | Ignored |
-| Services | `service postgresql start; service redis-server start`; `CREATE ROLE root SUPERUSER LOGIN PASSWORD 'root'` | |
+| Services | `service postgresql start`; `CREATE ROLE root SUPERUSER LOGIN PASSWORD 'root'` | |
 | Env | `PGHOST=localhost PGUSER=root PGPASSWORD=root SECRET_KEY_BASE=dummy BACKEND_URL=http://local.openmanifest.org:5000/ DISABLE_SPRING=1 WEB_CONCURRENCY=0` | |
 | Test DB | `RAILS_ENV=test bin/rails db:create db:schema:load` (database name is `openmanifest_test_` + `TEST_ENV_NUMBER`) | |
 | Specs | `bundle exec rspec`: **187 examples, 64 failures, 6 pending** in 43 s. 55 failures are "membership has expired" (dropzone default settings, `BUG-033`), 8 are `created_by` nil (`BUG-034`), 2 are slots without orders (`BUG-030`), 1 is order-dependent (`spec/graphql/resolvers/users/dropzone_users_spec.rb`) | Baseline recorded in `P0.3` |
@@ -401,7 +400,7 @@ are summarised, not exhaustively checked.
 | Rails | 8.1.4 (was 7.0.4; P2.2-P2.7) | 8.1.4 (2026-09-24) | current | 7.0 and 7.1 EOL (final 7.0.10, 7.1.6 — *web*: rubyonrails.org 2025-10-29); 7.2 security support ended 2026-08-09 *(web)*; 8.0 security until 2026-11-07 *(web)*; 8.1 security until 2027-10-10 *(web)* | Step 7.0→7.1→7.2→8.0→8.1 with `new_framework_defaults_*`; 8.0 requires Ruby ≥ 3.2 | yes |
 | Node (client tooling) | CI used 16/18 | 24.21.0 LTS "Krypton" (EOL 2028-04-30); 26.x becomes LTS 2026-10-28 | — | 16, 18 EOL; 20 EOL 2026-04-30; 22 EOL 2027-04-30 | | yes |
 | PostgreSQL | 16 in VM (prod unknown) | — | — | — | `pg` gem 1.4.5 → 1.7.0 | partial |
-| Redis | 7 in VM | — | — | — | `redis` gem 4.8 → 6.0 (ActionCable on Rails ≥ 7.1 supports redis-client) | partial |
+| Redis | not used any more (Solid Cache and Solid Cable, with Solid Queue, run on PostgreSQL) | — | — | — | `redis` gem removed | yes |
 
 ### Backend gems (Gemfile.lock)
 
@@ -417,7 +416,7 @@ Updated in P2.11 (2026-10-08): "Current" is the version in `Gemfile.lock` after 
 | puma | 8.0.2 (was 6.0.2) | 8.0.2 | current | none (bundle-audit clean in P2.11; was: 2 high + 3 medium advisories) |  | yes |
 | rack | 3.2.7 (was 2.2.5) | (follows rails) | current | none (bundle-audit clean in P2.11; was: 12 high, 11 medium advisories) | Rails 7.1+ allows Rack 3 | yes |
 | pg | 1.7.0 (was 1.4.5) | 1.7.0 | current | — | needs `libpq-dev` to build | yes |
-| redis | 6.0.0 (was 4.8.0) | 6.0.0 | current | — |  | yes |
+| solid_queue / solid_cache / solid_cable | 1.7.0 / 1.0.10 / 4.1.0 (replace redis) | same | current | — | tables in the primary database; solid_cable polls every 0.1 s | yes |
 | active_interaction | 5.5.0 (was 5.2.0) | 5.5.0 | current | — | activesupport < 9 | yes |
 | active_interaction-extras | 1.1.0 (was 1.0.4) | 1.1.0 | current | — |  | yes |
 | counter_culture | 3.3.0 (held) | 3.14.0 | minor | — | pinned until P6.10: 3.14.0 exposes BUG-019 in group manifests | yes |
