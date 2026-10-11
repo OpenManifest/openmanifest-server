@@ -1897,7 +1897,7 @@ Size: L
 Fixes: none
 
 ### P3.16 — Upgrade to Expo SDK 55
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.15
 Branch: modernise/p3-16-expo-55
