@@ -1,15 +1,15 @@
 # Feature plans
 
-Draft plans for the first features built on the modernised stack. They are written in the same task format as
+Plans for the first features built on the modernised stack. They are written in the same task format as
 [`../MODERNISATION_PLAN.md`](../MODERNISATION_PLAN.md) and follow its **Executor instructions**, with the differences
 listed below.
 
-Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1` (both `staging`). **Status: draft.** Every task is
-`blocked (awaiting decision …)` until the owner records the decisions it depends on.
+Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1` (both `staging`). All owner decisions were recorded
+on 2026-10-11, so every task is `todo`; the first one still waits for the modernisation plan's `P6.27` (below).
 
 | Order | Plan | Task IDs | What it delivers |
 |---|---|---|---|
-| 1 | [COMMERCE_FOUNDATION.md](COMMERCE_FOUNDATION.md) | `C1.x`, `C2.x` | Money gem, double-entry ledger (Plutus), Stripe Connect, the platform transaction fee, customers, sales orders, checkout, refunds, coupons, Apple Pay / Google Pay. First vertical slice: members top up credits online. |
+| 1 | [COMMERCE_FOUNDATION.md](COMMERCE_FOUNDATION.md) | `C1.x`, `C2.x` | Money gem (replacing the app's own `Money` class), double-entry ledger (`double_entry` gem), Stripe Connect, the platform transaction fee on online and offline sales, customers, sales orders, checkout, refunds, coupons, Apple Pay / Google Pay. First vertical slice: members top up credits online. |
 | 2 | [BOOKING_PLAN.md](BOOKING_PLAN.md) | `B1.x`–`B3.x` | Bookable services (tandems, tours, dive trips), availability and slots, guest booking with captcha + email OTP + deposits, no double-booking, staff calendar, check-in to manifest. |
 | 3 | [WEBSHOP_PLAN.md](WEBSHOP_PLAN.md) | `S1.x`–`S4.x` | Products, variants, stock, media, markdown, storefront, shipping, virtual products (credit packages, gift vouchers), order dashboard, reports. |
 
@@ -36,7 +36,7 @@ blocked on a decision the executor can continue with the webshop; the few cross-
 - **Picking the task**: only when no modernisation-plan task qualifies, read the feature plans in the order of the
   table above and pick the first qualifying task.
 - **Branch**: `feature/{id}-{short-slug}`, e.g. `feature/c1-3-ledger`. Use the `Branch:` value from the task.
-- **Commit subject**: Conventional Commits with the task ID, e.g. `feat(ledger): add chart of accounts [C1.3]`.
+- **Commit subject**: Conventional Commits with the task ID, e.g. `feat(ledger): add chart of accounts [C1.2]`.
 - **Status**: update the task's `Status:` line in the feature plan that contains it (backend repo only).
 - **Decisions**: written in the decision table of the plan that owns them ("Decision: …, date"). The executor unblocks the
   dependent tasks in the next task's PR, as in the modernisation plan.
@@ -51,13 +51,16 @@ blocked on a decision the executor can continue with the webshop; the few cross-
 
 ## Decisions across the three plans
 
-| ID | Topic | Plan | Blocks |
-|---|---|---|---|
-| CD1 | Payment provider and Connect charge model | Commerce | C2.1 onward |
-| CD2 | Ledger library (Plutus vs alternatives) | Commerce | C1.3 onward |
-| CD3 | Platform fee schedule and which sales it applies to | Commerce | C2.2 |
-| CD4 | Platform fee on refunds and disputes | Commerce | C2.5 |
-| CD5 | Sales tax handling | Commerce | C1.2 |
-| CD6 | In-app sale of credits and vouchers (App Store / Play policy) | Commerce | C2.4, S3.1, S3.2 |
-| BD1–BD7 | Guest channel, verification, deposits, balance, resources, cancellation policy, manifest link | Booking | B-tasks |
-| SD1–SD4 | Video hosting, shipping, shop visibility, paying with credits | Webshop | S-tasks |
+Recorded 2026-10-11; details and rejected options in each plan's §2.
+
+| ID | Decided | Plan |
+|---|---|---|
+| CD1 | Stripe Connect, direct charges on operator ("Standard") accounts, fee via `application_fee_amount`; no ActiveMerchant | Commerce |
+| CD2 | `double_entry` gem behind a `Ledger` wrapper (instead of Plutus), with a journal outbox | Commerce |
+| CD3 | Online fee 1.5 % + A$0.30 (min A$0.50); offline sales 1 %; operator absorbs the fee | Commerce |
+| CD4 | Fee refunded in proportion to refunds and lost disputes | Commerce |
+| CD5 | One tax rate per operator, tax-inclusive prices; stored value taxed on redemption (accountant to confirm) | Commerce |
+| CD6 | Credits and vouchers sold in-app via Apple Pay / Google Pay, with a switch to hide them on iOS | Commerce |
+| CD7 | Offline fees carried forward into later application fees (≤ 5 % of a payment), remainder invoiced monthly | Commerce |
+| BD1–BD7 | Guests book on the web only; Turnstile + email code; full prepayment by default; balance at the desk or by link; individual resource units; 72 h / 24 h cancellation tiers with reschedule-or-refund on weather; check-in puts bookings on a load | Booking |
+| SD1–SD4 | MP4 uploads ≤ 200 MB, no transcoding; zones/rates/pickup shipping; browse public, buy signed in; pay with credits, one tender | Webshop |

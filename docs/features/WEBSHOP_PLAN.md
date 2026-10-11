@@ -5,13 +5,13 @@ vouchers, memberships) to signed-in members on the web and in the app, manage st
 reports. Index and executor rules: [README.md](README.md). Builds on [COMMERCE_FOUNDATION.md](COMMERCE_FOUNDATION.md):
 double-entry ledger, Money gem, Stripe with Apple Pay / Google Pay, platform fee, coupons, refunds.
 
-Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. **Status: draft.**
+Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. Owner decisions recorded 2026-10-11 (§2).
 
 ## 1. Requirements coverage
 
 | Owner requirement | Where |
 |---|---|
-| 1. Double-entry accounting (Money gem, Plutus) | COMMERCE §3.1–3.2, C1.1–C1.4; every shop posting in §3.6 |
+| 1. Double-entry accounting with the Money gem | COMMERCE §3.1–3.2 (`double_entry`, CD2), C1.1–C1.3; every shop entry in §3.6 |
 | 2. Products, stock, visibility | §3.1, §3.3; S1.1, S1.3, S1.4 |
 | 3. Logged-in purchases on web and mobile with Google Pay / Apple Pay | §3.4; S2.1, S2.2 (payments from COMMERCE C2.5) |
 | 4. Virtual products such as credit recharge | §3.5; S3.1–S3.3 (free-amount top-up already in COMMERCE C2.3) |
@@ -22,14 +22,16 @@ Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. **Status: dra
 | 9. Dashboard for pending orders | §3.7; S4.2 |
 | Transaction fee | Every card payment goes through COMMERCE checkout (fee automatic); paying with credits per SD4 |
 
-## 2. Open decisions
+## 2. Decisions
 
-| ID | Decision | Options | Recommendation | Blocks |
+Decided by the owner on 2026-10-11 (SD3 follows directly from requirement 3 and was not asked separately).
+
+| ID | Decision | Decided | Notes | Tasks |
 |---|---|---|---|---|
-| SD1 | Video | (a) **direct uploads to the object store, MP4 (H.264/AAC) only, ≤ 200 MB and ≤ 3 minutes, poster frame generated with ffmpeg, no transcoding**; (b) a video service (Mux, Cloudflare Stream: adaptive streaming, per-minute cost, another vendor); (c) links to YouTube/Vimeo only | (a). Product videos are short clips; phones record H.264 MP4 already. Move to (b) if operators upload long or 4K video. Needs ffmpeg in the production image (P8.4 Dockerfile) and CORS on the bucket for direct uploads | S1.2 |
-| SD2 | Shipping | (a) **zones with flat, weight-tiered and free-over-amount rates, local pickup, manual tracking numbers**; (b) carrier integration now (live rates and labels via Shippo, EasyPost or Sendle) | (a). Operators ship small volumes of T-shirts and gear; manual tracking is fine. (b) as a later task once an operator ships enough to want labels | S2.2, S4.1 |
-| SD3 | Who sees the shop | (a) **anyone can browse published products of a public operator; buying requires sign-in** (owner requirement 3); (b) members only | (a), with per-product visibility `members` and `staff` for restricted items | S1.1, S2.1 |
-| SD4 | Paying with wallet credits | (a) **allowed when the operator uses the credit system**, single tender per order (all credits or all card); (b) card only | (a): members expect it. It carries no platform fee (fee was taken when the credits were bought online; CD3 covers desk-bought credits) | S2.3 |
+| SD1 | Video | **Direct uploads to the object store, MP4 (H.264/AAC), ≤ 200 MB and ≤ 3 minutes, poster frame generated with ffmpeg, no transcoding** | Needs ffmpeg in the production image (P8.4 Dockerfile) and CORS on the bucket. A video service (Mux, Cloudflare Stream) only if operators upload long or 4K video | S1.2 |
+| SD2 | Shipping | **Zones with flat, weight-tiered and free-over-amount rates, local pickup, tracking numbers typed by staff** | Carrier labels and live rates (Shippo, EasyPost, Sendle) later, when an operator ships enough to want them | S2.2, S4.1 |
+| SD3 | Who sees the shop | **Anyone can browse published products of an operator; buying requires sign-in**; per-product visibility `members` and `staff` for restricted items | | S1.1, S2.1 |
+| SD4 | Paying with wallet credits | **Allowed when the operator uses the credit system; one tender per order** (all credits or all card) | No platform fee on credit spends (the fee was taken when the credits were bought, online or at the desk) | S2.3 |
 
 ## 3. Design
 
@@ -142,7 +144,7 @@ Rules for every task: same as COMMERCE §4 (cents, ledger in the same transactio
 stock claims are proven with parallel-thread specs like B1.4.
 
 ### S1.1 — Catalogue: products, variants, categories, markdown
-Status: blocked (awaiting decision SD3)
+Status: todo
 Repo: both
 Depends on: C2.9
 Branch: feature/s1-1-catalogue
@@ -169,7 +171,7 @@ Size: M
 Fixes: none
 
 ### S1.2 — Media: direct uploads for images and video
-Status: blocked (awaiting decision SD1)
+Status: todo
 Repo: both
 Depends on: S1.1
 Branch: feature/s1-2-media
@@ -195,7 +197,7 @@ Size: L
 Fixes: none
 
 ### S1.3 — Stock movements and reservations
-Status: blocked (awaiting decision SD3)
+Status: todo
 Repo: backend
 Depends on: S1.2
 Branch: feature/s1-3-stock
@@ -219,7 +221,7 @@ Size: M
 Fixes: none
 
 ### S1.4 — Staff catalogue and stock screens
-Status: blocked (awaiting decision SD3)
+Status: todo
 Repo: client
 Depends on: S1.3
 Branch: feature/s1-4-catalogue-screens
@@ -240,7 +242,7 @@ Size: L
 Fixes: none
 
 ### S2.1 — Storefront and cart
-Status: blocked (awaiting decision SD3)
+Status: todo
 Repo: both
 Depends on: S1.4
 Branch: feature/s2-1-storefront
@@ -262,7 +264,7 @@ Size: L
 Fixes: none
 
 ### S2.2 — Checkout with shipping and pickup
-Status: blocked (awaiting decision SD2)
+Status: todo
 Repo: both
 Depends on: S2.1
 Branch: feature/s2-2-shop-checkout
@@ -275,7 +277,7 @@ Steps:
   2. client: address form (saved addresses per user), shipping option list, order summary with coupon, payment with
      the C2.5 components, order confirmation; shipping configuration screen for staff.
   3. Specs: rate selection by zone/postcode/weight, free-over threshold after discounts, tax on shipping, stock
-     reserved and released, order emails (receipt with tax details from C1.2).
+     reserved and released, order emails (receipt with tax details from COMMERCE C1.1).
 Acceptance criteria (cloud VM):
   - Backend rspec green; client checks, web export, smoke test (checkout with the fake provider) pass.
 Acceptance criteria (owner, real device):
@@ -287,7 +289,7 @@ Size: L
 Fixes: none
 
 ### S2.3 — Pay with wallet credits
-Status: blocked (awaiting decision SD4)
+Status: todo
 Repo: both
 Depends on: S2.2
 Branch: feature/s2-3-wallet-tender
@@ -308,7 +310,7 @@ Size: M
 Fixes: none
 
 ### S3.1 — Credit packages
-Status: blocked (awaiting decision CD6)
+Status: todo
 Repo: both
 Depends on: S2.3
 Branch: feature/s3-1-credit-packages
@@ -330,7 +332,7 @@ Size: M
 Fixes: none
 
 ### S3.2 — Gift vouchers
-Status: blocked (awaiting decision CD6)
+Status: todo
 Repo: both
 Depends on: S3.1, B1.6
 Branch: feature/s3-2-gift-vouchers
@@ -355,7 +357,7 @@ Size: L
 Fixes: none
 
 ### S3.3 — Membership products
-Status: blocked (awaiting decision SD3)
+Status: todo
 Repo: both
 Depends on: S3.2
 Branch: feature/s3-3-memberships
@@ -375,7 +377,7 @@ Size: M
 Fixes: none
 
 ### S4.1 — Fulfilment, pickup and order emails
-Status: blocked (awaiting decision SD2)
+Status: todo
 Repo: both
 Depends on: S3.3
 Branch: feature/s4-1-fulfilment
@@ -397,7 +399,7 @@ Size: M
 Fixes: none
 
 ### S4.2 — Orders dashboard
-Status: blocked (awaiting decision SD2)
+Status: todo
 Repo: both
 Depends on: S4.1
 Branch: feature/s4-2-dashboard
@@ -420,12 +422,12 @@ Size: L
 Fixes: none
 
 ### S4.3 — Reports and statistics
-Status: blocked (awaiting decision CD5)
+Status: todo
 Repo: both
 Depends on: S4.2, B3.3
 Branch: feature/s4-3-reports
 Goal: Operators get the sales, stored-value and accounting reports in §3.7, with CSV export.
-Context: §3.7 reports; ledger SQL aggregates (COMMERCE C1.3); booking statistics (B3.3); `react-native-chart-kit` is
+Context: §3.7 reports; ledger balances and `profit_and_loss` (COMMERCE C1.2); booking statistics (B3.3); `react-native-chart-kit` is
 already a client dependency.
 Steps:
   1. backend: report queries (`readReports`), each returning rows plus totals, in the operator's time zone; CSV
@@ -444,7 +446,7 @@ Size: L
 Fixes: none
 
 ### S4.4 — Verify the webshop
-Status: blocked (awaiting decision SD2)
+Status: todo
 Repo: both
 Depends on: S4.3
 Branch: feature/s4-4-verify

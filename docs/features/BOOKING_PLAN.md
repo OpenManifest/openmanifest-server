@@ -5,7 +5,7 @@ when they run and how many people fit, and customers book and pay online, with o
 being double-booked. Index and executor rules: [README.md](README.md). Builds on
 [COMMERCE_FOUNDATION.md](COMMERCE_FOUNDATION.md) (customers, sales orders, payments, coupons, ledger, platform fee).
 
-Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. **Status: draft.**
+Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. Owner decisions recorded 2026-10-11 (§2).
 
 ## 1. Requirements coverage
 
@@ -18,17 +18,19 @@ Drafted 2026-10-11 against backend `0774b40` and client `dcc46d1`. **Status: dra
 | Coupons usable for bookings | COMMERCE C2.7; applied in B1.6 |
 | Transaction fee | Every online booking payment goes through COMMERCE checkout, so the platform fee applies automatically |
 
-## 2. Open decisions
+## 2. Decisions
 
-| ID | Decision | Options | Recommendation | Blocks |
+All decided by the owner on 2026-10-11.
+
+| ID | Decision | Decided | Notes | Tasks |
 |---|---|---|---|---|
-| BD1 | Where guests can book | (a) **public booking pages in the web app** (shareable link, embeddable in the operator's own website); the native app requires login; (b) guest booking in the native app too | (a). Guests arrive from the operator's website or ads, not from an app install; it keeps captcha on the web, where Cloudflare Turnstile works natively (on native it needs a WebView wrapper and, for the common package, a third-party relay domain) | B1.5, B2.1 |
-| BD2 | Guest verification | (a) **Turnstile when a hold is created + email one-time code before payment**; (b) as (a) plus SMS one-time code (e.g. Twilio Verify: per-message cost, phone collection); (c) captcha only | (a). Email is needed anyway for confirmations and the manage link; the code proves it before money or capacity is committed for long. SMS can be added per operator later | B1.5 |
-| BD3 | Payment at booking | Per-service setting: `none`, `deposit_fixed`, `deposit_percent`, `full`. Default for new services: (a) **full**; (b) deposit 20 % | (a) full prepayment as the default, operators can lower it. Prepayment cuts no-shows, and every online payment is fee-bearing. `none` is allowed only for verified customers | B1.6 |
-| BD4 | Collecting the remaining balance | (a) **at the desk on the day** (recorded as a desk payment) plus an optional "pay balance online" link in the reminder email; (b) automatically charge a saved card before the session | (a). (b) needs off-session payments, saved payment methods and strong-customer-authentication fallbacks; worth doing only if operators ask | B1.7, B1.8 |
-| BD5 | Resource modelling (instructors, boats, vehicles) | (a) **individual resource units, optional per service**, with database-enforced non-overlap; (b) session capacity only, no resources; (c) full staff rostering integrated with members | (a). Capacity alone cannot stop four tandem services from each selling the same four instructors; units are what actually get double-booked. Rostering (c) is a product of its own | B1.2, B1.4 |
-| BD6 | Default cancellation policy and weather cancellations | Tiered policy per service (hours before start → refund %); operator cancellation (weather, aircraft): (a) **customer chooses reschedule or full refund**; (b) reschedule only | Defaults: ≥ 72 h full refund, 24–72 h deposit kept, < 24 h no refund; operator cancellation (a). With CD4 (a), the platform fee is refunded with the money | B1.7 |
-| BD7 | How bookings reach the manifest | (a) **check-in creates passengers and slots on a load** (skydiving: tandem passenger + instructor slot through the existing manifest code); (b) sessions pre-create trips (dive boats, tours, with P7.x destinations) | (a) now; (b) after Phase 7 decides D6 (recurring trips) | B3.2 |
+| BD1 | Where guests can book | **Public booking pages in the web app only** (shareable link, embeddable in the operator's website); the native app requires sign-in | Cloudflare Turnstile has no native SDK (a WebView is needed, and the common wrapper relays through a third-party domain); guests arrive from websites and ads anyway | B1.1, B1.5, B2.1, B2.5 |
+| BD2 | Guest verification | **Turnstile when a hold is created + 6-digit email code before payment** | SMS codes rejected for now (per-message cost, phone required); can be added per operator later | B1.5, B2.1 |
+| BD3 | Payment at booking | Per-service setting `none`, `deposit_fixed`, `deposit_percent`, `full`; **default `full`** | `none` only for verified customers | B1.6 |
+| BD4 | Collecting the remaining balance | **At the desk on the day** (a desk payment: 1 % offline fee per CD3) **plus an optional "pay balance online" link** in the reminder email | Auto-charging saved cards rejected (off-session payments and 3-D Secure fallbacks) | B1.7, B1.8 |
+| BD5 | Resource modelling | **Individual resource units, optional per service**, with database-enforced non-overlap across services | Capacity-only and full rostering rejected | B1.2–B1.4, B2.3 |
+| BD6 | Default cancellation policy | **Customer cancels ≥ 72 h before: full refund; 24–72 h: deposit kept; < 24 h: no refund. Operator cancels (weather, aircraft): customer chooses reschedule or full refund** | The platform fee is refunded with the money (CD4) | B1.7, B2.2, B2.4 |
+| BD7 | How bookings reach the manifest | **Check-in, then one action creates passengers and slots on a chosen load** (tandem: passenger + instructor slot) without charging wallets | Sessions that are trips (dive boats, tours) come after Phase 7 (D5/D6) | B3.2 |
 
 ## 3. Design
 
@@ -148,7 +150,7 @@ reserves the new session first, then releases the old one, in one transaction.
   total.
 - Ledger (COMMERCE §3.2): online payment → `customer_deposits`; check-in or session end recognises `service_revenue`
   and tax; balance paid at the desk → `cash` to `service_revenue`; forfeited deposit on late cancellation →
-  `cancellation_revenue`. Desk payments accrue the offline platform fee rate (0 % at launch, CD3).
+  `cancellation_revenue`. Desk payments go through COMMERCE `recordDeskPayment` and accrue the 1 % offline fee (CD3).
 - Cancellation refunds follow the service's policy at the time of booking (copied onto the booking), BD6 for operator
   cancellations.
 
@@ -200,7 +202,7 @@ P6.10 lock specs are the pattern); every public (`authenticate: false`) field ha
 unpublished services or other operators; times are tested in a non-UTC operator time zone with a DST change.
 
 ### B1.1 — Operator booking profile and the public API surface
-Status: blocked (awaiting decision BD1)
+Status: todo
 Repo: backend
 Depends on: C2.9
 Branch: feature/b1-1-public-profile
@@ -224,7 +226,7 @@ Size: M
 Fixes: none
 
 ### B1.2 — Services, resources and permissions
-Status: blocked (awaiting decision BD5)
+Status: todo
 Repo: backend
 Depends on: B1.1
 Branch: feature/b1-2-services
@@ -248,7 +250,7 @@ Size: M
 Fixes: none
 
 ### B1.3 — Availability rules and session generation
-Status: blocked (awaiting decision BD5)
+Status: todo
 Repo: backend
 Depends on: B1.2
 Branch: feature/b1-3-availability
@@ -273,7 +275,7 @@ Size: L
 Fixes: none
 
 ### B1.4 — Holds, capacity and resource allocation
-Status: blocked (awaiting decision BD5)
+Status: todo
 Repo: backend
 Depends on: B1.3
 Branch: feature/b1-4-holds
@@ -299,7 +301,7 @@ Size: L
 Fixes: none
 
 ### B1.5 — Guest customers: Turnstile, email codes, manage links
-Status: blocked (awaiting decisions BD1, BD2)
+Status: todo
 Repo: backend
 Depends on: B1.4
 Branch: feature/b1-5-guest-verification
@@ -323,7 +325,7 @@ Size: M
 Fixes: none
 
 ### B1.6 — Booking checkout and confirmation
-Status: blocked (awaiting decision BD3)
+Status: todo
 Repo: backend
 Depends on: B1.5
 Branch: feature/b1-6-booking-checkout
@@ -347,7 +349,7 @@ Size: L
 Fixes: none
 
 ### B1.7 — Cancellation, rescheduling, operator cancellations and desk payments
-Status: blocked (awaiting decisions BD4, BD6)
+Status: todo
 Repo: backend
 Depends on: B1.6
 Branch: feature/b1-7-cancellations
@@ -358,7 +360,7 @@ Steps:
   1. Policy snapshot on the booking; `cancelBooking` (manage token or user; staff variant overrides policy with a
      reason), `rescheduleBooking`, `cancelBookingSession(sessionId, reason)` (each booking: notice + reschedule/refund
      choice per BD6).
-  2. `recordBookingPayment(bookingId, amountCents, method)` for desk balances; revenue recognition at check-in or
+  2. Desk balances through COMMERCE `recordDeskPayment` (offline fee accrued); revenue recognition at check-in or
      session end (`RecogniseBookingRevenueJob` hourly).
   3. Optional "pay balance online" checkout for the remaining amount (BD4 a).
   4. Specs: each policy tier at the boundary hours (operator time zone), forfeited deposit posting, session
@@ -373,7 +375,7 @@ Size: L
 Fixes: none
 
 ### B1.8 — Booking emails and reminders
-Status: blocked (awaiting decision BD4)
+Status: todo
 Repo: backend
 Depends on: B1.7
 Branch: feature/b1-8-booking-emails
@@ -395,7 +397,7 @@ Size: M
 Fixes: none
 
 ### B2.1 — Public booking pages on the web
-Status: blocked (awaiting decisions BD1, BD2)
+Status: todo
 Repo: both
 Depends on: B1.8
 Branch: feature/b2-1-public-booking
@@ -422,7 +424,7 @@ Size: L
 Fixes: none
 
 ### B2.2 — Manage-booking page
-Status: blocked (awaiting decision BD6)
+Status: todo
 Repo: client
 Depends on: B2.1
 Branch: feature/b2-2-manage-booking
@@ -443,7 +445,7 @@ Size: M
 Fixes: none
 
 ### B2.3 — Staff configuration: services, resources and availability
-Status: blocked (awaiting decision BD5)
+Status: todo
 Repo: client
 Depends on: B2.2
 Branch: feature/b2-3-booking-config
@@ -465,7 +467,7 @@ Size: L
 Fixes: none
 
 ### B2.4 — Staff bookings calendar, manual bookings and check-in
-Status: blocked (awaiting decision BD6)
+Status: todo
 Repo: both
 Depends on: B2.3
 Branch: feature/b2-4-booking-desk
@@ -488,7 +490,7 @@ Size: L
 Fixes: none
 
 ### B2.5 — Booking in the app for signed-in users
-Status: blocked (awaiting decision BD1)
+Status: todo
 Repo: client
 Depends on: B2.4
 Branch: feature/b2-5-app-booking
@@ -508,7 +510,7 @@ Size: M
 Fixes: none
 
 ### B3.1 — Participant details and waiver forms
-Status: blocked (awaiting decision BD5)
+Status: todo
 Repo: both
 Depends on: B2.5
 Branch: feature/b3-1-participant-forms
@@ -531,7 +533,7 @@ Size: M
 Fixes: none
 
 ### B3.2 — Check-in to manifest
-Status: blocked (awaiting decision BD7)
+Status: todo
 Repo: both
 Depends on: B3.1
 Branch: feature/b3-2-checkin-manifest
@@ -555,7 +557,7 @@ Size: M
 Fixes: none
 
 ### B3.3 — Booking statistics
-Status: blocked (awaiting decision BD3)
+Status: todo
 Repo: both
 Depends on: B3.2
 Branch: feature/b3-3-booking-stats
@@ -577,7 +579,7 @@ Size: M
 Fixes: none
 
 ### B3.4 — Verify booking
-Status: blocked (awaiting decision BD1)
+Status: todo
 Repo: both
 Depends on: B3.3
 Branch: feature/b3-4-verify
