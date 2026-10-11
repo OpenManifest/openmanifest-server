@@ -12,6 +12,9 @@ Before doing any work:
    PRs, status updates in this file's plan, stop conditions).
 2. Then read the task you picked and every document it links.
 
+Feature plans (commerce foundation, booking, webshop) follow the same executor rules:
+[`docs/features/README.md`](docs/features/README.md).
+
 Reference: [`docs/reference/README.md`](docs/reference/README.md) (system reference),
 [`BUGS.md`](docs/reference/BUGS.md) (bug register for both repos), [`diagrams.md`](docs/reference/diagrams.md),
 [`GENERALISATION.md`](docs/reference/GENERALISATION.md), [`CLOUD_ENV.md`](docs/reference/CLOUD_ENV.md) (cloud VM
