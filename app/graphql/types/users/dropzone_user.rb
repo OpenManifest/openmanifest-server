@@ -104,7 +104,7 @@ module Types::Users
     end
 
     def permissions
-      preload(:permissions, :role_permissions).permission_names
+      preload(:permissions, :role_permissions, :dropzone).permission_names
     end
 
     private

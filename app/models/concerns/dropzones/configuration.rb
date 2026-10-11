@@ -49,6 +49,8 @@ module Dropzones
 
           # Allow manifesting without reserve in date?
           require_reserve_in_date: true,
+          # Members may manifest themselves; when false, only staff with the ...User... slot permissions manifest
+          allow_self_manifest: true,
         }
       end
     end

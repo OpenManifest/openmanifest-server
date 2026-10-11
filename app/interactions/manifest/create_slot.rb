@@ -146,7 +146,14 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   # The permission to manifest this member: createSlot for yourself, createUserSlot for somebody else (BUG-006)
   def required_permissions
-    return { createSlot: "You don't have permissions to manifest (missing createSlot)" } if manifesting_self?
+    if manifesting_self?
+      message = if access_context.subject.manifest_desk_only?(:createSlot)
+                  DropzoneUser::MANIFEST_DESK_MESSAGE
+                else
+                  "You don't have permissions to manifest (missing createSlot)"
+                end
+      return { createSlot: message }
+    end
     if group_includes_self && access_context&.can?(:createUserSlotWithSelf)
       return { createUserSlotWithSelf: "You don't have permissions to manifest a group (missing createUserSlotWithSelf)" }
     end

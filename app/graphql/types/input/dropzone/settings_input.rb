@@ -18,4 +18,6 @@ class Types::Input::Dropzone::SettingsInput < Types::Base::Input
                                         description: 'When this is enabled, users cannot manifest if they have no equipment'
   argument :allow_double_manifesting, Boolean, required: false,
                                                description: 'Allow users to double-manifest'
+  argument :allow_self_manifest, Boolean, required: false,
+                                          description: 'When this is disabled, only manifest staff can add, move or remove people on loads'
 end

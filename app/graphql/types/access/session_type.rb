@@ -9,7 +9,7 @@ class Types::Access::SessionType < Types::Base::Object
   end
 
   def permissions
-    current_dropzone_user.all_permissions.pluck(:name)
+    current_dropzone_user.permission_names
   end
 
   def current_user
