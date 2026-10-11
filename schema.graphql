@@ -1175,6 +1175,11 @@ input JoinFederationInput {
   A unique identifier for the client performing the mutation.
   """
   clientMutationId: String
+
+  """
+  The dropzone to log this for, defaults to the user's latest membership (a federation belongs to the user)
+  """
+  dropzone: ID
 }
 
 """

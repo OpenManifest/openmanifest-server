@@ -148,7 +148,6 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "returns a field error when the email belongs to another user" do
-      pending "BUG-094: updateUser raises RecordNotUnique for an email that is already taken"
       other = create(:user)
 
       json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, email: other.email }, as: user)
@@ -157,12 +156,37 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "lets staff with permission update another member's profile" do
-      pending "BUG-038: updateUser for another member raises ArgumentError (access_context.can? is called with dropzone_id:)"
-
       json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, name: "Staff Edit" }, as: owner_user)
 
       expect(json.dig(:data, :updateUser, :errors)).to be_nil
       expect(user.reload.name).to eq("Staff Edit")
+    end
+
+    it "keeps a member's email when it is sent unchanged" do
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, email: user.email, name: "Same Email" }, as: user)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_nil
+      expect(user.reload.name).to eq("Same Email")
+    end
+
+    it "does not let staff edit a user who is a member of several dropzones" do
+      create(:dropzone_user, dropzone: create(:dropzone), user: user)
+
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, name: "Staff Edit" }, as: owner_user)
+
+      expect(json.dig(:data, :updateUser, :errors).join).to match(/multiple dropzones/)
+      expect(user.reload.name).not_to eq("Staff Edit")
+    end
+
+    it "does not let staff of another dropzone edit a member" do
+      other_dropzone = create(:dropzone, state: "public")
+      outsider = create(:user)
+      create(:dropzone_user, dropzone: other_dropzone, user: outsider, user_role: other_dropzone.user_roles.find_by(name: "owner"))
+
+      json = client_operation("UpdateUser", variables: { dropzoneUser: fun_jumper.id, name: "Outsider" }, as: outsider)
+
+      expect(json.dig(:data, :updateUser, :errors)).to be_present
+      expect(user.reload.name).not_to eq("Outsider")
     end
 
     it "refuses a jumper editing someone else" do
@@ -179,17 +203,13 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
   end
 
   describe "UpdateDropzoneUser" do
-    it "saves the change but then raises while building the response (BUG-037)" do
-      expect do
-        client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
-      end.to raise_error(NameError, /model/)
+    it "saves the change" do
+      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
 
       expect(fun_jumper.reload.credits).to eq(123)
     end
 
     it "returns the updated member" do
-      pending "BUG-037: updateDropzoneUser raises NameError (undefined `model`) after saving"
-
       json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 123 } }, as: owner_user)
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to be_nil
@@ -201,6 +221,66 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
 
       expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
       expect(instructor.reload.credits).not_to eq(1_000_000)
+    end
+
+    context "with a manager who may grant roles" do
+      let(:manager) { create(:user) }
+      let!(:manager_member) do
+        create(:dropzone_user, dropzone: dropzone, user: manager, user_role: dropzone.user_roles.find_by(name: "manifest")).tap do |member|
+          member.grant!("updateUser")
+          member.grant!("grantPermission")
+        end
+      end
+
+      it "assigns a role below their own" do
+        role = dropzone.user_roles.find_by(name: "fun_jumper")
+        member = create(:dropzone_user, dropzone: dropzone, user_role: student_role)
+
+        json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: member.id, attributes: { userRoleId: role.id } }, as: manager)
+
+        expect(json.dig(:data, :updateDropzoneUser, :errors)).to be_nil
+        expect(member.reload.user_role).to eq(role)
+      end
+
+      it "cannot change the role of the owner" do
+        json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: owner.id, attributes: { userRoleId: student_role.id } }, as: manager)
+
+        expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permissions to assign this role"])
+        expect(owner.reload.user_role.name).to eq("owner")
+      end
+
+      it "cannot assign a role of another dropzone" do
+        foreign_role = create(:dropzone).user_roles.find_by(name: "student")
+
+        json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { userRoleId: foreign_role.id } }, as: manager)
+
+        expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["That role does not belong to this dropzone"])
+        expect(fun_jumper.reload.user_role).not_to eq(foreign_role)
+      end
+    end
+
+    it "refuses staff of another dropzone" do
+      other_dropzone = create(:dropzone, state: "public")
+      outsider = create(:user)
+      create(:dropzone_user, dropzone: other_dropzone, user: outsider, user_role: other_dropzone.user_roles.find_by(name: "owner"))
+
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 1 } }, as: outsider)
+
+      expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
+      expect(fun_jumper.reload.credits).not_to eq(1)
+    end
+
+    it "refuses a user who is not a member at all" do
+      json = client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { credits: 1 } }, as: create(:user))
+
+      expect(json.dig(:data, :updateDropzoneUser, :errors)).to eq(["You don't have permission to update this"])
+    end
+
+    it "does not touch the member's profile" do
+      client_operation("UpdateDropzoneUser", variables: { dropzoneUserId: fun_jumper.id, attributes: { name: "Renamed", credits: 10 } }, as: owner_user)
+
+      expect(fun_jumper.reload.credits).to eq(10)
+      expect(user.reload.name).not_to eq("Renamed")
     end
 
     it "refuses to assign a role at or above the actor's own" do
@@ -270,6 +350,20 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       expect(fun_jumper.reload).to be_discarded
     end
 
+    it "answers an unknown member with an error" do
+      json = client_operation("ArchiveUser", variables: { id: 0 }, as: owner_user)
+
+      expect(json.dig(:data, :deleteUser, :errors)).to eq(["Member not found"])
+    end
+
+    it "reports an error instead of raising when the member is already archived" do
+      fun_jumper.discard
+
+      json = client_operation("ArchiveUser", variables: { id: fun_jumper.id }, as: owner_user)
+
+      expect(json.dig(:data, :deleteUser, :errors)).to eq(["Failed to archive this user"])
+    end
+
     it "refuses a jumper archiving someone else" do
       json = client_operation("ArchiveUser", variables: { id: instructor.id }, as: user)
 
@@ -327,12 +421,36 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
 
     it "works for a user who has not joined any dropzone yet" do
-      pending "BUG-055: joinFederation takes the dropzone from the user's last membership and raises without one"
       newcomer = create(:user)
 
       json = client_operation("JoinFederation", variables: variables, as: newcomer)
 
       expect(json.dig(:data, :joinFederation, :errors)).to be_nil
+    end
+
+    def join_federation_at(dropzone_id, as:)
+      query = "mutation($attributes: UserFederationInput!, $dropzone: ID) { joinFederation(input: { attributes: $attributes, dropzone: $dropzone }) { errors userFederation { uid } } }"
+      post "/graphql",
+           params: { query: query, variables: { attributes: variables, dropzone: dropzone_id }.to_json },
+           headers: as.create_new_auth_token
+      response.parsed_body.with_indifferent_access
+    end
+
+    it "logs the join at the dropzone given" do
+      other_dropzone = create(:dropzone, state: "public")
+      create(:dropzone_user, dropzone: other_dropzone, user: user)
+
+      json = join_federation_at(other_dropzone.id, as: user)
+
+      expect(json.dig(:data, :joinFederation, :errors)).to be_nil
+      expect(Activity::Event.where(dropzone: other_dropzone, action: :assigned)).to exist
+    end
+
+    it "refuses a dropzone the user is not a member of" do
+      json = nil
+      expect { json = join_federation_at(create(:dropzone).id, as: user) }.not_to(change { UserFederation.count })
+
+      expect(json.dig(:data, :joinFederation, :errors)).to eq(["You are not a member of that dropzone"])
     end
 
     it "requires authentication" do
