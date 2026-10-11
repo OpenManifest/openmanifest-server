@@ -57,7 +57,7 @@ Recorded 2026-10-11; details and rejected options in each plan's §2.
 |---|---|---|
 | CD1 | Stripe Connect, direct charges on operator ("Standard") accounts, fee via `application_fee_amount`; no ActiveMerchant | Commerce |
 | CD2 | `double_entry` gem behind a `Ledger` wrapper (instead of Plutus), with a journal outbox | Commerce |
-| CD3 | Online fee 1.5 % + A$0.30 (min A$0.50); offline sales 1 %; operator absorbs the fee | Commerce |
+| CD3 | Fees are configurable plans assigned per operator (optionally until a date); free operators and fee-free deployments supported. Default plan: online 1.5 % + A$0.30 (min A$0.50), offline 1 %; operator absorbs the fee | Commerce |
 | CD4 | Fee refunded in proportion to refunds and lost disputes | Commerce |
 | CD5 | One tax rate per operator, tax-inclusive prices; stored value taxed on redemption (accountant to confirm) | Commerce |
 | CD6 | Credits and vouchers sold in-app via Apple Pay / Google Pay, with a switch to hide them on iOS | Commerce |

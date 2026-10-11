@@ -31,7 +31,7 @@ All decided by the owner on 2026-10-11. The options that were weighed are kept s
 |---|---|---|---|---|
 | CD1 | Payment provider and charge model | **Stripe Connect, direct charges** on operator accounts with the full Stripe Dashboard (the "Standard" equivalent: `controller.stripe_dashboard.type = full`, `fees.payer = account`, `losses.payments = stripe`); platform fee via `application_fee_amount` | The operator is the merchant of record and handles its own refunds and disputes; OpenManifest never holds customer money, so the credit wallet is the operator's liability. Rejected: destination charges (platform becomes merchant of record), other providers. **ActiveMerchant is not used**: it abstracts server-side card gateways, while this design needs Stripe-hosted payment UI confirmed on the client, Connect onboarding, application fees, webhooks and Apple Pay domain registration, none of which it covers (last release 1.137.0, 2024-08-02). A thin adapter over the official `stripe` gem (§3.3) keeps provider code in one place instead | C2.1–C2.11 |
 | CD2 | Ledger library | **`double_entry` 2.0.2** (Envato), behind a `Ledger` wrapper | The owner asked for Plutus or something better. `double_entry` is tested against Ruby 4.0 and Rails 8.1 (this stack), stores integer cents through the Money gem, keeps running balances with per-account locking and only allows transfers declared in configuration. Plutus 0.18 was the alternative: no release between 2020-09 and 2025-03, untested on Ruby 4.0, decimal amounts, no locking, an unscoped account lookup by name and editable entries. There is no default Rails ledger gem. `double_entry`'s limits and how §3.2 handles them are listed there | C1.2, C1.3 |
-| CD3 | Platform fee schedule and scope | **Online: 1.5 % + A$0.30, minimum A$0.50. Offline sales recorded in OpenManifest: 1 %, no fixed part. The operator absorbs the fee** (customers see the operator's price only) | Offline means cash/EFTPOS/bank-transfer top-ups at the desk, booking balances paid on arrival, desk shop sales. Complimentary credits and wallet spends carry no fee; complimentary top-ups are listed on the fee statement. Only AUD has a plan at launch; an operator in another currency cannot take payments until a plan exists for it | C2.2, C2.9, C2.10 |
+| CD3 | Platform fee schedule and scope | **Fees are configuration, not code.** Platform administrators manage fee plans and assign them per operator, optionally until a date; **zero-fee operation is fully supported** (a free plan, or no plan at all). Starting configuration: default AUD plan online 1.5 % + A$0.30 (minimum A$0.50), offline 1 %, no fixed part; plus a "Free" plan for operators the owner chooses. **The operator absorbs the fee** (customers see the operator's price only) | Offline means cash/EFTPOS/bank-transfer top-ups at the desk, booking balances paid on arrival, desk shop sales. Complimentary credits and wallet spends carry no fee; complimentary top-ups are listed on the fee statement. A deployment or currency with no plan charges no fee (a self-hosted OpenManifest needs no fee setup), and the platform revenue report lists operators without a plan so it is never an accident | C2.2, C2.9, C2.10 |
 | CD4 | Platform fee on refunds and disputes | **Refunded in proportion to every refund and on lost disputes**: the fee follows the money the operator keeps | Applies to offline fees too (a desk refund reduces the accrued fee) | C2.6 |
 | CD5 | Sales tax | **One tax rate per operator, prices tax-inclusive by default**, tax lines in the ledger and on receipts; credits and gift vouchers taxed when redeemed, not when sold | The owner's accountant confirms the stored-value treatment and whether OpenManifest's own fee carries GST; fee statements (C2.9) show a tax line either way | C1.1, C2.9 |
 | CD6 | Selling credits and gift vouchers in the iOS/Android apps | **Sell in-app with Apple Pay / Google Pay via Stripe**, under App Store guideline 3.1.3(e) (credits only spendable on real-world services at that operator), with a remote switch that hides top-ups in the iOS app if review rejects it | Ask App Review before the first submission that includes top-ups (owner check in C2.11) | C2.5, WEBSHOP S3.1, S3.2 |
@@ -179,15 +179,28 @@ the control total; it is not on the hot path of manifesting.
 
 ### 3.4 Platform fee (monetisation)
 
-- `platform_fee_plans` (`currency`, online `percent_bps`, `fixed_cents`, `min_cents`, optional `max_cents`, offline
-  `offline_percent_bps`, `carry_forward_cap_bps`); one default plan per currency, optional per-operator plan
-  (`dropzones.platform_fee_plan_id`), editable only by platform administrators (`users.moderation_role =
-  administrator`). Seeded default (CD3): AUD, 150 bps + 30 cents, minimum 50 cents, no maximum, offline 100 bps,
-  carry-forward cap 500 bps.
+- **Plans are data.** `platform_fee_plans` (`name`, `currency`, online `percent_bps`, `fixed_cents`, `min_cents`,
+  optional `max_cents`, offline `offline_percent_bps`, `carry_forward_cap_bps`, `is_default`, `archived_at`). Every
+  field may be 0. Managed only by platform administrators (`users.moderation_role = administrator`) from an admin
+  screen; plans in use are never edited in place: an edit creates a new plan version and moves the assignments, so
+  history keeps the terms that applied.
+- **Assignment per operator**: `platform_fee_assignments` (`dropzone_id`, `platform_fee_plan_id`, `starts_at`,
+  optional `ends_at`, `reason`, `created_by`). The plan in force for a payment is the operator's assignment covering
+  the payment time, else the default plan for the operator's currency, else **none, which means no fee**. That gives:
+  - **free operators**: assign the "Free" plan (all zeros), permanently or until a date ("free for the first 6 months"
+    reverts to the default automatically when `ends_at` passes);
+  - **special rates**: any other plan per operator;
+  - **a fee-free deployment**: no default plan at all (self-hosting, or the platform choosing to charge nothing).
+  Every assignment change writes an activity event and notifies the operator's `managePayments` holders.
+- Seeded: "Standard AUD" (default; 150 bps + 30 cents, minimum 50 cents, no maximum, offline 100 bps, carry-forward
+  cap 500 bps) and "Free" (all zeros), per CD3.
+- **A zero fee does nothing**: no `application_fee_amount` is sent to Stripe, no `platform_fees` row, no ledger
+  entry, nothing accrues offline, so carry-forward and invoices (below) have nothing to collect. The operator's
+  Payments screen shows the plan in force (e.g. "Free until 2027-04-30").
 - Online: `fee = max(min_cents, round_half_up(amount × percent_bps / 10000) + fixed_cents)`, capped at `max_cents` when
   set, never more than the amount, 0 for a 0 amount. Offline: `round_half_up(amount × offline_percent_bps / 10000)`.
   Computed when the payment is recorded and snapshotted on the payment and in `platform_fees` (`kind`: `online`,
-  `offline`; plan values copied, so a plan change never rewrites history).
+  `offline`; plan id and values copied, so a plan or assignment change never rewrites history).
 - **Online fees** are collected by Stripe as `application_fee_amount`. **Offline fees** accrue in
   `platform_fees_payable` (CD7) and are collected two ways:
   1. **Carry forward**: each new online payment's application fee is its own fee plus as much owed offline fee as fits
@@ -279,7 +292,8 @@ listed in the permissions screen: `managePayments` (Stripe onboarding, fee state
 ```mermaid
 erDiagram
   dropzones ||--o| payment_accounts : "connects"
-  dropzones }o--o| platform_fee_plans : "charged by"
+  dropzones ||--o{ platform_fee_assignments : "plan in force, optionally until a date"
+  platform_fee_assignments }o--|| platform_fee_plans : ""
   dropzones ||--o{ customers : ""
   customers }o--o| users : "linked when verified"
   customers ||--o{ sales_orders : ""
@@ -380,9 +394,8 @@ Steps:
      and withdrawal. Staff top-ups gain `paymentMethod` (`cash` default, `card_terminal`, `bank_transfer`,
      `complimentary`); complimentary posts to `promotional_expense` and carries no fee. client: payment-method select
      in the credits form.
-  2. Offline fee accrual on desk top-ups: the `platform_fees` table and calculator arrive in C2.2, so this task only
-     records the ledger entry with a fee computed from a constant (100 bps) in `Ledger::OfflineFee`; C2.2 replaces the
-     constant with the plan and backfills `platform_fees` rows from these entries.
+  2. No offline fee yet: plans arrive in C2.2, which accrues fees from then on (desk top-ups recorded before C2.2 are
+     not charged retroactively).
   3. Rake task `ledger:opening_balances` (idempotent, prints counts): per operator, wallets and reserved transactions
      against `opening_balance_equity`; also run from a data migration so every environment is consistent.
   4. `LedgerReconciliationJob` daily in `config/recurring.yml` (invariants in §3.2); mismatches create error-level
@@ -429,31 +442,40 @@ Risk / rollback: new tables and endpoint. Revert both.
 Size: L
 Fixes: none
 
-### C2.2 — Platform fee plans and calculation
+### C2.2 — Configurable fee plans, per-operator assignment, free operators
 Status: todo
-Repo: backend
+Repo: both
 Depends on: C2.1
 Branch: feature/c2-2-platform-fee
-Goal: Online and offline fees are computed from versioned plans, snapshotted, and recorded on the operator's and the
-platform's books.
+Goal: Platform administrators configure fee plans and assign them to operators (including free, permanently or until a
+date); online and offline fees are computed from the plan in force, snapshotted and recorded on both sets of books;
+zero fees and missing plans charge nothing.
 Context: §3.4, CD3.
 Steps:
-  1. `platform_fee_plans`, `dropzones.platform_fee_plan_id`, `platform_fees` (`kind` online/offline, owed and
-     collected amounts); seed the AUD default plan from CD3 (150 bps + 30 cents, min 50 cents, offline 100 bps,
-     carry-forward cap 500 bps).
-  2. `PlatformFees::Calculator` (online and offline formulas in §3.4); administrator-only mutations to create plans and
-     assign them; replace C1.3's constant and backfill `platform_fees` rows for offline fees already recorded.
-  3. Ledger entries for fees charged and refunded.
-  4. Specs: rounding table (amounts 0, 1, 33, 34, 100, 12 345, below the minimum, at a maximum when set), offline
-     formula, plan change does not alter existing fees, operator in a currency without a plan cannot take payments,
+  1. backend: `platform_fee_plans`, `platform_fee_assignments`, `platform_fees` (`kind` online/offline, owed and
+     collected amounts); seed "Standard AUD" (default) and "Free" per §3.4.
+  2. `PlatformFees::PlanResolver` (assignment covering the time → currency default → none) and
+     `PlatformFees::Calculator` (formulas in §3.4; 0 when no plan or a zero plan).
+  3. Administrator-only mutations: `createPlatformFeePlan`, `updatePlatformFeePlan` (new version when in use),
+     `archivePlatformFeePlan`, `setDefaultPlatformFeePlan`, `assignPlatformFeePlan(dropzoneId, planId, startsAt,
+     endsAt, reason)`, `endPlatformFeeAssignment`; queries `platformFeePlans`, `dropzone.platformFeePlan` (operator
+     `managePayments` can read the plan in force and its end date). Activity event and operator notification on
+     assignment changes.
+  4. Ledger entries for fees charged and refunded; offline accrual on desk top-ups and `recordDeskPayment`.
+  5. client: administrator screen (beside `app/screens/authenticated/overview/AdminOverview.tsx`): plans list and form,
+     operator search with the plan in force, assign/end with dates and reason; operator Payments screen shows the plan
+     in force.
+  6. Specs: rounding table (amounts 0, 1, 33, 34, 100, 12 345, below the minimum, at a maximum when set), offline
+     formula; resolver precedence and date boundaries (assignment ends → default applies); free plan and no plan →
+     no fee row, no ledger entry, no offline accrual; editing a plan in use versions it and leaves past fees unchanged;
      non-administrators rejected.
 Acceptance criteria (cloud VM):
-  - Backend rspec green.
+  - Backend rspec green; client checks, `check:graphql`, web export pass.
 Acceptance criteria (owner, real device):
   - none
 Out of scope: carry-forward and invoices (C2.10), statements (C2.9).
 Risk / rollback: additive.
-Size: M
+Size: L
 Fixes: none
 
 ### C2.3 — Customers, sales orders and the wallet top-up sellable
@@ -493,7 +515,8 @@ Goal: Checkout creates a PaymentIntent on the operator's account with the platfo
 webhooks; late and lost webhooks are handled.
 Context: §3.3, §3.5 (late payment rule).
 Steps:
-  1. `Payments::CreateIntent` (outside the checkout DB transaction, idempotency key `payment-<id>`); `createCheckout`
+  1. `Payments::CreateIntent` (outside the checkout DB transaction, idempotency key `payment-<id>`; the fee from the plan
+     in force, and no `application_fee_amount` at all when it is 0); `createCheckout`
      returns `clientSecret`, `stripeAccountId`, `publishableKey`; checkout fails clearly when the operator's account
      cannot take charges.
   2. Handlers: `payment_intent.succeeded` (mark paid, `on_paid!`, ledger, fee record, staff/customer notification),
@@ -621,9 +644,11 @@ Goal: Operators see what they paid and owe OpenManifest; platform administrators
 outstanding offline fees.
 Context: §3.4 reporting, CD5 (tax line).
 Steps:
-  1. Queries: `dropzone.platformFeeStatement(month)` (`managePayments`): online fees, offline fees accrued, collected,
-     owed, refunded, complimentary credits, tax line; CSV download. `platformRevenue(from, to)` (administrators): per
-     operator and currency: online and offline volume, fees, outstanding, refunds, disputes.
+  1. Queries: `dropzone.platformFeeStatement(month)` (`managePayments`): plan(s) in force that month, online fees,
+     offline fees accrued, collected, owed, refunded, complimentary credits, tax line; CSV download.
+     `platformRevenue(from, to)` (administrators): per operator and currency: plan in force, online and offline volume,
+     fees, outstanding, refunds, disputes; operators on a free plan and operators with no plan listed separately, with
+     the fees they would have paid under the default plan (so free arrangements have a visible cost).
   2. client: statement screen under Settings → Payments; administrator screen beside the existing admin overview
      (`app/screens/authenticated/overview/AdminOverview.tsx`).
   3. Specs: statement totals equal the platform-side ledger accounts for the month (operator time zone boundaries).
