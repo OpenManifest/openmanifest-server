@@ -2013,7 +2013,7 @@ Size: M
 Fixes: none
 
 ### P3.21 — Modernise app configuration and EAS build profiles
-Status: todo
+Status: done
 Repo: client
 Depends on: P3.20
 Branch: modernise/p3-21-eas-config
