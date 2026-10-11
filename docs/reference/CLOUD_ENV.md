@@ -130,9 +130,9 @@ export SECRET_KEY_BASE=$(openssl rand -hex 64)
 
 ```bash
 cd /home/user/openmanifest-server
-# Until P0.2 is merged the repo pins Ruby 3.1.3, which is not installed:
+export PATH=/opt/rbenv/shims:$PATH              # /usr/local/bin/ruby is 3.3.6; the rbenv shims honour .ruby-version
+# Since P0.2 .ruby-version (3.1.6) selects the Ruby automatically. On older branches that pin 3.1.3:
 #   export RBENV_VERSION=3.1.6 and run Bundler from a scratch copy whose Gemfile says ruby "3.1.6".
-# After P0.2: .ruby-version selects 3.1.6 automatically.
 bundle install --jobs 4                         # ~3 min the first time in a session; gems go to the rbenv Ruby, not vendor/
 RAILS_ENV=test bin/rails db:create db:schema:load
 bundle exec rspec                                # ~45 s

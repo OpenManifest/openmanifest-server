@@ -1,8 +1,7 @@
+# Disabled for automatic runs during modernisation (P0.1). Re-enabled in P8.6.
 name: Heroku Production Deployment
 on:
   workflow_dispatch:
-  push:
-    branches: []
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -1,7 +1,7 @@
+# Disabled for automatic runs during modernisation (P0.1). Re-enabled in P8.6.
 name: Heroku Staging Deployment
 on:
-  push:
-    branches: []
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
