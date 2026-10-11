@@ -9,7 +9,7 @@ mutation CreateRig(
   $canopySize: Int
   $repackExpiresAt: Int
   $userId: Int
-  $dropzoneId: Int
+  $operatorId: Int
 ) {
   createRig(
     input: {
@@ -19,7 +19,7 @@ mutation CreateRig(
         model: $model
         serial: $serial
         repackExpiresAt: $repackExpiresAt
-        dropzoneId: $dropzoneId
+        operatorId: $operatorId
         userId: $userId
         canopySize: $canopySize
         rigType: $rigType

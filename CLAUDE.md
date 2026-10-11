@@ -8,7 +8,7 @@ client repo's copy is only a pointer.
 
 Before doing any work:
 
-1. Read the plan's **Executor instructions** section first and follow it exactly (one task per session, branch naming,
+1. Read the plan's **Executor instructions** section first and follow it exactly (task loop, branch naming,
    PRs, status updates in this file's plan, stop conditions).
 2. Then read the task you picked and every document it links.
 

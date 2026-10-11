@@ -33,9 +33,9 @@ class DzSchema < GraphQL::Schema
   class << self
     def model_type_map
       @model_class_map ||= {
-        ::Dropzone => ::Types::DropzoneType,
-        ::DropzoneUser => ::Types::Users::DropzoneUser,
-        ::Extra => ::Types::Dropzone::Tickets::Addon,
+        ::Operator => ::Types::OperatorType,
+        ::Membership => ::Types::Users::Membership,
+        ::Extra => ::Types::Operator::Tickets::Addon,
         ::Federation => ::Types::Meta::Federation,
         ::FormTemplate => ::Types::Equipment::RigInspectionTemplate,
         ::License => ::Types::Meta::License,
@@ -44,17 +44,17 @@ class DzSchema < GraphQL::Schema
         ::Notification => ::Types::System::Notification,
         ::Order => ::Types::Payments::Order,
         ::Permission => ::Types::Access::PermissionType,
-        ::Plane => ::Types::Dropzone::Aircraft,
+        ::Plane => ::Types::Operator::Aircraft,
         ::Receipt => ::Types::Payments::Receipt,
         ::Rig => ::Types::Equipment::Rig,
         ::RigInspection => ::Types::Equipment::RigInspection,
         ::Slot => ::Types::Manifest::Slot,
-        ::TicketType => ::Types::Dropzone::Ticket,
+        ::TicketType => ::Types::Operator::Ticket,
         ::Transaction => ::Types::Payments::Transaction,
         ::User => ::Types::Users::User,
         ::UserRole => ::Types::Access::UserRole,
         ::UserFederation => ::Types::Users::UserFederation,
-        ::WeatherCondition => ::Types::Dropzone::Weather::Condition,
+        ::WeatherCondition => ::Types::Operator::Weather::Condition,
         nil => ::Types::Base::Object,
       }
     end

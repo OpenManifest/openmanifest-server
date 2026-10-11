@@ -13,11 +13,11 @@ module Mutations::Setup::RigInspections
       mutate(
         ::Setup::Equipment::CreateRigInspection,
         :rig_inspection,
-        dropzone: attributes[:dropzone],
+        operator: attributes[:operator],
         rig: attributes[:rig],
         definition: attributes[:definition],
         is_ok: attributes[:is_ok],
-        access_context: access_context_for(attributes[:dropzone]),
+        access_context: access_context_for(attributes[:operator]),
       )
     end
   end

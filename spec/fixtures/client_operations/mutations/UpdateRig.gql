@@ -11,7 +11,7 @@ mutation UpdateRig(
     $packingCard: String
     $repackExpiresAt: Int
     $userId: Int
-    $dropzoneId: Int
+    $operatorId: Int
   ) {
     updateRig(
       input: {
@@ -24,7 +24,7 @@ mutation UpdateRig(
           model: $model
           serial: $serial
           repackExpiresAt: $repackExpiresAt
-          dropzoneId: $dropzoneId
+          operatorId: $operatorId
           userId: $userId
           canopySize: $canopySize
           rigType: $rigType

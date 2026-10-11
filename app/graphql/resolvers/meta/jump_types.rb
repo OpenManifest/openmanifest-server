@@ -3,12 +3,12 @@
 class Resolvers::Meta::JumpTypes < Resolvers::Base
   description "Get all jump types"
   type [Types::Meta::JumpType], null: false
-  argument :dropzone_users, [Int], required: false,
-                                   prepare: -> (value, ctx) { DropzoneUser.where(id: value) }
+  argument :memberships, [Int], required: false,
+                                prepare: -> (value, ctx) { Membership.where(id: value) }
 
-  def resolve(dropzone_users: nil)
-    if dropzone_users
-      JumpType.allowed_for(dropzone_users)
+  def resolve(memberships: nil)
+    if memberships
+      JumpType.allowed_for(memberships)
     else
       JumpType.order(name: :asc)
     end

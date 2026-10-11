@@ -2,46 +2,46 @@
 
 require "open-uri"
 
-# Create a dropzone with this user
-dropzone = Dropzone.find_or_initialize_by(
+# Create an operator with this user
+operator = Operator.find_or_initialize_by(
   name: "Demo",
 )
 
-if dropzone.new_record?
+if operator.new_record?
   # Create a fake user
   owner = User.create_fake
-  dropzone.federation = Federation.first
-  dropzone.is_public = true
-  dropzone.primary_color = "#1D3557"
-  dropzone.secondary_color = "#E63946"
-  dropzone.is_credit_system_enabled = true
+  operator.federation = Federation.first
+  operator.is_public = true
+  operator.primary_color = "#1D3557"
+  operator.secondary_color = "#E63946"
+  operator.is_credit_system_enabled = true
 
-  dropzone.image = "data:image/jpg;base64,#{Base64.encode64(open('https://picsum.photos/800/600').read)}"
-  dropzone.save!
+  operator.image = "data:image/jpg;base64,#{Base64.encode64(open('https://picsum.photos/800/600').read)}"
+  operator.save!
 
   ## Make current user owner
-  DropzoneUser.create(
-    dropzone: dropzone,
+  Membership.create(
+    operator: operator,
     user: owner,
     user_role: UserRole.find_by(
-      dropzone_id: dropzone.id,
+      operator_id: operator.id,
       name: "owner"
     )
   )
 
-  dropzone.rig_inspection_template = FormTemplate.create(
+  operator.rig_inspection_template = FormTemplate.create(
     name: "Rig Inspection",
     definition: RigInspection.default_form.to_json,
     created_by: owner,
     updated_by: owner,
   )
-  dropzone.save!
-  dropzone.rig_inspection_template.update(dropzone: dropzone)
+  operator.save!
+  operator.rig_inspection_template.update(operator: operator)
 
   puts "-- Creating planes"
   # Create a plane
   Plane.create(
-    dropzone: dropzone,
+    operator: operator,
     name: "C182",
     min_slots: 2,
     max_slots: 4,
@@ -50,7 +50,7 @@ if dropzone.new_record?
 
   # Create a plane
   Plane.create(
-    dropzone: dropzone,
+    operator: operator,
     name: "Caravan",
     min_slots: 10,
     max_slots: 16,
@@ -60,7 +60,7 @@ if dropzone.new_record?
   puts "--Creating ticket type: Height"
   # Create default ticket types
   height = TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 45,
     name: "Height",
     altitude: 14000,
@@ -71,7 +71,7 @@ if dropzone.new_record?
 
   puts "--Creating ticket type: Hop n Pop"
   TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 25,
     name: "Hop n Pop",
     altitude: 4500,
@@ -82,7 +82,7 @@ if dropzone.new_record?
 
   puts "--Creating ticket type: Tandem"
   tandem = TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 199,
     name: "Tandem",
     altitude: 14000,
@@ -94,7 +94,7 @@ if dropzone.new_record?
   # Create default ticket addons
   puts "--Creating ticket addon: Outside camera"
   outside_cam = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 100,
     name: "Outside camera"
   )
@@ -102,7 +102,7 @@ if dropzone.new_record?
   # Create default ticket addons
   puts "--Creating ticket addon: Handycam"
   handy_cam = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 50,
     name: "Handycam"
   )
@@ -110,7 +110,7 @@ if dropzone.new_record?
   # Create default ticket addons
   puts "--Creating ticket addon: Coach"
   coach = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 90,
     name: "Coach"
   )
@@ -131,7 +131,7 @@ if dropzone.new_record?
   )
 end
 
-if dropzone.dropzone_users.length < 2
+if operator.memberships.length < 2
   # Create 5 instructors
   instructors = (1..5).to_a.map do |index|
     # Create default ticket addons
@@ -139,11 +139,11 @@ if dropzone.dropzone_users.length < 2
     u = User.create_fake
 
     puts "-- User [#{role}]: #{u.name}"
-    DropzoneUser.create(
+    Membership.create(
       user: u,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: role
       )
     )
@@ -154,11 +154,11 @@ if dropzone.dropzone_users.length < 2
     u = User.create_fake
 
     puts "-- User [pilot]: #{u.name}"
-    DropzoneUser.create(
+    Membership.create(
       user: u,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: "pilot"
       )
     )
@@ -166,11 +166,11 @@ if dropzone.dropzone_users.length < 2
 
   # Create 30 jumpers
   (1..30).to_a.each do |index|
-    dz_user = DropzoneUser.create(
+    dz_user = Membership.create(
       user: User.create_fake,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: "fun_jumper"
       )
     )
@@ -220,18 +220,18 @@ if dropzone.dropzone_users.length < 2
 
     RigInspection.create(
       rig: dz_user.user.reload.rigs.reload.first,
-      form_template: dropzone.rig_inspection_template,
+      form_template: operator.rig_inspection_template,
       inspected_by: instructors.first.user,
-      dropzone_user: dz_user,
+      membership: dz_user,
       is_ok: true,
-      definition: dropzone.rig_inspection_template.definition,
+      definition: operator.rig_inspection_template.definition,
     )
 
     # Add funds
     puts "-- Adding funds to account"
     (0..(Random.rand * 10).to_i).to_a.each do
       Transaction.create(
-        dropzone_user: dz_user,
+        membership: dz_user,
         status: :deposit,
         amount: ((Random.rand * 500) + 100).to_i,
       )

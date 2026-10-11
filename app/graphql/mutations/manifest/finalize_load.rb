@@ -17,7 +17,7 @@ module Mutations::Manifest
           :load,
           load: load_by_id(id),
           access_context: access_context_for(
-            load_by_id(id).dropzone
+            load_by_id(id).operator
           )
         )
       when "cancelled"
@@ -26,7 +26,7 @@ module Mutations::Manifest
           :load,
           load: load_by_id(id),
           access_context: access_context_for(
-            load_by_id(id).dropzone
+            load_by_id(id).operator
           )
         )
       else
@@ -37,7 +37,7 @@ module Mutations::Manifest
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
         "updateLoad",
-        dropzone_id: load_by_id(id).plane.dropzone_id
+        operator_id: load_by_id(id).plane.operator_id
       )
         true
       else

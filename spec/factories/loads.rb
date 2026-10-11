@@ -25,7 +25,7 @@ FactoryBot.define do
       slot_count { 0 }
     end
     plane
-    dropzone { plane.dropzone }
+    operator { plane.operator }
     is_open { true }
     state { "open" }
     max_slots { plane.max_slots }
@@ -35,13 +35,13 @@ FactoryBot.define do
 
     before(:create) do |instance, evaluator|
       instance.assign_attributes(
-        gca: instance.gca || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),
-        pilot: instance.pilot || instance.dropzone.dropzone_users.first || create(:dropzone_user, dropzone: instance.dropzone),
+        gca: instance.gca || instance.operator.memberships.first || create(:membership, operator: instance.operator),
+        pilot: instance.pilot || instance.operator.memberships.first || create(:membership, operator: instance.operator),
       )
     end
 
     after(:create) do |instance, evaluator|
-      create_list(:slot, evaluator.slot_count, load: instance, dropzone: instance.plane.dropzone)
+      create_list(:slot, evaluator.slot_count, load: instance, operator: instance.plane.operator)
       instance.reload
     end
   end

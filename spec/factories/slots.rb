@@ -17,26 +17,26 @@
 #  transaction_id    :bigint
 #  passenger_slot_id :bigint
 #  group_number      :integer          default(0), not null
-#  dropzone_user_id  :bigint
+#  membership_id  :bigint
 #
 FactoryBot.define do
   factory :slot do
     add_attribute(:load)
     transient do
-      dropzone { nil }
+      operator { nil }
     end
-    dropzone_user do
-      available_existing = dropzone.dropzone_users.where.not(
-        id: load.slots.pick(:dropzone_user_id)
+    membership do
+      available_existing = operator.memberships.where.not(
+        id: load.slots.pick(:membership_id)
       )
-      available_existing || create(:dropzone_user, dropzone: dropzone)
+      available_existing || create(:membership, operator: operator)
     end
     group_number { 0 }
-    ticket_type { create(:ticket_type, dropzone: load.plane.dropzone) }
+    ticket_type { create(:ticket_type, operator: load.plane.operator) }
     is_paid { false }
-    exit_weight { dropzone_user.user.exit_weight }
-    jump_type { dropzone_user.user.license.licensed_jump_types.sample.jump_type }
-    rig { dropzone_user.user.rigs.sample }
-    created_by { dropzone_user }
+    exit_weight { membership.user.exit_weight }
+    jump_type { membership.user.license.licensed_jump_types.sample.jump_type }
+    rig { membership.user.rigs.sample }
+    created_by { membership }
   end
 end

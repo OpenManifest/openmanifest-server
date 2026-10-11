@@ -1,0 +1,14 @@
+#import "../fragments/operators.fragments.gql"
+#import "../fragments/orders.fragments.gql"
+query OperatorTransactions($operatorId: ID!, $after: String) {
+  operator(id: $operatorId) {
+    ...operatorEssentials,
+    orders(after: $after) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}

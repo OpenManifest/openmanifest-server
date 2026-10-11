@@ -3,26 +3,26 @@
 require "rails_helper"
 
 module Mutations
-  RSpec.describe Resolvers::Dropzones, type: :request do
-    include_context "dropzone"
-    let!(:student) { create(:dropzone_user, credits: 100, dropzone: dropzone, user: create(:user), user_role: dropzone.user_roles.default_licensed) }
-    let!(:tandem_rig) { create(:rig, rig_type: :tandem, dropzone: dropzone) }
-    let!(:student_rig) { create(:rig, rig_type: :student, is_public: true, dropzone: dropzone) }
-    let!(:private_dropzone_rig) { create(:rig, rig_type: :sport, is_public: false, dropzone: dropzone) }
-    let!(:occupied_student_rig) { create(:rig, rig_type: :student, is_public: true, dropzone: dropzone) }
+  RSpec.describe Resolvers::Operators, type: :request do
+    include_context "operator"
+    let!(:student) { create(:membership, credits: 100, operator: operator, user: create(:user), user_role: operator.user_roles.default_licensed) }
+    let!(:tandem_rig) { create(:rig, rig_type: :tandem, operator: operator) }
+    let!(:student_rig) { create(:rig, rig_type: :student, is_public: true, operator: operator) }
+    let!(:private_operator_rig) { create(:rig, rig_type: :sport, is_public: false, operator: operator) }
+    let!(:occupied_student_rig) { create(:rig, rig_type: :student, is_public: true, operator: operator) }
 
     let!(:load) { create(:load, plane: plane, created_at: 30.minutes.ago) }
-    let!(:slot) { create(:slot, load: load, dropzone: dropzone, dropzone_user: student, rig: occupied_student_rig, jump_type: JumpType.find_by(slug: :fs)) }
+    let!(:slot) { create(:slot, load: load, operator: operator, membership: student, rig: occupied_student_rig, jump_type: JumpType.find_by(slug: :fs)) }
 
     let!(:uninspected_rig) { create(:rig, rig_type: :sport, user: user) }
     let!(:inspected_rig) { create(:rig, rig_type: :sport, user: user) }
-    let!(:rig_inspection) { create(:rig_inspection, is_ok: true, rig: inspected_rig, dropzone_user: fun_jumper, inspected_by: instructor) }
+    let!(:rig_inspection) { create(:rig_inspection, is_ok: true, rig: inspected_rig, membership: fun_jumper, inspected_by: instructor) }
 
     describe "Can select own rig or student rigs" do
       subject do
         execute_query(
           is_tandem: false,
-          dropzone_user: fun_jumper.id,
+          membership: fun_jumper.id,
           load_id: load.id
         )
       end
@@ -42,7 +42,7 @@ module Mutations
         subject do
           execute_query(
             is_tandem: false,
-            dropzone_user: fun_jumper.reload.id,
+            membership: fun_jumper.reload.id,
             load_id: load.id
           )
         end
@@ -62,7 +62,7 @@ module Mutations
         subject do
           execute_query(
             is_tandem: false,
-            dropzone_user: fun_jumper.reload.id,
+            membership: fun_jumper.reload.id,
             load_id: next_load.id
           )
         end
@@ -81,7 +81,7 @@ module Mutations
       subject do
         execute_query(
           is_tandem: true,
-          dropzone_user: fun_jumper.id,
+          membership: fun_jumper.id,
           load_id: load.id
         )
       end
@@ -95,10 +95,10 @@ module Mutations
       end
     end
 
-    create_query(:is_tandem, :load_id, :dropzone_user) do
+    create_query(:is_tandem, :load_id, :membership) do
       <<~GQL
         query {
-          availableRigs(isTandem: #{is_tandem}, loadId: #{load_id}, dropzoneUser: #{dropzone_user}) {
+          availableRigs(isTandem: #{is_tandem}, loadId: #{load_id}, membership: #{membership}) {
             id
           }
         }

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class Setup::Equipment::CreateRigInspection < ApplicationInteraction
-  allow actAsRigInspector: "You dont have permission to inspect rigs at this dropzone"
+  allow actAsRigInspector: "You dont have permission to inspect rigs at this operator"
   record :rig
-  record :dropzone
+  record :operator
   string :definition
   boolean :is_ok
 
@@ -17,7 +17,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
       access_level: :user,
       resource: @inspection,
       action: :created,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} inspected #{rig.user.name}'s #{rig.make} #{rig.model} and marked it as #{is_ok ? 'OK' : 'NOT OK'}"
     )
@@ -32,7 +32,7 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
       access_level: :admin,
       action: :created,
       resource: rig,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} failed to inspect #{rig&.user&.name}'s #{rig&.make} #{rig&.model}. It was not marked as #{is_ok ? 'OK' : 'NOT OK'}"
     )
@@ -41,11 +41,11 @@ class Setup::Equipment::CreateRigInspection < ApplicationInteraction
   def build_inspection
     @inspection = RigInspection.find_or_initialize_by(
       rig: rig,
-      dropzone_user: dropzone.dropzone_users.find_by(
+      membership: operator.memberships.find_by(
         user_id: rig.user.id
       )
     )
-    @inspection.form_template = dropzone.rig_inspection_template
+    @inspection.form_template = operator.rig_inspection_template
     @inspection.assign_attributes(
       definition: definition,
       is_ok: is_ok,

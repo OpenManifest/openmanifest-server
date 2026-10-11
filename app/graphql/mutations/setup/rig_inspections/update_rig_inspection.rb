@@ -11,7 +11,7 @@ module Mutations::Setup::RigInspections
 
     def resolve(attributes:, id: nil)
       model = RigInspection.find(id)
-      # An inspection keeps its member, rig and dropzone; only the result and the form answers change
+      # An inspection keeps its member, rig and operator; only the result and the form answers change
       model.assign_attributes(attributes.to_h.slice(:definition, :is_ok))
 
       model.save!
@@ -44,13 +44,13 @@ module Mutations::Setup::RigInspections
     end
 
     def authorized?(attributes: nil, id: nil)
-      # The inspection's own dropzone, not the one the client says (BUG-009)
+      # The inspection's own operator, not the one the client says (BUG-009)
       inspection = RigInspection.find_by(id: id)
       return [false, { errors: ["Rig inspection not found"] }] unless inspection
 
       if context[:current_resource].can?(
         "actAsRigInspector",
-        dropzone_id: inspection.dropzone_user.dropzone_id
+        operator_id: inspection.membership.operator_id
       )
         true
       else

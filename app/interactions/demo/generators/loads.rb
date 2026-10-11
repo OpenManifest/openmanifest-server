@@ -8,10 +8,10 @@ class Demo::Generators::Loads < ApplicationInteraction
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: access_context.dropzone,
+      resource: access_context.operator,
       action: :created,
       access_level: :system,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "[Demo] Created #{@load_count} loads with #{@slot_count} slots spread over #{days_with_loads} days"
     )
@@ -46,15 +46,15 @@ class Demo::Generators::Loads < ApplicationInteraction
   def create_past_load(date)
     @load_count ||= 0
     @slot_count ||= 0
-    return if access_context.dropzone.loads.exists?(created_at: date)
+    return if access_context.operator.loads.exists?(created_at: date)
     # Create a caravan load
     plane_load = compose(
       ::Manifest::CreateLoad,
       access_context: access_context,
       created_at: date,
-      pilot: access_context.dropzone.dropzone_users.with_acting_permission(:actAsPilot).shuffle.first,
-      gca: access_context.dropzone.dropzone_users.with_acting_permission(:actAsGCA).shuffle.first,
-      plane: access_context.dropzone.planes.to_a.sample
+      pilot: access_context.operator.memberships.with_acting_permission(:actAsPilot).shuffle.first,
+      gca: access_context.operator.memberships.with_acting_permission(:actAsGCA).shuffle.first,
+      plane: access_context.operator.planes.to_a.sample
     )
     @load_count += 1
 
@@ -65,11 +65,11 @@ class Demo::Generators::Loads < ApplicationInteraction
       taken_slots += group_size
       break if taken_slots > plane_load.reload.available_slots
       break if group_size > plane_load.reload.available_slots
-      dz_users = access_context.dropzone.dropzone_users.where.not(
-        id: access_context.dropzone.dropzone_users.manifested_on(plane_load)
+      dz_users = access_context.operator.memberships.where.not(
+        id: access_context.operator.memberships.manifested_on(plane_load)
       ).take(group_size)
       jump_type = JumpType.allowed_for(dz_users).sample
-      ticket_type = access_context.dropzone.ticket_types.find_by(name: "Height")
+      ticket_type = access_context.operator.ticket_types.find_by(name: "Height")
       next if dz_users.empty?
       group_leader = dz_users.first
       group_leader.grant! :createUserSlotWithSelf
@@ -81,7 +81,7 @@ class Demo::Generators::Loads < ApplicationInteraction
         load: plane_load,
         created_at: date,
         users: dz_users.map do |u|
-          { dropzone_user: u, exit_weight: u.exit_weight, rig: u.rigs.sample }
+          { membership: u, exit_weight: u.exit_weight, rig: u.rigs.sample }
         end
       )
       @slot_count += group_size

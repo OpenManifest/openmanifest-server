@@ -1,5 +1,5 @@
-query Notifications($dropzoneId: ID!) {
-    dropzone(id: $dropzoneId) {
+query Notifications($operatorId: ID!) {
+    operator(id: $operatorId) {
       id
 
       currentUser {
@@ -37,7 +37,7 @@ query Notifications($dropzoneId: ID!) {
 
                 ... on Rig {
                   ...rigEssentials
-                  rigInspections(dropzoneId: $dropzoneId) {
+                  rigInspections(operatorId: $operatorId) {
                     id
                     createdAt
                     inspectedBy {

@@ -4,7 +4,7 @@ module Mutations::Setup::Aircrafts
   class DeletePlane < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :plane, Types::Dropzone::Aircraft, null: true
+    field :plane, Types::Operator::Aircraft, null: true
 
     argument :id, Int, required: true
 
@@ -53,7 +53,7 @@ module Mutations::Setup::Aircrafts
 
       if context[:current_resource].can?(
         :deletePlane,
-        dropzone_id: plane.dropzone_id
+        operator_id: plane.operator_id
       )
         true
       else

@@ -14,7 +14,7 @@
 #  user_id           :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  dropzone_id       :bigint
+#  operator_id       :bigint
 #  canopy_size       :integer
 #  is_public         :boolean          default(FALSE)
 #  rig_type          :integer
@@ -28,7 +28,7 @@ class Rig < ApplicationRecord
   has_one_base64_attached :packing_card
 
   belongs_to :user, optional: true
-  belongs_to :dropzone, optional: true
+  belongs_to :operator, optional: true
 
   has_many :packs
   has_many :users, as: :packers, through: :packs
@@ -37,9 +37,9 @@ class Rig < ApplicationRecord
 
   enum :rig_type, { :student => 0, :sport => 1, :tandem => 2 }
 
-  scope :with_inspection_at, -> (dz) { includes(rig_inspections: :inspected_by).where(rig_inspections: { dropzone_users: { dropzone_id: dz } }) }
+  scope :with_inspection_at, -> (dz) { includes(rig_inspections: :inspected_by).where(rig_inspections: { memberships: { operator_id: dz } }) }
   scope :inspected_at, -> (dz) { with_inspection_at(dz).where(rig_inspections: { is_ok: true }) }
-  # Rigs without an ok inspection at the dropzone, including rigs that were never inspected (the join in `inspected_at`
+  # Rigs without an ok inspection at the operator, including rigs that were never inspected (the join in `inspected_at`
   # leaves those out, and `where.not` on it cannot find them either)
   scope :not_inspected_at, -> (dz) { where.not(id: inspected_at(dz).pluck(:id)) }
   scope :student, -> { where(rig_type: :student) }
@@ -59,17 +59,17 @@ class Rig < ApplicationRecord
     )
   }
 
-  scope :available_for, -> (dropzone_user) {
+  scope :available_for, -> (membership) {
     # All rentable student rigs that are not on a load
     # currently in flight, boarding, or manifesting
     student.rentable.where.not(id: occupied).or(
       # All rigs belonging to the user that have been inspected
-      # at this dropzone
-      Rig.where(id: dropzone_user.rigs.inspected_at(dropzone_user.dropzone))
+      # at this operator
+      Rig.where(id: membership.rigs.inspected_at(membership.operator))
     ).where(
       # Ensure all results either belong to the user or are public
       # and show the users rigs first
-      dropzone_id: [nil, dropzone_user.dropzone.id]
+      operator_id: [nil, membership.operator.id]
     ).order(is_public: :asc)
   }
 
@@ -81,7 +81,7 @@ class Rig < ApplicationRecord
     assign_attributes(rig_type: :sport) if rig_type.blank?
   end
 
-  def inspected_at?(dropzone)
-    rig_inspections.joins(:inspected_by).exists?(inspected_by: { dropzone: dropzone })
+  def inspected_at?(operator)
+    rig_inspections.joins(:inspected_by).exists?(inspected_by: { operator: operator })
   end
 end

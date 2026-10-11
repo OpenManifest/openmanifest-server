@@ -12,7 +12,7 @@ mutation CreateTicketAddon($attributes: ExtraInput!) {
     extra {
       ...ticketTypeAddonDetails
 
-      dropzone {
+      operator {
         id
         extras {
           ...ticketTypeAddonDetails

@@ -9,11 +9,11 @@ require "rails_helper"
 # Both requests are held back right after their own check has passed until the other has passed its check too (or half a
 # second has gone by, which is what happens when the other request waits for a lock): without locking both pass.
 RSpec.describe "Concurrent manifesting", :concurrent do
-  let(:dropzone) { create(:dropzone, credits: 50) }
-  let(:plane) { create(:plane, dropzone: dropzone, max_slots: 14) }
-  let(:ticket_type) { create(:ticket_type, dropzone: dropzone, cost: 100) }
+  let(:operator) { create(:operator, credits: 50) }
+  let(:plane) { create(:plane, operator: operator, max_slots: 14) }
+  let(:ticket_type) { create(:ticket_type, operator: operator, cost: 100) }
   let(:staff) do
-    create(:dropzone_user, dropzone: dropzone).tap do |staff|
+    create(:membership, operator: operator).tap do |staff|
       staff.grant! :createSlot
       staff.grant! :createUserSlot
       staff.grant! :updateUserSlot
@@ -29,7 +29,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
   end
 
   def member(credits: 500)
-    create(:dropzone_user, dropzone: dropzone, credits: credits)
+    create(:membership, operator: operator, credits: credits)
   end
 
   def create_load(max_slots: 14)
@@ -51,15 +51,15 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     end
   end
 
-  # Manifests `dropzone_user` on `load` the way a staff member would, with records read inside the thread
-  def manifest(load, dropzone_user)
+  # Manifests `membership` on `load` the way a staff member would, with records read inside the thread
+  def manifest(load, membership)
     Thread.new do
       ActiveRecord::Base.connection_pool.with_connection do
-        member = DropzoneUser.find(dropzone_user.id)
+        member = Membership.find(membership.id)
         Manifest::CreateSlot.run(
           access_context: access_context,
           load: Load.find(load.id),
-          dropzone_user: member,
+          membership: member,
           ticket_type: TicketType.find(ticket_type.id),
           jump_type: JumpType.allowed_for([member]).first,
           exit_weight: 80
@@ -69,19 +69,19 @@ RSpec.describe "Concurrent manifesting", :concurrent do
   end
 
   def access_context
-    ApplicationInteraction::AccessContext.new(DropzoneUser.find(staff.id))
+    ApplicationInteraction::AccessContext.new(Membership.find(staff.id))
   end
 
-  def manifest_group(load, dropzone_users)
+  def manifest_group(load, memberships)
     Thread.new do
       ActiveRecord::Base.connection_pool.with_connection do
-        members = dropzone_users.map { |dropzone_user| DropzoneUser.find(dropzone_user.id) }
+        members = memberships.map { |membership| Membership.find(membership.id) }
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,
           load: Load.find(load.id),
           ticket_type: TicketType.find(ticket_type.id),
           jump_type: JumpType.allowed_for(members).first,
-          users: members.map { |dropzone_user| { dropzone_user: dropzone_user, exit_weight: 80.0 } }
+          users: members.map { |membership| { membership: membership, exit_weight: 80.0 } }
         )
       end
     end.value
@@ -117,7 +117,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     first_load = create_load
     second_load = create_load
     jumper = member(credits: 100)
-    dropzone.update!(settings: dropzone.settings.merge("allow_double_manifesting" => true))
+    operator.update!(settings: operator.settings.merge("allow_double_manifesting" => true))
     staff
     rendezvous_after(:affordable?)
 
@@ -125,7 +125,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
 
     expect(outcomes.count(&:valid?)).to eq(1)
     expect(jumper.reload.credits).to eq(0)
-    expect(Slot.where(dropzone_user: jumper).count).to eq(1)
+    expect(Slot.where(membership: jumper).count).to eq(1)
   end
 
   it "puts one person on a load once" do
@@ -136,7 +136,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
 
     concurrently(-> { manifest(plane_load, jumper) }, -> { manifest(plane_load, jumper) })
 
-    expect(Slot.where(load: plane_load, dropzone_user: jumper).count).to eq(1)
+    expect(Slot.where(load: plane_load, membership: jumper).count).to eq(1)
     expect(plane_load.reload.slots_count).to eq(1)
   end
 
@@ -158,7 +158,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     target_load = create_load(max_slots: 1)
     members = Array.new(2) { member }
     staff
-    slots = members.map { |dropzone_user| manifest(source_load, dropzone_user) }.map(&:result)
+    slots = members.map { |membership| manifest(source_load, membership) }.map(&:result)
     rendezvous_after(:open_with_room, Manifest::MoveSlot)
 
     outcomes = concurrently(-> { move(slots[0], target_load) }, -> { move(slots[1], target_load) })

@@ -9,7 +9,7 @@ mutation CreateAircraft(
     plane {
       ...planeEssentials
 
-      dropzone {
+      operator {
         id
         planes {
           ...planeEssentials
