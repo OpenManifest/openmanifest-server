@@ -1,5 +1,5 @@
-query TicketTypeExtras($dropzoneId: ID!) {
-  extras(dropzone: $dropzoneId) {
+query TicketTypeExtras($operatorId: ID!) {
+  extras(operator: $operatorId) {
     ...ticketTypeExtraDetailed
   }
 }

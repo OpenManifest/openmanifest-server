@@ -6,9 +6,9 @@ class Activity::CreateEvent < ApplicationInteraction
   string :message
   string :details, default: ""
   symbol :access_level, default: :user
-  # Events belong to a dropzone, nobody can see one without it: what happens outside any dropzone (a user joining a
-  # federation before joining a dropzone) is not logged
-  record :dropzone, default: nil
+  # Events belong to an operator, nobody can see one without it: what happens outside any operator (a user joining a
+  # federation before joining an operator) is not logged
+  record :operator, default: nil
   object :resource, class: ApplicationRecord, default: nil
   date_time :created_at, default: -> { DateTime.now }
 
@@ -28,9 +28,9 @@ class Activity::CreateEvent < ApplicationInteraction
       message: message,
       details: details,
       created_at: created_at,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
     )
-    return @event unless access_context.subject.is_a?(DropzoneUser)
+    return @event unless access_context.subject.is_a?(Membership)
     @event.assign_attributes(
       created_by: access_context.subject
     )
@@ -38,7 +38,7 @@ class Activity::CreateEvent < ApplicationInteraction
   end
 
   def save_event
-    return if access_context.dropzone.blank?
+    return if access_context.operator.blank?
 
     errors.merge!(@event.errors) unless build_event.save
   end

@@ -208,7 +208,7 @@ Status legend: **complete** = works end-to-end in pass-1 testing or reading; **p
 |---|---|---|---|---|
 | Email sign-up / login / logout | `screens/unauthenticated/*`, `forms/sign_up/*`, `components/drawer/Drawer.tsx` | `userRegister`, `userLogin` | partial | Login works on web (pass-1 run). Logout breaks all later requests in the same app session (`BUG-063`) |
 | Email confirmation, password recovery | `screens/wizards/confirm_user`, `recover_password`, `change_password` | `userConfirmRegistrationWithToken`, `userSendPasswordResetWithToken`, `userUpdatePasswordWithToken` | partial (unverified: needs SMTP) | |
-| Facebook / Apple login | `login/form/FacebookButton*.tsx`, `AppleButton*.tsx` | `loginWithFacebook`, `loginWithApple` | broken/unverifiable | `expo-facebook` is not part of Expo SDK 47 (absent from its `bundledNativeModules.json`); Apple error path raises the wrong exception (`BUG-054`) |
+| Apple login (Facebook login removed in P3.3) | `login/form/AppleButton*.tsx` | `loginWithApple` (`loginWithFacebook` is deprecated server-side, removed in P8.7) | unverifiable | Apple error path raises the wrong exception (`BUG-054`) |
 | Dropzone selection & switching | `screens/limbo/dropzone_select/*`, drawer | `dropzones`, `dropzone` | complete | pass-1 web run |
 | Dropzone setup wizard | `screens/wizards/dropzone_wizard/*` | `createDropzone`, `updateDropzone`, `geocode` | partial | Banner upload on update raises (`BUG-041`); wizard layout overflows on 360 dp (`BUG-070`) |
 | Dropzone settings | `configuration/dropzone_settings`, `settings_menu` | `updateDropzone(settings)` | partial | Default settings block manifesting for users without membership dates (`BUG-033`) |

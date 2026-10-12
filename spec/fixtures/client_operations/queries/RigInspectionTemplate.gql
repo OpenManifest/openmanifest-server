@@ -1,5 +1,5 @@
-query RigInspectionTemplate($dropzoneId: ID!) {
-  dropzone(id: $dropzoneId) {
+query RigInspectionTemplate($operatorId: ID!) {
+  operator(id: $operatorId) {
     id
     rigInspectionTemplate {
       id

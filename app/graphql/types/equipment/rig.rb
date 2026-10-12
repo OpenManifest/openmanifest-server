@@ -15,7 +15,7 @@ module Types::Equipment
     field :maintained_at, Int, null: true
     field :is_public, Boolean, null: false
     timestamp_fields
-    async_field :dropzone, Types::DropzoneType, null: true
+    async_field :operator, Types::OperatorType, null: true
     async_field :owner, Types::Users::User, null: true, method: :user
     field :packing_card, String, null: true
     def packing_card
@@ -24,12 +24,13 @@ module Types::Equipment
     end
 
     field :rig_inspections, Types::Equipment::RigInspection, null: true do
-      argument :dropzone_id, GraphQL::Types::ID, required: true
+      argument :operator_id, GraphQL::Types::ID, required: true
     end
-    def rig_inspections(dropzone_id: nil)
-      dropzone = Dropzone.find_by(id: dropzone_id)
-      return nil unless dropzone
-      rig.rig_inspections.at_dropzone(dropzone)
+    def rig_inspections(operator_id: nil)
+      operator = Operator.find_by(id: operator_id)
+      return nil unless operator
+      # The field is one inspection: the latest at this operator
+      object.rig_inspections.at_operator(operator).order(created_at: :desc).first
     end
   end
 end
