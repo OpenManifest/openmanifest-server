@@ -4,7 +4,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
   record :slot
 
   steps :authorize_action,
-        :remove_passenger_slot,
+        :remove_guest_slot,
         :refund_transactions,
         :cancel_order,
         :broadcast_subscription,
@@ -18,12 +18,12 @@ class Manifest::DeleteSlot < ApplicationInteraction
       resource: slot,
       action: :deleted,
       access_level: :user,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
                  "#{access_context.user.name} took themselves off load ##{slot.load.load_number}"
                else
-                 "#{access_context.user.name} removed #{slot.dropzone_user.user.name} from load ##{slot.load.load_number}"
+                 "#{access_context.user.name} removed #{slot.membership.user.name} from load ##{slot.load.load_number}"
                end
 
     )
@@ -36,7 +36,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
       access_context: access_context,
       resource: slot,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
                  "#{access_context.user.name} failed to take themselves off load ##{slot.load.load_number}"
@@ -47,11 +47,11 @@ class Manifest::DeleteSlot < ApplicationInteraction
     )
   end
 
-  def remove_passenger_slot
-    slot.passenger_slot.destroy if slot.has_passenger?
+  def remove_guest_slot
+    slot.guest_slot.destroy if slot.has_guest?
   end
 
-  # A slot without an order (a tandem passenger's, or one that was never paid) has nothing to refund
+  # A slot without an order (a tandem guest's, or one that was never paid) has nothing to refund
   def refund_transactions
     return unless slot.order
 
@@ -77,14 +77,14 @@ class Manifest::DeleteSlot < ApplicationInteraction
   end
 
   def is_self?
-    access_context.subject.id == slot.dropzone_user_id
+    access_context.subject.id == slot.membership_id
   end
 
   def authorize_action
-    if slot.load.has_landed?
-      errors.add(:base, "You can't take slots off a load that has landed")
+    if slot.load.has_completed?
+      errors.add(:base, "You can't take slots off a load that has completed")
     elsif is_self? && !access_context.can?(:deleteSlot)
-      errors.add(:base, "You cant take yourself off the load")
+      errors.add(:base, access_context.subject.manifest_desk_only?(:deleteSlot) ? Membership::MANIFEST_DESK_MESSAGE : "You cant take yourself off the load")
     elsif !is_self? && !access_context.can?(:deleteUserSlot)
       errors.add(:base, "You cant take somebody else off the load")
     end

@@ -9,21 +9,24 @@ module Mutations::Manifest
     argument :attributes, Types::Input::LoadInput, required: true
 
     def resolve(attributes:)
-      dropzone = attributes[:plane].dropzone
+      operator = (attributes[:vehicle] || attributes[:vehicles]&.first&.dig(:vehicle))&.operator
+      return { load: nil, field_errors: nil, errors: ["A load needs a vehicle"] } unless operator
 
-      Time.use_zone(dropzone.time_zone) do
+      Time.use_zone(operator.time_zone) do
         mutate(
           ::Manifest::CreateLoad,
           :load,
-          access_context: access_context_for(dropzone),
+          access_context: access_context_for(operator),
           **attributes.to_h.slice(
             :name,
-            :plane,
+            :vehicle,
+            :vehicles,
             :pilot,
             :gca,
             :load_master,
             :state,
-            :max_slots
+            :max_slots,
+            :destination_ids
           )
         )
       end
@@ -31,7 +34,7 @@ module Mutations::Manifest
   end
 
   def authorized?(attributes: nil)
-    current_user = attributes[:plane].dropzone.dropzone_users.find_by(user: context[:current_resource])
+    current_user = (attributes[:vehicle] || attributes[:vehicles]&.first&.dig(:vehicle)).operator.memberships.find_by(user: context[:current_resource])
     current_user.can?(:createLoad)
   end
 end

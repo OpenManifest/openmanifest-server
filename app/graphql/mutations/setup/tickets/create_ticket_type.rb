@@ -4,7 +4,7 @@ module Mutations::Setup::Tickets
   class CreateTicketType < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :ticket_type, Types::Dropzone::Ticket, null: true
+    field :ticket_type, Types::Operator::Ticket, null: true
 
     argument :attributes, Types::Input::TicketTypeInput, required: true
 
@@ -49,7 +49,7 @@ module Mutations::Setup::Tickets
     def authorized?(attributes: nil)
       if context[:current_resource].can?(
         "createTicketType",
-        dropzone_id: attributes[:dropzone_id]
+        operator_id: attributes[:operator_id]
       )
         true
       else

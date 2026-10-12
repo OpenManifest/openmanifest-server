@@ -1,30 +1,34 @@
 mutation CreateLoad(
-    $name: String
-    $pilot: ID
-    $gca: ID
-    $maxSlots: Int
-    $plane: ID
-    $state: LoadState
-  ) {
-    createLoad(
-      input: {
-        attributes: {
-          name: $name
-          pilot: $pilot
-          gca: $gca
-          maxSlots: $maxSlots
-          plane: $plane
-          state: $state
-        }
+  $name: String
+  $pilot: ID
+  $gca: ID
+  $maxSlots: Int
+  $vehicle: ID
+  $vehicles: [LoadVehicleInput!]
+  $state: LoadState
+  $destinationIds: [Int!]
+) {
+  createLoad(
+    input: {
+      attributes: {
+        name: $name
+        pilot: $pilot
+        gca: $gca
+        maxSlots: $maxSlots
+        vehicle: $vehicle
+        vehicles: $vehicles
+        state: $state
+        destinationIds: $destinationIds
       }
-    ) {
-      load {
-        ...loadDetails
-      }
-      fieldErrors {
-        field
-        message
-      }
-      errors
     }
+  ) {
+    load {
+      ...loadDetails
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
   }
+}
