@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 # The life of a load. All changes of Load#state go through these events (Manifest::UpdateLoad maps the state the client
-# asks for to an event), so a landed load cannot be called again, a cancelled one cannot take off, and the jump counters
+# asks for to an event), so a completed load cannot be called again, a cancelled one cannot take off, and the jump counters
 # move exactly once per transition.
 #
-#   open ──dispatch──▶ boarding_call ──take_off──▶ in_flight ──mark_as_landed──▶ landed
+#   open ──call──▶ boarding ──depart──▶ departed ──complete──▶ completed
 #     │ ▲                  │ ▲                                                      │
 #     │ └──────reopen──────┴─┴──────────────────────reopen───────────────────────────┘ (also from cancelled)
-#     └──cancel──▶ cancelled (also from boarding_call)
+#     └──cancel──▶ cancelled (also from boarding)
 module StateMachines::LoadState
   extend ActiveSupport::Concern
 
@@ -15,58 +15,58 @@ module StateMachines::LoadState
     state_machine :state, initial: :open do
       after_transition any => :cancelled do |record|
         record.slots.each do |slot|
-          next if slot.dropzone_user.blank?
+          next if slot.membership.blank?
 
           Notification.create(
             message: "Load ##{record.load_number} call canceled",
             resource: record,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call_canceled
+            received_by: slot.membership,
+            notification_type: :boarding_canceled
           )
         end
       end
 
-      after_transition any => :boarding_call do |record|
+      after_transition any => :boarding do |record|
         record.slots.each do |slot|
-          next if slot.dropzone_user.blank?
+          next if slot.membership.blank?
 
           Notification.create(
-            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.plane.dropzone.time_zone).strftime('%H:%M')}",
+            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.operator.time_zone).strftime('%H:%M')}",
             resource: record,
-            received_by: slot.dropzone_user,
-            notification_type: :boarding_call
+            received_by: slot.membership,
+            notification_type: :boarding
           )
         end
       end
 
-      # The jumps count when the load lands, and are taken back when a landed load is reopened (BUG-026)
-      after_transition any => :landed do |record|
+      # The jumps count when the load lands, and are taken back when a completed load is reopened (BUG-026)
+      after_transition any => :completed do |record|
         record.count_jumps!(1)
       end
 
-      after_transition landed: any do |record|
+      after_transition completed: any do |record|
         record.count_jumps!(-1)
       end
 
       # A boarding call needs a time
-      event :dispatch do
-        transition open: :boarding_call, if: ->(record) { record.dispatch_at.present? }
+      event :call do
+        transition open: :boarding, if: ->(record) { record.dispatch_at.present? }
       end
 
-      event :take_off do
-        transition %i(open boarding_call) => :in_flight
+      event :depart do
+        transition %i(open boarding) => :departed
       end
 
-      event :mark_as_landed do
-        transition %i(open boarding_call in_flight) => :landed
+      event :complete do
+        transition %i(open boarding departed) => :completed
       end
 
       event :cancel do
-        transition %i(open boarding_call) => :cancelled
+        transition %i(open boarding) => :cancelled
       end
 
       event :reopen do
-        transition %i(boarding_call in_flight landed cancelled) => :open
+        transition %i(boarding departed completed cancelled) => :open
       end
     end
   end

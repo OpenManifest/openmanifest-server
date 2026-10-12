@@ -1,0 +1,10 @@
+fragment destinationEssentials on Destination {
+  id
+  kind
+  name
+  altitudeM
+  location
+  stops
+  minCertificationRank
+  discardedAt
+}
