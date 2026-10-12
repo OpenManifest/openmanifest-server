@@ -20,7 +20,7 @@ mutation ReloadWeather($id: Int!) {
         direction
         speed
         temperature
-      } 
+      }
     }
   }
 }

@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 class Setup::Global::Seeds < ApplicationInteraction
-  steps :create_jump_types,
+  steps :create_activity_types,
         :create_federations,
         :create_permissions
 
-  def create_jump_types
-    compose JumpTypes
+  def create_activity_types
+    compose ActivityTypes
   end
 
   def create_federations

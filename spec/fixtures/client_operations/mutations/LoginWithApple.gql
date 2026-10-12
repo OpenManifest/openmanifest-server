@@ -1,11 +1,7 @@
-mutation LoginWithApple(
-  $token: String!,
-  $userIdentity: String!,
-  $pushToken: String
-) {
+mutation LoginWithApple($token: String!, $userIdentity: String!, $pushToken: String) {
   loginWithApple(
-    token: $token,
-    userIdentity: $userIdentity,
+    token: $token
+    userIdentity: $userIdentity
     pushToken: $pushToken
     confirmUrl: "https://openmanifest.org/confirm/"
   ) {
