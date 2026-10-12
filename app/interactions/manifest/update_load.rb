@@ -26,6 +26,15 @@ class Manifest::UpdateLoad < ApplicationInteraction
   array :destination_ids, default: nil do
     integer
   end
+  # The whole crew of the load by role (and by vehicle, for roles per vehicle); given, it replaces the load's
+  array :crew, default: nil do
+    hash do
+      record :crew_role
+      record :membership
+      record :load_vehicle, default: nil
+      record :vehicle, default: nil
+    end
+  end
   # The version of the load the client based its change on (optimistic locking, BUG-024)
   integer :lock_version, default: nil
 
@@ -157,11 +166,13 @@ class Manifest::UpdateLoad < ApplicationInteraction
     load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
     load.destination_ids = destination_ids unless destination_ids.nil?
     load.vehicle_roles = new_vehicle_roles if new_vehicle_roles
+    load.enforce_crew_permissions = true
+    load.crew_entries = crew.map(&:symbolize_keys) if crew
+    load.gca = gca if gca
+    load.pilot = pilot if pilot
+    load.load_master = load_master if load_master
     load.assign_attributes(
       {
-        gca: gca,
-        load_master: load_master,
-        pilot: pilot,
         name: name,
         max_slots: max_slots || @new_capacity || load.max_slots || load.capacity,
       }.compact

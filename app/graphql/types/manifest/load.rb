@@ -9,9 +9,11 @@ module Types::Manifest
     field :has_completed, Boolean, null: true
     field :weight, Integer, null: false
     def weight
-      preload(:slots, { pilot: :user })
-      pilot_weight = object.pilot.try(:user).try(:body_mass_kg) || 0
-      pilot_weight + (object.slots.map(&:body_mass_kg).compact_blank.sum || 0)
+      preload(:slots, crew_assignments: [:crew_role, { membership: :user }])
+      # The crew of a vehicle rides in it (the pilot); the crew of the load as a whole (the GCA) stays on the ground
+      aboard = object.crew_assignments.select { |assignment| assignment.crew_role.vehicle_scope? }
+      crew_weight = aboard.sum { |assignment| assignment.membership.user.try(:body_mass_kg) || 0 }
+      crew_weight + (object.slots.map(&:body_mass_kg).compact_blank.sum || 0)
     end
 
     # Send it back with updateLoad: a load changed by somebody else in the meantime is refused (CONFLICT)
@@ -46,7 +48,15 @@ module Types::Manifest
       preload(load_destinations: :destination).load_destinations.sort_by(&:position).map(&:destination)
     end
 
-    async_field :pilot, Types::Users::Membership, null: true
+    field :crew, [Types::Manifest::LoadCrewAssignment], null: false, description: "Who fills the crew roles of the load"
+    def crew
+      preload(crew_assignments: :crew_role).crew_assignments.sort_by { |assignment| [assignment.crew_role.position, assignment.id] }
+    end
+
+    %w(pilot gca load_master).each do |key|
+      field key, Types::Users::Membership, null: true, description: "Who fills the crew role with the key #{key}"
+      define_method(key) { preload(crew_assignments: [:crew_role, :membership]).crew_member(key) }
+    end
     field :vehicle, Types::Operator::Vehicle, null: false, description: "The first vehicle that carries participants"
     def vehicle
       preload(load_vehicles: :vehicle).vehicle
@@ -57,9 +67,7 @@ module Types::Manifest
       preload(load_vehicles: :vehicle).load_vehicles.sort_by { |load_vehicle| [load_vehicle.position, load_vehicle.id] }
     end
 
-    async_field :load_master, Types::Users::Membership, null: true
     async_field :state, Types::Manifest::LoadState, null: false
-    async_field :gca, Types::Users::Membership, null: true
     field :load_number, Int, null: false
 
     field :is_ready, Boolean, null: false

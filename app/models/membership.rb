@@ -27,9 +27,7 @@ class Membership < ApplicationRecord
   has_many :slots, dependent: :destroy
   has_many :form_templates, foreign_key: :created_by_id, dependent: :destroy
 
-  has_many :loads_as_gca, class_name: "Load", foreign_key: :gca_id, dependent: :nullify
-  has_many :loads_as_pilot, class_name: "Load", foreign_key: :pilot_id, dependent: :nullify
-  has_many :loads_as_load_master, class_name: "Load", foreign_key: :load_master_id, dependent: :nullify
+  has_many :load_crew_assignments, dependent: :destroy
 
   has_many :user_permissions, dependent: :destroy
   has_many :permissions, through: :user_permissions

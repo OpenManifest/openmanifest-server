@@ -37,6 +37,7 @@ FactoryBot.define do
 
     after(:create) do |operator|
       Setup::Operators::Access::CreateDefaults.run!(operator: operator)
+      CrewRole.create_presets!(operator)
     end
 
     factory :operator_with_loads do

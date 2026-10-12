@@ -6,6 +6,7 @@ module Types::Operator
     implements Types::Interfaces::Polymorphic
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
+    field :kind, String, null: true, description: "aircraft, raft, bus, ...: what crew roles per vehicle apply to"
     field :min_capacity, Int, null: true
     field :capacity, Int, null: false
     def capacity

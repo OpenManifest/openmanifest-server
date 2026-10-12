@@ -6,8 +6,8 @@ RSpec.describe "Client operations: manifest" do
   include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500).tap { |member| %i(actAsGCA actAsLoadMaster).each { |permission| member.grant!(permission) } } }
+  let!(:pilot) { create(:membership, operator: operator).tap { |member| member.grant!(:actAsPilot) } }
   let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
   let!(:tandem_ticket) { create(:ticket_type, operator: operator, name: "Tandem", cost: 200).tap { |t| t.update!(is_tandem: true, allow_manifesting_self: false) } }
   let(:load_variables) { { name: "Load A", vehicle: vehicle.id, pilot: pilot.id, gca: owner.id, maxSlots: 10 } }

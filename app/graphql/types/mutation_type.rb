@@ -42,6 +42,9 @@ module Types
     field :create_ticket_type,          mutation: Mutations::Setup::Tickets::CreateTicketType
     field :update_ticket_type,          mutation: Mutations::Setup::Tickets::UpdateTicketType
     field :archive_ticket_type,         mutation: Mutations::Setup::Tickets::DeleteTicketType
+    field :create_crew_role,            mutation: Mutations::Setup::CrewRoles::CreateCrewRole
+    field :update_crew_role,            mutation: Mutations::Setup::CrewRoles::UpdateCrewRole
+    field :archive_crew_role,           mutation: Mutations::Setup::CrewRoles::ArchiveCrewRole
     field :create_destination,          mutation: Mutations::Setup::Destinations::CreateDestination
     field :update_destination,          mutation: Mutations::Setup::Destinations::UpdateDestination
     field :archive_destination,         mutation: Mutations::Setup::Destinations::ArchiveDestination

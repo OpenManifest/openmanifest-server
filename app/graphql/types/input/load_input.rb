@@ -22,6 +22,18 @@ module Types
                          prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :load_master, ID, required: false,
                                  prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
+      argument :crew, [Types::Input::LoadCrewInput], required: false,
+                                                     prepare: -> (value, ctx) {
+                                                       value.map do |entry|
+                                                         {
+                                                           crew_role: ::CrewRole.kept.find_by(id: entry[:crew_role_id]),
+                                                           membership: ::Membership.find_by(id: entry[:membership_id]),
+                                                           load_vehicle: (::LoadVehicle.find_by(id: entry[:load_vehicle_id]) if entry[:load_vehicle_id]),
+                                                           vehicle: (::Vehicle.find_by(id: entry[:vehicle_id]) if entry[:vehicle_id]),
+                                                         }
+                                                       end
+                                                     },
+                                                     description: "Who fills each crew role (and for which vehicle); they replace the load's crew"
       argument :destination_ids, [Int], required: false,
                                         description: "The places the load visits, in order (operators with per-load destinations)"
       argument :state, Types::Manifest::LoadState, required: false

@@ -6,8 +6,8 @@ RSpec.describe "Client operations: subscription triggers" do
   include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500).tap { |member| %i(actAsGCA actAsLoadMaster).each { |permission| member.grant!(permission) } } }
+  let!(:pilot) { create(:membership, operator: operator).tap { |member| member.grant!(:actAsPilot) } }
   let!(:existing_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner) }
 
   def broadcasts(name)

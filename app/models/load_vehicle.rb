@@ -21,6 +21,7 @@ class LoadVehicle < ApplicationRecord
   belongs_to :load, inverse_of: :load_vehicles
   belongs_to :vehicle
   has_many :slots, dependent: :nullify
+  has_many :crew_assignments, class_name: "LoadCrewAssignment", dependent: :destroy
 
   validates :role, inclusion: { in: ROLES }
   validates :vehicle_id, uniqueness: { scope: :load_id }, on: :update

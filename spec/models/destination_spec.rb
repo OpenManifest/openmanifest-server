@@ -129,11 +129,10 @@ RSpec.describe Destination do
 
   describe "loads, per load" do
     let(:operator) { boats }
-    let(:captain) { operator.memberships.owner.first }
     let(:vehicle) { operator.vehicles.create!(name: "Boat 1", capacity: 6, kind: "vehicle") }
     let!(:reef) { operator.destinations.create!(kind: "site", name: "Reef") }
     let!(:wreck) { operator.destinations.create!(kind: "site", name: "Wreck") }
-    let(:load_record) { Load.create!(operator: operator, vehicle: vehicle, gca: captain, pilot: captain, max_slots: 6) }
+    let(:load_record) { Load.create!(operator: operator, vehicle: vehicle, max_slots: 6) }
 
     it "visits its destinations in order" do
       load_record.update!(destination_ids: [wreck.id, reef.id])

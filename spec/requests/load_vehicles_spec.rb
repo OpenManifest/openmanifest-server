@@ -7,8 +7,8 @@ RSpec.describe "Load vehicles" do
   include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500).tap { |member| %i(actAsGCA actAsLoadMaster).each { |permission| member.grant!(permission) } } }
+  let!(:pilot) { create(:membership, operator: operator).tap { |member| member.grant!(:actAsPilot) } }
   let!(:big) { create(:vehicle, operator: operator, capacity: 6, min_capacity: 1) }
   let!(:small) { create(:vehicle, operator: operator, capacity: 3, min_capacity: 1) }
   let!(:tug) { create(:vehicle, operator: operator, capacity: 1, kind: "tug") }
@@ -26,8 +26,13 @@ RSpec.describe "Load vehicles" do
     response.parsed_body.with_indifferent_access
   end
 
+  # A GCA, and a pilot for each vehicle that carries
   def new_load(**attrs)
-    graphql(create_load, { attributes: { gca: owner.id, pilot: pilot.id }.merge(attrs) })
+    roles = operator.crew_roles.index_by(&:key)
+    carrying = attrs.fetch(:vehicles, []).reject { |entry| entry[:role] == "support" }
+    crew = carrying.map { |entry| { crewRoleId: roles.fetch("pilot").id, membershipId: pilot.id, vehicleId: entry[:vehicleId] } }
+    attributes = attrs.key?(:vehicles) ? { gca: owner.id, crew: crew } : { gca: owner.id, pilot: pilot.id }
+    graphql(create_load, { attributes: attributes.merge(attrs) })
   end
 
   context "with the multi_vehicle module" do
@@ -44,13 +49,26 @@ RSpec.describe "Load vehicles" do
       expect(load.dig(:vehicle, :id)).to eq(big.id.to_s)
     end
 
-    it "changes the vehicles of a load and the seats with them" do
+    it "changes the vehicles of a load and the seats with them, with the crew the new vehicle needs" do
+      id = new_load(vehicles: [{ vehicleId: big.id }]).dig(:data, :createLoad, :load, :id)
+      roles = operator.crew_roles.index_by(&:key)
+      crew = [{ crewRoleId: roles.fetch("gca").id, membershipId: owner.id }] +
+             [big, small].map { |each| { crewRoleId: roles.fetch("pilot").id, membershipId: pilot.id, vehicleId: each.id } }
+
+      json = graphql(update_load, { id: id, attributes: { vehicles: [{ vehicleId: big.id }, { vehicleId: small.id }], crew: crew } })
+
+      expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+      expect(json.dig(:data, :updateLoad, :load, :maxSlots)).to eq(9)
+      expect(json.dig(:data, :updateLoad, :load, :vehicles).size).to eq(2)
+    end
+
+    it "asks for the crew of a vehicle that is added" do
       id = new_load(vehicles: [{ vehicleId: big.id }]).dig(:data, :createLoad, :load, :id)
 
       json = graphql(update_load, { id: id, attributes: { vehicles: [{ vehicleId: big.id }, { vehicleId: small.id }] } })
 
-      expect(json.dig(:data, :updateLoad, :load, :maxSlots)).to eq(9)
-      expect(json.dig(:data, :updateLoad, :load, :vehicles).size).to eq(2)
+      expect(json.dig(:data, :updateLoad, :errors).join).to include("Every load needs a Pilot")
+      expect(Load.find(id).vehicles).to eq([big])
     end
 
     it "does not take a vehicle off a load while jumpers ride in it" do

@@ -12,8 +12,14 @@ RSpec.describe LoadVehicle do
   let(:small) { create(:vehicle, operator: operator, capacity: 3, min_capacity: 1) }
   let(:tug) { create(:vehicle, operator: operator, capacity: 1, kind: "tug") }
 
+  # The crew a dropzone's load needs: a GCA, and a pilot for each vehicle that carries
   def build_load(entries)
-    Load.new(operator: operator, gca: gca, pilot: pilot).tap { |record| record.vehicle_roles = entries }
+    Load.new(operator: operator).tap do |record|
+      record.vehicle_roles = entries
+      roles = operator.crew_roles.index_by(&:key)
+      record.crew_entries = [{ crew_role: roles.fetch("gca"), membership: gca }] +
+                            record.carrying_load_vehicles.map { |lv| { crew_role: roles.fetch("pilot"), membership: pilot, load_vehicle: lv } }
+    end
   end
 
   context "without the multi_vehicle module (skydiving)" do

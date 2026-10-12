@@ -50,6 +50,7 @@ class Operator < ApplicationRecord
   has_many :vehicles, -> { kept }, dependent: :destroy
   has_many :loads, -> { kept }, dependent: :destroy
   has_many :destinations, -> { kept }, dependent: :destroy
+  has_many :crew_roles, dependent: :destroy
 
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy

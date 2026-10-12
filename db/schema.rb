@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -83,6 +83,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_authentication_providers_on_user_id"
+  end
+
+  create_table "crew_roles", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.string "scope", default: "load", null: false
+    t.boolean "required", default: false, null: false
+    t.boolean "occupies_slot", default: false, null: false
+    t.string "permission"
+    t.jsonb "vehicle_kinds", default: [], null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "key"], name: "index_crew_roles_on_operator_and_key", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_crew_roles_on_operator_id"
   end
 
   create_table "daily_logs", force: :cascade do |t|
@@ -194,6 +211,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
     t.index ["name", "federation_id"], name: "index_licenses_on_name_and_federation_id", unique: true
   end
 
+  create_table "load_crew_assignments", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "load_vehicle_id"
+    t.bigint "crew_role_id", null: false
+    t.bigint "membership_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["crew_role_id"], name: "index_load_crew_assignments_on_crew_role_id"
+    t.index ["load_id", "crew_role_id"], name: "index_crew_assignments_per_load", unique: true, where: "(load_vehicle_id IS NULL)"
+    t.index ["load_id", "load_vehicle_id", "crew_role_id"], name: "index_crew_assignments_per_vehicle", unique: true, where: "(load_vehicle_id IS NOT NULL)"
+    t.index ["load_id"], name: "index_load_crew_assignments_on_load_id"
+    t.index ["load_vehicle_id"], name: "index_load_crew_assignments_on_load_vehicle_id"
+    t.index ["membership_id"], name: "index_load_crew_assignments_on_membership_id"
+  end
+
   create_table "load_destinations", force: :cascade do |t|
     t.bigint "load_id", null: false
     t.bigint "destination_id", null: false
@@ -227,9 +259,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
     t.string "name"
     t.integer "max_slots", default: 0
     t.boolean "is_open"
-    t.bigint "gca_id"
-    t.bigint "load_master_id"
-    t.bigint "pilot_id"
     t.integer "state"
     t.integer "load_number"
     t.datetime "discarded_at", precision: nil
@@ -239,10 +268,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
     t.date "load_date", null: false
     t.integer "lock_version", default: 0, null: false
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
-    t.index ["gca_id"], name: "index_loads_on_gca_id"
-    t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["operator_id", "load_date", "load_number"], name: "index_loads_on_operator_id_and_load_date_and_load_number", unique: true
-    t.index ["pilot_id"], name: "index_loads_on_pilot_id"
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
     t.index ["state"], name: "index_loads_on_state"
@@ -800,6 +826,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "authentication_providers", "users"
+  add_foreign_key "crew_roles", "operators"
   add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
   add_foreign_key "daily_logs", "operators"
   add_foreign_key "destinations", "operators"
@@ -813,13 +840,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
   add_foreign_key "licensed_activity_types", "activity_types"
   add_foreign_key "licensed_activity_types", "licenses"
   add_foreign_key "licenses", "federations"
+  add_foreign_key "load_crew_assignments", "crew_roles"
+  add_foreign_key "load_crew_assignments", "load_vehicles"
+  add_foreign_key "load_crew_assignments", "loads"
+  add_foreign_key "load_crew_assignments", "memberships"
   add_foreign_key "load_destinations", "destinations"
   add_foreign_key "load_destinations", "loads"
   add_foreign_key "load_vehicles", "loads"
   add_foreign_key "load_vehicles", "vehicles"
-  add_foreign_key "loads", "memberships", column: "gca_id"
-  add_foreign_key "loads", "memberships", column: "load_master_id"
-  add_foreign_key "loads", "memberships", column: "pilot_id"
   add_foreign_key "loads", "operators"
   add_foreign_key "memberships", "licenses"
   add_foreign_key "memberships", "operators"

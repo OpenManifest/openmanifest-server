@@ -16,6 +16,16 @@ class Manifest::CreateLoad < ApplicationInteraction
       string :role, default: "carrying"
     end
   end
+  # The crew of the load by role (and by vehicle, for roles per vehicle); `pilot`, `gca` and `load_master` fill the roles of
+  # that key
+  array :crew, default: nil do
+    hash do
+      record :crew_role
+      record :membership
+      record :load_vehicle, default: nil
+      record :vehicle, default: nil
+    end
+  end
   # The places the load visits, in order (operators with per-load destinations)
   array :destination_ids, default: nil do
     integer
@@ -61,12 +71,14 @@ class Manifest::CreateLoad < ApplicationInteraction
   def build_load
     @load = access_context.operator.loads.new(
       name: name,
-      gca: gca,
-      pilot: pilot,
-      load_master: load_master,
       created_at: created_at
     )
     @load.vehicle_roles = vehicles || [{ vehicle: vehicle, role: "carrying" }]
+    @load.enforce_crew_permissions = true
+    @load.crew_entries = crew.map(&:symbolize_keys) if crew
+    @load.gca = gca if gca
+    @load.pilot = pilot if pilot
+    @load.load_master = load_master if load_master
     @load.max_slots = max_slots || @load.capacity
     @load.destination_ids = destination_ids unless destination_ids.nil?
   end

@@ -75,6 +75,11 @@ module Types
 
     async_field :vehicles, [Types::Operator::Vehicle], null: false
 
+    field :crew_roles, [Types::Operator::CrewRole], null: false, description: "The jobs on a load of this operator"
+    def crew_roles
+      object.crew_roles.kept.ordered
+    end
+
     field :destinations, [Types::Operator::Destination], null: false,
                                                          description: "The places this operator's loads go to" do
       argument :kind, Types::Operator::DestinationKind, required: false

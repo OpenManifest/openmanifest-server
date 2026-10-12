@@ -80,7 +80,7 @@ RSpec.describe Presets::Apply do
     it "can create a vehicle, a load and a slot" do
       vehicle = operator.vehicles.create!(name: "Boat 1", capacity: 6, kind: "vehicle")
       captain = operator.memberships.owner.first
-      load = Load.create!(operator: operator, vehicle: vehicle, gca: captain, pilot: captain, max_slots: 6, state: "open", is_open: true)
+      load = Load.create!(operator: operator, vehicle: vehicle, max_slots: 6, state: "open", is_open: true)
       guest = create(:membership, operator: operator, user_role: operator.user_roles.default)
       ticket = create(:ticket_type, operator: operator)
 

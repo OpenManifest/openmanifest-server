@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Copies the presets of an operator's industry template into the operator's own tables, once (GENERALISATION §2):
-# roles and permissions (with the default roles), vehicle kinds, destinations, ticket types, extras, enabled activity types and
+# roles and permissions (with the default roles), vehicle kinds, crew roles, destinations, ticket types, extras, enabled activity types and
 # inspection forms. The operator owns the copies afterwards; running it again only adds what is missing. Each later
 # Phase 7 task extends it for its own records.
 class Presets::Apply < ApplicationInteraction
@@ -10,6 +10,7 @@ class Presets::Apply < ApplicationInteraction
 
   steps :copy_settings,
         :create_roles,
+        :create_crew_roles,
         :create_destinations,
         :create_ticket_types,
         :create_extras,
@@ -25,6 +26,10 @@ class Presets::Apply < ApplicationInteraction
 
   def create_roles
     compose(::Setup::Operators::Access::CreateDefaults, operator: operator)
+  end
+
+  def create_crew_roles
+    ::CrewRole.create_presets!(operator)
   end
 
   def create_destinations

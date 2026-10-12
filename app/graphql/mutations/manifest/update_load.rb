@@ -25,6 +25,7 @@ module Mutations::Manifest
           :vehicles,
           :state,
           :name,
+          :crew,
           :destination_ids,
           :lock_version
         )

@@ -26,6 +26,7 @@ module Mutations::Manifest
             :load_master,
             :state,
             :max_slots,
+            :crew,
             :destination_ids
           )
         )

@@ -180,6 +180,22 @@ roles:
     permissions: all
   owner:
     permissions: all
+crew_roles:
+- key: pilot
+  name: Pilot
+  scope: vehicle
+  required: true
+  permission: actAsPilot
+- key: gca
+  name: GCA
+  scope: load
+  required: true
+  permission: actAsGCA
+- key: load_master
+  name: Load master
+  scope: load
+  required: false
+  permission: actAsLoadMaster
 destinations:
 - name: Hop n Pop
   kind: altitude
