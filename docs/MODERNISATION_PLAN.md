@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 2 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
+| 2 | Components | U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
 | 3 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
 | 4 | Manifest UI | U3.1, U3.2, U3.3, U3.4, U3.5, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
 | 5 | Member UI | U4.1, U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
@@ -4147,7 +4147,7 @@ Fixes: none
 ---
 
 ### U2.1 — Build the base components
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.10
 Branch: modernise/u2-1-base-components
