@@ -1,0 +1,24 @@
+# frozen_string_literal: true
+
+module Mutations::Setup::RigInspections
+  class CreateEquipmentInspection < Mutations::BaseMutation
+    field :errors, [String], null: true
+    field :field_errors, [Types::System::FieldError], null: true
+    field :rig_inspection, Types::Equipment::RigInspection, null: true
+
+    argument :attributes, Types::Input::RigInspectionInput, required: true
+    argument :id, Int, required: false
+
+    def resolve(attributes:, id: nil)
+      mutate(
+        ::Setup::Equipment::CreateEquipmentInspection,
+        :rig_inspection,
+        operator: attributes[:operator],
+        rig: attributes[:rig],
+        definition: attributes[:definition],
+        is_ok: attributes[:is_ok],
+        access_context: access_context_for(attributes[:operator]),
+      )
+    end
+  end
+end

@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Manifest::FinalizeLoad do
-  include_context 'dropzone_with_load'
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
+  include_context 'operator_with_load'
+  let!(:ticket_type) { create(:ticket_type, operator: operator) }
   let!(:access_context) do
     instructor.grant! :deleteLoad
     instructor.grant! :createSlot
@@ -12,14 +12,14 @@ RSpec.describe Manifest::FinalizeLoad do
     ApplicationInteraction::AccessContext.new(instructor)
   end
   let!(:slots) do
-    create_list(:dropzone_user, 6, dropzone: dropzone, credits: ticket_type.cost * 2).map do |dz_user|
+    create_list(:membership, 6, operator: operator, credits: ticket_type.cost * 2).map do |dz_user|
       Manifest::CreateSlot.run!(
         access_context: access_context,
         ticket_type: ticket_type,
-        dropzone_user: dz_user,
-        jump_type: JumpType.allowed_for([dz_user]).sample,
+        membership: dz_user,
+        activity_type: ActivityType.allowed_for([dz_user]).sample,
         load: load,
-        exit_weight: dz_user.exit_weight
+        body_mass_kg: dz_user.body_mass_kg
       )
     end
   end
@@ -40,7 +40,7 @@ RSpec.describe Manifest::FinalizeLoad do
         expect(slot.order).not_to be nil
         expect(slot.order.receipts.count).to eq 2
         expect(slot.order.transactions.count).to eq 4
-        expect(slot.dropzone_user.credits).to eq(ticket_type.cost * 2)
+        expect(slot.membership.credits).to eq(ticket_type.cost * 2)
         expect(slot.order.transactions.where(status: :completed).count).to eq 4
         expect(slot.order.transactions.where(transaction_type: :refund).count).to eq 2
       end

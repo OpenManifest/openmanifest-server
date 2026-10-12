@@ -1,5 +1,5 @@
 mutation JoinFederation($federation: ID!, $uid: String, $license: ID) {
-  joinFederation(input: { attributes: { federation: $federation, uid: $uid, license: $license }}) {
+  joinFederation(input: { attributes: { federation: $federation, uid: $uid, license: $license } }) {
     errors
     fieldErrors {
       field

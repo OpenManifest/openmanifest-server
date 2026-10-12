@@ -1,0 +1,38 @@
+#import "../fragments/rigs.fragments.gql"
+
+mutation CreateEquipment(
+  $make: String
+  $name: String
+  $model: String
+  $serial: String
+  $rigType: String
+  $canopySize: Int
+  $repackExpiresAt: Int
+  $userId: Int
+  $operatorId: Int
+) {
+  createEquipment(
+    input: {
+      attributes: {
+        name: $name
+        make: $make
+        model: $model
+        serial: $serial
+        repackExpiresAt: $repackExpiresAt
+        operatorId: $operatorId
+        userId: $userId
+        canopySize: $canopySize
+        rigType: $rigType
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    rig {
+      ...userRigDetailed
+    }
+  }
+}
