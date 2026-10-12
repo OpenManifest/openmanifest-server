@@ -2,7 +2,7 @@ mutation CreateOperator(
   $industry: Industry!
   $name: String!
   $banner: String
-  $federation: Int
+  $federation: Int!
   $timeZone: String!
   $lat: Float
   $lng: Float

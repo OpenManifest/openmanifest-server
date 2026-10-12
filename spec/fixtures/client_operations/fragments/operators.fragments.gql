@@ -12,6 +12,7 @@ fragment operatorEssentials on Operator {
   isCreditSystemEnabled
   createdAt
   timeZone
+  terminology
 
   settings {
     allowManifestBypass
