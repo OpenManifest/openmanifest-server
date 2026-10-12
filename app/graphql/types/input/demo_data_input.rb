@@ -2,7 +2,7 @@
 
 class Types::Input::DemoDataInput < Types::Base::Input
   argument :gca_count, Integer, required: false
-  argument :dzso_count, Integer, required: false
+  argument :duty_officer_count, Integer, required: false
   argument :jumper_count, Integer, required: false
   argument :pilot_count, Integer, required: false
   argument :tandem_instructor_count, Integer, required: false

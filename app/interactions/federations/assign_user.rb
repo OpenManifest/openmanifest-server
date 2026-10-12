@@ -20,7 +20,7 @@ class Federations::AssignUser < ApplicationInteraction
       resource: user,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{user&.name || 'Unknown User'} joined federation #{federation&.name || 'Unknown Federation'} with License #{license&.name} (#{uid || 'No license number'})",
     )
@@ -30,11 +30,11 @@ class Federations::AssignUser < ApplicationInteraction
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: access_context.dropzone,
+      resource: access_context.operator,
       action: :assigned,
       level: :error,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{user&.name || 'Unknown User'} failed to join federation #{federation&.name || 'Unknown Federation'} with License #{license&.name} (#{uid || 'No license number'})",
     )

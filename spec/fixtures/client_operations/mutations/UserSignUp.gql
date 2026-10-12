@@ -5,14 +5,14 @@ mutation UserSignUp(
   $name: String!
   $phone: String!
   $pushToken: String
-  $exitWeight: Float!
+  $bodyMassKg: Float!
   $licenseId: Int
 ) {
   userRegister(
     email: $email
     password: $password
     passwordConfirmation: $passwordConfirmation
-    exitWeight: $exitWeight
+    bodyMassKg: $bodyMassKg
     name: $name
     phone: $phone
     pushToken: $pushToken
