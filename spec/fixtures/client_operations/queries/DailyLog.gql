@@ -1,0 +1,5 @@
+query DailyLog($operatorId: ID!, $date: ISO8601Date!) {
+  dailyLog(operator: $operatorId, date: $date) {
+    ...dailyLogEntry
+  }
+}

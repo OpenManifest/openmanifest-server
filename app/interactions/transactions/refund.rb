@@ -19,7 +19,7 @@ class Transactions::Refund < ApplicationInteraction
       access_context: access_context,
       resource: order,
       action: :updated,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Order ##{order.id} was refunded"
     )
@@ -33,7 +33,7 @@ class Transactions::Refund < ApplicationInteraction
       access_context: access_context,
       resource: order,
       action: :updated,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Failed to refund Order ##{order.id}",
       details: errors.full_messages.join(", ")
