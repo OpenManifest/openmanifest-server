@@ -3,27 +3,27 @@ fragment rigInspectionEssentials on RigInspection {
   isOk
   definition
   inspectedBy {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   rig {
     ...rigEssentials
   }
 }
 fragment rigInspectionDetailed on RigInspection {
-  ...rigInspectionEssentials,
+  ...rigInspectionEssentials
   rig {
     ...userRigDetailed
   }
 }
 
 fragment rigInspectionMutationEssentials on RigInspection {
-  ...rigInspectionDetailed,
+  ...rigInspectionDetailed
   formTemplate {
     id
     definition
   }
-  dropzoneUser {
-    ...dropzoneUserEssentials
+  membership {
+    ...membershipEssentials
     rigInspections {
       ...rigInspectionEssentials
     }
