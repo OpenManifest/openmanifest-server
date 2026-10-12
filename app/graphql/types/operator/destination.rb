@@ -13,7 +13,6 @@ module Types::Operator
     def altitude_m
       object.altitude_m&.to_f
     end
-    field :altitude_ft, Int, null: true, description: "The height in whole feet, until units arrive with P7.12"
     field :location, GraphQL::Types::JSON, null: false, description: "lat, lng, max_depth_m, grade, ..."
     field :stops, GraphQL::Types::JSON, null: false, description: "The ordered stops of a route"
     field :min_certification_rank, Int, null: true

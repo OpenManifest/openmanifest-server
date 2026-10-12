@@ -529,7 +529,11 @@ type DailyLogLoad {
 
 type DailyLogSlot {
   activityType: String
-  altitude: Int
+
+  """
+  Metres
+  """
+  altitudeM: Float
   id: ID!
   name: String
 }
@@ -722,11 +726,6 @@ type DeleteVehiclePayload {
 
 type Destination implements AnyResource {
   """
-  The height in whole feet, until units arrive with P7.12
-  """
-  altitudeFt: Int
-
-  """
   The height in metres (altitude destinations)
   """
   altitudeM: Float
@@ -752,10 +751,6 @@ type Destination implements AnyResource {
 }
 
 input DestinationInput {
-  """
-  Same as altitudeM, in feet; altitudeM wins when both are given
-  """
-  altitudeFt: Int
   altitudeM: Float
   kind: DestinationKind
   location: JSON
@@ -2070,6 +2065,11 @@ type Operator implements AnyResource & Wallet {
   The jobs on a load of this operator
   """
   crewRoles: [CrewRole!]!
+
+  """
+  ISO 4217 code of the money the operator sells in
+  """
+  currency: String!
   currentConditions: WeatherCondition!
 
   """
@@ -2245,6 +2245,11 @@ type OperatorEdge {
 
 input OperatorInput {
   banner: String
+
+  """
+  ISO 4217 code, for example AUD
+  """
+  currency: String
   federation: Int
   isCreditSystemEnabled: Boolean
   isPublic: Boolean
@@ -2952,6 +2957,12 @@ input SettingsInput {
   Whether or not rig inspections are required before manifesting a jump
   """
   requireRigInspection: Boolean
+
+  """
+  The units shown: { altitude: "ft" | "m", depth, distance: "km" | "nmi" | "mi"
+  | "m", mass: "kg" | "lb", speed: "kn" | "kmh" | "mph", temperature: "c" | "f" }
+  """
+  units: JSON
 }
 
 """
@@ -3847,29 +3858,56 @@ interface Wallet {
 
 type WeatherCondition {
   createdAt: ISO8601DateTime!
-  exitSpotMiles: Float
+
+  """
+  Metres
+  """
+  exitSpotM: Float
   id: ID!
   jumpRun: Int
   offsetDirection: Int
-  offsetMiles: Float
-  temperature: Int
+
+  """
+  Metres
+  """
+  offsetM: Float
+
+  """
+  Degrees Celsius
+  """
+  temperatureC: Float
   updatedAt: ISO8601DateTime!
   winds: [Wind!]
 }
 
 input WeatherConditionInput {
-  exitSpotMiles: Float
+  exitSpotM: Float
   jumpRun: Int
   offsetDirection: String
-  offsetMiles: Float
+  offsetM: Float
   operatorId: Int!
-  temperature: Int
+  temperatureC: Float
+
+  """
+  JSON: [{ altitude_m, speed_mps, direction, temperature_c }]
+  """
   winds: String
 }
 
 type Wind {
-  altitude: String
-  direction: String
-  speed: String
-  temperature: String
+  """
+  Height above the ground, metres
+  """
+  altitudeM: Float
+  direction: Int
+
+  """
+  Metres per second
+  """
+  speedMps: Float
+
+  """
+  Degrees Celsius
+  """
+  temperatureC: Float
 }

@@ -194,6 +194,23 @@ RSpec.describe "Client operations: operators and access" do
       expect(json.dig(:data, :updateOperator, :operator, :callScheduleMinutes)).to eq([25, 5])
     end
 
+    it "sets the units and the currency the operator shows" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, currency: "NZD", settings: { units: { altitude: "m", mass: "lb" } } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :errors)).to be_nil
+      expect(json.dig(:data, :updateOperator, :operator)).to include(currency: "NZD", units: include("altitude" => "m", "mass" => "lb", "speed" => "kn"))
+      expect(operator.reload).to have_attributes(currency: "NZD")
+    end
+
+    it "refuses a unit the quantity does not have, and a currency that is not an ISO code" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, settings: { units: { mass: "ft" } } } }, as: moderator)
+      expect(json.dig(:data, :updateOperator, :errors).join).to include("mass in ft")
+
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, currency: "dollars" } }, as: moderator)
+      expect(json.dig(:data, :updateOperator, :operator)).to be_nil
+      expect(operator.reload.currency).to eq("AUD")
+    end
+
     it "refuses a call schedule that is not whole minutes, longest first" do
       json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, settings: { callScheduleMinutes: [5, 25] } } }, as: moderator)
 

@@ -11,10 +11,7 @@ module Mutations::Setup::Destinations
     private
 
     def attributes_for(attributes)
-      attrs = attributes.to_h.except(:operator_id)
-      feet = attrs.delete(:altitude_ft)
-      attrs[:altitude_m] = (feet * ::Destination::FEET).round(2) if feet && attrs[:altitude_m].nil?
-      attrs
+      attributes.to_h.except(:operator_id)
     end
 
     def saved(destination)

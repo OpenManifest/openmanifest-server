@@ -14,6 +14,7 @@ module Types
       argument :primary_color, String, required: false
       argument :secondary_color, String, required: false
       argument :is_credit_system_enabled, Boolean, required: false
+      argument :currency, String, required: false, description: "ISO 4217 code, for example AUD"
       argument :time_zone, String, required: false, description: "IANA time zone; needed to create an operator"
       argument :modules, GraphQL::Types::JSON, required: false,
                                                description: "Module overrides: name => false (off), true or a configuration (on)"

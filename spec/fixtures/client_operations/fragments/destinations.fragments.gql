@@ -3,7 +3,6 @@ fragment destinationEssentials on Destination {
   kind
   name
   altitudeM
-  altitudeFt
   location
   stops
   minCertificationRank

@@ -83,11 +83,11 @@ RSpec.describe "Weather and time zones" do
       expect { operator.current_conditions }.not_to have_enqueued_job(FetchWindsJob)
     end
 
-    it "stores distances with decimals" do
+    it "stores distances in metres, with decimals" do
       condition = operator.current_conditions
-      condition.update!(exit_spot_miles: 0.55, offset_miles: 1.25)
+      condition.update!(exit_spot_m: 885.14, offset_m: 2011.68)
 
-      expect(condition.reload).to have_attributes(exit_spot_miles: BigDecimal("0.55"), offset_miles: BigDecimal("1.25"))
+      expect(condition.reload).to have_attributes(exit_spot_m: BigDecimal("885.14"), offset_m: BigDecimal("2011.68"))
     end
   end
 
@@ -100,10 +100,12 @@ RSpec.describe "Weather and time zones" do
       described_class.perform_now(condition.id)
 
       condition.reload
-      expect(JSON.parse(condition.winds).first).to include("altitude" => "14000", "speed" => 10, "direction" => 270)
-      expect(condition.temperature).to eq(12)
+      # 14,000 ft and 10 knots, as metres and metres per second
+      expect(JSON.parse(condition.winds).first).to include("altitude_m" => 4267.2, "speed_mps" => 5.14, "direction" => 270)
+      expect(condition.temperature_c).to eq(12)
       expect(condition.jump_run).to eq(270)
-      expect(condition.exit_spot_miles).to be_within(0.001).of(0.67)
+      # 3.5 minutes at 10 knots: 0.67 miles
+      expect(condition.exit_spot_m).to be_within(1).of(0.6713 * Units::MILE)
     end
 
     it "gives the service five seconds" do

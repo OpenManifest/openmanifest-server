@@ -16,7 +16,7 @@ RSpec.describe "Client operations: destinations" do
 
       destinations = json.dig(:data, :operator, :destinations)
       expect(destinations.pluck(:name)).to eq(["Full altitude", "Hop n Pop"])
-      expect(destinations.last).to include(kind: "altitude", altitudeM: 1219.2, altitudeFt: 4000)
+      expect(destinations.last).to include(kind: "altitude", altitudeM: 1219.2)
     end
 
     it "leaves out archived destinations" do
@@ -32,10 +32,10 @@ RSpec.describe "Client operations: destinations" do
     it "creates an altitude from feet" do
       json = nil
       expect do
-        json = client_operation("CreateDestination", variables: { attributes: { operatorId: operator.id, kind: "altitude", name: "Wingsuit", altitudeFt: 12_000 } }, as: owner_user)
+        json = client_operation("CreateDestination", variables: { attributes: { operatorId: operator.id, kind: "altitude", name: "Wingsuit", altitudeM: 3657.6 } }, as: owner_user)
       end.to change(Destination, :count).by(1)
 
-      expect(json.dig(:data, :createDestination, :destination)).to include(name: "Wingsuit", kind: "altitude", altitudeM: 3657.6, altitudeFt: 12_000)
+      expect(json.dig(:data, :createDestination, :destination)).to include(name: "Wingsuit", kind: "altitude", altitudeM: 3657.6)
     end
 
     it "answers a kind the template does not offer with an error" do

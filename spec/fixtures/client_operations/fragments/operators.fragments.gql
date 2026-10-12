@@ -16,6 +16,8 @@ fragment operatorEssentials on Operator {
   industry
   modules
   callScheduleMinutes
+  currency
+  units
 
   settings {
     allowManifestBypass

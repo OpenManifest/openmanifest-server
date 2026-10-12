@@ -32,6 +32,7 @@ module Types
     def terminology(locale: "en")
       object.terminology(locale)
     end
+    field :currency, String, null: false, description: "ISO 4217 code of the money the operator sells in"
     field :units, GraphQL::Types::JSON, null: false, description: "The units the operator shows"
     async_field :federation, Types::Meta::Federation, null: false
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true

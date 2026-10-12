@@ -22,9 +22,10 @@ module Mutations::Setup::Operators
       winds = [] unless winds.is_a? Array
       winds = winds.map do |wind|
         {
-          altitude: wind[:altitude] || 0,
-          speed: wind[:speed] || 0,
+          altitude_m: wind[:altitude_m] || 0,
+          speed_mps: wind[:speed_mps] || 0,
           direction: wind[:direction] || 0,
+          temperature_c: wind[:temperature_c],
         }
       end
 

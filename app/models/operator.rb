@@ -80,10 +80,11 @@ class Operator < ApplicationRecord
 
   validates :industry, presence: true, inclusion: { in: ->(_) { Industry.slugs }, message: :unknown_industry }, on: :create
   validates :time_zone, presence: true
+  validates :currency, format: { with: /\A[A-Z]{3}\z/ }
   # Only industries with certifications have a federation (certification body)
   validates :federation, presence: true, if: -> { module?(:certifications) }
   validate :industry_unchanged, on: :update
-  validate :module_overrides_allowed, :call_schedule_valid
+  validate :module_overrides_allowed, :call_schedule_valid, :units_known
 
   scope :visibility, -> (visibility) { where(state: visibility) }
 
@@ -178,6 +179,15 @@ class Operator < ApplicationRecord
   end
 
   private
+
+  # settings["units"] names a unit the quantity can be shown in: { "altitude" => "m", "mass" => "lb", ... }
+  def units_known
+    chosen = settings["units"]
+    return if chosen.nil?
+
+    unknown = chosen.is_a?(Hash) ? chosen.reject { |quantity, unit| Units.valid?(quantity, unit) } : { "units" => chosen }
+    errors.add(:base, "Unknown units: #{unknown.map { |quantity, unit| "#{quantity} in #{unit}" }.join(', ')}") if unknown.any?
+  end
 
   def call_schedule_valid
     schedule = settings["call_schedule_minutes"]

@@ -1,6 +1,6 @@
 fragment dailyLogSlot on DailyLogSlot {
   id
-  altitude
+  altitudeM
   activityType
   name
 }

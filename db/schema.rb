@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -343,6 +343,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
     t.bigint "credits_cents"
     t.string "industry", null: false
     t.jsonb "modules", default: {}, null: false
+    t.string "currency", default: "AUD", null: false
     t.index ["discarded_at"], name: "index_operators_on_discarded_at"
     t.index ["federation_id"], name: "index_operators_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_operators_on_rig_inspection_template_id"
@@ -810,10 +811,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_120000) do
 
   create_table "weather_conditions", force: :cascade do |t|
     t.text "winds"
-    t.integer "temperature"
+    t.decimal "temperature_c", precision: 5, scale: 1
     t.integer "jump_run"
-    t.decimal "exit_spot_miles", precision: 6, scale: 2
-    t.decimal "offset_miles", precision: 6, scale: 2
+    t.decimal "exit_spot_m", precision: 10, scale: 2
+    t.decimal "offset_m", precision: 10, scale: 2
     t.integer "offset_direction"
     t.bigint "operator_id", null: false
     t.datetime "created_at", null: false

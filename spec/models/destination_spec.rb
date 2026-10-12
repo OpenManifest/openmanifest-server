@@ -109,7 +109,7 @@ RSpec.describe Destination do
       created = slot(destination: hop).tap(&:save!)
 
       expect(created.destination).to eq(hop)
-      expect(created.to_daily_log[:altitude]).to eq(4000)
+      expect(created.to_daily_log[:altitude_m]).to eq(1219.2)
     end
 
     it "need a destination" do
