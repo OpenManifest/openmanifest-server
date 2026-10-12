@@ -1,0 +1,26 @@
+mutation UpdateVehicle($id: Int!, $attributes: VehicleInput!) {
+  updateVehicle(input: { id: $id, attributes: $attributes }) {
+    vehicle {
+      ...vehicleEssentials
+
+      operator {
+        id
+        name
+        vehicles {
+          id
+          name
+          registration
+          minCapacity
+          capacity
+          hours
+          nextMaintenanceHours
+        }
+      }
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}
