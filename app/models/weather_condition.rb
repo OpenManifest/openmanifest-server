@@ -12,12 +12,12 @@
 #  offset_miles     :decimal(6, 2)
 #  date             :date             not null
 #  offset_direction :integer
-#  dropzone_id      :bigint           not null
+#  operator_id      :bigint           not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #
 class WeatherCondition < ApplicationRecord
-  belongs_to :dropzone
+  belongs_to :operator
 
   WINDS_URL = "https://markschulze.net/winds/winds.php"
   WINDS_TIMEOUT = 5 # seconds
@@ -101,11 +101,11 @@ class WeatherCondition < ApplicationRecord
   private
 
   def set_date
-    self.date ||= dropzone&.today
+    self.date ||= operator&.today
   end
 
   def fetch_winds_later
-    FetchWindsJob.perform_later(id) if dropzone.lat.present? && dropzone.lng.present?
+    FetchWindsJob.perform_later(id) if operator.lat.present? && operator.lng.present?
   end
 
   def set_defaults
