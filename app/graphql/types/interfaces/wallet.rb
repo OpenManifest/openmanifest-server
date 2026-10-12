@@ -13,10 +13,10 @@ module Types::Interfaces
       argument :start_date, Integer, required: false
     end
     def orders(start_date: nil)
-      is_self = context[:current_resource].id == object.user.id if object.is_a?(DropzoneUser)
-      is_self ||= context[:current_resource].can?(:readUserTransactions, dropzone_id: object.id) if object.is_a?(Dropzone)
+      is_self = context[:current_resource].id == object.user.id if object.is_a?(Membership)
+      is_self ||= context[:current_resource].can?(:readUserTransactions, operator_id: object.id) if object.is_a?(Operator)
 
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.try(:dropzone_id) || object.id)
+      can_see_others = context[:current_resource].can?("readUserTransactions", operator_id: object.try(:operator_id) || object.id)
       return [] unless can_see_others || is_self
       query = Order.where(buyer: object).or(Order.where(seller: object)).where.not(state: :cancelled)
       query.where!("created_at > ?", Time.at(start_date)) if start_date
@@ -26,7 +26,7 @@ module Types::Interfaces
     field :purchases, Types::Payments::Order.connection_type, null: true
     def purchases
       is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
+      can_see_others = context[:current_resource].can?("readUserTransactions", operator_id: object.operator_id)
 
       if can_see_others || is_self
         object.purchases.order(created_at: :desc)
@@ -38,7 +38,7 @@ module Types::Interfaces
     field :sales, Types::Payments::Order.connection_type, null: true
     def sales
       is_self = context[:current_resource].id == object.user.id
-      can_see_others = context[:current_resource].can?("readUserTransactions", dropzone_id: object.dropzone_id)
+      can_see_others = context[:current_resource].can?("readUserTransactions", operator_id: object.operator_id)
 
       if can_see_others || is_self
         object.purchases.order(created_at: :desc)
@@ -51,8 +51,8 @@ module Types::Interfaces
       # Determine what object type to use for `object`
       def resolve_type(object, context)
         {
-          ::DropzoneUser => Types::Users::DropzoneUser,
-          ::Dropzone => Types::DropzoneType,
+          ::Membership => Types::Users::Membership,
+          ::Operator => Types::OperatorType,
         }[object.class]
       end
     end
