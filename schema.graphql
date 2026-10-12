@@ -2059,6 +2059,11 @@ enum NotificationType {
 type Operator implements AnyResource & Wallet {
   allowedActivityTypes(userId: [Int!]!): [ActivityType!]!
   banner: String
+
+  """
+  Minutes before departure at which a boarding call is offered: the operator's own, else its template's
+  """
+  callScheduleMinutes: [Int!]!
   createdAt: ISO8601DateTime!
 
   """
@@ -2912,6 +2917,11 @@ input SettingsInput {
   When this is disabled, only manifest staff can add, move or remove people on loads
   """
   allowSelfManifest: Boolean
+
+  """
+  Minutes before departure at which a boarding call is offered, longest first (up to six); none: loads depart directly
+  """
+  callScheduleMinutes: [Int!]
 
   """
   When this is enabled, users cannot manifest if they have no credits

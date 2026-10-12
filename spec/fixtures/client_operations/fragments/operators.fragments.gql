@@ -15,6 +15,7 @@ fragment operatorEssentials on Operator {
   terminology
   industry
   modules
+  callScheduleMinutes
 
   settings {
     allowManifestBypass

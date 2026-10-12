@@ -18,6 +18,8 @@ class Types::Input::Operator::SettingsInput < Types::Base::Input
                                         description: 'When this is enabled, users cannot manifest if they have no equipment'
   argument :allow_double_manifesting, Boolean, required: false,
                                                description: 'Allow users to double-manifest'
+  argument :call_schedule_minutes, [Int], required: false,
+                                          description: 'Minutes before departure at which a boarding call is offered, longest first (up to six); none: loads depart directly'
   argument :allow_self_manifest, Boolean, required: false,
                                           description: 'When this is disabled, only manifest staff can add, move or remove people on loads'
 end

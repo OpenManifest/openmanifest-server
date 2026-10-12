@@ -38,6 +38,9 @@ class Operator < ApplicationRecord
                    distance_field_name: :distance,
                    lat_column_name: :lat,
                    lng_column_name: :lng
+  # The longest call schedule an operator can set (whole minutes before departure, longest first)
+  CALL_SCHEDULE_MAX = 6
+
   has_many :memberships, -> { kept }, dependent: :destroy
   has_many :operator_activity_types, dependent: :destroy
   has_many :activity_types, through: :operator_activity_types
@@ -80,7 +83,7 @@ class Operator < ApplicationRecord
   # Only industries with certifications have a federation (certification body)
   validates :federation, presence: true, if: -> { module?(:certifications) }
   validate :industry_unchanged, on: :update
-  validate :module_overrides_allowed
+  validate :module_overrides_allowed, :call_schedule_valid
 
   scope :visibility, -> (visibility) { where(state: visibility) }
 
@@ -156,8 +159,9 @@ class Operator < ApplicationRecord
   end
 
   # Minutes before departure at which a boarding call is offered: settings["call_schedule_minutes"] or the template's
+  # An empty list is the operator's choice (no calls, loads depart directly); only a schedule never set is the template's
   def call_schedule_minutes
-    settings["call_schedule_minutes"].presence || industry_template.call_schedule_minutes
+    settings["call_schedule_minutes"].nil? ? industry_template.call_schedule_minutes : settings["call_schedule_minutes"]
   end
 
   # Where destinations apply, from the destinations module: "per_slot" (every slot has its own), "per_load" (a load
@@ -174,6 +178,15 @@ class Operator < ApplicationRecord
   end
 
   private
+
+  def call_schedule_valid
+    schedule = settings["call_schedule_minutes"]
+    return if schedule.nil?
+
+    valid = schedule.is_a?(Array) && schedule.size <= CALL_SCHEDULE_MAX && schedule.all?(Integer) &&
+            schedule.all?(&:positive?) && schedule == schedule.uniq.sort.reverse
+    errors.add(:base, "The call schedule is up to #{CALL_SCHEDULE_MAX} whole minutes, longest first") unless valid
+  end
 
   # Overrides name known modules, and a module the template marks `locked` stays on
   def module_overrides_allowed

@@ -186,6 +186,20 @@ RSpec.describe "Client operations: operators and access" do
   end
 
   describe "UpdateOperator" do
+    it "sets the call schedule, which the operator then reports" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, settings: { callScheduleMinutes: [25, 5] } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :errors)).to be_nil
+      expect(operator.reload.call_schedule_minutes).to eq([25, 5])
+      expect(json.dig(:data, :updateOperator, :operator, :callScheduleMinutes)).to eq([25, 5])
+    end
+
+    it "refuses a call schedule that is not whole minutes, longest first" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, settings: { callScheduleMinutes: [5, 25] } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :operator)).to be_nil
+      expect(json.dig(:data, :updateOperator, :errors).join).to include("call schedule")
+    end
     it "updates the operator for a user who may edit it" do
       json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: "Renamed", primaryColor: "#445566" } }, as: moderator)
 

@@ -25,6 +25,7 @@ module Types
     def modules
       ::Industry::MODULES.filter_map { |name| [name, object.module_config(name)] if object.module?(name) }.to_h
     end
+    field :call_schedule_minutes, [Int], null: false, description: "Minutes before departure at which a boarding call is offered: the operator's own, else its template's"
     field :terminology, GraphQL::Types::JSON, null: false, description: "Terms of the operator's industry, with its own changes" do
       argument :locale, String, required: false, default_value: "en"
     end
