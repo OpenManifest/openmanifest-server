@@ -5,6 +5,7 @@ mutation CreateLoad(
   $maxSlots: Int
   $vehicle: ID
   $state: LoadState
+  $destinationIds: [Int!]
 ) {
   createLoad(
     input: {
@@ -15,6 +16,7 @@ mutation CreateLoad(
         maxSlots: $maxSlots
         vehicle: $vehicle
         state: $state
+        destinationIds: $destinationIds
       }
     }
   ) {

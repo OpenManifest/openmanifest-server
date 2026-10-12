@@ -6,7 +6,7 @@ module Types
       argument :currency, String, required: false
       money_argument :cost
       argument :name, String, required: false
-      argument :altitude, Int, required: false
+      argument :default_destination_id, Int, required: false
       argument :allow_manifesting_self, Boolean, required: false
       argument :operator_id, Int, required: false
       argument :is_tandem, Boolean, required: false

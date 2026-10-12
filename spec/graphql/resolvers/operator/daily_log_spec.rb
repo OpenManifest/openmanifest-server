@@ -32,7 +32,7 @@ RSpec.describe Resolvers::Operator::DailyLog, type: :request do
                 dispatchAt: load.dispatch_at.iso8601,
                 pilot: { name: load.pilot.name },
                 slots: load.slots.map do |slot|
-                         { id: slot.id.to_s, name: slot.membership.name, activityType: slot.activity_type.name, altitude: slot.ticket_type.altitude }
+                         { id: slot.id.to_s, name: slot.membership.name, activityType: slot.activity_type.name, altitude: slot.destination.altitude_ft }
                        end,
               },
             ],

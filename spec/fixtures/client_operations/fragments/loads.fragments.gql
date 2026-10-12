@@ -31,6 +31,9 @@ fragment loadDetails on Load {
   loadMaster {
     ...membershipEssentials
   }
+  destinations {
+    ...destinationEssentials
+  }
   slots {
     ...slotDetails
   }

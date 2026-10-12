@@ -9,6 +9,9 @@ module Types
                                                  prepare: -> (value, ctx) { ::TicketType.find_by(id: value) }
       argument :activity_type, GraphQL::Types::ID, required: false,
                                                    prepare: -> (value, ctx) { ::ActivityType.find_by(id: value) }
+      argument :destination, GraphQL::Types::ID, required: false,
+                                                 prepare: -> (value, ctx) { ::Destination.kept.find_by(id: value) },
+                                                 description: "Where this slot goes (per-slot destinations); the ticket type's by default"
       argument :load, GraphQL::Types::ID, required: false,
                                           prepare: -> (value, ctx) { ::Load.find_by(id: value) }
       argument :rig, GraphQL::Types::ID, required: false,

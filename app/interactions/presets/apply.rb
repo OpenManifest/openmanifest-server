@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Copies the presets of an operator's industry template into the operator's own tables, once (GENERALISATION §2):
-# roles and permissions (with the default roles), vehicle kinds, ticket types, extras, enabled activity types and
+# roles and permissions (with the default roles), vehicle kinds, destinations, ticket types, extras, enabled activity types and
 # inspection forms. The operator owns the copies afterwards; running it again only adds what is missing. Each later
 # Phase 7 task extends it for its own records.
 class Presets::Apply < ApplicationInteraction
@@ -10,6 +10,7 @@ class Presets::Apply < ApplicationInteraction
 
   steps :copy_settings,
         :create_roles,
+        :create_destinations,
         :create_ticket_types,
         :create_extras,
         :enable_activity_types,
@@ -26,12 +27,24 @@ class Presets::Apply < ApplicationInteraction
     compose(::Setup::Operators::Access::CreateDefaults, operator: operator)
   end
 
+  def create_destinations
+    presets.fetch("destinations", []).each do |attrs|
+      destination = operator.destinations.find_or_initialize_by(name: attrs.fetch("name"))
+      next if destination.persisted?
+
+      destination.assign_attributes(attrs.slice("kind", "altitude_m", "location", "stops", "min_certification_rank"))
+      destination.save!
+    end
+  end
+
+  # A ticket type names its default destination (`destination:`), one of the destinations above
   def create_ticket_types
     presets.fetch("ticket_types", []).each do |attrs|
       ticket = operator.ticket_types.find_or_initialize_by(name: attrs.fetch("name"))
       next if ticket.persisted?
 
-      ticket.assign_attributes(attrs.slice("cost_cents", "altitude", "allow_manifesting_self", "is_tandem", "currency"))
+      ticket.assign_attributes(attrs.slice("cost_cents", "allow_manifesting_self", "is_tandem", "currency"))
+      ticket.default_destination = operator.destinations.find_by!(name: attrs["destination"]) if attrs["destination"]
       ticket.save!
     end
   end

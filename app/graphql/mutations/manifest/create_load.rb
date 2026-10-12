@@ -23,7 +23,8 @@ module Mutations::Manifest
             :gca,
             :load_master,
             :state,
-            :max_slots
+            :max_slots,
+            :destination_ids
           )
         )
       end

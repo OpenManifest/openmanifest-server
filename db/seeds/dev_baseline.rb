@@ -27,10 +27,11 @@ operator.update!(state: "public", settings: {
 })
 
 vehicle = operator.vehicles.find_or_create_by!(name: "Caravan", registration: "VH-ABC", min_capacity: 2, capacity: 14)
-ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_cents: 4000, altitude: 14_000,
+ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_cents: 4000,
+                                                  default_destination: Destination.altitude_for(operator, 14_000),
                                                   allow_manifesting_self: true, currency: "AUD")
-operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, altitude: 14_000, allow_manifesting_self: false,
-                                         is_tandem: true, currency: "AUD")
+operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, default_destination: Destination.altitude_for(operator, 14_000),
+                                         allow_manifesting_self: false, is_tandem: true, currency: "AUD")
 roles = operator.user_roles.index_by(&:name)
 license = (Federation.find_by(slug: "apf") || Federation.first).licenses.where.not(name: "No license").first
 members = {}

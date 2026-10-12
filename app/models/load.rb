@@ -38,9 +38,13 @@ class Load < ApplicationRecord
 
   validates :gca, presence: { message: "Every load must have a GCA" }
   validates :pilot, presence: { message: "Pilot is required" }
+  validate :destination_called, if: -> { boarding? }
 
   has_many :notifications, as: :resource
   has_many :slots, dependent: :destroy
+  # Per-load destinations (the boat visits site 1, then site 2), in the order of the visit
+  has_many :load_destinations, -> { order(:position) }, dependent: :destroy, inverse_of: :load
+  has_many :destinations, through: :load_destinations
 
   counter_culture :operator
 
@@ -55,6 +59,15 @@ class Load < ApplicationRecord
   scope :on, ->(date) { where(load_date: date) }
   scope :today_at, ->(operator) { where(operator_id: operator.id, load_date: operator.today) }
   scope :finalized, -> { where.not(state: %i(cancelled open)) }
+
+  # Replaces the stops of the load by these destinations, in this order (per-load scope)
+  def destination_ids=(ids)
+    ids = Array(ids).map(&:to_i)
+    self.load_destinations = ids.each_with_index.map do |destination_id, position|
+      load_destinations.find { |stop| stop.destination_id == destination_id && stop.position == position } ||
+        load_destinations.build(destination_id: destination_id, position: position)
+    end
+  end
 
   def ready?
     return false if gca.blank?
@@ -119,6 +132,14 @@ class Load < ApplicationRecord
   end
 
   private
+
+  # Operators whose loads go to places (per-load scope) cannot call a load that has no destination
+  def destination_called
+    return unless operator&.destinations_per_load?
+    return if load_destinations.any? { |stop| !stop.marked_for_destruction? }
+
+    errors.add(:destinations, "must include at least one place before the load is called")
+  end
 
   # A load belongs to the operator of its vehicle, and to the day it was created on in that operator's time zone
   def set_operator_and_date

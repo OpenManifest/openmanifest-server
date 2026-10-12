@@ -9,7 +9,7 @@ module DailyLogEntry::Slot
     def to_daily_log
       slice(:id).merge(
         name: guest&.name || membership&.user&.name,
-        altitude: ticket_type.altitude,
+        altitude: (destination || ticket_type.default_destination)&.altitude_ft,
         activity_type: activity_type.name,
       )
     end

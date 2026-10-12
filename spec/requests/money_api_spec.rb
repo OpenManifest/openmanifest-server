@@ -20,14 +20,14 @@ RSpec.describe "Money in the API" do
     let(:update_ticket) { "mutation($id: Int!, $attributes: TicketTypeInput!) { updateTicketType(input: { id: $id, attributes: $attributes }) { errors ticketType { costCents } } }" }
 
     it "creates a ticket type with a price in cents" do
-      json = graphql(create_ticket, { attributes: { name: "Height", operatorId: operator.id, costCents: 1999, altitude: 14_000 } })
+      json = graphql(create_ticket, { attributes: { name: "Height", operatorId: operator.id, costCents: 1999 } })
 
       expect(json.dig(:data, :createTicketType, :ticketType)).to include(costCents: 1999)
       expect(TicketType.last.cost_cents).to eq(1999)
     end
 
     it "no longer takes the price in whole units" do
-      json = graphql(create_ticket, { attributes: { name: "Height", operatorId: operator.id, cost: 12.5, altitude: 14_000 } })
+      json = graphql(create_ticket, { attributes: { name: "Height", operatorId: operator.id, cost: 12.5 } })
 
       expect(json[:errors].to_a.pluck(:message).join).to include("cost")
       expect(TicketType.where(operator: operator, name: "Height")).to be_empty

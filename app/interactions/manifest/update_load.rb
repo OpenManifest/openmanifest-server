@@ -15,6 +15,10 @@ class Manifest::UpdateLoad < ApplicationInteraction
   object :pilot, class: Membership, default: nil
   object :vehicle, class: Vehicle, default: nil
   string :state, default: nil
+  # The places the load visits, in order; given, they replace the load's (operators with per-load destinations)
+  array :destination_ids, default: nil do
+    integer
+  end
   # The version of the load the client based its change on (optimistic locking, BUG-024)
   integer :lock_version, default: nil
 
@@ -118,6 +122,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
     # An older version than the stored one makes the save raise StaleObjectError, the mutation answers CONFLICT
     load.lock_version = lock_version if lock_version
     load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
+    load.destination_ids = destination_ids unless destination_ids.nil?
     load.assign_attributes(
       {
         gca: gca,
@@ -150,7 +155,9 @@ class Manifest::UpdateLoad < ApplicationInteraction
       event = STATE_EVENTS.fetch(target)
       return if load.public_send(event)
 
-      errors.add(:base, "Load ##{load.load_number} can't go from #{load.state.humanize.downcase} to #{target.humanize.downcase}")
+      # The state machine saves the load, so a rule of the load (destinations) says why it refused
+      reason = load.errors.full_messages_for(:destinations).to_sentence.presence
+      errors.add(:base, reason || "Load ##{load.load_number} can't go from #{load.state.humanize.downcase} to #{target.humanize.downcase}")
     end
   end
 

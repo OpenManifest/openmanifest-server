@@ -8,7 +8,7 @@
 #  currency               :string
 #  name                   :string
 #  operator_id            :bigint           not null
-#  altitude               :integer
+#  default_destination_id :bigint
 #  allow_manifesting_self :boolean
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -21,16 +21,10 @@ FactoryBot.define do
     initialize_with { TicketType.find_or_initialize_by(name: name, operator: operator) }
     cost { Faker::Number.between(from: 25, to: 60) }
     currency { "AUD" }
-    altitude do
-      case name
-      when "Height"
-      when "Boogie"
-        14_000
-      when "Hop n Pop"
-        4000
-      else
-        14_000
-      end
+    # The ticket's own height, for the operators whose slots go to an altitude
+    default_destination do
+      feet = name == "Hop n Pop" ? 4000 : 14_000
+      Destination.altitude_for(operator, feet) if operator.destinations_per_slot?
     end
     allow_manifesting_self { true }
   end

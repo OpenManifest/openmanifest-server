@@ -75,6 +75,15 @@ module Types
 
     async_field :vehicles, [Types::Operator::Vehicle], null: false
 
+    field :destinations, [Types::Operator::Destination], null: false,
+                                                         description: "The places this operator's loads go to" do
+      argument :kind, Types::Operator::DestinationKind, required: false
+    end
+    def destinations(kind: nil)
+      scope = object.destinations.order(:name)
+      kind ? scope.where(kind: kind) : scope
+    end
+
     field :roles, [Types::Access::UserRole], null: false do
       argument :selectable, Boolean, required: false
     end

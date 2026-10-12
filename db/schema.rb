@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -96,6 +96,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.index ["operator_id"], name: "index_daily_logs_on_operator_id"
   end
 
+  create_table "destinations", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "kind", default: "altitude", null: false
+    t.string "name", null: false
+    t.decimal "altitude_m", precision: 10, scale: 2
+    t.jsonb "location", default: {}, null: false
+    t.jsonb "stops", default: [], null: false
+    t.integer "min_certification_rank"
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discarded_at"], name: "index_destinations_on_discarded_at"
+    t.index ["operator_id", "name"], name: "index_destinations_on_operator_and_name", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_destinations_on_operator_id"
+  end
+
   create_table "events", force: :cascade do |t|
     t.string "resource_type", null: false
     t.bigint "resource_id", null: false
@@ -176,6 +192,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.datetime "updated_at", null: false
     t.index ["federation_id"], name: "index_licenses_on_federation_id"
     t.index ["name", "federation_id"], name: "index_licenses_on_name_and_federation_id", unique: true
+  end
+
+  create_table "load_destinations", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "destination_id", null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["destination_id"], name: "index_load_destinations_on_destination_id"
+    t.index ["load_id", "position"], name: "index_load_destinations_on_load_and_position", unique: true
+    t.index ["load_id"], name: "index_load_destinations_on_load_id"
   end
 
   create_table "loads", force: :cascade do |t|
@@ -402,8 +429,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.bigint "membership_id"
     t.bigint "created_by_id"
     t.integer "lock_version", default: 0, null: false
+    t.bigint "destination_id"
     t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
+    t.index ["destination_id"], name: "index_slots_on_destination_id"
     t.index ["guest_id"], name: "index_slots_on_guest_id"
     t.index ["guest_slot_id"], name: "index_slots_on_guest_slot_id"
     t.index ["load_id", "membership_id"], name: "index_slots_on_load_id_and_membership_id", unique: true, where: "(membership_id IS NOT NULL)"
@@ -597,13 +626,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
     t.string "currency"
     t.string "name"
     t.bigint "operator_id", null: false
-    t.integer "altitude"
     t.boolean "allow_manifesting_self"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_tandem", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
+    t.bigint "default_destination_id"
+    t.index ["default_destination_id"], name: "index_ticket_types_on_default_destination_id"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
     t.index ["operator_id"], name: "index_ticket_types_on_operator_id"
   end
@@ -758,6 +788,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "authentication_providers", "users"
   add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
   add_foreign_key "daily_logs", "operators"
+  add_foreign_key "destinations", "operators"
   add_foreign_key "events", "memberships"
   add_foreign_key "events", "operators"
   add_foreign_key "extras", "operators"
@@ -768,6 +799,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "licensed_activity_types", "activity_types"
   add_foreign_key "licensed_activity_types", "licenses"
   add_foreign_key "licenses", "federations"
+  add_foreign_key "load_destinations", "destinations"
+  add_foreign_key "load_destinations", "loads"
   add_foreign_key "loads", "memberships", column: "gca_id"
   add_foreign_key "loads", "memberships", column: "load_master_id"
   add_foreign_key "loads", "memberships", column: "pilot_id"
@@ -795,6 +828,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "activity_types"
+  add_foreign_key "slots", "destinations"
   add_foreign_key "slots", "guests"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "memberships"
@@ -813,6 +847,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
+  add_foreign_key "ticket_types", "destinations", column: "default_destination_id"
   add_foreign_key "ticket_types", "operators"
   add_foreign_key "transactions", "receipts"
   add_foreign_key "user_federation_qualifications", "qualifications"

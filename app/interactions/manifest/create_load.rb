@@ -9,9 +9,13 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :gca,           class: Membership, default: nil
   object  :load_master,   class: Membership, default: nil
   object  :vehicle, class: Vehicle
+  # The places the load visits, in order (operators with per-load destinations)
+  array   :destination_ids, default: nil do
+    integer
+  end
   # Ignored: a new load is always open
-  string  :state,         default: "open"
-  date_time :created_at,  default: -> { DateTime.current }
+  string :state, default: "open"
+  date_time :created_at, default: -> { DateTime.current }
 
   steps :build_load,
         :save
@@ -55,6 +59,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       max_slots: max_slots || vehicle.capacity,
       created_at: created_at
     )
+    @load.destination_ids = destination_ids unless destination_ids.nil?
   end
 
   def save

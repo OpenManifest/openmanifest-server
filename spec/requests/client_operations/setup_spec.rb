@@ -117,13 +117,15 @@ RSpec.describe "Client operations: setup" do
   end
 
   describe "CreateTicketType" do
-    let(:attributes) { { name: "Hop n Pop", costCents: 2500, altitude: 5000, allowManifestingSelf: true, operatorId: operator.id, currency: "AUD" } }
+    let(:attributes) { { name: "Hop n Pop", costCents: 2500, defaultDestinationId: destination.id, allowManifestingSelf: true, operatorId: operator.id, currency: "AUD" } }
+    let(:destination) { Destination.altitude_for(operator, 5000) }
 
     it "creates a ticket type" do
       json = nil
       expect { json = client_operation("CreateTicketType", variables: { attributes: attributes }, as: owner_user) }.to change(TicketType, :count).by(1)
 
-      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", altitude: 5000, costCents: 2500)
+      expect(json.dig(:data, :createTicketType, :ticketType)).to include(name: "Hop n Pop", costCents: 2500)
+      expect(json.dig(:data, :createTicketType, :ticketType, :defaultDestination)).to include(name: "5000 ft", altitudeFt: 5000)
     end
 
     it "refuses a jumper" do

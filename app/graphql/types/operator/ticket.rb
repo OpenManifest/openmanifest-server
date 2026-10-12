@@ -16,7 +16,7 @@ module Types::Operator
       object.cost_cents.to_i
     end
     field :name, String, null: true
-    field :altitude, Int, null: true
+    async_field :default_destination, Types::Operator::Destination, null: true
     field :allow_manifesting_self, Boolean, null: true
     field :is_tandem, Boolean, null: true
     field :extras, [Types::Operator::Tickets::Addon], null: false

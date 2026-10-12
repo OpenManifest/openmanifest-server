@@ -11,6 +11,9 @@ fragment slotEssentials on Slot {
   ticketType {
     ...ticketTypeDetails
   }
+  destination {
+    ...destinationEssentials
+  }
   activityType {
     ...activityTypeEssentials
   }

@@ -18,6 +18,7 @@
 #  guest_slot_id :bigint
 #  group_number      :integer          default(0), not null
 #  membership_id  :bigint
+#  destination_id :bigint
 #
 class Slot < ApplicationRecord
   include DailyLogEntry::Slot
@@ -31,6 +32,8 @@ class Slot < ApplicationRecord
   belongs_to :load
   belongs_to :rig, optional: true
   belongs_to :activity_type, optional: true
+  # The place this slot goes to when destinations are per slot (skydiving: its altitude); the ticket type's by default
+  belongs_to :destination, optional: true
   has_one :operator, through: :load
 
   has_one :order, as: :item, required: false
@@ -56,6 +59,9 @@ class Slot < ApplicationRecord
 
   # Only industries with the activities module (skydiving: jump types) have slots with an activity
   validates :activity_type, presence: true, if: -> { operator&.module?(:activities) }
+  before_validation :default_destination, on: :create
+  validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
+  validate :destination_of_operator
   validate :available?,
            :double_manifest?,
            :allowed_activity_type?,
@@ -113,6 +119,16 @@ class Slot < ApplicationRecord
   end
 
   private
+
+  def default_destination
+    self.destination ||= ticket_type&.default_destination if operator&.destinations_per_slot?
+  end
+
+  def destination_of_operator
+    return if destination.nil? || destination.operator_id == operator&.id
+
+    errors.add(:destination, :invalid)
+  end
 
   def required_slots
     return 2 if has_guest?

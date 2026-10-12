@@ -9,6 +9,8 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :membership
   record :ticket_type
   record :activity_type
+  # Where the slot goes (per-slot destinations); the ticket type's destination when left out
+  record :destination, default: nil
   record :rig, default: nil
   integer :group_number, default: nil
   float :body_mass_kg
@@ -97,6 +99,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_by: access_context.subject,
       body_mass_kg: body_mass_kg
     )
+    @model.destination = destination if destination
     # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end

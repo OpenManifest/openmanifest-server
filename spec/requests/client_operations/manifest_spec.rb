@@ -129,6 +129,35 @@ RSpec.describe "Client operations: manifest" do
       expect(json.dig(:data, :updateLoad, :load, :vehicle, :id)).to eq(other_vehicle.id.to_s)
     end
 
+    context "when the operator's loads go to places (per-load destinations)" do
+      before { operator.update!(modules: { destinations: { kinds: %w(site), scope: "per_load" } }) }
+
+      let!(:reef) { operator.destinations.create!(kind: "site", name: "Reef") }
+      let!(:wreck) { operator.destinations.create!(kind: "site", name: "Wreck") }
+
+      it "sets the destinations of the load, in order" do
+        json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { destinationIds: [wreck.id, reef.id] } }, as: owner_user)
+
+        expect(json.dig(:data, :updateLoad, :errors)).to be_nil
+        expect(json.dig(:data, :updateLoad, :load, :destinations).pluck(:name)).to eq(%w(Wreck Reef))
+      end
+
+      it "refuses a call for a load without destinations" do
+        json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding" } }, as: owner_user)
+
+        expect(json.dig(:data, :updateLoad, :errors).to_a.join).to include("Destinations must include")
+        expect(manifest_load.reload.state).to eq("open")
+      end
+
+      it "calls a load that has one" do
+        client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { destinationIds: [reef.id] } }, as: owner_user)
+
+        json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding" } }, as: owner_user)
+
+        expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding")
+      end
+    end
+
     it "changes the maximum number of slots" do
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { maxSlots: 12 } }, as: owner_user)
 

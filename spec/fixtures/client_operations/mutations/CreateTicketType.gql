@@ -8,7 +8,9 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
     ticketType {
       id
       name
-      altitude
+      defaultDestination {
+        ...destinationEssentials
+      }
       costCents
       allowManifestingSelf
       extras {
@@ -23,7 +25,9 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
         ticketTypes {
           id
           name
-          altitude
+          defaultDestination {
+            ...destinationEssentials
+          }
           costCents
           allowManifestingSelf
           extras {

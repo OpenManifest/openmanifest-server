@@ -19,6 +19,7 @@ module Mutations::Manifest
           :ticket_type,
           :membership,
           :activity_type,
+          :destination,
           :body_mass_kg,
           :rig,
           :load,

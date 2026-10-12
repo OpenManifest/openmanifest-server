@@ -49,6 +49,7 @@ class Operator < ApplicationRecord
 
   has_many :vehicles, -> { kept }, dependent: :destroy
   has_many :loads, -> { kept }
+  has_many :destinations, -> { kept }, dependent: :destroy
 
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy
@@ -157,6 +158,14 @@ class Operator < ApplicationRecord
   def call_schedule_minutes
     settings["call_schedule_minutes"].presence || industry_template.call_schedule_minutes
   end
+
+  # Where destinations apply, from the destinations module: "per_slot" (every slot has its own), "per_load" (a load
+  # visits an ordered list) or nil when the operator has no destinations
+  def destination_scope = module_config(:destinations)&.fetch("scope", nil)
+
+  def destinations_per_slot? = destination_scope == "per_slot"
+
+  def destinations_per_load? = destination_scope == "per_load"
 
   # The kinds of vehicle the operator runs (copied from the template at creation)
   def vehicle_kinds

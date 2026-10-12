@@ -180,6 +180,13 @@ roles:
     permissions: all
   owner:
     permissions: all
+destinations:
+- name: Hop n Pop
+  kind: altitude
+  altitude_m: 1219.2
+- name: Full altitude
+  kind: altitude
+  altitude_m: 4267.2
 ticket_types: []
 extras: []
 activity_types:

@@ -41,6 +41,11 @@ module Types::Manifest
       preload(:slots).slots.reject { |slot| slot.membership_id.nil? }
     end
 
+    field :destinations, [Types::Operator::Destination], null: false, description: "The places the load visits, in order"
+    def destinations
+      preload(load_destinations: :destination).load_destinations.sort_by(&:position).map(&:destination)
+    end
+
     async_field :pilot, Types::Users::Membership, null: true
     async_field :vehicle, Types::Operator::Vehicle, null: false
     async_field :load_master, Types::Users::Membership, null: true

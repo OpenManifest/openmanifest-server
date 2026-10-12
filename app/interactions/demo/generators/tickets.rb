@@ -23,7 +23,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
       name: "Height",
       currency: "AUD",
       cost: 38,
-      altitude: 14000,
+      default_destination: destination(14_000),
       allow_manifesting_self: true,
       is_tandem: false
     )
@@ -34,7 +34,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
       name: "Hop n Pop",
       currency: "AUD",
       cost: 25,
-      altitude: 4000,
+      default_destination: destination(4000),
       allow_manifesting_self: true,
       is_tandem: false
     )
@@ -45,9 +45,13 @@ class Demo::Generators::Tickets < ApplicationInteraction
       name: "Tandem",
       currency: "AUD",
       cost: 299,
-      altitude: 14000,
+      default_destination: destination(14_000),
       allow_manifesting_self: false,
       is_tandem: true
     )
   end
+
+  private
+
+  def destination(feet) = ::Destination.altitude_for(access_context.operator, feet)
 end

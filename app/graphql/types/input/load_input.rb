@@ -15,6 +15,8 @@ module Types
                          prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :load_master, ID, required: false,
                                  prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
+      argument :destination_ids, [Int], required: false,
+                                        description: "The places the load visits, in order (operators with per-load destinations)"
       argument :state, Types::Manifest::LoadState, required: false
       argument :lock_version, Int, required: false,
                                    description: "The lockVersion of the load as the client last saw it; an older one is refused with CONFLICT"
