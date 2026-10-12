@@ -2,7 +2,7 @@
 
 module Mutations::Access
   class GrantPermission < Mutations::BaseMutation
-    field :dropzone_user, Types::Users::DropzoneUser, null: true
+    field :membership, Types::Users::Membership, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
@@ -10,24 +10,24 @@ module Mutations::Access
              required: true,
              prepare: -> (value, ctx) { ::Permission.find_by(name: value) }
 
-    argument :dropzone_user, ID, required: false,
-                                 prepare: -> (value, ctx) {
-                                            DropzoneUser.includes(:dropzone, :user, :user_permissions).find_by(id: value)
-                                          }
+    argument :membership, ID, required: false,
+                              prepare: -> (value, ctx) {
+                                Membership.includes(:operator, :user, :user_permissions).find_by(id: value)
+                              }
 
-    def resolve(permission:, dropzone_user: nil)
+    def resolve(permission:, membership: nil)
       mutate(
         ::Access::GrantPermission,
-        :dropzone_user,
-        access_context: access_context_for(dropzone_user.dropzone),
+        :membership,
+        access_context: access_context_for(membership.operator),
         permission: permission,
-        dropzone_user: dropzone_user
+        membership: membership
       )
     end
 
-    def authorized?(dropzone_user: nil, permission: nil)
-      current_dz_user = context[:current_resource].dropzone_users.find_by(
-        dropzone_id: dropzone_user.dropzone_id
+    def authorized?(membership: nil, permission: nil)
+      current_dz_user = context[:current_resource].memberships.find_by(
+        operator_id: membership.operator_id
       )
 
       # Users cannot grant permissions they dont have,
@@ -38,7 +38,7 @@ module Mutations::Access
         [
           false, {
             errors: [
-              "You can't grant permissions for this dropzone",
+              "You can't grant permissions for this operator",
             ],
           },
         ]

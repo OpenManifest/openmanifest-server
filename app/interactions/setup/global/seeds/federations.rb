@@ -3,7 +3,7 @@
 class Setup::Global::Seeds::Federations < ApplicationInteraction
   steps :create_federations,
         :create_licenses,
-        :create_licensed_jump_types
+        :create_licensed_activity_types
 
   def create_federations
     ::Federation.import!(
@@ -27,21 +27,21 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
     )
   end
 
-  def create_licensed_jump_types
-    licensed_jump_types = ::Federation.all.map do |federation|
+  def create_licensed_activity_types
+    licensed_activity_types = ::Federation.all.map do |federation|
       federation.licenses.map do |license|
         configuration = ::Federation.config[federation.slug.to_sym][:licenses].find { |l| l[:name] == license.name }
-        (configuration[:licensed_jump_types] || []).map do |jump_type|
-          ::LicensedJumpType.new(
+        (configuration[:licensed_activity_types] || []).map do |activity_type|
+          ::LicensedActivityType.new(
             license: license,
-            jump_type: jump_types_by_slug[jump_type.to_s]
+            activity_type: activity_types_by_slug[activity_type.to_s]
           )
         end
       end
     end.flatten
-    return if licensed_jump_types.empty?
-    ::LicensedJumpType.import!(
-      licensed_jump_types,
+    return if licensed_activity_types.empty?
+    ::LicensedActivityType.import!(
+      licensed_activity_types,
       on_duplicate_key_ignore: true
     )
   end
@@ -52,7 +52,7 @@ class Setup::Global::Seeds::Federations < ApplicationInteraction
     @federations_by_slug ||= ::Federation.all.index_by(&:slug)
   end
 
-  def jump_types_by_slug
-    @jump_types_by_slug ||= ::JumpType.all.index_by(&:slug)
+  def activity_types_by_slug
+    @activity_types_by_slug ||= ::ActivityType.all.index_by(&:slug)
   end
 end
