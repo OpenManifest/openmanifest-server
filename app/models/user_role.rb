@@ -8,26 +8,24 @@
 #  name        :string
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  dropzone_id :bigint           not null
+#  operator_id :bigint           not null
+#  is_default  :boolean          default(FALSE), not null
+#  is_default_certified :boolean default(FALSE), not null
 #
 class UserRole < ApplicationRecord
-  include Config::Yaml::Roles
-
-  DEFAULT = :student
-  DEFAULT_LICENSED = :fun_jumper
-
-  belongs_to :dropzone
-  has_many :dropzone_users, dependent: :nullify
+  belongs_to :operator
+  has_many :memberships, dependent: :nullify
   has_many :user_role_permissions, dependent: :destroy
   has_many :permissions, through: :user_role_permissions
 
   scope :admin, -> { find_by(name: :admin) }
-  scope :default, -> { find_by(name: DEFAULT) }
-  scope :default_licensed, -> { find_by(name: DEFAULT_LICENSED) }
+  # The role a new member gets, and the one a member with a licence (a certification) gets; set by the industry preset
+  scope :default, -> { find_by(is_default: true) }
+  scope :default_licensed, -> { find_by(is_default_certified: true) }
   scope :below, -> (other_role) { where("user_roles.id < ?", other_role.id) }
   scope :above, -> (other_role) { where("user_roles.id > ?", other_role.id) }
 
-  validates_uniqueness_of :name, scope: :dropzone_id
+  validates_uniqueness_of :name, scope: :operator_id
 
   def grant!(permission_name)
     unless permissions.includes(:permissions).exists?(permissions: { name: permission_name })

@@ -20,7 +20,7 @@ class Federations::ApfSync < ApplicationInteraction
       resource: user_federation,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{user_federation.user.name} successfully synced license #{user_federation&.license&.name} ##{user_federation.uid} with APF",
       details: "APF response: #{@json&.to_json}"
@@ -35,7 +35,7 @@ class Federations::ApfSync < ApplicationInteraction
       resource: user_federation,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF",
       details: errors.full_messages.join(", ")
@@ -63,7 +63,7 @@ class Federations::ApfSync < ApplicationInteraction
         resource: user_federation,
         action: :assigned,
         access_level: :admin,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF: Failed to parse #{@json.count} (!= 1) results from APF API when querying #{url}",
         details: errors.full_messages.join(", ")
@@ -78,7 +78,7 @@ class Federations::ApfSync < ApplicationInteraction
       resource: user_federation,
       action: :assigned,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{user_federation.user.name} failed to sync license #{user_federation&.license&.name} ##{user_federation.uid} with APF: Failed to parse response from APF API (#{url})",
       details: errors.full_messages.join(", ")

@@ -19,7 +19,7 @@ class Manifest::CancelLoad < ApplicationInteraction
       resource: load,
       access_level: :user,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} cancelled load ##{load.load_number}"
     )
@@ -39,7 +39,7 @@ class Manifest::CancelLoad < ApplicationInteraction
 
   def refund_orders
     load.slots.each do |slot|
-      # Passenger slots have no order of their own
+      # Guest slots have no order of their own
       next unless slot.order
 
       compose(
