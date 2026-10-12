@@ -3,12 +3,12 @@
 require "rails_helper"
 
 RSpec.describe "Client operations: subscription triggers" do
-  include_context "dropzone"
+  include_context "operator"
 
   let(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:existing_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
+  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:existing_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner) }
 
   def broadcasts(name)
     ActionCable.server.pubsub.broadcasts(name)
@@ -38,26 +38,26 @@ RSpec.describe "Client operations: subscription triggers" do
   end
 
   describe "CreateLoad" do
-    let(:variables) { { name: "Broadcast load", plane: plane.id, pilot: pilot.id, gca: owner.id } }
+    let(:variables) { { name: "Broadcast load", vehicle: vehicle.id, pilot: pilot.id, gca: owner.id } }
 
-    it "broadcasts loadCreated for the dropzone" do
+    it "broadcasts loadCreated for the operator" do
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{dropzone.id}")).not_to be_empty
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{operator.id}")).not_to be_empty
     end
 
-    it "does not broadcast to other dropzones" do
-      other = create(:dropzone)
+    it "does not broadcast to other operators" do
+      other = create(:operator)
 
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{other.id}")).to be_empty
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{other.id}")).to be_empty
     end
 
     it "broadcasts loadCreated exactly once" do
       client_operation("CreateLoad", variables: variables, as: owner_user)
 
-      expect(broadcasts("graphql-event::loadCreated:dropzoneId:#{dropzone.id}").size).to eq(1)
+      expect(broadcasts("graphql-event::loadCreated:operatorId:#{operator.id}").size).to eq(1)
     end
   end
 
@@ -69,7 +69,7 @@ RSpec.describe "Client operations: subscription triggers" do
     end
 
     it "does not broadcast for other loads" do
-      other_load = create(:load, plane: plane, pilot: pilot, gca: owner)
+      other_load = create(:load, vehicle: vehicle, pilot: pilot, gca: owner)
 
       client_operation("UpdateLoad", variables: { id: existing_load.id, attributes: { name: "Renamed" } }, as: owner_user)
 
@@ -77,17 +77,17 @@ RSpec.describe "Client operations: subscription triggers" do
     end
 
     it "broadcasts loadUpdated once for a call with a time and a state" do
-      client_operation("UpdateLoad", variables: { id: existing_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding_call" } }, as: owner_user)
+      client_operation("UpdateLoad", variables: { id: existing_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding" } }, as: owner_user)
 
       expect(broadcasts("graphql-event::loadUpdated:loadId:#{existing_load.id}").size).to eq(1)
     end
 
     it "broadcasts loadUpdated once when the load lands" do
       existing_load.update!(dispatch_at: 10.minutes.from_now)
-      existing_load.dispatch
+      existing_load.call
       ActionCable.server.pubsub.clear
 
-      client_operation("FinalizeLoad", variables: { id: existing_load.id, state: "landed" }, as: owner_user)
+      client_operation("FinalizeLoad", variables: { id: existing_load.id, state: "completed" }, as: owner_user)
 
       expect(broadcasts("graphql-event::loadUpdated:loadId:#{existing_load.id}").size).to eq(1)
     end

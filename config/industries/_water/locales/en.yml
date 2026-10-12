@@ -1,0 +1,5 @@
+# Terms the _water family shares
+terms:
+  vehicle: { one: Boat, other: Boats }
+  crew:
+    skipper: { one: Skipper, other: Skippers }
