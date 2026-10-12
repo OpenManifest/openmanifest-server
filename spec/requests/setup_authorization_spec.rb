@@ -14,7 +14,7 @@ RSpec.describe "Setup authorization" do
 
   let!(:ticket_a) { create(:ticket_type, operator: operator_a, name: "Height A", cost: 40) }
   let!(:ticket_b) { create(:ticket_type, operator: operator_b, name: "Height B", cost: 50) }
-  let!(:plane_b) { create(:plane, operator: operator_b, max_slots: 12) }
+  let!(:vehicle_b) { create(:vehicle, operator: operator_b, capacity: 12) }
   let!(:extra_a) { Extra.create!(operator: operator_a, name: "Video A", cost: 5) }
   let!(:extra_b) { Extra.create!(operator: operator_b, name: "Video B", cost: 6) }
 
@@ -26,11 +26,11 @@ RSpec.describe "Setup authorization" do
   describe "records of another operator" do
     it "cannot be updated by the owner of an operator that sends its own operatorId" do
       client_operation("UpdateTicketType", variables: { id: ticket_b.id, attributes: { operatorId: operator_a.id, cost: 1.0 } }, as: owner_a_user)
-      client_operation("UpdateAircraft", variables: { id: plane_b.id, attributes: { operatorId: operator_a.id, name: "Hijacked" } }, as: owner_a_user)
+      client_operation("UpdateVehicle", variables: { id: vehicle_b.id, attributes: { operatorId: operator_a.id, name: "Hijacked" } }, as: owner_a_user)
       client_operation("UpdateTicketAddon", variables: { id: extra_b.id, attributes: { operatorId: operator_a.id, name: "Hijacked" } }, as: owner_a_user)
 
       expect(ticket_b.reload).to have_attributes(cost: 50, operator_id: operator_b.id)
-      expect(plane_b.reload.name).not_to eq("Hijacked")
+      expect(vehicle_b.reload.name).not_to eq("Hijacked")
       expect(extra_b.reload.name).to eq("Video B")
     end
 
@@ -38,7 +38,7 @@ RSpec.describe "Setup authorization" do
       template = create(:form_template, operator: operator_b, definition: "original")
       operator_b.update!(rig_inspection_template: template)
 
-      client_operation("UpdateRigInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_a_user)
+      client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_a_user)
 
       expect(template.reload.definition).to eq("original")
     end
@@ -54,10 +54,10 @@ RSpec.describe "Setup authorization" do
 
     it "cannot be archived" do
       client_operation("ArchiveTicketType", variables: { id: ticket_b.id }, as: owner_a_user)
-      client_operation("ArchivePlane", variables: { id: plane_b.id }, as: owner_a_user)
+      client_operation("ArchiveVehicle", variables: { id: vehicle_b.id }, as: owner_a_user)
 
       expect(ticket_b.reload).not_to be_discarded
-      expect(plane_b.reload).not_to be_discarded
+      expect(vehicle_b.reload).not_to be_discarded
     end
 
     it "cannot have its inspection result changed by an inspector of another operator" do
@@ -66,7 +66,7 @@ RSpec.describe "Setup authorization" do
       template = create(:form_template, operator: operator_b)
       inspection = RigInspection.create!(rig: rig, membership: member_b, inspected_by: owner_b, form_template: template, definition: "x", is_ok: false)
 
-      graphql("mutation($id: Int, $attributes: RigInspectionInput!) { updateRigInspection(input: { id: $id, attributes: $attributes }) { errors } }",
+      graphql("mutation($id: Int, $attributes: RigInspectionInput!) { updateEquipmentInspection(input: { id: $id, attributes: $attributes }) { errors } }",
               variables: { id: inspection.id, attributes: { operator: operator_a.id, isOk: true } }, as: owner_a_user)
 
       expect(inspection.reload.is_ok).to be(false)

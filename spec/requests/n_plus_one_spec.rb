@@ -14,12 +14,12 @@ RSpec.describe "N+1 queries on the board and the member list" do
     Array.new(50) { create(:membership, operator: operator, user_role: operator.user_roles.default_licensed, credits: 1000) }
   end
   let!(:loads) do
-    Array.new(5) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+    Array.new(5) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
   end
   let!(:slots) do
     loads.each_with_index.flat_map do |manifested, index|
       members.slice(index * 10, 10).map do |member|
-        create(:slot, load: manifested, membership: member, operator: operator, jump_type: JumpType.allowed_for([member]).first)
+        create(:slot, load: manifested, membership: member, operator: operator, activity_type: ActivityType.allowed_for([member]).first)
       end
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe "N+1 queries on the board and the member list" do
   # Every field the screens read from a member or a load, not just the fragments of the list queries
   describe "with every computed field selected" do
     let(:member_fields) do
-      "id creditsCents expiresAt hasMembership hasCredits hasExitWeight hasLicense hasRigInspection hasReserveInDate " \
+      "id creditsCents expiresAt hasMembership hasCredits hasBodyMassKg hasLicense hasRigInspection hasReserveInDate " \
         "unseenNotifications permissions role { id name } license { id name } user { id name image } rigInspections { id }"
     end
 
@@ -79,7 +79,7 @@ RSpec.describe "N+1 queries on the board and the member list" do
     end
 
     # The fragments the client uses for one load, selected for every load of the day
-    it "lists loads with their slots, crew and plane" do
+    it "lists loads with their slots, crew and vehicle" do
       json = nil
       query = ClientOperations.document("Load") + <<~GQL
         query LoadsDetailed($operator: ID!, $date: ISO8601Date) {
@@ -97,18 +97,18 @@ RSpec.describe "N+1 queries on the board and the member list" do
     end
 
     # These lists used to be eager loaded by a lookahead on each resolver; the fields load their associations themselves
-    it "lists ticket types, add-ons, aircraft and roles of an operator" do
+    it "lists ticket types, add-ons, vehicle and roles of an operator" do
       add_ons = Array.new(6) { |i| Extra.create!(operator: operator, name: "Extra #{i}", cost_cents: 500) }
       ticket_types = Array.new(6) { |i| create(:ticket_type, operator: operator, name: "Ticket #{i}") }
       ticket_types.each_with_index { |ticket, i| ticket.extras << add_ons[i] }
-      Array.new(5) { |i| create(:plane, operator: operator, name: "Plane #{i}") }
+      Array.new(5) { |i| create(:vehicle, operator: operator, name: "Vehicle #{i}") }
       query = <<~GQL
         query($id: ID!) {
           operator(id: $id) {
             id
             userRoles { id name }
             roles { id name }
-            planes { id name operator { id } }
+            vehicles { id name operator { id } }
             extras { id name costCents ticketTypes { id } }
             ticketTypes(isPublic: null) { id name costCents extras { id name } }
           }
@@ -126,7 +126,7 @@ RSpec.describe "N+1 queries on the board and the member list" do
       query = <<~GQL
         query($operator: ID!) {
           memberships(operator: $operator, first: 100, licensed: false) {
-            edges { node { id jumpTypes { id } user { id rigs { id name } licenses { id } memberships { id } userFederations { id } } } }
+            edges { node { id activityTypes { id } user { id rigs { id name } licenses { id } memberships { id } userFederations { id } } } }
           }
         }
       GQL

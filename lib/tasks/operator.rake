@@ -1,8 +1,8 @@
 namespace :operator do
-  namespace :master_log do
+  namespace :daily_log do
     # Scheduled by config/recurring.yml; this runs it once, now
     task :generate => :environment do
-      MasterLogsJob.perform_now
+      DailyLogsJob.perform_now
     end
   end
 

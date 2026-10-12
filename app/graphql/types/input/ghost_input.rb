@@ -6,7 +6,7 @@ module Types
       argument :name, String, required: true
       argument :email, String, required: true
       argument :phone, String, required: false
-      argument :exit_weight, Float, required: true
+      argument :body_mass_kg, Float, required: true
       argument :operator, Integer, required: true,
                                    prepare: -> (value, ctx) { ::Operator.find_by(id: value) }
       argument :role, Integer, required: true,

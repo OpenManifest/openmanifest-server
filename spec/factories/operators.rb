@@ -40,12 +40,12 @@ FactoryBot.define do
 
     factory :operator_with_loads do
       transient do
-        plane_count { 1 }
+        vehicle_count { 1 }
       end
 
       after(:create) do |operator, evaluator|
         create(:membership, operator: operator)
-        create_list(:plane_with_loads, evaluator.plane_count, operator: operator.reload)
+        create_list(:vehicle_with_loads, evaluator.vehicle_count, operator: operator.reload)
 
         # You may need to reload the record here, depending on your application
         operator.reload

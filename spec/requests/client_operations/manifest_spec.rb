@@ -10,13 +10,13 @@ RSpec.describe "Client operations: manifest" do
   let!(:pilot) { create(:membership, operator: operator) }
   let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
   let!(:tandem_ticket) { create(:ticket_type, operator: operator, name: "Tandem", cost: 200).tap { |t| t.update!(is_tandem: true, allow_manifesting_self: false) } }
-  let(:load_variables) { { name: "Load A", plane: plane.id, pilot: pilot.id, gca: owner.id, maxSlots: 10 } }
-  let!(:manifest_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner, name: "Existing", max_slots: 10) }
+  let(:load_variables) { { name: "Load A", vehicle: vehicle.id, pilot: pilot.id, gca: owner.id, maxSlots: 10 } }
+  let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, name: "Existing", max_slots: 10) }
 
   before { fun_jumper.update!(credits: 300) }
 
   def slot_variables(dz_user, **extra)
-    { load: manifest_load.id, membership: dz_user.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([dz_user]).first.id, exitWeight: 80 }.merge(extra)
+    { load: manifest_load.id, membership: dz_user.id, ticketType: ticket_type.id, activityType: ActivityType.allowed_for([dz_user]).first.id, bodyMassKg: 80 }.merge(extra)
   end
 
   def manifest!(dz_user, as: owner_user, **extra)
@@ -33,7 +33,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "filters by date in the operator's time zone" do
-      old_load = create(:load, plane: plane, pilot: pilot, gca: owner, created_at: 3.days.ago)
+      old_load = create(:load, vehicle: vehicle, pilot: pilot, gca: owner, created_at: 3.days.ago)
 
       past = client_operation("Loads", variables: { operator: operator.id, date: 3.days.ago.in_time_zone(operator.time_zone).to_date.iso8601 }, as: user)
       today = client_operation("Loads", variables: { operator: operator.id, date: Time.current.in_time_zone(operator.time_zone).to_date.iso8601 }, as: user)
@@ -51,19 +51,19 @@ RSpec.describe "Client operations: manifest" do
   end
 
   describe "Load" do
-    it "returns the load with plane, crew and slots" do
+    it "returns the load with vehicle, crew and slots" do
       manifest!(fun_jumper)
 
       json = client_operation("Load", variables: { id: manifest_load.id }, as: user)
 
       load = json.dig(:data, :load)
       expect(load).to include(id: manifest_load.id.to_s, name: "Existing", state: "open")
-      expect(load.dig(:plane, :id)).to eq(plane.id.to_s)
+      expect(load.dig(:vehicle, :id)).to eq(vehicle.id.to_s)
       expect(load[:slots].map { |slot| slot.dig(:membership, :id) }).to eq([fun_jumper.id.to_s])
     end
 
     it "returns the jumpers of a load that has no load master" do
-      no_master_load = create(:load, plane: plane, pilot: pilot, gca: owner, load_master: nil)
+      no_master_load = create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: nil)
       manifest!(fun_jumper, load: no_master_load.id)
 
       json = client_operation("Load", variables: { id: no_master_load.id }, as: user)
@@ -87,7 +87,7 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "ignores the state sent for a new load" do
-      json = client_operation("CreateLoad", variables: load_variables.merge(state: "landed"), as: owner_user)
+      json = client_operation("CreateLoad", variables: load_variables.merge(state: "completed"), as: owner_user)
 
       expect(json.dig(:data, :createLoad, :load, :state)).to eq("open")
     end
@@ -102,18 +102,18 @@ RSpec.describe "Client operations: manifest" do
   end
 
   describe "UpdateLoad" do
-    it "gives a call by setting dispatchAt and boarding_call" do
+    it "gives a call by setting dispatchAt and boarding" do
       dispatch_at = 10.minutes.from_now.change(usec: 0)
 
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: dispatch_at.iso8601, state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: dispatch_at.iso8601, state: "boarding" } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_nil
-      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding_call")
+      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding")
       expect(manifest_load.reload.dispatch_at).to eq(dispatch_at)
     end
 
     it "cancels a call by clearing dispatchAt and reopening the load" do
-      manifest_load.update!(state: "boarding_call", dispatch_at: 10.minutes.from_now)
+      manifest_load.update!(state: "boarding", dispatch_at: 10.minutes.from_now)
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
 
@@ -121,12 +121,12 @@ RSpec.describe "Client operations: manifest" do
       expect(manifest_load.reload.dispatch_at).to be_nil
     end
 
-    it "changes the plane" do
-      other_plane = create(:plane, operator: operator, max_slots: 12)
+    it "changes the vehicle" do
+      other_vehicle = create(:vehicle, operator: operator, capacity: 12)
 
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: other_plane.id } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { vehicle: other_vehicle.id } }, as: owner_user)
 
-      expect(json.dig(:data, :updateLoad, :load, :plane, :id)).to eq(other_plane.id.to_s)
+      expect(json.dig(:data, :updateLoad, :load, :vehicle, :id)).to eq(other_vehicle.id.to_s)
     end
 
     it "changes the maximum number of slots" do
@@ -154,14 +154,14 @@ RSpec.describe "Client operations: manifest" do
       expect(manifest_load.reload.max_slots).to eq(2)
     end
 
-    it "changes to a plane that seats exactly the manifested jumpers" do
+    it "changes to a vehicle that seats exactly the manifested jumpers" do
       2.times { manifest!(create(:membership, operator: operator, credits: 300)) }
-      small_plane = create(:plane, operator: operator, max_slots: 2)
+      small_vehicle = create(:vehicle, operator: operator, capacity: 2)
 
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { plane: small_plane.id } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { vehicle: small_vehicle.id } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_nil
-      expect(manifest_load.reload.plane).to eq(small_plane)
+      expect(manifest_load.reload.vehicle).to eq(small_vehicle)
     end
 
     it "refuses a jumper" do
@@ -172,30 +172,30 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "only allows valid state transitions" do
-      manifest_load.update!(state: "landed")
+      manifest_load.update!(state: "completed")
 
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding" } }, as: owner_user)
 
-      expect(manifest_load.reload.state).to eq("landed")
-      expect(json.dig(:data, :updateLoad, :errors).join).to match(/can't go from landed to boarding call/)
+      expect(manifest_load.reload.state).to eq("completed")
+      expect(json.dig(:data, :updateLoad, :errors).join).to match(/can't go from completed to boarding/)
     end
 
     it "starts a boarding call with a call time and the state" do
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601, state: "boarding" } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_nil
-      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding_call")
+      expect(json.dig(:data, :updateLoad, :load, :state)).to eq("boarding")
       expect(manifest_load.reload.dispatch_at).to be_present
     end
 
     it "starts a boarding call with only a call time" do
       client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: 10.minutes.from_now.iso8601 } }, as: owner_user)
 
-      expect(manifest_load.reload.state).to eq("boarding_call")
+      expect(manifest_load.reload.state).to eq("boarding")
     end
 
     it "refuses a boarding call without a call time" do
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding_call" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "boarding" } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_present
       expect(manifest_load.reload.state).to eq("open")
@@ -203,7 +203,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "cancels the boarding call by clearing the call time" do
       manifest_load.update!(dispatch_at: 10.minutes.from_now)
-      manifest_load.dispatch
+      manifest_load.call
 
       json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { dispatchAt: nil, state: "open" } }, as: owner_user)
 
@@ -230,12 +230,12 @@ RSpec.describe "Client operations: manifest" do
     it "lands a load through the state, settling the orders and counting the jump once" do
       slot = manifest!(fun_jumper)
       manifest_load.update!(dispatch_at: 10.minutes.from_now)
-      manifest_load.dispatch
+      manifest_load.call
 
-      expect { client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "landed" } }, as: owner_user) }.
-        to change { fun_jumper.user.reload.jump_count }.by(1)
+      expect { client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "completed" } }, as: owner_user) }.
+        to change { fun_jumper.user.reload.load_count }.by(1)
 
-      expect(manifest_load.reload.state).to eq("landed")
+      expect(manifest_load.reload.state).to eq("completed")
       expect(slot.reload.order.state).to eq("completed")
     end
 
@@ -251,7 +251,7 @@ RSpec.describe "Client operations: manifest" do
     it "does not take off a cancelled load" do
       manifest_load.cancel
 
-      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "in_flight" } }, as: owner_user)
+      json = client_operation("UpdateLoad", variables: { id: manifest_load.id, attributes: { state: "departed" } }, as: owner_user)
 
       expect(json.dig(:data, :updateLoad, :errors)).to be_present
       expect(manifest_load.reload.state).to eq("cancelled")
@@ -286,21 +286,21 @@ RSpec.describe "Client operations: manifest" do
 
     it "rejects manifesting the same person on a second open load" do
       manifest!(fun_jumper)
-      second_load = create(:load, plane: plane, pilot: pilot, gca: owner)
+      second_load = create(:load, vehicle: vehicle, pilot: pilot, gca: owner)
 
       json = client_operation("ManifestUser", variables: slot_variables(fun_jumper, load: second_load.id), as: owner_user)
 
       expect(json.dig(:data, :createSlot, :errors).join).to match(/double-manifest/i)
     end
 
-    it "manifests a tandem instructor with a passenger" do
+    it "manifests a tandem instructor with a guest" do
       instructor.update!(credits: 500)
 
-      json = client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, passengerName: "Pat Passenger", passengerExitWeight: 70), as: owner_user)
+      json = client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guestName: "Pat Guest", guestBodyMassKg: 70), as: owner_user)
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
       expect(json.dig(:data, :createSlot, :slot, :ticketType, :isTandem)).to be(true)
-      expect(json.dig(:data, :createSlot, :slot, :passengerName)).to eq("Pat Passenger")
+      expect(json.dig(:data, :createSlot, :slot, :guestName)).to eq("Pat Guest")
       expect(manifest_load.slots.count).to eq(2)
     end
 
@@ -391,8 +391,8 @@ RSpec.describe "Client operations: manifest" do
 
   describe "ManifestGroup" do
     let(:second) { create(:membership, operator: operator, credits: 300) }
-    let(:group) { [{ id: fun_jumper.id, exitWeight: 80 }, { id: second.id, exitWeight: 75 }] }
-    let(:group_variables) { { load: manifest_load.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for([fun_jumper, second]).first.id, userGroup: group } }
+    let(:group) { [{ id: fun_jumper.id, bodyMassKg: 80 }, { id: second.id, bodyMassKg: 75 }] }
+    let(:group_variables) { { load: manifest_load.id, ticketType: ticket_type.id, activityType: ActivityType.allowed_for([fun_jumper, second]).first.id, userGroup: group } }
 
     it "manifests every member of the group" do
       json = client_operation("ManifestGroup", variables: group_variables, as: owner_user)
@@ -421,7 +421,7 @@ RSpec.describe "Client operations: manifest" do
       third = create(:membership, operator: operator, credits: 300)
       other_group = Array.new(2) { create(:membership, operator: operator, credits: 300) }
       [[fun_jumper, second, third], other_group].each do |members|
-        variables = group_variables.merge(jumpType: JumpType.allowed_for(members).first.id, userGroup: members.map { |member| { id: member.id, exitWeight: 80 } })
+        variables = group_variables.merge(activityType: ActivityType.allowed_for(members).first.id, userGroup: members.map { |member| { id: member.id, bodyMassKg: 80 } })
         expect(client_operation("ManifestGroup", variables: variables, as: owner_user).dig(:data, :createSlots, :errors)).to be_blank
       end
 
@@ -458,7 +458,7 @@ RSpec.describe "Client operations: manifest" do
   end
 
   describe "MoveSlot" do
-    let!(:second_load) { create(:load, plane: plane, pilot: pilot, gca: owner) }
+    let!(:second_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner) }
     let!(:slot) { manifest!(fun_jumper) }
 
     it "moves a slot to another load of the operator" do
@@ -550,10 +550,10 @@ RSpec.describe "Client operations: manifest" do
     let!(:slot) { manifest!(fun_jumper) }
 
     it "lands the load" do
-      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 
       expect(json.dig(:data, :finalizeLoad, :errors)).to be_nil
-      expect(json.dig(:data, :finalizeLoad, :load, :state)).to eq("landed")
+      expect(json.dig(:data, :finalizeLoad, :load, :state)).to eq("completed")
       expect(slot.reload.order.state).to eq("completed")
     end
 
@@ -565,40 +565,40 @@ RSpec.describe "Client operations: manifest" do
     end
 
     it "lands a load only once" do
-      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 
-      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
-        not_to(change { fun_jumper.user.reload.jump_count })
+      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user) }.
+        not_to(change { fun_jumper.user.reload.load_count })
     end
 
-    it "does not cancel a landed load" do
-      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+    it "does not cancel a completed load" do
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 
       json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "cancelled" }, as: owner_user)
 
       expect(json.dig(:data, :finalizeLoad, :errors).join).to match(/can't be cancelled/)
-      expect(manifest_load.reload.state).to eq("landed")
+      expect(manifest_load.reload.state).to eq("completed")
       expect(fun_jumper.reload.credits).to eq(260)
     end
 
     it "refuses a jumper" do
-      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: user)
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: user)
 
-      expect(manifest_load.reload.state).not_to eq("landed")
+      expect(manifest_load.reload.state).not_to eq("completed")
     end
 
-    it "lands a load that has a tandem passenger" do
+    it "lands a load that has a tandem guest" do
       instructor.update!(credits: 500)
-      client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, passengerName: "Pat", passengerExitWeight: 70), as: owner_user)
+      client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guestName: "Pat", guestBodyMassKg: 70), as: owner_user)
 
-      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+      json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 
       expect(json.dig(:data, :finalizeLoad, :errors)).to be_nil
     end
 
     it "updates the jump counts of the jumpers when the load lands" do
-      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user) }.
-        to change { fun_jumper.user.reload.jump_count }.by(1)
+      expect { client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user) }.
+        to change { fun_jumper.user.reload.load_count }.by(1)
     end
   end
 end

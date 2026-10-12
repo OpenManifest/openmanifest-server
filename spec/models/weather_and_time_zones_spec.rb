@@ -137,10 +137,10 @@ RSpec.describe "Weather and time zones" do
   end
 
   describe "loads of the operator's day" do
-    let(:plane) { create(:plane, operator: operator) }
+    let(:vehicle) { create(:vehicle, operator: operator) }
 
     def create_load_at(time, **attrs)
-      travel_to(time) { create(:load, plane: plane, **attrs) }
+      travel_to(time) { create(:load, vehicle: vehicle, **attrs) }
     end
 
     it "numbers and dates a load by the operator's day" do
@@ -166,11 +166,11 @@ RSpec.describe "Weather and time zones" do
       first = create_load_at(Time.utc(2026, 10, 8, 16, 0))
       second = create_load_at(Time.utc(2026, 10, 8, 17, 0))
       ticket = create(:ticket_type, operator: operator, cost: 10)
-      jump_type = JumpType.allowed_for([member]).first
-      create(:slot, load: first, operator: operator, membership: member, ticket_type: ticket, jump_type: jump_type)
+      activity_type = ActivityType.allowed_for([member]).first
+      create(:slot, load: first, operator: operator, membership: member, ticket_type: ticket, activity_type: activity_type)
 
       travel_to(late_evening_utc) do
-        slot = Slot.new(load: second, membership: member, ticket_type: ticket, jump_type: jump_type, exit_weight: 80, created_by: member)
+        slot = Slot.new(load: second, membership: member, ticket_type: ticket, activity_type: activity_type, body_mass_kg: 80, created_by: member)
 
         expect(slot).not_to be_valid
         expect(slot.errors.full_messages).to include("Double-manifesting is not allowed")
@@ -183,7 +183,7 @@ RSpec.describe "Weather and time zones" do
 
       travel_to(late_evening_utc) { Manifest::Schedule::AutoFinalize.run! }
 
-      expect(yesterday.reload.state).to eq("landed")
+      expect(yesterday.reload.state).to eq("completed")
       expect(today.reload.state).to eq("open")
     end
   end

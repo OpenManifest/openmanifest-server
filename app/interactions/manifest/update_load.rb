@@ -13,7 +13,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
   object :gca, class: Membership, default: nil
   object :load_master, class: Membership, default: nil
   object :pilot, class: Membership, default: nil
-  object :plane, class: Plane, default: nil
+  object :vehicle, class: Vehicle, default: nil
   string :state, default: nil
   # The version of the load the client based its change on (optimistic locking, BUG-024)
   integer :lock_version, default: nil
@@ -23,12 +23,12 @@ class Manifest::UpdateLoad < ApplicationInteraction
   # The state the client asks for, and the event of the load's state machine that gets it there
   STATE_EVENTS = {
     "open" => :reopen,
-    "boarding_call" => :dispatch,
-    "in_flight" => :take_off,
+    "boarding" => :call,
+    "departed" => :depart,
   }.freeze
 
   steps :check_max_slots,
-        :check_plane_change,
+        :check_vehicle_change,
         :update_load,
         :save,
         :change_state,
@@ -60,7 +60,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
       )
     end
 
-    if plane
+    if vehicle
       compose(
         ::Activity::CreateEvent,
         access_context: access_context,
@@ -69,7 +69,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the plane for load ##{load.load_number} to #{plane.name} (#{plane.registration})"
+        message: "#{access_context.user.name} changed the vehicle for load ##{load.load_number} to #{vehicle.name} (#{vehicle.registration})"
       )
     end
 
@@ -105,12 +105,12 @@ class Manifest::UpdateLoad < ApplicationInteraction
     errors.add(:base, "You have too many manifested jumpers") if max_slots < load.slots.count
   end
 
-  def check_plane_change
-    return unless plane
-    if plane.max_slots >= load.slots.count
-      load.assign_attributes(max_slots: plane.max_slots)
+  def check_vehicle_change
+    return unless vehicle
+    if vehicle.capacity >= load.slots.count
+      load.assign_attributes(max_slots: vehicle.capacity)
     else
-      errors.add(:base, "This plane cannot fit all manifested jumpers")
+      errors.add(:base, "This vehicle cannot fit all manifested jumpers")
     end
   end
 
@@ -121,11 +121,11 @@ class Manifest::UpdateLoad < ApplicationInteraction
     load.assign_attributes(
       {
         gca: gca,
-        plane: plane,
+        vehicle: vehicle,
         load_master: load_master,
         pilot: pilot,
         name: name,
-        max_slots: max_slots || load.max_slots || load.plane.max_slots,
+        max_slots: max_slots || load.max_slots || load.vehicle.capacity,
       }.compact
     )
   end
@@ -142,7 +142,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
     return if target.blank? || target == load.state
 
     case target
-    when "landed"
+    when "completed"
       compose(::Manifest::FinalizeLoad, load: load, access_context: access_context)
     when "cancelled"
       compose(::Manifest::CancelLoad, load: load, access_context: access_context)
@@ -158,6 +158,6 @@ class Manifest::UpdateLoad < ApplicationInteraction
     return state if state.present?
     return unless inputs.given?(:dispatch_at)
 
-    dispatch_at.present? ? "boarding_call" : "open"
+    dispatch_at.present? ? "boarding" : "open"
   end
 end

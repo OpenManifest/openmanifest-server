@@ -8,28 +8,30 @@ require Rails.root.join("db/migrate/20261009130000_add_date_to_weather_condition
 require Rails.root.join("db/migrate/20261009150000_add_cents_columns_for_money")
 require Rails.root.join("db/migrate/20261011130000_drop_legacy_columns")
 require Rails.root.join("db/migrate/20261011140000_rename_dropzone_to_operator")
+require Rails.root.join("db/migrate/20261011150000_rename_aviation_names_to_generic")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
 #
-# The steps were written for the schema of their time, before P7.2 dropped the old money columns and P7.3 renamed the
-# tenant. Each example builds its rows with today's models, goes back to that schema inside `with_legacy_schema` (the
+# The steps were written for the schema of their time, before P7.2 dropped the old money columns, P7.3 renamed the
+# tenant and P7.5 the aviation names. Each example builds its rows with today's models, goes back to that schema inside `with_legacy_schema` (the
 # migrations are reversible, so the rows come along), runs the step and returns to today's schema for the assertions.
 RSpec.describe "P6.16 constraint migrations" do
   let(:connection) { ActiveRecord::Base.connection }
   let(:operator) { create(:operator) }
-  let(:plane) { create(:plane, operator: operator) }
+  let(:vehicle) { create(:vehicle, operator: operator) }
 
   def run_quietly(migration, step)
     ActiveRecord::Migration.suppress_messages { migration.public_send(step) }
   end
 
   def reset_models
-    [Operator, Membership, TicketType, Extra, Order, Transaction, Plane, Load, Slot, WeatherCondition].each(&:reset_column_information)
+    [Operator, Membership, TicketType, Extra, Order, Transaction, Vehicle, Load, Slot, WeatherCondition].each(&:reset_column_information)
   end
 
   def with_legacy_schema
     ActiveRecord::Migration.suppress_messages do
+      RenameAviationNamesToGeneric.new.migrate(:down)
       RenameDropzoneToOperator.new.migrate(:down)
       DropLegacyColumns.new.migrate(:down)
     end
@@ -39,6 +41,7 @@ RSpec.describe "P6.16 constraint migrations" do
     ActiveRecord::Migration.suppress_messages do
       DropLegacyColumns.new.migrate(:up)
       RenameDropzoneToOperator.new.migrate(:up)
+      RenameAviationNamesToGeneric.new.migrate(:up)
     end
     reset_models
   end
@@ -56,7 +59,7 @@ RSpec.describe "P6.16 constraint migrations" do
   describe AddUniqueIndexToDropzoneUsersOnUserAndDropzone do
     let(:migration) { described_class.new }
     let(:user) { create(:user) }
-    let!(:oldest) { create(:membership, operator: operator, user: user, credits: 100, jump_count: 5) }
+    let!(:oldest) { create(:membership, operator: operator, user: user, credits: 100, load_count: 5) }
 
     before { connection.remove_index :memberships, name: "index_memberships_on_user_id_and_operator_id" }
 
@@ -65,7 +68,7 @@ RSpec.describe "P6.16 constraint migrations" do
     end
 
     it "merges the duplicates into the oldest membership" do
-      duplicate = duplicate_membership(jump_count: 2)
+      duplicate = duplicate_membership(load_count: 2)
       legacy_credits = nil
 
       with_legacy_schema do
@@ -77,22 +80,22 @@ RSpec.describe "P6.16 constraint migrations" do
       end
 
       expect(Membership.where(id: duplicate.id)).to be_empty
-      expect(oldest.reload).to have_attributes(jump_count: 7)
+      expect(oldest.reload).to have_attributes(load_count: 7)
       expect(legacy_credits).to eq(140)
       expect(Membership.where(user: user, operator: operator).count).to eq(1)
     end
 
     it "moves what pointed at a duplicate to the oldest membership" do
       duplicate = duplicate_membership
-      plane_load = create(:load, plane: plane, gca: duplicate, pilot: duplicate)
-      slot = Slot.new(load: plane_load, membership: duplicate, created_by: duplicate, exit_weight: 80,
-                      ticket_type: create(:ticket_type, operator: operator), jump_type: JumpType.first).tap { |new_slot| new_slot.save!(validate: false) }
+      vehicle_load = create(:load, vehicle: vehicle, gca: duplicate, pilot: duplicate)
+      slot = Slot.new(load: vehicle_load, membership: duplicate, created_by: duplicate, body_mass_kg: 80,
+                      ticket_type: create(:ticket_type, operator: operator), activity_type: ActivityType.first).tap { |new_slot| new_slot.save!(validate: false) }
       order = create(:order, operator: operator, seller: operator, buyer: duplicate)
       duplicate.grant!(:actAsPilot)
 
       with_legacy_schema { run_quietly(migration, :merge_duplicate_memberships) }
 
-      expect(plane_load.reload).to have_attributes(gca_id: oldest.id, pilot_id: oldest.id)
+      expect(vehicle_load.reload).to have_attributes(gca_id: oldest.id, pilot_id: oldest.id)
       expect(slot.reload).to have_attributes(membership_id: oldest.id, created_by_id: oldest.id)
       expect(order.reload.buyer).to eq(oldest)
       expect(oldest.reload.permissions.pluck(:name)).to include("actAsPilot")
@@ -100,17 +103,17 @@ RSpec.describe "P6.16 constraint migrations" do
 
     it "keeps one slot where several memberships were on the same load, and fixes the counters" do
       duplicate = duplicate_membership
-      plane_load = create(:load, plane: plane)
+      vehicle_load = create(:load, vehicle: vehicle)
       ticket = create(:ticket_type, operator: operator)
       connection.remove_index :slots, name: "index_slots_on_load_id_and_membership_id"
       [oldest, duplicate].each do |member|
-        Slot.new(load: plane_load, membership: member, exit_weight: 80, ticket_type: ticket, jump_type: JumpType.first).save!(validate: false)
+        Slot.new(load: vehicle_load, membership: member, body_mass_kg: 80, ticket_type: ticket, activity_type: ActivityType.first).save!(validate: false)
       end
 
       with_legacy_schema { run_quietly(migration, :merge_duplicate_memberships) }
 
-      expect(Slot.where(load: plane_load).pluck(:membership_id)).to eq([oldest.id])
-      expect(plane_load.reload.slots_count).to eq(1)
+      expect(Slot.where(load: vehicle_load).pluck(:membership_id)).to eq([oldest.id])
+      expect(vehicle_load.reload.slots_count).to eq(1)
     end
 
     it "prefers the membership that was not archived" do
@@ -138,7 +141,7 @@ RSpec.describe "P6.16 constraint migrations" do
     before { connection.remove_index :loads, name: "index_loads_on_operator_id_and_load_date_and_load_number" }
 
     it "renumbers duplicate numbers of a day, the oldest load keeps its number" do
-      first, second, third = Array.new(3) { create(:load, plane: plane) }
+      first, second, third = Array.new(3) { create(:load, vehicle: vehicle) }
       second.update_columns(load_number: first.load_number)
 
       with_legacy_schema { run_quietly(migration, :renumber_duplicate_load_numbers) }
@@ -147,9 +150,9 @@ RSpec.describe "P6.16 constraint migrations" do
     end
 
     it "does not touch the numbers of other days or operators" do
-      yesterday = create(:load, plane: plane, created_at: 1.day.ago)
-      other = create(:load, plane: create(:plane, operator: create(:operator)))
-      today = create(:load, plane: plane)
+      yesterday = create(:load, vehicle: vehicle, created_at: 1.day.ago)
+      other = create(:load, vehicle: create(:vehicle, operator: create(:operator)))
+      today = create(:load, vehicle: vehicle)
       before_numbers = [yesterday, other, today].map { |load| load.reload.load_number }
 
       with_legacy_schema { run_quietly(migration, :renumber_duplicate_load_numbers) }

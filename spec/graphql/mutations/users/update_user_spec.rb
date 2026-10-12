@@ -29,7 +29,7 @@ module Mutations
             email: "some@rspec.com",
             federation_number: "321321",
             license_id: license.reload.id,
-            exit_weight: 50,
+            body_mass_kg: 50,
           )
         end
         let(:post_request) do
@@ -55,7 +55,7 @@ module Mutations
       end
     end
 
-    def query(id:, name:, email:, phone:, exit_weight:, license_id:, federation_number:)
+    def query(id:, name:, email:, phone:, body_mass_kg:, license_id:, federation_number:)
       <<~GQL
         mutation {
           updateUser(
@@ -65,7 +65,7 @@ module Mutations
                 name: "#{name}",
                 email: "#{email}",
                 phone: "#{phone}",
-                exitWeight: #{exit_weight},
+                bodyMassKg: #{body_mass_kg},
                 license: #{license_id},
               }
             }

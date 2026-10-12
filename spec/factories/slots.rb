@@ -8,14 +8,14 @@
 #  ticket_type_id    :bigint
 #  load_id           :bigint
 #  rig_id            :bigint
-#  jump_type_id      :bigint
+#  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  exit_weight       :float
-#  passenger_id      :bigint
+#  body_mass_kg       :float
+#  guest_id      :bigint
 #  is_paid           :boolean
 #  transaction_id    :bigint
-#  passenger_slot_id :bigint
+#  guest_slot_id :bigint
 #  group_number      :integer          default(0), not null
 #  membership_id  :bigint
 #
@@ -32,10 +32,10 @@ FactoryBot.define do
       available_existing || create(:membership, operator: operator)
     end
     group_number { 0 }
-    ticket_type { create(:ticket_type, operator: load.plane.operator) }
+    ticket_type { create(:ticket_type, operator: load.vehicle.operator) }
     is_paid { false }
-    exit_weight { membership.user.exit_weight }
-    jump_type { membership.user.license.licensed_jump_types.sample.jump_type }
+    body_mass_kg { membership.user.body_mass_kg }
+    activity_type { membership.user.license.licensed_activity_types.sample.activity_type }
     rig { membership.user.rigs.sample }
     created_by { membership }
   end

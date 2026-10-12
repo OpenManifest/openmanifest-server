@@ -39,7 +39,7 @@ class Manifest::CancelLoad < ApplicationInteraction
 
   def refund_orders
     load.slots.each do |slot|
-      # Passenger slots have no order of their own
+      # Guest slots have no order of their own
       next unless slot.order
 
       compose(

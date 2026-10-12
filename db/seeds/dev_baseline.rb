@@ -8,7 +8,7 @@ Setup::Global::Seeds.run!
 
 def dev_user(email, name, weight = 80)
   user = User.find_or_initialize_by(email: email)
-  user.assign_attributes(name: name, phone: "0400000000", exit_weight: weight,
+  user.assign_attributes(name: name, phone: "0400000000", body_mass_kg: weight,
                          password: "Password1!", password_confirmation: "Password1!")
   user.skip_confirmation!
   user.save!
@@ -26,7 +26,7 @@ operator.update!(state: "public", settings: {
   require_reserve_in_date: false, require_equipment: false,
 })
 
-plane = operator.planes.find_or_create_by!(name: "Caravan", registration: "VH-ABC", min_slots: 2, max_slots: 14)
+vehicle = operator.vehicles.find_or_create_by!(name: "Caravan", registration: "VH-ABC", min_capacity: 2, capacity: 14)
 ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_cents: 4000, altitude: 14_000,
                                                   allow_manifesting_self: true, currency: "AUD")
 operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, altitude: 14_000, allow_manifesting_self: false,
@@ -46,18 +46,18 @@ members = {}
 end
 owner_membership = operator.memberships.find_by!(user: owner)
 owner_membership.update!(credits: 1000, license: license, expires_at: 1.year.from_now)
-%w(actAsPilot actAsGCA actAsLoadMaster actAsDZSO actAsRigInspector).each { |p| owner_membership.grant!(p) }
+%w(actAsPilot actAsGCA actAsLoadMaster actAsDutyOfficer actAsEquipmentInspector).each { |p| owner_membership.grant!(p) }
 members["pilot@example.com"].grant!("actAsPilot")
 
-if Load.joins(:plane).where(planes: { operator_id: operator.id }).none?
+if Load.joins(:vehicle).where(vehicles: { operator_id: operator.id }).none?
   context = ApplicationInteraction::AccessContext.new(owner_membership)
-  first = Manifest::CreateLoad.run!(access_context: context, plane: plane, pilot: members["pilot@example.com"],
+  first = Manifest::CreateLoad.run!(access_context: context, vehicle: vehicle, pilot: members["pilot@example.com"],
                                     gca: owner_membership, load_master: owner_membership, name: "Load 1")
-  Manifest::CreateLoad.run!(access_context: context, plane: plane, pilot: members["pilot@example.com"],
+  Manifest::CreateLoad.run!(access_context: context, vehicle: vehicle, pilot: members["pilot@example.com"],
                             gca: owner_membership, load_master: owner_membership, name: "Load 2")
   %w(jumper1@example.com jumper2@example.com).each do |email|
     Manifest::CreateSlot.run!(access_context: context, load: first, membership: members[email], ticket_type: ticket,
-                              jump_type: JumpType.find_by(slug: "fs") || JumpType.first, exit_weight: 80)
+                              activity_type: ActivityType.find_by(slug: "fs") || ActivityType.first, body_mass_kg: 80)
   end
 end
 puts "dev_baseline: operator #{operator.id}, #{operator.loads.count} loads. Login owner@example.com / Password1!"

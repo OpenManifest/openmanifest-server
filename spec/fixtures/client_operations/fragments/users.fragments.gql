@@ -4,7 +4,7 @@ fragment userEssentials on User {
   nickname
   phone
   email
-  exitWeight
+  bodyMassKg
   moderationRole
   image
   apfNumber

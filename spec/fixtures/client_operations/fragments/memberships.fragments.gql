@@ -5,7 +5,7 @@ fragment membershipEssentials on Membership {
   hasCredits
   hasMembership
   hasLicense
-  hasExitWeight
+  hasBodyMassKg
   role {
     ...roleEssentials
   }

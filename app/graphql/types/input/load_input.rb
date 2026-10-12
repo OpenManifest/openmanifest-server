@@ -9,8 +9,8 @@ module Types
                            prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :dispatch_at, GraphQL::Types::ISO8601DateTime, required: false,
                                                               prepare: -> (value, ctx) { value ? value.to_datetime : nil }
-      argument :plane, ID, required: false,
-                           prepare: -> (value, ctx) { ::Plane.find_by(id: value) }
+      argument :vehicle, ID, required: false,
+                             prepare: -> (value, ctx) { ::Vehicle.find_by(id: value) }
       argument :gca, ID, required: false,
                          prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :load_master, ID, required: false,

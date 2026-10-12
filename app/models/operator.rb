@@ -30,7 +30,7 @@ class Operator < ApplicationRecord
   include Discard::Model
   include StateMachines::OperatorState
   include Image::Resizer
-  include MasterLogEntry::Operator
+  include DailyLogEntry::Operator
   include Operators::Configuration
 
   acts_as_mappable default_units: :kms,
@@ -45,7 +45,7 @@ class Operator < ApplicationRecord
 
   has_many :events, class_name: "Activity::Event"
 
-  has_many :planes, -> { kept }, dependent: :destroy
+  has_many :vehicles, -> { kept }, dependent: :destroy
   has_many :loads, -> { kept }
 
   has_many :load_masters, through: :loads
@@ -56,7 +56,7 @@ class Operator < ApplicationRecord
   has_many :tandem_rigs, -> { kept.where(rig_type: :tandem) }, class_name: "Rig"
 
   has_many :extras, -> { kept }, dependent: :destroy
-  has_many :master_logs, dependent: :destroy
+  has_many :daily_logs, dependent: :destroy
   has_many :form_templates, dependent: :destroy
 
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"

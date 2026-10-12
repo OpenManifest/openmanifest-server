@@ -83,7 +83,7 @@ Lint/EmptyFile:
   Exclude:
     - 'spec/graphql/mutations/manifest/update_load_spec.rb'
     - 'spec/models/load_spec.rb'
-    - 'spec/models/plane_spec.rb'
+    - 'spec/models/vehicle_spec.rb'
 
 # Offense count: 1
 # This cop supports safe autocorrection (--autocorrect).
@@ -123,7 +123,7 @@ Performance/CollectionLiteralInLoop:
 # Offense count: 1
 Performance/MapMethodChain:
   Exclude:
-    - 'app/interactions/master_log/schedule.rb'
+    - 'app/interactions/daily_log/schedule.rb'
 
 # Offense count: 3
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -154,7 +154,7 @@ Rails/PluckInWhere:
 # AllowedReceivers: ActionMailer::Preview, ActiveSupport::TimeZone
 Rails/RedundantActiveRecordAllMethod:
   Exclude:
-    - 'spec/models/jump_type_spec.rb'
+    - 'spec/models/activity_type_spec.rb'
 
 # Offense count: 2
 # This cop supports unsafe autocorrection (--autocorrect-all).

@@ -7,7 +7,7 @@ class Demo::DataGenerator < ApplicationInteraction
   import_filters Demo::Generators::Users
 
   steps :create_tickets,
-        :create_aircrafts,
+        :create_vehicles,
         :create_users,
         :create_loads
 
@@ -45,10 +45,10 @@ class Demo::DataGenerator < ApplicationInteraction
     )
   end
 
-  def create_aircrafts
-    return nil if operator.planes.any?
+  def create_vehicles
+    return nil if operator.vehicles.any?
     compose(
-      ::Demo::Generators::Aircrafts,
+      ::Demo::Generators::Vehicles,
       access_context: owner_access_context
     )
   end
@@ -58,7 +58,7 @@ class Demo::DataGenerator < ApplicationInteraction
     compose(
       ::Demo::Generators::Users,
       gca_count: gca_count,
-      dzso_count: dzso_count,
+      duty_officer_count: duty_officer_count,
       jumper_count: jumper_count,
       tandem_instructor_count: tandem_instructor_count,
       aff_instructor_count: aff_instructor_count,

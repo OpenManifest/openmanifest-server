@@ -5,7 +5,7 @@ require "active_interaction"
 class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :load
   record :ticket_type
-  record :jump_type
+  record :activity_type
   integer :group_number, default: nil
   # Add-ons bought for every member of the group
   array :extra_ids, default: nil do
@@ -15,18 +15,18 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   array :users do
     hash do
       record :membership
-      float :exit_weight
+      float :body_mass_kg
       record :rig, default: nil
-      string :passenger_name, default: nil
-      float :passenger_exit_weight, default: nil
+      string :guest_name, default: nil
+      float :guest_body_mass_kg, default: nil
     end
   end
 
-  validates :ticket_type, :jump_type, :users, presence: true
+  validates :ticket_type, :activity_type, :users, presence: true
 
   steps :lock_load_and_members,
         :check_available_slots,
-        :check_allowed_jump_type,
+        :check_allowed_activity_type,
         :check_credits,
         :create_slots
 
@@ -39,7 +39,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
 
   # The whole group gets one group number (BUG-027)
   def create_slots
-    group = group_number || plane_load.next_group_number
+    group = group_number || vehicle_load.next_group_number
 
     users.map do |user|
       compose(
@@ -49,7 +49,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
         created_at: created_at,
         group_includes_self: group_includes_self?,
         ticket_type: ticket_type,
-        jump_type: jump_type,
+        activity_type: activity_type,
         extra_ids: extra_ids,
         load: load,
         **user
@@ -65,10 +65,10 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_available_slots
     # Check how many users we're manifesting, and return
     # an error if there aren't enough slots on this load
-    slots_expected = users.sum { |user| user[:passenger_name] ? 2 : 1 }
+    slots_expected = users.sum { |user| user[:guest_name] ? 2 : 1 }
 
-    return unless slots_expected > plane_load.reload.available_slots
-    errors.add(:base, "Only #{plane_load.available_slots} slots available")
+    return unless slots_expected > vehicle_load.reload.available_slots
+    errors.add(:base, "Only #{vehicle_load.available_slots} slots available")
   end
 
   def check_credits
@@ -83,9 +83,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     end
   end
 
-  def check_allowed_jump_type
-    return if jump_type.allowed_for?(memberships)
-    errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps")
+  def check_allowed_activity_type
+    return if activity_type.allowed_for?(memberships)
+    errors.add(:activity_type_id, "Not all members are licensed for #{activity_type.name} jumps")
   end
 
   def check_double_manifesting
@@ -104,11 +104,11 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     users.pluck(:membership)
   end
 
-  def plane_load
+  def vehicle_load
     load.reload
   end
 
   def operator
-    plane_load.plane.operator
+    vehicle_load.vehicle.operator
   end
 end

@@ -11,8 +11,8 @@ module Mutations
     let!(:private_operator_rig) { create(:rig, rig_type: :sport, is_public: false, operator: operator) }
     let!(:occupied_student_rig) { create(:rig, rig_type: :student, is_public: true, operator: operator) }
 
-    let!(:load) { create(:load, plane: plane, created_at: 30.minutes.ago) }
-    let!(:slot) { create(:slot, load: load, operator: operator, membership: student, rig: occupied_student_rig, jump_type: JumpType.find_by(slug: :fs)) }
+    let!(:load) { create(:load, vehicle: vehicle, created_at: 30.minutes.ago) }
+    let!(:slot) { create(:slot, load: load, operator: operator, membership: student, rig: occupied_student_rig, activity_type: ActivityType.find_by(slug: :fs)) }
 
     let!(:uninspected_rig) { create(:rig, rig_type: :sport, user: user) }
     let!(:inspected_rig) { create(:rig, rig_type: :sport, user: user) }
@@ -56,9 +56,9 @@ module Mutations
         end
       end
 
-      context 'when the rig is on a load that is cancelled or has landed' do
-        before { load.update(state: :landed) }
-        let!(:next_load) { create(:load, plane: plane, created_at: 5.minutes.ago) }
+      context 'when the rig is on a load that is cancelled or has completed' do
+        before { load.update(state: :completed) }
+        let!(:next_load) { create(:load, vehicle: vehicle, created_at: 5.minutes.ago) }
         subject do
           execute_query(
             is_tandem: false,

@@ -1,7 +1,7 @@
 # Recurring jobs, run by Solid Queue's scheduler (bin/jobs, or the Puma plugin with SOLID_QUEUE_IN_PUMA=1).
 # Schedules are in UTC (the server's time zone); the jobs themselves work in each operator's time zone.
 default: &default
-  # Loads of past days are landed (when they were called) or cancelled
+  # Loads of past days are completed (when they were called) or cancelled
   auto_finalize:
     class: AutoFinalizeJob
     queue: default
@@ -9,8 +9,8 @@ default: &default
 
   # The master log of yesterday is generated at 02:00-02:59 in the operator's time zone: the job runs every hour and
   # picks the operators that are in that hour
-  master_logs:
-    class: MasterLogsJob
+  daily_logs:
+    class: DailyLogsJob
     queue: default
     schedule: every hour at minute 5
 

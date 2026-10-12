@@ -6,8 +6,8 @@ require "rails_helper"
 RSpec.describe "Query authorization" do
   let(:operator) { create(:operator, state: "public") }
   let(:other_operator) { create(:operator, state: "public") }
-  let(:plane) { create(:plane, operator: operator, max_slots: 16) }
-  let(:other_plane) { create(:plane, operator: other_operator, max_slots: 16) }
+  let(:vehicle) { create(:vehicle, operator: operator, capacity: 16) }
+  let(:other_vehicle) { create(:vehicle, operator: other_operator, capacity: 16) }
 
   let(:member_user) { create(:user) }
   let!(:member) { create(:membership, operator: operator, user: member_user, user_role: operator.user_roles.find_by(name: "fun_jumper")) }
@@ -15,7 +15,7 @@ RSpec.describe "Query authorization" do
   let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner")) }
   let(:stranger) { create(:user) }
 
-  let!(:load_record) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+  let!(:load_record) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
   let!(:ticket_type) { create(:ticket_type, operator: operator) }
 
   def codes(json)
@@ -30,13 +30,13 @@ RSpec.describe "Query authorization" do
       expect(codes(json)).to be_empty
     end
 
-    it "refuses a stranger the load, loads, planes, ticket types and extras of a public operator" do
-      other_plane
+    it "refuses a stranger the load, loads, vehicles, ticket types and extras of a public operator" do
+      other_vehicle
       Extra.create!(operator: operator, name: "Video", cost: 5)
 
       expect(client_operation("Load", variables: { id: load_record.id }, as: stranger).dig(:data, :load)).to be_nil
       expect(codes(client_operation("Loads", variables: { operator: operator.id }, as: stranger))).to include("FORBIDDEN")
-      expect(client_operation("Planes", variables: { operatorId: operator.id }, as: stranger).dig(:data, :planes)).to be_nil
+      expect(client_operation("Vehicles", variables: { operatorId: operator.id }, as: stranger).dig(:data, :vehicles)).to be_nil
       expect(client_operation("TicketTypes", variables: { operator: operator.id }, as: stranger).dig(:data, :ticketTypes)).to be_nil
       expect(client_operation("TicketTypeExtras", variables: { operatorId: operator.id }, as: stranger).dig(:errors, 0, :extensions, :code)).to eq("FORBIDDEN")
     end
@@ -44,31 +44,31 @@ RSpec.describe "Query authorization" do
     it "refuses a former member (soft deleted membership)" do
       member.discard
 
-      expect(client_operation("Planes", variables: { operatorId: operator.id }, as: member_user).dig(:data, :planes)).to be_nil
+      expect(client_operation("Vehicles", variables: { operatorId: operator.id }, as: member_user).dig(:data, :vehicles)).to be_nil
     end
 
     it "answers anonymous callers with an authentication error" do
-      expect(codes(client_operation("Planes", variables: { operatorId: operator.id }))).to include("AUTHENTICATION_ERROR")
+      expect(codes(client_operation("Vehicles", variables: { operatorId: operator.id }))).to include("AUTHENTICATION_ERROR")
       expect(codes(client_operation("TicketTypes", variables: { operator: operator.id }))).to include("AUTHENTICATION_ERROR")
     end
 
     it "lets a moderator read any operator" do
       moderator = create(:user, moderation_role: :moderator)
 
-      expect(client_operation("Planes", variables: { operatorId: operator.id }, as: moderator).dig(:data, :planes)).to be_an(Array)
+      expect(client_operation("Vehicles", variables: { operatorId: operator.id }, as: moderator).dig(:data, :vehicles)).to be_an(Array)
     end
 
     it "does not create a membership while checking" do
-      expect { client_operation("Planes", variables: { operatorId: operator.id }, as: stranger) }.not_to(change(Membership, :count))
+      expect { client_operation("Vehicles", variables: { operatorId: operator.id }, as: stranger) }.not_to(change(Membership, :count))
     end
   end
 
-  describe "masterLog" do
+  describe "dailyLog" do
     let(:date) { Date.current.iso8601 }
 
     it "needs updateOperator" do
-      expect(codes(client_operation("MasterLog", variables: { operatorId: operator.id, date: date }, as: member_user))).to include("FORBIDDEN")
-      expect(codes(client_operation("MasterLog", variables: { operatorId: operator.id, date: date }, as: owner_user))).to be_empty
+      expect(codes(client_operation("DailyLog", variables: { operatorId: operator.id, date: date }, as: member_user))).to include("FORBIDDEN")
+      expect(codes(client_operation("DailyLog", variables: { operatorId: operator.id, date: date }, as: owner_user))).to be_empty
     end
   end
 

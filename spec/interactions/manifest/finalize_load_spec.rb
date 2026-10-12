@@ -20,9 +20,9 @@ RSpec.describe Manifest::FinalizeLoad do
         access_context: access_context,
         ticket_type: ticket_type,
         membership: dz_user,
-        jump_type: JumpType.allowed_for([dz_user]).sample,
+        activity_type: ActivityType.allowed_for([dz_user]).sample,
         load: load,
-        exit_weight: dz_user.exit_weight
+        body_mass_kg: dz_user.body_mass_kg
       )
 
       if o.valid?
@@ -41,7 +41,7 @@ RSpec.describe Manifest::FinalizeLoad do
   end
   let!(:outcome) { Manifest::FinalizeLoad.run(load: load, access_context: access_context) }
 
-  describe "Marking a load as landed" do
+  describe "Marking a load as completed" do
     it {
       expect(load.reload.slots.map(&:order).compact_blank.count).to eq 6
     }

@@ -18,13 +18,13 @@ module Mutations::Manifest
         **attributes.to_h.slice(
           :ticket_type,
           :membership,
-          :jump_type,
-          :exit_weight,
+          :activity_type,
+          :body_mass_kg,
           :rig,
           :load,
           :group_number,
-          :passenger_name,
-          :passenger_exit_weight,
+          :guest_name,
+          :guest_body_mass_kg,
         ),
         extra_ids: attributes[:extras]&.pluck(:id)
       )

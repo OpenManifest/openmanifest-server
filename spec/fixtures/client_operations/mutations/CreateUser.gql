@@ -6,7 +6,7 @@ mutation CreateGhost(
   $role: Int!
   $license: Int
   $operator: Int!
-  $exitWeight: Float!
+  $bodyMassKg: Float!
 ) {
   createGhost(
     input: {
@@ -18,7 +18,7 @@ mutation CreateGhost(
         email: $email
         operator: $operator
         license: $license
-        exitWeight: $exitWeight
+        bodyMassKg: $bodyMassKg
       }
     }
   ) {

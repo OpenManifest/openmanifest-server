@@ -49,7 +49,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to move #{source_slot.membership&.user&.name || 'a passenger'} from load ##{source_slot.load.load_number}",
+      message: "#{access_context.user.name} failed to move #{source_slot.membership&.user&.name || 'a guest'} from load ##{source_slot.load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -66,7 +66,7 @@ class Manifest::MoveSlot < ApplicationInteraction
     source_slot.assign_attributes(
       load: destination_load,
       ticket_type: target_slot&.ticket_type || source_slot.ticket_type,
-      jump_type: target_slot&.jump_type || source_slot.jump_type,
+      activity_type: target_slot&.activity_type || source_slot.activity_type,
       group_number: target_slot&.group_number || source_slot.group_number
     )
   end
@@ -79,7 +79,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affordable?
-    return unless source_slot.load.plane.operator.is_credit_system_enabled?
+    return unless source_slot.load.vehicle.operator.is_credit_system_enabled?
     # Check the cost of the current slot
     user_funds = source_slot.cost_cents + source_slot.membership.credits_cents.to_i
 
@@ -136,17 +136,17 @@ class Manifest::MoveSlot < ApplicationInteraction
     { updateUserSlot: "You don't have permissions to move other users (missing updateUserSlot)" }
   end
 
-  # The target must be open and have room for the slot (and its passenger): slot validations only run on create (BUG-092)
+  # The target must be open and have room for the slot (and its guest): slot validations only run on create (BUG-092)
   def open_with_room
     return if destination_load == source_slot.load
 
-    unless destination_load.open? || destination_load.boarding_call?
+    unless destination_load.open? || destination_load.boarding?
       errors.add(:base, "Load ##{destination_load.load_number} is not open")
       return
     end
 
-    capacity = destination_load.max_slots || destination_load.plane.max_slots
-    needed = source_slot.has_passenger? ? 2 : 1
+    capacity = destination_load.max_slots || destination_load.vehicle.capacity
+    needed = source_slot.has_guest? ? 2 : 1
     errors.add(:base, "No slots available on load ##{destination_load.load_number}") if capacity - destination_load.slots.count < needed
   end
 
@@ -156,7 +156,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   def same_operator
     operator_id = access_context&.operator&.id
     loads = [source_slot.load, destination_load].compact
-    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.plane.operator_id == operator_id }
+    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.vehicle.operator_id == operator_id }
   end
 
   def destination_load

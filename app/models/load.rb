@@ -6,8 +6,8 @@
 #
 #  id             :bigint           not null, primary key
 #  dispatch_at    :datetime
-#  has_landed     :boolean
-#  plane_id       :bigint           not null
+#  has_completed     :boolean
+#  vehicle_id       :bigint           not null
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  name           :string
@@ -24,12 +24,12 @@ class Load < ApplicationRecord
 
   # Must be declared before the state machine: state_machines-activerecord 0.200 only integrates with an enum that
   # already exists (otherwise new loads have a nil state and every event raises "nil is not a known state value").
-  enum :state, { :open => 0, :boarding_call => 1, :in_flight => 2, :landed => 3, :cancelled => 4 }
+  enum :state, { :open => 0, :boarding => 1, :departed => 2, :completed => 3, :cancelled => 4 }
 
   include StateMachines::LoadState
-  include MasterLogEntry::Load
+  include DailyLogEntry::Load
 
-  belongs_to :plane
+  belongs_to :vehicle
   belongs_to :operator
 
   belongs_to :load_master, class_name: "Membership", optional: true
@@ -59,16 +59,16 @@ class Load < ApplicationRecord
   def ready?
     return false if gca.blank?
     return false if load_master.blank?
-    return false if plane.blank?
-    ready_slots_count >= plane.min_slots
+    return false if vehicle.blank?
+    ready_slots_count >= vehicle.min_capacity
   end
 
   def available_slots
-    (max_slots || plane.max_slots) - (slots_count || 0)
+    (max_slots || vehicle.capacity) - (slots_count || 0)
   end
 
   def occupied_slots
-    (max_slots || plane.max_slots) - available_slots
+    (max_slots || vehicle.capacity) - available_slots
   end
 
   def next_group_number
@@ -97,32 +97,32 @@ class Load < ApplicationRecord
       # Field name
       :load_created,
       # Arguments
-      { operator_id: plane.operator_id.to_s },
+      { operator_id: vehicle.operator_id.to_s },
       # Object
       { load_id: id.to_s }
     )
   end
 
   # Adds `by` (1 or -1) jump to every jumper on the load, and to the jumper's operator count when it is their first (or,
-  # when taking it back, their only) jump at the operator. Called by the state machine when the load lands or a landed
+  # when taking it back, their only) jump at the operator. Called by the state machine when the load lands or a completed
   # load is reopened.
   def count_jumps!(by)
     ids = slots.where.not(membership_id: nil).pluck(:membership_id)
     return if ids.empty?
 
     user_ids = Membership.where(id: ids).pluck(:user_id)
-    operator_first_ids = Membership.where(id: ids, jump_count: by.positive? ? 0 : 1).pluck(:user_id)
+    operator_first_ids = Membership.where(id: ids, load_count: by.positive? ? 0 : 1).pluck(:user_id)
 
-    Membership.update_counters(ids, jump_count: by)
+    Membership.update_counters(ids, load_count: by)
     User.update_counters(operator_first_ids, operator_count: by)
-    User.update_counters(user_ids, jump_count: by)
+    User.update_counters(user_ids, load_count: by)
   end
 
   private
 
-  # A load belongs to the operator of its plane, and to the day it was created on in that operator's time zone
+  # A load belongs to the operator of its vehicle, and to the day it was created on in that operator's time zone
   def set_operator_and_date
-    self.operator ||= plane&.operator
+    self.operator ||= vehicle&.operator
     return unless operator
 
     self.load_date ||= (created_at || Time.current).in_time_zone(operator.time_zone).to_date

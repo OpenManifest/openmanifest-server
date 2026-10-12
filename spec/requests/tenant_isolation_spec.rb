@@ -8,8 +8,8 @@ require "rails_helper"
 RSpec.describe "Tenant isolation" do
   let(:operator_a) { create(:operator, credits: 50, state: "public") }
   let(:operator_b) { create(:operator, credits: 50, state: "public") }
-  let(:plane_a) { create(:plane, operator: operator_a, max_slots: 16) }
-  let(:plane_b) { create(:plane, operator: operator_b, max_slots: 16) }
+  let(:vehicle_a) { create(:vehicle, operator: operator_a, capacity: 16) }
+  let(:vehicle_b) { create(:vehicle, operator: operator_b, capacity: 16) }
 
   let(:member_user) { create(:user) }
   let!(:member_a) { create(:membership, operator: operator_a, user: member_user, user_role: operator_a.user_roles.find_by(name: "fun_jumper"), credits: 300) }
@@ -19,8 +19,8 @@ RSpec.describe "Tenant isolation" do
   let(:owner_b_user) { create(:user) }
   let!(:owner_b) { create(:membership, operator: operator_b, user: owner_b_user, user_role: operator_b.user_roles.find_by(name: "owner"), credits: 500) }
   let!(:member_b) { create(:membership, operator: operator_b, user_role: operator_b.user_roles.find_by(name: "fun_jumper"), credits: 300) }
-  let!(:load_a) { create(:load, plane: plane_a, pilot: owner_a, gca: owner_a, load_master: owner_a) }
-  let!(:load_b) { create(:load, plane: plane_b, pilot: owner_b, gca: owner_b, load_master: owner_b) }
+  let!(:load_a) { create(:load, vehicle: vehicle_a, pilot: owner_a, gca: owner_a, load_master: owner_a) }
+  let!(:load_b) { create(:load, vehicle: vehicle_b, pilot: owner_b, gca: owner_b, load_master: owner_b) }
   let!(:ticket_a) { create(:ticket_type, operator: operator_a, name: "Height", cost: 40) }
   let!(:ticket_b) { create(:ticket_type, operator: operator_b, name: "Height", cost: 40) }
 
@@ -37,7 +37,7 @@ RSpec.describe "Tenant isolation" do
     json = client_operation("ManifestUser",
                             variables: {
                               load: load_b.id, membership: member_b.id, ticketType: ticket_b.id,
-                              jumpType: JumpType.allowed_for([member_b]).first.id, exitWeight: 80,
+                              activityType: ActivityType.allowed_for([member_b]).first.id, bodyMassKg: 80,
                             },
                             as: owner_b_user)
     Slot.find(json.dig(:data, :createSlot, :slot, :id))
@@ -66,9 +66,9 @@ RSpec.describe "Tenant isolation" do
       expect(client_operation("Memberships", variables: { operatorId: operator_b.id }, as: member_user).dig(:data, :memberships, :edges).to_a).to be_empty
     end
 
-    it "refuses planes(operator:) for B" do
-      plane_b
-      expect(client_operation("Planes", variables: { operatorId: operator_b.id }, as: member_user).dig(:data, :planes).to_a).to be_empty
+    it "refuses vehicles(operator:) for B" do
+      vehicle_b
+      expect(client_operation("Vehicles", variables: { operatorId: operator_b.id }, as: member_user).dig(:data, :vehicles).to_a).to be_empty
     end
 
     it "refuses ticketTypes(operator:) for B" do
@@ -80,9 +80,9 @@ RSpec.describe "Tenant isolation" do
       expect(client_operation("TicketTypeExtras", variables: { operatorId: operator_b.id }, as: member_user).dig(:data, :extras).to_a).to be_empty
     end
 
-    it "refuses masterLog(operator:) for B" do
-      json = client_operation("MasterLog", variables: { operatorId: operator_b.id, date: Date.current.iso8601 }, as: member_user)
-      expect(refused?(json, :masterLog)).to be(true)
+    it "refuses dailyLog(operator:) for B" do
+      json = client_operation("DailyLog", variables: { operatorId: operator_b.id, date: Date.current.iso8601 }, as: member_user)
+      expect(refused?(json, :dailyLog)).to be(true)
     end
 
     it "refuses availableRigs(membership:) for a member of B" do
@@ -111,8 +111,8 @@ RSpec.describe "Tenant isolation" do
   end
 
   describe "BUG-005: authorization checks must not write" do
-    it "does not create a membership in B when A's owner updates B's plane" do
-      expect { client_operation("UpdateAircraft", variables: { id: plane_b.id, attributes: { name: "Hijacked" } }, as: owner_user) }.
+    it "does not create a membership in B when A's owner updates B's vehicle" do
+      expect { client_operation("UpdateVehicle", variables: { id: vehicle_b.id, attributes: { name: "Hijacked" } }, as: owner_user) }.
         not_to(change { operator_b.memberships.where(user: owner_user).count })
     end
   end
@@ -124,7 +124,7 @@ RSpec.describe "Tenant isolation" do
       json = client_operation("ManifestUser",
                               variables: {
                                 load: load_a.id, membership: member_a.id, ticketType: ticket_a.id,
-                                jumpType: JumpType.allowed_for([member_a]).first.id, exitWeight: 80,
+                                activityType: ActivityType.allowed_for([member_a]).first.id, bodyMassKg: 80,
                               },
                               as: student_user)
       expect(refused?(json, :createSlot, :slot)).to be(true)
@@ -154,7 +154,7 @@ RSpec.describe "Tenant isolation" do
     it "refuses updating B's form template with operatorId set to A" do
       template = create(:form_template, operator: operator_b, definition: "original")
       operator_b.update!(rig_inspection_template: template)
-      client_operation("UpdateRigInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
+      client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
       expect(template.reload.definition).to eq("original")
     end
   end

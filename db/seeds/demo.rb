@@ -38,22 +38,22 @@ if operator.new_record?
   operator.save!
   operator.rig_inspection_template.update(operator: operator)
 
-  puts "-- Creating planes"
-  # Create a plane
-  Plane.create(
+  puts "-- Creating vehicles"
+  # Create a vehicle
+  Vehicle.create(
     operator: operator,
     name: "C182",
-    min_slots: 2,
-    max_slots: 4,
+    min_capacity: 2,
+    capacity: 4,
     registration: "DKL-493",
   )
 
-  # Create a plane
-  Plane.create(
+  # Create a vehicle
+  Vehicle.create(
     operator: operator,
     name: "Caravan",
-    min_slots: 10,
-    max_slots: 16,
+    min_capacity: 10,
+    capacity: 16,
     registration: "DKZ-203",
   )
 

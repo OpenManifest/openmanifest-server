@@ -9,7 +9,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
 
   field :gca_count, Integer, null: false
 
-  field :dzso_count, Integer, null: false
+  field :duty_officer_count, Integer, null: false
 
   field :pilot_count, Integer, null: false
 
@@ -40,8 +40,8 @@ class Types::Admin::StatisticsType < Types::Base::Object
     argument :time_range, Types::Input::TimeRangeInput, required: false
   end
 
-  field :slots_by_jump_type, [Types::Admin::StatisticsByNameType], null: true,
-                                                                   description: "Get the number of slots by jump type" do
+  field :slots_by_activity_type, [Types::Admin::StatisticsByNameType], null: true,
+                                                                       description: "Get the number of slots by jump type" do
     argument :time_range, Types::Input::TimeRangeInput, required: false
   end
 
@@ -62,8 +62,8 @@ class Types::Admin::StatisticsType < Types::Base::Object
     object.memberships.with_acting_permission(:actAsGCA).count
   end
 
-  def dzso_count
-    object.memberships.with_acting_permission(:actAsDZSO).count
+  def duty_officer_count
+    object.memberships.with_acting_permission(:actAsDutyOfficer).count
   end
 
   def pilot_count
@@ -71,7 +71,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
   end
 
   def rig_inspector_count
-    object.memberships.with_acting_permission(:actAsRigInspector).count
+    object.memberships.with_acting_permission(:actAsEquipmentInspector).count
   end
 
   def loads_count(time_range: nil)
@@ -93,7 +93,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
   end
 
   def finalized_loads_count(time_range: nil)
-    query = object.loads.landed
+    query = object.loads.completed
     query = query.where(dispatch_at: time_range.start_time..time_range.end_time) if time_range
     query.count
   end
@@ -105,17 +105,17 @@ class Types::Admin::StatisticsType < Types::Base::Object
   end
 
   def load_count_by_day(time_range: nil)
-    query = object.loads.landed
+    query = object.loads.completed
     query = query.where(dispatch_at: time_range.start_time..time_range.end_time) if time_range
     query.group("date_trunc('day', loads.dispatch_at)").count.map do |date, count|
       { date: date, count: count }
     end
   end
 
-  def slots_by_jump_type(time_range: nil)
-    query = object.loads.landed
+  def slots_by_activity_type(time_range: nil)
+    query = object.loads.completed
     query = query.where(dispatch_at: time_range.start_time..time_range.end_time) if time_range
-    Slot.joins(:jump_type).where(load: query).group(:'jump_types.slug').having("COUNT(slots.id) > 1").count.map do |name, count|
+    Slot.joins(:activity_type).where(load: query).group(:'activity_types.slug').having("COUNT(slots.id) > 1").count.map do |name, count|
       { name: name, count: count }
     end
   end

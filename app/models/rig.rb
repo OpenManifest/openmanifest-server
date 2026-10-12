@@ -50,9 +50,9 @@ class Rig < ApplicationRecord
   scope :occupied, -> {
     includes(slots: :load).where(
       slots: {
-        # Filter out all rigs on a load that hasnt landed
+        # Filter out all rigs on a load that hasnt completed
         loads: {
-          state: %i(open in_flight boarding_call),
+          state: %i(open departed boarding),
           created_at: 1.day.ago..DateTime.current,
         },
       }

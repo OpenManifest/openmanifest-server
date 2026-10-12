@@ -27,7 +27,7 @@ class Types::Access::SessionType < Types::Base::Object
     # If the user has a rig, has set up exit weight, and
     # has a license, the user should be set to fun jumper
     # if the user is anything less
-    if @current_membership.user.rigs.present? && @current_membership.license.present? && @current_membership.user.exit_weight.present?
+    if @current_membership.user.rigs.present? && @current_membership.license.present? && @current_membership.user.body_mass_kg.present?
       if @current_membership.user_role_id == object.user_roles.first.id
         @current_membership.update(user_role: object.user_roles.find_by(name: :fun_jumper))
       end

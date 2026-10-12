@@ -23,13 +23,13 @@ module Types
     async_field :federation, Types::Meta::Federation, null: false
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 
-    field :allowed_jump_types, [Types::Meta::JumpType], null: false do
+    field :allowed_activity_types, [Types::Meta::ActivityType], null: false do
       argument :user_id, [Int], required: true
     end
 
-    def allowed_jump_types(user_id: nil)
+    def allowed_activity_types(user_id: nil)
       # Get allowed jump types for each user:
-      JumpType.allowed_for(object.memberships.where(id: user_id))
+      ActivityType.allowed_for(object.memberships.where(id: user_id))
     end
 
     field :current_conditions, Types::Operator::Weather::Condition, null: false
@@ -64,14 +64,14 @@ module Types
     field :rigs, [Types::Equipment::Rig], null: true,
                                           description: "Get rigs for operator"
 
-    async_field :planes, [Types::Operator::Aircraft], null: false
+    async_field :vehicles, [Types::Operator::Vehicle], null: false
 
     field :roles, [Types::Access::UserRole], null: false do
       argument :selectable, Boolean, required: false
     end
 
-    field :master_log, Types::MasterLogType, null: false,
-                                             description: "Get the master log entry for a given date" do
+    field :daily_log, Types::DailyLogType, null: false,
+                                           description: "Get the master log entry for a given date" do
       argument :date, Int, required: true,
                            description: "This should be the timestamp of the beginning of the day"
     end
@@ -98,9 +98,9 @@ module Types
       query.order(id: :asc)
     end
 
-    def master_log(date: nil)
+    def daily_log(date: nil)
       # The day the timestamp falls on in the operator's time zone
-      object.master_logs.find_or_create_by!(date: Time.zone.at(date).in_time_zone(object.time_zone).to_date)
+      object.daily_logs.find_or_create_by!(date: Time.zone.at(date).in_time_zone(object.time_zone).to_date)
     end
   end
 end

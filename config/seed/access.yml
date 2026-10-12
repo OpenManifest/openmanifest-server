@@ -3,8 +3,8 @@ permissions:
     - actAsPilot
     - actAsLoadMaster
     - actAsGCA
-    - actAsDZSO
-    - actAsRigInspector
+    - actAsDutyOfficer
+    - actAsEquipmentInspector
   crud: &crud
     operator:
       - updateOperator
@@ -43,17 +43,17 @@ permissions:
       - deleteExtra
       - readExtra
       - undeleteExtra
-    aircrafts:
-      - createPlane
-      - updatePlane
-      - deletePlane
-      - undeletePlane
+    vehicles:
+      - createVehicle
+      - updateVehicle
+      - deleteVehicle
+      - undeleteVehicle
     equipment:
-      - createRig
-      - updateRig
-      - deleteRig
-      - readRig
-      - undeleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
+      - readEquipment
+      - undeleteEquipment
       - createOperatorRig
       - updateOperatorRig
       - deleteOperatorRig
@@ -91,7 +91,7 @@ permissions:
       - viewRevenue
       - viewStatistics
 roles:
-  tandem_passenger:
+  tandem_guest:
     permissions:
       - readLoad
   student:
@@ -109,9 +109,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - createPackjob
       - updatePackjob
       - deletePackjob
@@ -127,9 +127,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
 
       - createPackjob
       - updatePackjob
@@ -148,9 +148,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - createUser
 
       - readOperatorRig
@@ -169,7 +169,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewSystemActivity
@@ -182,9 +182,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - readOperatorRig
       - updateOperatorRig
       - createOperatorRig
@@ -201,7 +201,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics
@@ -215,9 +215,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - readOperatorRig
       - updateOperatorRig
       - createOperatorRig
@@ -237,7 +237,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics
@@ -255,9 +255,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
 
       - readOperatorRig
       - updateOperatorRig
@@ -289,7 +289,7 @@ roles:
       - updateUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics

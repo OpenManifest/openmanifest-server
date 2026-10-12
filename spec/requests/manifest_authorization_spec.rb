@@ -7,13 +7,13 @@ RSpec.describe "Manifest authorization" do
   include_context "operator"
 
   let(:other_operator) { create(:operator, state: "public") }
-  let(:other_plane) { create(:plane, operator: other_operator, max_slots: 16) }
+  let(:other_vehicle) { create(:vehicle, operator: other_operator, capacity: 16) }
 
   let!(:owner) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
   let!(:pilot) { create(:membership, operator: operator) }
   let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
-  let!(:manifest_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner, max_slots: 10) }
-  let!(:second_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner, max_slots: 10) }
+  let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, max_slots: 10) }
+  let!(:second_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, max_slots: 10) }
 
   let(:student_user) { create(:user) }
   let!(:student) { create(:membership, operator: operator, user: student_user, user_role: operator.user_roles.find_by(name: "student"), credits: 300) }
@@ -27,7 +27,7 @@ RSpec.describe "Manifest authorization" do
     client_operation("ManifestUser",
                      variables: {
                        load: load.id, membership: member.id, ticketType: ticket_type.id,
-                       jumpType: JumpType.allowed_for([member]).first.id, exitWeight: 80,
+                       activityType: ActivityType.allowed_for([member]).first.id, bodyMassKg: 80,
                      }.merge(extra),
                      as: as)
   end
@@ -35,8 +35,8 @@ RSpec.describe "Manifest authorization" do
   def manifest_group(members, as:)
     client_operation("ManifestGroup",
                      variables: {
-                       load: manifest_load.id, ticketType: ticket_type.id, jumpType: JumpType.allowed_for(members).first.id,
-                       userGroup: members.map { |member| { id: member.id, exitWeight: 80 } },
+                       load: manifest_load.id, ticketType: ticket_type.id, activityType: ActivityType.allowed_for(members).first.id,
+                       userGroup: members.map { |member| { id: member.id, bodyMassKg: 80 } },
                      },
                      as: as)
   end
@@ -69,7 +69,7 @@ RSpec.describe "Manifest authorization" do
     end
 
     it "refuses a load of another operator for a member of this one" do
-      foreign_load = create(:load, plane: other_plane, pilot: create(:membership, operator: other_operator),
+      foreign_load = create(:load, vehicle: other_vehicle, pilot: create(:membership, operator: other_operator),
                                    gca: create(:membership, operator: other_operator), max_slots: 10)
 
       json = manifest(fun_jumper, as: manifest_user, load: foreign_load)
@@ -152,7 +152,7 @@ RSpec.describe "Manifest authorization" do
     end
 
     it "refuses a load of another operator, and a stranger" do
-      foreign_load = create(:load, plane: other_plane, pilot: create(:membership, operator: other_operator),
+      foreign_load = create(:load, vehicle: other_vehicle, pilot: create(:membership, operator: other_operator),
                                    gca: create(:membership, operator: other_operator), max_slots: 10)
 
       move(as: manifest_user, target: foreign_load)
@@ -168,7 +168,7 @@ RSpec.describe "Manifest authorization" do
       expect(slot.reload.load).to eq(manifest_load)
 
       second_load.update!(max_slots: 10)
-      second_load.update_columns(state: Load.states[:in_flight])
+      second_load.update_columns(state: Load.states[:departed])
       move(as: manifest_user)
       expect(slot.reload.load).to eq(manifest_load)
 
@@ -203,12 +203,12 @@ RSpec.describe "Manifest authorization" do
     end
 
     it "refuses a member manifesting a group of only themselves" do
-      other = create(:load, plane: plane, pilot: pilot, gca: owner, max_slots: 10)
+      other = create(:load, vehicle: vehicle, pilot: pilot, gca: owner, max_slots: 10)
       json = client_operation("ManifestGroup",
                               variables: {
                                 load: other.id, ticketType: ticket_type.id,
-                                jumpType: JumpType.allowed_for([student]).first.id,
-                                userGroup: [{ id: student.id, exitWeight: 80 }],
+                                activityType: ActivityType.allowed_for([student]).first.id,
+                                userGroup: [{ id: student.id, bodyMassKg: 80 }],
                               },
                               as: student_user)
 
@@ -227,14 +227,14 @@ RSpec.describe "Manifest authorization" do
     it "refuses a member editing their own slot" do
       post "/graphql",
            params: {
-             query: "mutation($id: Int!) { updateSlot(input: { id: $id, attributes: { exitWeight: 90 } }) { slot { id } errors } }",
+             query: "mutation($id: Int!) { updateSlot(input: { id: $id, attributes: { bodyMassKg: 90 } }) { slot { id } errors } }",
              variables: { id: own_slot.id }.to_json,
            },
            headers: user.create_new_auth_token
       json = response.parsed_body.with_indifferent_access
 
       expect(json.dig(:data, :updateSlot, :errors, 0)).to eq(desk_message)
-      expect(own_slot.reload.exit_weight).to eq(80)
+      expect(own_slot.reload.body_mass_kg).to eq(80)
     end
 
     it "refuses a member moving their own slot" do

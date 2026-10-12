@@ -348,7 +348,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       ENV["FRONTEND_URL"] = previous
     end
 
-    let(:variables) { { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, operator: operator.id, exitWeight: 70 } }
+    let(:variables) { { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, operator: operator.id, bodyMassKg: 70 } }
 
     it "creates a ghost user and a membership with the given role" do
       json = nil
@@ -379,7 +379,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       client_operation("CreateGhost", variables: variables, as: owner_user)
       ghost = User.find_by!(email: "ghost@example.com")
 
-      client_operation("UserSignUp", variables: { email: "ghost@example.com", password: "Password1!", passwordConfirmation: "Password1!", name: "Impostor", phone: "1", exitWeight: 80 })
+      client_operation("UserSignUp", variables: { email: "ghost@example.com", password: "Password1!", passwordConfirmation: "Password1!", name: "Impostor", phone: "1", bodyMassKg: 80 })
 
       expect(ghost.reload.name).to eq("Gus Ghost")
     end
@@ -509,7 +509,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
 
   describe "Notifications" do
     let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
-    let!(:manifest_load) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+    let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
 
     before { fun_jumper.update!(credits: 300) }
 
@@ -517,7 +517,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       client_operation("ManifestUser",
                        variables: {
                          load: manifest_load.id, membership: fun_jumper.id, ticketType: ticket_type.id,
-                         jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80,
+                         activityType: ActivityType.allowed_for([fun_jumper]).first.id, bodyMassKg: 80,
                        },
                        as: owner_user)
 

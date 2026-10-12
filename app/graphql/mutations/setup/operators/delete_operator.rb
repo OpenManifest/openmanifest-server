@@ -23,7 +23,7 @@ module Mutations::Setup::Operators
       {
         operator: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
-        errors: ["Failed to archive this aircraft"],
+        errors: ["Failed to archive this vehicle"],
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client

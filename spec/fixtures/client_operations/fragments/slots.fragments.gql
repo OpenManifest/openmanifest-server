@@ -2,17 +2,17 @@ fragment slotEssentials on Slot {
   id
   lockVersion
   createdAt
-  exitWeight
-  passengerName
-  passengerExitWeight
+  bodyMassKg
+  guestName
+  guestBodyMassKg
   wingLoading
   groupNumber
   costCents
   ticketType {
     ...ticketTypeDetails
   }
-  jumpType {
-    ...jumpTypeEssentials
+  activityType {
+    ...activityTypeEssentials
   }
   extras {
     id

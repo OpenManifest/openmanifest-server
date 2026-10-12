@@ -31,13 +31,13 @@ fragment operatorStatisticsEssentials on Statistics {
   id
   activeUserCount
   totalUserCount
-  slotsByJumpType(timeRange: $timeRange) {
+  slotsByActivityType(timeRange: $timeRange) {
     name
     count
   }
   slotsCount(timeRange: $timeRange)
   cancelledLoadsCount(timeRange: $timeRange)
-  dzsoCount
+  dutyOfficerCount
   finalizedLoadsCount(timeRange: $timeRange)
   gcaCount
   pilotCount

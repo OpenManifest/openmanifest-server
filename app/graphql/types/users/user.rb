@@ -8,7 +8,7 @@ module Types::Users
     field :name, String, null: true
     field :moderation_role, Types::Users::ModerationRole, null: true
     field :push_token, String, null: true, broadcastable: false
-    field :exit_weight, String, null: true
+    field :body_mass_kg, String, null: true
     field :nickname, String, null: true
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false

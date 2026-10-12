@@ -3,7 +3,7 @@ mutation CreateLoad(
   $pilot: ID
   $gca: ID
   $maxSlots: Int
-  $plane: ID
+  $vehicle: ID
   $state: LoadState
 ) {
   createLoad(
@@ -13,7 +13,7 @@ mutation CreateLoad(
         pilot: $pilot
         gca: $gca
         maxSlots: $maxSlots
-        plane: $plane
+        vehicle: $vehicle
         state: $state
       }
     }

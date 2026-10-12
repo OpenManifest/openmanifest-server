@@ -11,7 +11,7 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  user_role_id :bigint           not null
-#  jump_count   :integer          default(0), not null
+#  load_count   :integer          default(0), not null
 #
 FactoryBot.define do
   factory :membership do

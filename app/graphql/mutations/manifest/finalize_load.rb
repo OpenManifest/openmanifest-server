@@ -11,7 +11,7 @@ module Mutations::Manifest
 
     def resolve(state:, id:)
       case state
-      when "landed"
+      when "completed"
         mutate(
           Manifest::FinalizeLoad,
           :load,
@@ -30,14 +30,14 @@ module Mutations::Manifest
           )
         )
       else
-        { load: nil, field_errors: nil, errors: ["A load can only be finalized as landed or cancelled"] }
+        { load: nil, field_errors: nil, errors: ["A load can only be finalized as completed or cancelled"] }
       end
     end
 
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
         "updateLoad",
-        operator_id: load_by_id(id).plane.operator_id
+        operator_id: load_by_id(id).vehicle.operator_id
       )
         true
       else

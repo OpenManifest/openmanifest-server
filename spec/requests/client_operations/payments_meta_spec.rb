@@ -179,14 +179,14 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
   describe "refunds" do
     let!(:ticket) { create(:ticket_type, operator: operator, name: "Height", cost: 12.5) }
-    let!(:manifest_load) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+    let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
 
     it "gives back exactly what a ticket with fractional cost charged" do
       fun_jumper.update!(credits: 100)
       slot_id = client_operation("ManifestUser",
                                  variables: {
                                    load: manifest_load.id, membership: fun_jumper.id, ticketType: ticket.id,
-                                   jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80,
+                                   activityType: ActivityType.allowed_for([fun_jumper]).first.id, bodyMassKg: 80,
                                  },
                                  as: owner_user).dig(:data, :createSlot, :slot, :id)
 
@@ -216,14 +216,14 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
   describe "Activity" do
     let!(:ticket) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
-    let!(:manifest_load) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+    let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
 
     before do
       fun_jumper.update!(credits: 300)
       client_operation("ManifestUser",
                        variables: {
                          load: manifest_load.id, membership: fun_jumper.id, ticketType: ticket.id,
-                         jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80,
+                         activityType: ActivityType.allowed_for([fun_jumper]).first.id, bodyMassKg: 80,
                        },
                        as: owner_user)
     end
@@ -309,35 +309,35 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
   end
 
-  describe "JumpTypes" do
+  describe "ActivityTypes" do
     it "lists every jump type" do
-      json = client_operation("JumpTypes", as: user)
+      json = client_operation("ActivityTypes", as: user)
 
-      expect(json.dig(:data, :jumpTypes).size).to eq(JumpType.count)
+      expect(json.dig(:data, :activityTypes).size).to eq(ActivityType.count)
     end
 
     it "restricts jump types to what the given members may jump" do
-      json = client_operation("JumpTypes", variables: { allowedForMembershipIds: [fun_jumper.id] }, as: user)
+      json = client_operation("ActivityTypes", variables: { allowedForMembershipIds: [fun_jumper.id] }, as: user)
 
-      expect(json.dig(:data, :jumpTypes).pluck(:id)).to match_array(JumpType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
+      expect(json.dig(:data, :activityTypes).pluck(:id)).to match_array(ActivityType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
     end
   end
 
-  describe "AllowedJumpTypes" do
+  describe "AllowedActivityTypes" do
     let!(:ticket) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
 
     it "returns the allowed jump types and ticket types of an operator" do
-      json = client_operation("AllowedJumpTypes", variables: { operatorId: operator.id, allowedForMembershipIds: [fun_jumper.id] }, as: user)
+      json = client_operation("AllowedActivityTypes", variables: { operatorId: operator.id, allowedForMembershipIds: [fun_jumper.id] }, as: user)
 
-      expect(json.dig(:data, :operator, :allowedJumpTypes).pluck(:id)).to match_array(JumpType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
+      expect(json.dig(:data, :operator, :allowedActivityTypes).pluck(:id)).to match_array(ActivityType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
       expect(json.dig(:data, :operator, :ticketTypes).pluck(:name)).to include("Height")
-      expect(json.dig(:data, :jumpTypes)).to be_present
+      expect(json.dig(:data, :activityTypes)).to be_present
     end
 
     it "limits ticket types to public ones when isPublic is set" do
       ticket.update!(allow_manifesting_self: false)
 
-      json = client_operation("AllowedJumpTypes", variables: { operatorId: operator.id, allowedForMembershipIds: [fun_jumper.id], isPublic: true }, as: user)
+      json = client_operation("AllowedActivityTypes", variables: { operatorId: operator.id, allowedForMembershipIds: [fun_jumper.id], isPublic: true }, as: user)
 
       expect(json.dig(:data, :operator, :ticketTypes)).to eq([])
     end

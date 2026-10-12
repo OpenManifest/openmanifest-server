@@ -1,5 +1,0 @@
-query MasterLog($operatorId: ID!, $date: ISO8601Date!) {
-  masterLog(operator: $operatorId, date: $date) {
-    ...masterLogEntry
-  }
-}

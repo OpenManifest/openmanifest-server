@@ -28,8 +28,8 @@ fragment activityDetails on Event {
     ... on Rig {
       ...rigEssentials
     }
-    ... on Plane {
-      ...planeEssentials
+    ... on Vehicle {
+      ...vehicleEssentials
     }
   }
 }

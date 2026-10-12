@@ -6,7 +6,7 @@ class Manifest::FinalizeLoad < ApplicationInteraction
 
   steps :check_transition,
         :finalize_orders,
-        :mark_as_landed,
+        :complete,
         :load
 
   # Create events
@@ -24,19 +24,19 @@ class Manifest::FinalizeLoad < ApplicationInteraction
   end
 
   def check_transition
-    return if load.can_mark_as_landed?
+    return if load.can_complete?
 
     errors.add(:base, "Load ##{load.load_number} can't land, it is #{load.state.humanize.downcase}")
   end
 
   # The state machine counts the jumps and saves the load
-  def mark_as_landed
+  def complete
     load.assign_attributes(is_open: false)
-    errors.merge!(load.errors) unless load.mark_as_landed
+    errors.merge!(load.errors) unless load.complete
   end
 
   def finalize_orders
-    # Passenger slots have no order of their own: their jumper's order covers them
+    # Guest slots have no order of their own: their jumper's order covers them
     load.slots.includes(order: :receipts).each do |slot|
       receipt = slot.order&.receipts&.first
       next unless receipt

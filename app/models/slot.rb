@@ -8,45 +8,45 @@
 #  ticket_type_id    :bigint
 #  load_id           :bigint
 #  rig_id            :bigint
-#  jump_type_id      :bigint
+#  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  exit_weight       :float
-#  passenger_id      :bigint
+#  body_mass_kg       :float
+#  guest_id      :bigint
 #  is_paid           :boolean
 #  transaction_id    :bigint
-#  passenger_slot_id :bigint
+#  guest_slot_id :bigint
 #  group_number      :integer          default(0), not null
 #  membership_id  :bigint
 #
 class Slot < ApplicationRecord
-  include MasterLogEntry::Slot
+  include DailyLogEntry::Slot
 
   delegate :user, to: :membership, allow_nil: true
 
   belongs_to :membership, optional: true
   belongs_to :created_by, class_name: "Membership", optional: true
-  belongs_to :passenger, optional: true
+  belongs_to :guest, optional: true
   belongs_to :ticket_type
   belongs_to :load
   belongs_to :rig, optional: true
-  belongs_to :jump_type
+  belongs_to :activity_type
   has_one :operator, through: :load
 
   has_one :order, as: :item, required: false
   has_many :receipts, through: :order
   has_many :transactions, through: :receipts
 
-  belongs_to :passenger_slot, optional: true, class_name: "Slot"
+  belongs_to :guest_slot, optional: true, class_name: "Slot"
 
   has_many :slot_extras, dependent: :destroy
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
   scope :ready, -> {
-                  where.not(membership: nil).or(where.not(passenger: nil)).where.not(ticket_type: nil, load: nil, jump_type: nil)
+                  where.not(membership: nil).or(where.not(guest: nil)).where.not(ticket_type: nil, load: nil, activity_type: nil)
                 }
 
-  counter_culture %i(load plane operator), column_name: :slots_count
+  counter_culture %i(load vehicle operator), column_name: :slots_count
   # The load's counters: every slot counts in slots_count, only the ready ones in ready_slots_count. The second counter
   # needs its own column_name, without it counter_culture also increments slots_count (BUG-019).
   counter_culture :load
@@ -56,7 +56,7 @@ class Slot < ApplicationRecord
 
   validate :available?,
            :double_manifest?,
-           :allowed_jump_type?,
+           :allowed_activity_type?,
            :membership_in_date?,
            :affordable?,
            on: :create
@@ -87,33 +87,33 @@ class Slot < ApplicationRecord
   def ready?
     return false if ticket_type.blank?
     return false if load.blank?
-    return false if jump_type.blank?
-    passenger.present? || membership.present?
+    return false if activity_type.blank?
+    guest.present? || membership.present?
   end
 
   def wing_loading
     return unless rig.try(:canopy_size)
-    return unless exit_weight
-    weight = exit_weight
-    weight += passenger_slot.exit_weight || 0 if has_passenger?
+    return unless body_mass_kg
+    weight = body_mass_kg
+    weight += guest_slot.body_mass_kg || 0 if has_guest?
 
     weight_in_lbs = weight * 2.20462
     weight_in_lbs /= rig.canopy_size
     weight_in_lbs
   end
 
-  def has_passenger?
-    passenger_slot.present?
+  def has_guest?
+    guest_slot.present?
   end
 
-  def is_passenger?
-    passenger.present?
+  def is_guest?
+    guest.present?
   end
 
   private
 
   def required_slots
-    return 2 if has_passenger?
+    return 2 if has_guest?
     1
   end
 
@@ -122,7 +122,7 @@ class Slot < ApplicationRecord
   end
 
   def membership_in_date?
-    return if is_passenger?
+    return if is_guest?
     return if (membership.expires_at || 1.second.ago) > DateTime.current
     return unless operator.require_membership?
     return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
@@ -131,7 +131,7 @@ class Slot < ApplicationRecord
 
   def double_manifest?
     return if operator.allow_double_manifesting?
-    return if is_passenger?
+    return if is_guest?
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
     return unless membership.slots.where(load: operator.loads.on(operator.today).active).where.not(id: id).exists?
@@ -140,7 +140,7 @@ class Slot < ApplicationRecord
   end
 
   def affordable?
-    return true if is_passenger?
+    return true if is_guest?
     return if operator.allow_negative_credits?
     return unless operator.require_credits?
     return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
@@ -148,11 +148,11 @@ class Slot < ApplicationRecord
     errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
   end
 
-  def allowed_jump_type?
-    return true if is_passenger? && ticket_type.is_tandem?
-    return if jump_type.allowed_for?(membership)
+  def allowed_activity_type?
+    return true if is_guest? && ticket_type.is_tandem?
+    return if activity_type.allowed_for?(membership)
     return unless operator.require_license?
     return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
-    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
+    errors.add(:activity_type, "User cannot be manifested for #{activity_type.name} jumps")
   end
 end

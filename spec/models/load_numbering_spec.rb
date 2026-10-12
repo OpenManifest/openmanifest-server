@@ -6,13 +6,13 @@ require "rails_helper"
 # database now refuses duplicates.
 RSpec.describe Load, "numbering" do
   let(:operator) { create(:operator, time_zone: "Australia/Brisbane") }
-  let(:plane) { create(:plane, operator: operator) }
+  let(:vehicle) { create(:vehicle, operator: operator) }
 
   def new_load(**attrs)
-    create(:load, plane: plane, **attrs)
+    create(:load, vehicle: vehicle, **attrs)
   end
 
-  it "belongs to the operator of its plane" do
+  it "belongs to the operator of its vehicle" do
     expect(new_load.operator).to eq(operator)
   end
 
@@ -35,10 +35,10 @@ RSpec.describe Load, "numbering" do
   end
 
   it "counts per operator" do
-    other = create(:plane, operator: create(:operator))
+    other = create(:vehicle, operator: create(:operator))
     new_load
 
-    expect(create(:load, plane: other).load_number).to eq(1)
+    expect(create(:load, vehicle: other).load_number).to eq(1)
   end
 
   it "counts per day in the operator's time zone" do
@@ -97,10 +97,10 @@ RSpec.describe Load, "numbering" do
     end
 
     it "gives loads created at the same time different numbers" do
-      plane
-      other_plane = create(:plane, operator: operator)
+      vehicle
+      other_vehicle = create(:vehicle, operator: operator)
 
-      loads = in_threads(4) { create(:load, plane: [plane, other_plane].sample) }
+      loads = in_threads(4) { create(:load, vehicle: [vehicle, other_vehicle].sample) }
 
       expect(loads.map(&:load_number).sort).to eq([1, 2, 3, 4])
     end

@@ -8,13 +8,13 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :load
   record :membership
   record :ticket_type
-  record :jump_type
+  record :activity_type
   record :rig, default: nil
   integer :group_number, default: nil
-  float :exit_weight
-  string :passenger_name, default: nil
+  float :body_mass_kg
+  string :guest_name, default: nil
   date_time :created_at, default: -> { DateTime.current }
-  float :passenger_exit_weight, default: nil
+  float :guest_body_mass_kg, default: nil
   # Set when the member is manifested as part of a group that includes the person manifesting
   boolean :group_includes_self, default: false
   array :extra_ids, default: nil do
@@ -27,7 +27,7 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   steps :lock_load_and_member,
         :build_slot,
-        :set_tandem_passenger,
+        :set_tandem_guest,
         :validate,
         :create_order,
         :save,
@@ -92,36 +92,36 @@ class Manifest::CreateSlot < ApplicationInteraction
       membership: membership,
       ticket_type: ticket_type,
       group_number: group_number || load.next_group_number,
-      jump_type: jump_type,
+      activity_type: activity_type,
       rig: rig,
       created_by: access_context.subject,
-      exit_weight: exit_weight
+      body_mass_kg: body_mass_kg
     )
     # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end
 
-  def set_tandem_passenger
-    return unless @model.ticket_type.is_tandem? && passenger_name
+  def set_tandem_guest
+    return unless @model.ticket_type.is_tandem? && guest_name
 
-    if @model.passenger_slot.present?
-      @model.passenger_slot.passenger.update(
-        name: passenger_name,
-        exit_weight: passenger_exit_weight
+    if @model.guest_slot.present?
+      @model.guest_slot.guest.update(
+        name: guest_name,
+        body_mass_kg: guest_body_mass_kg
       )
     else
-      passenger = Passenger.find_or_create_by(
-        name: passenger_name,
-        exit_weight: passenger_exit_weight,
+      guest = Guest.find_or_create_by(
+        name: guest_name,
+        body_mass_kg: guest_body_mass_kg,
         operator: membership.operator
       )
 
-      @model.passenger_slot = Slot.create(
+      @model.guest_slot = Slot.create(
         load: load,
-        passenger: passenger,
-        exit_weight: passenger_exit_weight,
+        guest: guest,
+        body_mass_kg: guest_body_mass_kg,
         ticket_type: @model.ticket_type,
-        jump_type: @model.jump_type
+        activity_type: @model.activity_type
       )
     end
   end
@@ -185,7 +185,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   # The load, the member and the ticket type must belong to the operator the caller acts in
   def same_operator
     operator_id = access_context&.operator&.id
-    belongs = [load.plane.operator_id, membership.operator_id, ticket_type.operator_id].all?(operator_id)
+    belongs = [load.vehicle.operator_id, membership.operator_id, ticket_type.operator_id].all?(operator_id)
     errors.add(:base, "The load, the jumper and the ticket must belong to the same operator") unless belongs
   end
 end

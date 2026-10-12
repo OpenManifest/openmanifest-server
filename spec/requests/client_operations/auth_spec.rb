@@ -48,7 +48,7 @@ RSpec.describe "Client operations: auth and session" do
     let(:variables) do
       {
         email: "new@example.com", password: password, passwordConfirmation: password, name: "New Jumper",
-        phone: "0400000000", exitWeight: 80,
+        phone: "0400000000", bodyMassKg: 80,
       }
     end
 

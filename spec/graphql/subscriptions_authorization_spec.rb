@@ -6,12 +6,12 @@ require "rails_helper"
 RSpec.describe "Subscription authorization" do
   let(:operator) { create(:operator, state: "public") }
   let(:other_operator) { create(:operator, state: "public") }
-  let(:plane) { create(:plane, operator: operator, max_slots: 16) }
+  let(:vehicle) { create(:vehicle, operator: operator, capacity: 16) }
   let!(:owner) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "owner")) }
   let!(:member) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "fun_jumper")) }
   let!(:student) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "student")) }
   let!(:foreign) { create(:membership, operator: other_operator, user: create(:user), user_role: other_operator.user_roles.find_by(name: "owner")) }
-  let!(:load_record) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+  let!(:load_record) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
   let(:channel) { Struct.new(:params) { def stream_from(*); end }.new({ "channelId" => "subscription-authorization-spec" }) }
 
   def subscribe(query, variables, as:)

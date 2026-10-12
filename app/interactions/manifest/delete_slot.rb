@@ -4,7 +4,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
   record :slot
 
   steps :authorize_action,
-        :remove_passenger_slot,
+        :remove_guest_slot,
         :refund_transactions,
         :cancel_order,
         :broadcast_subscription,
@@ -47,11 +47,11 @@ class Manifest::DeleteSlot < ApplicationInteraction
     )
   end
 
-  def remove_passenger_slot
-    slot.passenger_slot.destroy if slot.has_passenger?
+  def remove_guest_slot
+    slot.guest_slot.destroy if slot.has_guest?
   end
 
-  # A slot without an order (a tandem passenger's, or one that was never paid) has nothing to refund
+  # A slot without an order (a tandem guest's, or one that was never paid) has nothing to refund
   def refund_transactions
     return unless slot.order
 
@@ -81,8 +81,8 @@ class Manifest::DeleteSlot < ApplicationInteraction
   end
 
   def authorize_action
-    if slot.load.has_landed?
-      errors.add(:base, "You can't take slots off a load that has landed")
+    if slot.load.has_completed?
+      errors.add(:base, "You can't take slots off a load that has completed")
     elsif is_self? && !access_context.can?(:deleteSlot)
       errors.add(:base, access_context.subject.manifest_desk_only?(:deleteSlot) ? Membership::MANIFEST_DESK_MESSAGE : "You cant take yourself off the load")
     elsif !is_self? && !access_context.can?(:deleteUserSlot)

@@ -8,11 +8,11 @@ require "yaml"
 #
 # An identifier is split into words (snake, kebab, camel, Pascal, SCREAMING); word sequences equal to an entry's `old`
 # words are replaced by its `new` words in the style of the identifier. Words are never split inside, so `airplane`
-# does not contain `plane`.
+# does not contain `vehicle`.
 module Vocabulary
   CONFIG_PATH = File.expand_path("../config/vocabulary.yml", __dir__)
   TOKEN = /[A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)*/
-  # A word of an identifier: an acronym (DZSO), a Capitalised or lowercase word, or digits
+  # A word of an identifier: an acronym (DutyOfficer), a Capitalised or lowercase word, or digits
   WORD = /[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+/
 
   Entry = Struct.new(:group, :old, :new, keyword_init: true) do

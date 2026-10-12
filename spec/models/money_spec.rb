@@ -69,7 +69,7 @@ RSpec.describe MoneyAttributes do
 
   describe "#add_cents!" do
     it "refuses anything that is not a money attribute" do
-      expect { member.add_cents!(:exit_weight, 100) }.to raise_error(ArgumentError, /not a money attribute/)
+      expect { member.add_cents!(:body_mass_kg, 100) }.to raise_error(ArgumentError, /not a money attribute/)
       expect { member.add_cents!("credits_cents; DROP TABLE users", 1) }.to raise_error(ArgumentError)
     end
 
@@ -95,7 +95,7 @@ RSpec.describe MoneyAttributes do
       other = Membership.find(member.id)
       other.add_cents!(:credits, 200)
 
-      member.update!(jump_count: 3)
+      member.update!(load_count: 3)
 
       expect(member.reload.credits_cents).to eq(1300)
       expect(member).not_to be_changed
@@ -121,8 +121,8 @@ RSpec.describe MoneyAttributes do
     ticket = create(:ticket_type, operator: operator, cost: 12.5)
     video = Extra.create!(operator: operator, name: "Video", cost: 0.1)
     coach = Extra.create!(operator: operator, name: "Coach", cost: 0.2)
-    plane_load = create(:load, plane: create(:plane, operator: operator))
-    slot = Slot.new(load: plane_load, ticket_type: ticket, extras: [video, coach])
+    vehicle_load = create(:load, vehicle: create(:vehicle, operator: operator))
+    slot = Slot.new(load: vehicle_load, ticket_type: ticket, extras: [video, coach])
 
     expect(slot.cost_cents).to eq(1280)
   end

@@ -30,7 +30,7 @@ module Types::Users
     field :has_rig_inspection, Boolean, null: false
     field :has_membership, Boolean, null: false
     field :has_credits, Boolean, null: false
-    field :has_exit_weight, Boolean, null: false
+    field :has_body_mass_kg, Boolean, null: false
     field :has_reserve_in_date, Boolean, null: false
     field :has_license, Boolean, null: false
 
@@ -42,7 +42,7 @@ module Types::Users
     async_field :license, Types::Meta::License, null: true
     async_field :user, Types::Users::User, null: false
 
-    async_field :jump_types, [Types::Meta::JumpType], null: true
+    async_field :activity_types, [Types::Meta::ActivityType], null: true
     field :user_federation, Types::Users::UserFederation, null: true
     def user_federation
       ::UserFederation.find_by(
@@ -52,7 +52,7 @@ module Types::Users
     end
 
     def slots
-      object.slots.includes(:load, :jump_type, :ticket_type).order(created_at: :desc)
+      object.slots.includes(:load, :activity_type, :ticket_type).order(created_at: :desc)
     end
 
     def unseen_notifications
@@ -88,8 +88,8 @@ module Types::Users
       false
     end
 
-    def has_exit_weight
-      !!preload(:user).user.exit_weight
+    def has_body_mass_kg
+      !!preload(:user).user.body_mass_kg
     end
 
     def has_reserve_in_date

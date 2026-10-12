@@ -90,13 +90,13 @@ RSpec.describe "Money in the API" do
     let!(:ticket) { create(:ticket_type, operator: operator, name: "Height", cost: 12.5) }
     let!(:video) { Extra.create!(operator: operator, name: "Video", cost: 0.1).tap { |extra| ticket.extras << extra } }
     let!(:coach) { Extra.create!(operator: operator, name: "Coach", cost: 0.2).tap { |extra| ticket.extras << extra } }
-    let!(:manifest_load) { create(:load, plane: plane, pilot: pilot, gca: owner, load_master: owner) }
+    let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner) }
 
     def manifest
       json = client_operation("ManifestUser",
                               variables: {
                                 load: manifest_load.id, membership: fun_jumper.id, ticketType: ticket.id, extras: [video.id, coach.id],
-                                jumpType: JumpType.allowed_for([fun_jumper]).first.id, exitWeight: 80,
+                                activityType: ActivityType.allowed_for([fun_jumper]).first.id, bodyMassKg: 80,
                               },
                               as: owner_user)
       Slot.find(json.dig(:data, :createSlot, :slot, :id))
@@ -147,8 +147,8 @@ RSpec.describe "Money in the API" do
     it "counts revenue in cents" do
       manifest
       manifest_load.update!(dispatch_at: 10.minutes.from_now)
-      manifest_load.dispatch
-      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "landed" }, as: owner_user)
+      manifest_load.call
+      client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 
       statistics = graphql("query($id: ID!) { operator(id: $id) { statistics { revenueCentsCount } } }", { id: operator.id })
 

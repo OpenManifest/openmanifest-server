@@ -8,7 +8,7 @@ class Manifest::CreateLoad < ApplicationInteraction
   object  :pilot,         class: Membership, default: nil
   object  :gca,           class: Membership, default: nil
   object  :load_master,   class: Membership, default: nil
-  object  :plane,         class: Plane
+  object  :vehicle, class: Vehicle
   # Ignored: a new load is always open
   string  :state,         default: "open"
   date_time :created_at,  default: -> { DateTime.current }
@@ -51,8 +51,8 @@ class Manifest::CreateLoad < ApplicationInteraction
       gca: gca,
       pilot: pilot,
       load_master: load_master,
-      plane: plane,
-      max_slots: max_slots || plane.max_slots,
+      vehicle: vehicle,
+      max_slots: max_slots || vehicle.capacity,
       created_at: created_at
     )
   end

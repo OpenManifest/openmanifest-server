@@ -4,11 +4,11 @@ require "rails_helper"
 
 RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
   let!(:operator) { create(:operator, credits: 50) }
-  let!(:plane) { create(:plane, operator: operator, max_slots: 10) }
+  let!(:vehicle) { create(:vehicle, operator: operator, capacity: 10) }
   let!(:ticket_type) { create(:ticket_type, operator: operator) }
   let!(:gca) { create(:membership, operator: operator) }
   let!(:pilot) { create(:membership, operator: operator) }
-  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
+  let!(:vehicle_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
   let!(:membership) { create(:membership, operator: operator, credits: 200) }
 
   describe ".resolve" do
@@ -18,9 +18,9 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
+                 vehicle_load: vehicle_load,
                  membership: membership,
-                 exit_weight: membership.exit_weight || 105
+                 body_mass_kg: membership.body_mass_kg || 105
                ),
              },
              headers: membership.user.create_new_auth_token
@@ -30,7 +30,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
         JSON.parse(response.body)
       end
 
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 1 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by 1 }
       it { expect { post_request }.to change { Membership.find(membership.id).credits }.by ticket_type.cost * -1 }
       it { expect { post_request }.to change { Operator.find(operator.id).credits }.by ticket_type.cost }
       it { expect { post_request }.to change { Operator.find(operator.id).sales.count }.by 1 }
@@ -41,7 +41,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
       end
       it "expects no errors" do
         post_request
-        expect(json["data"]["createSlot"]["slot"]["exitWeight"]).to eq membership.exit_weight
+        expect(json["data"]["createSlot"]["slot"]["bodyMassKg"]).to eq membership.body_mass_kg
       end
     end
 
@@ -52,19 +52,19 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
+                 vehicle_load: vehicle_load,
                  membership: membership,
-                 exit_weight: membership.user.exit_weight,
-                 passenger_name: '"Eric"',
-                 passenger_exit_weight: 60.0
+                 body_mass_kg: membership.user.body_mass_kg,
+                 guest_name: '"Eric"',
+                 guest_body_mass_kg: 60.0
                ),
              },
              headers: membership.user.create_new_auth_token
         JSON.parse(response.body)
       end
 
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 2 }
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id, membership: membership).count }.by 1 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by 2 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id, membership: membership).count }.by 1 }
       it { expect { post_request }.not_to change { Membership.find(membership.id).credits } }
       it { expect { post_request }.not_to change { Operator.find(operator.id).credits } }
       it { expect { post_request }.to change { Order.where(seller: operator).count }.by 1 }
@@ -80,9 +80,9 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
+                 vehicle_load: vehicle_load,
                  membership: membership,
-                 exit_weight: membership.user.exit_weight
+                 body_mass_kg: membership.user.body_mass_kg
                ),
              },
              headers: membership.user.create_new_auth_token
@@ -98,7 +98,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
     end
   end
 
-  def query(membership:, ticket_type:, plane_load:, exit_weight:, passenger_name: nil, passenger_exit_weight: nil)
+  def query(membership:, ticket_type:, vehicle_load:, body_mass_kg:, guest_name: nil, guest_body_mass_kg: nil)
     <<~GQL
       mutation {
         createSlot(
@@ -106,11 +106,11 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
             attributes: {
               membership: "#{membership.id}"
               ticketType: "#{ticket_type.id}"
-              jumpType: #{JumpType.allowed_for([membership]).sample.id}
-              load: "#{plane_load.id}"
-              exitWeight: #{exit_weight}
-              passengerExitWeight: #{passenger_exit_weight || 'null'}
-              passengerName: #{passenger_name || 'null'}
+              activityType: #{ActivityType.allowed_for([membership]).sample.id}
+              load: "#{vehicle_load.id}"
+              bodyMassKg: #{body_mass_kg}
+              guestBodyMassKg: #{guest_body_mass_kg || 'null'}
+              guestName: #{guest_name || 'null'}
             }
           }
         ) {
@@ -121,7 +121,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
           }
           slot {
             id
-            exitWeight
+            bodyMassKg
             membership {
               id
               user {

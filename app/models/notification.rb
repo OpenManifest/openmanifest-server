@@ -22,7 +22,7 @@ class Notification < ApplicationRecord
 
   enum :notification_type, {
     :system => 0, :packjob_pending_confirm => 1, :packjob_confirmed => 2, :rig_pending_inspection => 3,
-    :boarding_call => 4, :user_manifested => 5, :credits_updated => 6, :rig_inspection_completed => 7, :rig_inspection_requested => 8, :membership_updated => 9, :boarding_call_canceled => 10, :permission_granted => 11, :permission_revoked => 12, :publication_requested => 13,
+    :boarding => 4, :user_manifested => 5, :credits_updated => 6, :rig_inspection_completed => 7, :rig_inspection_requested => 8, :membership_updated => 9, :boarding_canceled => 10, :permission_granted => 11, :permission_revoked => 12, :publication_requested => 13,
   }
 
   scope :seen, -> { where(is_seen: true) }

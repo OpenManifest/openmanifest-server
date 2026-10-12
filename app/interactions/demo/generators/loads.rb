@@ -48,27 +48,27 @@ class Demo::Generators::Loads < ApplicationInteraction
     @slot_count ||= 0
     return if access_context.operator.loads.exists?(created_at: date)
     # Create a caravan load
-    plane_load = compose(
+    vehicle_load = compose(
       ::Manifest::CreateLoad,
       access_context: access_context,
       created_at: date,
       pilot: access_context.operator.memberships.with_acting_permission(:actAsPilot).shuffle.first,
       gca: access_context.operator.memberships.with_acting_permission(:actAsGCA).shuffle.first,
-      plane: access_context.operator.planes.to_a.sample
+      vehicle: access_context.operator.vehicles.to_a.sample
     )
     @load_count += 1
 
     # Manifest user groups
     taken_slots = 0
-    while taken_slots < plane_load.reload.available_slots
+    while taken_slots < vehicle_load.reload.available_slots
       group_size = Random.rand(4) + 1
       taken_slots += group_size
-      break if taken_slots > plane_load.reload.available_slots
-      break if group_size > plane_load.reload.available_slots
+      break if taken_slots > vehicle_load.reload.available_slots
+      break if group_size > vehicle_load.reload.available_slots
       dz_users = access_context.operator.memberships.where.not(
-        id: access_context.operator.memberships.manifested_on(plane_load)
+        id: access_context.operator.memberships.manifested_on(vehicle_load)
       ).take(group_size)
-      jump_type = JumpType.allowed_for(dz_users).sample
+      activity_type = ActivityType.allowed_for(dz_users).sample
       ticket_type = access_context.operator.ticket_types.find_by(name: "Height")
       next if dz_users.empty?
       group_leader = dz_users.first
@@ -77,19 +77,19 @@ class Demo::Generators::Loads < ApplicationInteraction
       ::Manifest::CreateMultipleSlots.run(
         access_context: ::ApplicationInteraction::AccessContext.new(group_leader),
         ticket_type: ticket_type,
-        jump_type: jump_type,
-        load: plane_load,
+        activity_type: activity_type,
+        load: vehicle_load,
         created_at: date,
         users: dz_users.map do |u|
-          { membership: u, exit_weight: u.exit_weight, rig: u.rigs.sample }
+          { membership: u, body_mass_kg: u.body_mass_kg, rig: u.rigs.sample }
         end
       )
       @slot_count += group_size
     end
 
     # Dispatch load
-    compose(::Manifest::UpdateLoad, access_context: access_context, load: plane_load, dispatch_at: date + 20.minutes)
+    compose(::Manifest::UpdateLoad, access_context: access_context, load: vehicle_load, dispatch_at: date + 20.minutes)
 
-    compose(::Manifest::FinalizeLoad, load: plane_load, access_context: access_context)
+    compose(::Manifest::FinalizeLoad, load: vehicle_load, access_context: access_context)
   end
 end

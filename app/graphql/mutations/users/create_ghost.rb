@@ -15,7 +15,7 @@ module Mutations::Users
         license: attributes[:license],
         role: attributes[:role],
         operator: attributes[:operator],
-        exit_weight: attributes[:exit_weight],
+        body_mass_kg: attributes[:body_mass_kg],
         email: attributes[:email],
         phone: attributes[:phone],
         name: attributes[:name],

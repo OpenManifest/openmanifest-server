@@ -5,19 +5,19 @@ module Types
     include GraphQL::Types::Relay::HasNodeField
     include Geokit::Geocoders
 
-    field :federations,     resolver: Resolvers::Meta::Federations
-    field :jump_types,      resolver: Resolvers::Meta::JumpTypes
+    field :federations, resolver: Resolvers::Meta::Federations
+    field :activity_types, resolver: Resolvers::Meta::ActivityTypes
     field :licenses,        resolver: Resolvers::Meta::Licenses
     field :current_user,    resolver: Resolvers::Access::CurrentUser
     field :membership,   resolver: Resolvers::Users::Membership
     field :memberships,  resolver: Resolvers::Users::Memberships
-    field :master_log,      resolver: Resolvers::Operator::MasterLog
+    field :daily_log, resolver: Resolvers::Operator::DailyLog
 
     field :operators,       resolver: Resolvers::Operators
     field :operator,        resolver: Resolvers::Operator
     field :loads,           resolver: Resolvers::Operator::Loads
     field :load,            resolver: Resolvers::Operator::Load
-    field :planes,          resolver: Resolvers::Operator::Aircrafts
+    field :vehicles, resolver: Resolvers::Operator::Vehicles
     field :ticket_types,    resolver: Resolvers::Operator::TicketTypes
     field :extras,          resolver: Resolvers::Operator::TicketAddons
     field :available_rigs,  resolver: Resolvers::Operator::AvailableRigs

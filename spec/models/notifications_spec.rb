@@ -11,7 +11,7 @@ RSpec.describe "Notifications and push tokens" do
   let(:token) { "ExponentPushToken[abcdefghijklmnop]" }
 
   def notification_for(dz_user, message: "Load #1 take off at 10:00")
-    Notification.create!(received_by: dz_user, message: message, resource: operator, notification_type: :boarding_call)
+    Notification.create!(received_by: dz_user, message: message, resource: operator, notification_type: :boarding)
   end
 
   describe Notification, "#deliver" do
@@ -108,7 +108,7 @@ RSpec.describe "Notifications and push tokens" do
   describe RigInspection do
     let(:rig) { create(:rig, user: member.user, operator: nil) }
     let(:template) { create(:form_template, operator: operator) }
-    let(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
+    let(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
 
     def inspect_rig(is_ok:)
       RigInspection.create!(rig: rig, membership: member, inspected_by: inspector, form_template: template, is_ok: is_ok, definition: "[]")
@@ -136,8 +136,8 @@ RSpec.describe "Notifications and push tokens" do
 
   describe RequestRigInspectionJob do
     let(:rig) { create(:rig, user: member.user, operator: nil) }
-    let!(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
-    let!(:second_inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
+    let!(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
+    let!(:second_inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
     let!(:bystander) { create(:membership, operator: operator, user_role: operator.user_roles.find_by(name: "student")) }
 
     it "asks every rig inspector and enqueues their pushes" do
@@ -160,8 +160,8 @@ RSpec.describe "Notifications and push tokens" do
 
     it "is enqueued with ids when a member with a rig, a weight and a license joins" do
       rig
-      member.user.update!(exit_weight: 80)
-      joiner = create(:user, exit_weight: 80)
+      member.user.update!(body_mass_kg: 80)
+      joiner = create(:user, body_mass_kg: 80)
       create(:rig, user: joiner, operator: nil)
 
       expect { create(:membership, operator: operator, user: joiner, license: Federation.first.licenses.where.not(name: "No license").first) }.

@@ -12,7 +12,7 @@ module Types
       argument :email, String, required: false
       argument :license, Int, required: false,
                               prepare: -> (value, ctx) { License.find_by(id: value) }
-      argument :exit_weight, Float, required: false
+      argument :body_mass_kg, Float, required: false
     end
   end
 end

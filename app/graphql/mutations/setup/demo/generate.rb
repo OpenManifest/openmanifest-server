@@ -18,7 +18,7 @@ module Mutations::Setup::Demo
         access_context: access_context_for(attributes[:operator]),
         **attributes.to_h.slice(
           :gca_count,
-          :dzso_count,
+          :duty_officer_count,
           :jumper_count,
           :pilot_count,
           :tandem_instructor_count,

@@ -16,7 +16,7 @@ module Mutations::Manifest
           attributes[:load].operator
         ),
         ticket_type: attributes[:ticket_type],
-        jump_type: attributes[:jump_type],
+        activity_type: attributes[:activity_type],
         group_number: attributes[:group_number],
         extra_ids: attributes[:extras]&.pluck(:id),
         load: attributes[:load],
@@ -27,7 +27,7 @@ module Mutations::Manifest
     # Manifesting yourself needs createSlot; a group with other people needs createUserSlot, or createUserSlotWithSelf
     # when you are one of its members (BUG-062: this compared membership ids with the user id).
     def authorized?(attributes: nil)
-      operator = attributes[:load].plane.operator
+      operator = attributes[:load].vehicle.operator
       membership = Membership.of(operator, context[:current_resource])
       return refuse("You are not a member of this operator") unless membership
 

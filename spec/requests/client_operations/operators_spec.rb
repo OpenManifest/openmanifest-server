@@ -140,7 +140,7 @@ RSpec.describe "Client operations: operators and access" do
     it "lists every role of the operator" do
       json = client_operation("Roles", variables: { operatorId: operator.id }, as: moderator)
 
-      expect(json.dig(:data, :operator, :roles).pluck(:name)).to include("tandem_passenger", "owner")
+      expect(json.dig(:data, :operator, :roles).pluck(:name)).to include("tandem_guest", "owner")
     end
 
     it "lists only roles below the caller's own when selectable" do
@@ -341,11 +341,11 @@ RSpec.describe "Client operations: operators and access" do
     end
   end
 
-  describe "UpdateRigInspectionTemplate" do
+  describe "UpdateEquipmentInspectionTemplate" do
     let!(:template) { create(:form_template, operator: operator).tap { |form| operator.update!(rig_inspection_template: form) } }
 
     it "updates the template definition for a user who may edit it" do
-      json = client_operation("UpdateRigInspectionTemplate", variables: { operatorId: operator.id, formId: template.id, definition: '[{"label":"Reserve"}]' }, as: moderator)
+      json = client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator.id, formId: template.id, definition: '[{"label":"Reserve"}]' }, as: moderator)
 
       expect(json.dig(:data, :updateFormTemplate, :errors)).to be_nil
       expect(json.dig(:data, :updateFormTemplate, :formTemplate, :definition)).to eq('[{"label":"Reserve"}]')
@@ -353,7 +353,7 @@ RSpec.describe "Client operations: operators and access" do
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateRigInspectionTemplate", variables: { operatorId: operator.id, formId: template.id, definition: "hijacked" }, as: user)
+      client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator.id, formId: template.id, definition: "hijacked" }, as: user)
 
       expect(template.reload.definition).not_to eq("hijacked")
     end

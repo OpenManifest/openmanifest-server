@@ -7,7 +7,7 @@
 # Unrelated words that merely contain an old word (`airplane`, `bigrig`) are untouched.
 #
 # Not in the map (renamed by hand in the task that owns them): `Load` and `load_number`/`load_date` (unchanged by D5),
-# aircraft class names and `kind: aircraft`, load states (`boarding_call`, `in_flight`, `landed`), `max_slots`,
+# `kind: aircraft` (a value, not a name), `max_slots` of vehicles (loads keep theirs),
 # `plane_count`, `passenger_slot_id`, `pilot_id`/`gca_id`/`load_master_id`, `apf_number`, `canopy_size`.
 allow:
   # Skydiving keeps its own words
@@ -24,6 +24,8 @@ allow:
   # Generated or third-party files that are rebuilt rather than edited
   - yarn.lock
   - .rubocop_todo.yml
+  # The seeded skydiving dropzone keeps its name (data); this file is renamed by hand
+  - db/seeds/dev_baseline.rb
   - package.json
   - Gemfile.lock
   - config/vocabulary.yml
@@ -47,12 +49,21 @@ groups:
     - { old: dropzone, new: operator }
   vehicle:
     - { old: plane, new: vehicle }
+    - { old: aircraft, new: vehicle }
     - { old: passenger, new: guest }
     - { old: jump_type, new: activity_type }
     - { old: master_log, new: daily_log }
     - { old: dzso, new: duty_officer }
     - { old: exit_weight, new: body_mass_kg }
     - { old: jump_count, new: load_count }
+  # Load states and their events (GENERALISATION §7); `dispatch` and `dispatch_at` are renamed by hand (call schedule, P7.11)
+  load_states:
+    - { old: boarding_call_canceled, new: boarding_canceled }
+    - { old: boarding_call, new: boarding }
+    - { old: in_flight, new: departed }
+    - { old: take_off, new: depart }
+    - { old: mark_as_landed, new: complete }
+    - { old: landed, new: completed }
   certifications:
     - { old: user_federation_qualification, new: user_qualification }
     - { old: user_federation, new: user_certification }

@@ -12,7 +12,7 @@ class RequestRigInspectionJob < ApplicationJob
     rig = Rig.find(rig_id)
 
     # Everyone at this operator who may inspect rigs, through their role or granted to them
-    inspectors = dz_user.operator.memberships.kept.includes(:user_role, :permissions).select { |member| member.can?(:actAsRigInspector) }
+    inspectors = dz_user.operator.memberships.kept.includes(:user_role, :permissions).select { |member| member.can?(:actAsEquipmentInspector) }
     inspectors.each do |inspector|
       next if Notification.exists?(received_by: inspector, notification_type: :rig_inspection_requested, resource: rig)
 

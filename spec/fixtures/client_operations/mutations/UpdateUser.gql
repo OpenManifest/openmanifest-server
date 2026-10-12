@@ -7,7 +7,7 @@ mutation UpdateUser(
   $pushToken: String
   $nickname: String
   $license: Int
-  $exitWeight: Float
+  $bodyMassKg: Float
 ) {
   updateUser(
     input: {
@@ -20,7 +20,7 @@ mutation UpdateUser(
         image: $image
         nickname: $nickname
         license: $license
-        exitWeight: $exitWeight
+        bodyMassKg: $bodyMassKg
       }
     }
   ) {

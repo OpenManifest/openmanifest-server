@@ -8,7 +8,7 @@ RSpec.shared_context "operator_with_manifested_loads", shared_context: :metadata
     ApplicationInteraction::AccessContext.new(instructor)
   end
   let!(:ticket_type) { create(:ticket_type, operator: operator) }
-  let!(:load2) { create(:load, plane: plane, pilot: pilot, gca: gca) }
+  let!(:load2) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
   let!(:jumpers) do
     create_list(
       :membership,
@@ -25,9 +25,9 @@ RSpec.shared_context "operator_with_manifested_loads", shared_context: :metadata
         access_context: access_context,
         ticket_type: ticket_type,
         membership: jumper,
-        jump_type: JumpType.allowed_for([jumper]).sample,
+        activity_type: ActivityType.allowed_for([jumper]).sample,
         load: [load, load2].sample,
-        exit_weight: jumper.exit_weight
+        body_mass_kg: jumper.body_mass_kg
       )
     end
   end

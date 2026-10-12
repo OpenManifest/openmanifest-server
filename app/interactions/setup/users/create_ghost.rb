@@ -3,7 +3,7 @@
 class Setup::Users::CreateGhost < ApplicationInteraction
   string :name
   string :email
-  decimal :exit_weight
+  decimal :body_mass_kg
   record :operator
   record :role, class: ::UserRole
 
@@ -59,7 +59,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     @user.assign_attributes(
       name: name,
       phone: phone,
-      exit_weight: exit_weight,
+      body_mass_kg: body_mass_kg,
       email: email,
       password: SecureRandom.urlsafe_base64(9)
     )

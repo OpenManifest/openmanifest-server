@@ -22,7 +22,7 @@ module Mutations
             role_id: operator.user_roles.to_a.sample.id,
             federation_number: "321321",
             license_id: operator.federation.licenses.to_a.sample.id,
-            exit_weight: 50,
+            body_mass_kg: 50,
             operator_id: operator.id
           )
         end
@@ -49,7 +49,7 @@ module Mutations
       end
     end
 
-    def query(name:, email:, phone:, exit_weight:, operator_id:, role_id:, license_id:, federation_number:)
+    def query(name:, email:, phone:, body_mass_kg:, operator_id:, role_id:, license_id:, federation_number:)
       <<~GQL
         mutation {
           createGhost(
@@ -58,7 +58,7 @@ module Mutations
                 name: "#{name}",
                 email: "#{email}",
                 phone: "#{phone}",
-                exitWeight: #{exit_weight},
+                bodyMassKg: #{body_mass_kg},
                 operator: #{operator_id},
                 role: #{role_id},
                 license: #{license_id},

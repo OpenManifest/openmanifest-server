@@ -5,14 +5,14 @@ require "rails_helper"
 RSpec.describe Resolvers::Operator::Loads, type: :request do
   let!(:operator) { create(:operator, credits: 50) }
   let!(:membership) { create(:membership, operator: operator) }
-  let!(:plane) { create(:plane, operator: operator) }
+  let!(:vehicle) { create(:vehicle, operator: operator) }
   let!(:gca) { create(:membership, operator: operator) }
   let!(:pilot) { create(:membership, operator: operator) }
   # The resolver reads the date in the operator's time zone, so the spec must too (UTC is a day behind for part of the day)
   let(:today) { Time.use_zone(operator.time_zone) { Date.current } }
-  let!(:load1) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: 1.day.ago) }
-  let!(:load2) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: Time.use_zone(operator.time_zone) { Time.zone.local(today.year, today.month, today.day) + 5.hours }) }
-  let!(:load3) { create(:load, plane: plane, pilot: pilot, gca: gca, created_at: 1.day.from_now) }
+  let!(:load1) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca, created_at: 1.day.ago) }
+  let!(:load2) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca, created_at: Time.use_zone(operator.time_zone) { Time.zone.local(today.year, today.month, today.day) + 5.hours }) }
+  let!(:load3) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca, created_at: 1.day.from_now) }
 
   describe ".resolve" do
     context "successfully" do

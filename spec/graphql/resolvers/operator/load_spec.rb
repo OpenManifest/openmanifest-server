@@ -6,12 +6,12 @@ module Mutations
   RSpec.describe Resolvers::Operator::Load, type: :request do
     let!(:operator) { create(:operator, credits: 50) }
     let!(:membership) { create(:membership, operator: operator) }
-    let!(:plane) { create(:plane, operator: operator) }
+    let!(:vehicle) { create(:vehicle, operator: operator) }
     let!(:gca) { create(:membership, operator: operator) }
     let!(:pilot) { create(:membership, operator: operator) }
-    let!(:load1) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.ago) }
-    let!(:load2) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: DateTime.current.beginning_of_day + 5.hours) }
-    let!(:load3) { create(:load, plane: plane, gca: gca, pilot: pilot, created_at: 1.day.from_now) }
+    let!(:load1) { create(:load, vehicle: vehicle, gca: gca, pilot: pilot, created_at: 1.day.ago) }
+    let!(:load2) { create(:load, vehicle: vehicle, gca: gca, pilot: pilot, created_at: DateTime.current.beginning_of_day + 5.hours) }
+    let!(:load3) { create(:load, vehicle: vehicle, gca: gca, pilot: pilot, created_at: 1.day.from_now) }
 
     before do
       membership.grant! :createUser

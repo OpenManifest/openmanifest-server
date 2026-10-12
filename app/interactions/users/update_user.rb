@@ -12,7 +12,7 @@ class Users::UpdateUser < ApplicationInteraction
   string :federation_number, default: nil
   string :phone, default: nil
   string :email, default: nil
-  decimal :exit_weight, default: nil
+  decimal :body_mass_kg, default: nil
   record :license, default: nil
 
   steps :authorize,
@@ -27,7 +27,7 @@ class Users::UpdateUser < ApplicationInteraction
       nickname: nickname,
       phone: phone,
       email: email,
-      exit_weight: exit_weight,
+      body_mass_kg: body_mass_kg,
     }.compact
     # Sending null clears the push token (logging out); leaving it out keeps it
     attributes[:push_token] = push_token if inputs.given?(:push_token)

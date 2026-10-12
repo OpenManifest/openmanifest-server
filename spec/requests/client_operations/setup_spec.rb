@@ -14,71 +14,71 @@ RSpec.describe "Client operations: setup" do
     create(:membership, operator: other_operator, user: other_owner_user, user_role: other_operator.user_roles.find_by(name: "owner"))
   end
 
-  describe "Planes" do
-    it "lists the operator's aircraft" do
-      json = client_operation("Planes", variables: { operatorId: operator.id }, as: user)
+  describe "Vehicles" do
+    it "lists the operator's vehicle" do
+      json = client_operation("Vehicles", variables: { operatorId: operator.id }, as: user)
 
-      expect(json.dig(:data, :planes).pluck(:id)).to eq([plane.id.to_s])
-      expect(json.dig(:data, :planes, 0)).to include(name: plane.name, registration: plane.registration, maxSlots: 16)
+      expect(json.dig(:data, :vehicles).pluck(:id)).to eq([vehicle.id.to_s])
+      expect(json.dig(:data, :vehicles, 0)).to include(name: vehicle.name, registration: vehicle.registration, capacity: 16)
     end
 
-    it "does not list another operator's aircraft to a stranger" do
-      foreign_plane = create(:plane, operator: other_operator)
+    it "does not list another operator's vehicle to a stranger" do
+      foreign_vehicle = create(:vehicle, operator: other_operator)
 
-      json = client_operation("Planes", variables: { operatorId: other_operator.id }, as: user)
+      json = client_operation("Vehicles", variables: { operatorId: other_operator.id }, as: user)
 
-      expect(json.dig(:data, :planes).to_a.pluck(:id)).not_to include(foreign_plane.id.to_s)
+      expect(json.dig(:data, :vehicles).to_a.pluck(:id)).not_to include(foreign_vehicle.id.to_s)
     end
   end
 
-  describe "CreateAircraft" do
-    let(:attributes) { { name: "Twin Otter", registration: "VH-TWN", minSlots: 2, maxSlots: 22, operatorId: operator.id } }
+  describe "CreateVehicle" do
+    let(:attributes) { { name: "Twin Otter", registration: "VH-TWN", minCapacity: 2, capacity: 22, operatorId: operator.id } }
 
-    it "creates an aircraft for a user who may create planes" do
+    it "creates a vehicle for a user who may create vehicles" do
       json = nil
-      expect { json = client_operation("CreateAircraft", variables: { attributes: attributes }, as: owner_user) }.to change(Plane, :count).by(1)
+      expect { json = client_operation("CreateVehicle", variables: { attributes: attributes }, as: owner_user) }.to change(Vehicle, :count).by(1)
 
-      expect(json.dig(:data, :createPlane, :plane)).to include(name: "Twin Otter", registration: "VH-TWN", maxSlots: 22)
-      expect(json.dig(:data, :createPlane, :plane, :operator, :planes).size).to eq(2)
+      expect(json.dig(:data, :createVehicle, :vehicle)).to include(name: "Twin Otter", registration: "VH-TWN", capacity: 22)
+      expect(json.dig(:data, :createVehicle, :vehicle, :operator, :vehicles).size).to eq(2)
     end
 
     it "refuses a jumper" do
-      expect { client_operation("CreateAircraft", variables: { attributes: attributes }, as: user) }.not_to change(Plane, :count)
+      expect { client_operation("CreateVehicle", variables: { attributes: attributes }, as: user) }.not_to change(Vehicle, :count)
     end
   end
 
-  describe "UpdateAircraft" do
-    it "updates the aircraft" do
-      json = client_operation("UpdateAircraft", variables: { id: plane.id, attributes: { name: "Renamed", maxSlots: 12 } }, as: owner_user)
+  describe "UpdateVehicle" do
+    it "updates the vehicle" do
+      json = client_operation("UpdateVehicle", variables: { id: vehicle.id, attributes: { name: "Renamed", capacity: 12 } }, as: owner_user)
 
-      expect(json.dig(:data, :updatePlane, :plane)).to include(name: "Renamed", maxSlots: 12)
+      expect(json.dig(:data, :updateVehicle, :vehicle)).to include(name: "Renamed", capacity: 12)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateAircraft", variables: { id: plane.id, attributes: { name: "Hijacked" } }, as: user)
+      client_operation("UpdateVehicle", variables: { id: vehicle.id, attributes: { name: "Hijacked" } }, as: user)
 
-      expect(plane.reload.name).not_to eq("Hijacked")
+      expect(vehicle.reload.name).not_to eq("Hijacked")
     end
 
-    it "cannot move an aircraft to another operator" do
-      client_operation("UpdateAircraft", variables: { id: plane.id, attributes: { operatorId: other_operator.id } }, as: owner_user)
+    it "cannot move a vehicle to another operator" do
+      client_operation("UpdateVehicle", variables: { id: vehicle.id, attributes: { operatorId: other_operator.id } }, as: owner_user)
 
-      expect(plane.reload.operator).to eq(operator)
+      expect(vehicle.reload.operator).to eq(operator)
     end
   end
 
-  describe "ArchivePlane" do
-    it "archives the aircraft" do
-      json = client_operation("ArchivePlane", variables: { id: plane.id }, as: owner_user)
+  describe "ArchiveVehicle" do
+    it "archives the vehicle" do
+      json = client_operation("ArchiveVehicle", variables: { id: vehicle.id }, as: owner_user)
 
-      expect(json.dig(:data, :deletePlane, :errors)).to be_nil
-      expect(plane.reload).to be_discarded
+      expect(json.dig(:data, :deleteVehicle, :errors)).to be_nil
+      expect(vehicle.reload).to be_discarded
     end
 
     it "refuses a jumper" do
-      client_operation("ArchivePlane", variables: { id: plane.id }, as: user)
+      client_operation("ArchiveVehicle", variables: { id: vehicle.id }, as: user)
 
-      expect(plane.reload).not_to be_discarded
+      expect(vehicle.reload).not_to be_discarded
     end
   end
 
@@ -275,24 +275,24 @@ RSpec.describe "Client operations: setup" do
     end
   end
 
-  describe "CreateRig" do
+  describe "CreateEquipment" do
     let(:variables) { { make: "Vector", model: "v310", serial: "12345", rigType: "sport", canopySize: 129, userId: user.id } }
 
     it "creates a rig owned by the caller" do
       json = nil
-      expect { json = client_operation("CreateRig", variables: variables, as: user) }.to change(Rig, :count).by(1)
+      expect { json = client_operation("CreateEquipment", variables: variables, as: user) }.to change(Rig, :count).by(1)
 
-      expect(json.dig(:data, :createRig, :errors)).to be_nil
-      expect(json.dig(:data, :createRig, :rig)).to include(make: "Vector", serial: "12345")
+      expect(json.dig(:data, :createEquipment, :errors)).to be_nil
+      expect(json.dig(:data, :createEquipment, :rig)).to include(make: "Vector", serial: "12345")
     end
 
     it "refuses creating a rig for another user" do
-      expect { client_operation("CreateRig", variables: variables.merge(userId: staff_user.id), as: user) }.not_to change(Rig, :count)
+      expect { client_operation("CreateEquipment", variables: variables.merge(userId: staff_user.id), as: user) }.not_to change(Rig, :count)
     end
 
-    # The app sends the packing card with UpdateRig; createRig takes it too
-    def create_rig_with_card(card)
-      query = "mutation($attributes: RigInput!) { createRig(input: { attributes: $attributes }) { errors fieldErrors { field message } rig { id } } }"
+    # The app sends the packing card with UpdateEquipment; createEquipment takes it too
+    def create_equipment_with_card(card)
+      query = "mutation($attributes: RigInput!) { createEquipment(input: { attributes: $attributes }) { errors fieldErrors { field message } rig { id } } }"
       post "/graphql",
            params: { query: query, variables: { attributes: { make: "Vector", model: "v310", serial: "1", rigType: "sport", canopySize: 129, userId: user.id, packingCard: card } }.to_json },
            headers: user.create_new_auth_token
@@ -300,45 +300,45 @@ RSpec.describe "Client operations: setup" do
     end
 
     it "stores a packing card image when the rig is created" do
-      json = create_rig_with_card(image_data_url("jpg"))
+      json = create_equipment_with_card(image_data_url("jpg"))
 
-      expect(json.dig(:data, :createRig, :errors)).to be_nil
-      expect(Rig.find(json.dig(:data, :createRig, :rig, :id)).packing_card).to be_attached
+      expect(json.dig(:data, :createEquipment, :errors)).to be_nil
+      expect(Rig.find(json.dig(:data, :createEquipment, :rig, :id)).packing_card).to be_attached
     end
 
     it "refuses a packing card that is not a picture, and creates no rig" do
       json = nil
-      expect { json = create_rig_with_card(data_url_of("not an image")) }.not_to change(Rig, :count)
+      expect { json = create_equipment_with_card(data_url_of("not an image")) }.not_to change(Rig, :count)
 
-      expect(json.dig(:data, :createRig, :fieldErrors, 0, :field)).to eq("packing_card")
+      expect(json.dig(:data, :createEquipment, :fieldErrors, 0, :field)).to eq("packing_card")
     end
   end
 
-  describe "UpdateRig" do
+  describe "UpdateEquipment" do
     let!(:rig) { create(:rig, user: user, operator: nil) }
 
     it "stores a packing card image" do
-      json = client_operation("UpdateRig", variables: { id: rig.id, packingCard: image_data_url("png") }, as: user)
+      json = client_operation("UpdateEquipment", variables: { id: rig.id, packingCard: image_data_url("png") }, as: user)
 
-      expect(json.dig(:data, :updateRig, :errors)).to be_nil
+      expect(json.dig(:data, :updateEquipment, :errors)).to be_nil
       expect(rig.reload.packing_card).to be_attached
       expect(rig.packing_card.content_type).to eq("image/png")
     end
 
     it "updates the caller's own rig" do
-      json = client_operation("UpdateRig", variables: { id: rig.id, name: "Main", canopySize: 119 }, as: user)
+      json = client_operation("UpdateEquipment", variables: { id: rig.id, name: "Main", canopySize: 119 }, as: user)
 
-      expect(json.dig(:data, :updateRig, :rig)).to include(name: "Main", canopySize: 119)
+      expect(json.dig(:data, :updateEquipment, :rig)).to include(name: "Main", canopySize: 119)
     end
 
     it "refuses another jumper" do
-      client_operation("UpdateRig", variables: { id: rig.id, name: "Hijacked" }, as: staff_user)
+      client_operation("UpdateEquipment", variables: { id: rig.id, name: "Hijacked" }, as: staff_user)
 
       expect(rig.reload.name).not_to eq("Hijacked")
     end
 
     it "cannot reassign the rig to another user" do
-      client_operation("UpdateRig", variables: { id: rig.id, userId: staff_user.id }, as: user)
+      client_operation("UpdateEquipment", variables: { id: rig.id, userId: staff_user.id }, as: user)
 
       expect(rig.reload.user).to eq(user)
     end
@@ -361,36 +361,36 @@ RSpec.describe "Client operations: setup" do
     end
   end
 
-  describe "CreateRigInspection" do
+  describe "CreateEquipmentInspection" do
     let!(:rig) { create(:rig, user: user, operator: nil) }
     let!(:template) { create(:form_template, operator: operator).tap { |form| operator.update!(rig_inspection_template: form) } }
 
-    before { owner.grant!("actAsRigInspector") }
+    before { owner.grant!("actAsEquipmentInspector") }
 
     it "records an inspection by a rig inspector" do
       json = nil
       expect do
-        json = client_operation("CreateRigInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
+        json = client_operation("CreateEquipmentInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
       end.to change(RigInspection, :count).by(1)
 
-      expect(json.dig(:data, :createRigInspection, :rigInspection, :isOk)).to be(true)
+      expect(json.dig(:data, :createEquipmentInspection, :rigInspection, :isOk)).to be(true)
     end
 
     it "refuses a user who is not a rig inspector" do
       expect do
-        client_operation("CreateRigInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: user)
+        client_operation("CreateEquipmentInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: user)
       end.not_to change(RigInspection, :count)
     end
 
     it "notifies the rig owner when the rig is cleared to jump" do
       expect do
-        client_operation("CreateRigInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
+        client_operation("CreateEquipmentInspection", variables: { operator: operator.id, rig: rig.id, isOk: true, definition: "[]" }, as: owner_user)
       end.to change { Notification.where(notification_type: :rig_inspection_completed).count }.by(1)
     end
 
     it "does not tell the rig owner they are cleared when the inspection failed" do
       expect do
-        client_operation("CreateRigInspection", variables: { operator: operator.id, rig: rig.id, isOk: false, definition: "[]" }, as: owner_user)
+        client_operation("CreateEquipmentInspection", variables: { operator: operator.id, rig: rig.id, isOk: false, definition: "[]" }, as: owner_user)
       end.not_to(change(Notification, :count))
     end
   end
@@ -457,44 +457,44 @@ RSpec.describe "Client operations: setup" do
     end
   end
 
-  describe "MasterLog" do
+  describe "DailyLog" do
     let(:date) { Time.current.in_time_zone(operator.time_zone).to_date.iso8601 }
 
     it "returns the master log entry for a day" do
-      json = client_operation("MasterLog", variables: { operatorId: operator.id, date: date }, as: owner_user)
+      json = client_operation("DailyLog", variables: { operatorId: operator.id, date: date }, as: owner_user)
 
       expect(json[:errors]).to be_nil
-      expect(json.dig(:data, :masterLog)).to be_nil.or(include(:id, :date, :loads))
+      expect(json.dig(:data, :dailyLog)).to be_nil.or(include(:id, :date, :loads))
     end
 
     it "requires authentication" do
-      expect(client_operation("MasterLog", variables: { operatorId: operator.id, date: date }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
+      expect(client_operation("DailyLog", variables: { operatorId: operator.id, date: date }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
 
     it "does not return another operator's master log to a stranger" do
-      other_operator.master_logs.create!(date: Date.current) if other_operator.master_logs.respond_to?(:create!)
+      other_operator.daily_logs.create!(date: Date.current) if other_operator.daily_logs.respond_to?(:create!)
 
-      json = client_operation("MasterLog", variables: { operatorId: other_operator.id, date: date }, as: user)
+      json = client_operation("DailyLog", variables: { operatorId: other_operator.id, date: date }, as: user)
 
-      expect(json.dig(:data, :masterLog)).to be_nil
+      expect(json.dig(:data, :dailyLog)).to be_nil
     end
   end
 
-  describe "UpdateMasterLog" do
+  describe "UpdateDailyLog" do
     let(:date) { Time.current.in_time_zone(operator.time_zone).to_date.iso8601 }
 
-    it "saves the notes and DZSO for the day" do
-      json = client_operation("UpdateMasterLog", variables: { date: date, operator: operator.id, attributes: { notes: "Windy afternoon", dzso: owner.id } }, as: owner_user)
+    it "saves the notes and DutyOfficer for the day" do
+      json = client_operation("UpdateDailyLog", variables: { date: date, operator: operator.id, attributes: { notes: "Windy afternoon", dutyOfficer: owner.id } }, as: owner_user)
 
-      expect(json.dig(:data, :updateMasterLog, :errors)).to be_nil
-      expect(json.dig(:data, :updateMasterLog, :masterLog)).to include(notes: "Windy afternoon")
-      expect(json.dig(:data, :updateMasterLog, :masterLog, :dzso, :id)).to eq(owner.id.to_s)
+      expect(json.dig(:data, :updateDailyLog, :errors)).to be_nil
+      expect(json.dig(:data, :updateDailyLog, :dailyLog)).to include(notes: "Windy afternoon")
+      expect(json.dig(:data, :updateDailyLog, :dailyLog, :dutyOfficer, :id)).to eq(owner.id.to_s)
     end
 
     it "refuses a jumper" do
-      client_operation("UpdateMasterLog", variables: { date: date, operator: operator.id, attributes: { notes: "Hijacked" } }, as: user)
+      client_operation("UpdateDailyLog", variables: { date: date, operator: operator.id, attributes: { notes: "Hijacked" } }, as: user)
 
-      expect(operator.master_logs.where(notes: "Hijacked")).to be_empty
+      expect(operator.daily_logs.where(notes: "Hijacked")).to be_empty
     end
   end
 end

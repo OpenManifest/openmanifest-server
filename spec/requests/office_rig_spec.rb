@@ -19,15 +19,15 @@ RSpec.describe "Office rig management" do
   end
   let!(:rig) { create(:rig, user: member_user, operator: nil, name: "Original", repack_expires_at: 3.months.from_now) }
 
-  def create_rig(as:, user: member_user)
-    client_operation("CreateRig", variables: {
+  def create_equipment(as:, user: member_user)
+    client_operation("CreateEquipment", variables: {
       name: "Office rig", make: "Aerodyne", model: "Smart", serial: "S-1", rigType: "tandem",
       canopySize: 190, userId: user.id, repackExpiresAt: 3.months.from_now.to_i,
     }, as: as)
   end
 
-  def update_rig(as:, target: rig)
-    client_operation("UpdateRig", variables: { id: target.id, name: "Renamed" }, as: as)
+  def update_equipment(as:, target: rig)
+    client_operation("UpdateEquipment", variables: { id: target.id, name: "Renamed" }, as: as)
   end
 
   def archive_rig(as:, target: rig)
@@ -42,14 +42,14 @@ RSpec.describe "Office rig management" do
 
   describe "staff of the member's operator" do
     it "creates a rig for the member" do
-      json = create_rig(as: staff_user)
+      json = create_equipment(as: staff_user)
 
-      expect(json.dig(:data, :createRig, :errors)).to be_blank
+      expect(json.dig(:data, :createEquipment, :errors)).to be_blank
       expect(member_user.rigs.reload.pluck(:name)).to include("Office rig")
     end
 
     it "updates the member's rig" do
-      expect(update_rig(as: staff_user).dig(:data, :updateRig, :errors)).to be_blank
+      expect(update_equipment(as: staff_user).dig(:data, :updateEquipment, :errors)).to be_blank
       expect(rig.reload.name).to eq("Renamed")
     end
 
@@ -61,8 +61,8 @@ RSpec.describe "Office rig management" do
 
   describe "everybody else" do
     it "refuses staff of another operator" do
-      create_rig(as: foreign_staff_user)
-      update_rig(as: foreign_staff_user)
+      create_equipment(as: foreign_staff_user)
+      update_equipment(as: foreign_staff_user)
       archive_rig(as: foreign_staff_user)
 
       expect(member_user.rigs.reload.pluck(:name)).to eq(["Original"])
@@ -70,8 +70,8 @@ RSpec.describe "Office rig management" do
     end
 
     it "refuses a fun jumper touching another member's rig" do
-      expect(create_rig(as: jumper_user).dig(:data, :createRig, :rig)).to be_nil
-      expect(update_rig(as: jumper_user).dig(:data, :updateRig, :rig)).to be_nil
+      expect(create_equipment(as: jumper_user).dig(:data, :createEquipment, :rig)).to be_nil
+      expect(update_equipment(as: jumper_user).dig(:data, :updateEquipment, :rig)).to be_nil
       expect(archive_rig(as: jumper_user).dig(:data, :archiveRig, :rig)).to be_nil
 
       expect(member_user.rigs.reload.pluck(:name)).to eq(["Original"])
@@ -82,15 +82,15 @@ RSpec.describe "Office rig management" do
       stranger = create(:user)
       stranger_rig = create(:rig, user: stranger, operator: nil, name: "Stranger")
 
-      expect(create_rig(as: staff_user, user: stranger).dig(:data, :createRig, :rig)).to be_nil
-      expect(update_rig(as: staff_user, target: stranger_rig).dig(:data, :updateRig, :rig)).to be_nil
+      expect(create_equipment(as: staff_user, user: stranger).dig(:data, :createEquipment, :rig)).to be_nil
+      expect(update_equipment(as: staff_user, target: stranger_rig).dig(:data, :updateEquipment, :rig)).to be_nil
       expect(archive_rig(as: staff_user, target: stranger_rig).dig(:data, :archiveRig, :rig)).to be_nil
       expect(stranger_rig.reload).to have_attributes(name: "Stranger", discarded_at: nil)
     end
   end
 
   it "still lets members manage their own rigs" do
-    expect(update_rig(as: member_user).dig(:data, :updateRig, :errors)).to be_blank
+    expect(update_equipment(as: member_user).dig(:data, :updateEquipment, :errors)).to be_blank
     expect(rig.reload.name).to eq("Renamed")
     expect(archive_rig(as: member_user).dig(:data, :archiveRig, :errors)).to be_blank
     expect(rig.reload).to be_discarded

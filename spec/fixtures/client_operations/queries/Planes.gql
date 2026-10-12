@@ -1,5 +1,0 @@
-query Planes($operatorId: ID!) {
-  planes(operator: $operatorId) {
-    ...planeEssentials
-  }
-}

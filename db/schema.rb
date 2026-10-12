@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "activity_types", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_activity_types_on_slug", unique: true
   end
 
   create_table "admins", force: :cascade do |t|
@@ -75,6 +83,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_authentication_providers_on_user_id"
+  end
+
+  create_table "daily_logs", force: :cascade do |t|
+    t.bigint "duty_officer_id"
+    t.bigint "operator_id", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.date "date"
+    t.index ["duty_officer_id"], name: "index_daily_logs_on_duty_officer_id"
+    t.index ["operator_id"], name: "index_daily_logs_on_operator_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -131,22 +150,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.index ["updated_by_id"], name: "index_form_templates_on_updated_by_id"
   end
 
-  create_table "jump_types", force: :cascade do |t|
+  create_table "guests", force: :cascade do |t|
     t.string "name"
-    t.string "slug"
+    t.float "body_mass_kg"
+    t.bigint "operator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["slug"], name: "index_jump_types_on_slug", unique: true
+    t.index ["operator_id"], name: "index_guests_on_operator_id"
   end
 
-  create_table "licensed_jump_types", force: :cascade do |t|
+  create_table "licensed_activity_types", force: :cascade do |t|
     t.bigint "license_id", null: false
-    t.bigint "jump_type_id", null: false
+    t.bigint "activity_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["jump_type_id"], name: "index_licensed_jump_types_on_jump_type_id"
-    t.index ["license_id", "jump_type_id"], name: "index_licensed_jump_types_on_license_id_and_jump_type_id", unique: true
-    t.index ["license_id"], name: "index_licensed_jump_types_on_license_id"
+    t.index ["activity_type_id"], name: "index_licensed_activity_types_on_activity_type_id"
+    t.index ["license_id", "activity_type_id"], name: "idx_on_license_id_activity_type_id_6de0e24a40", unique: true
+    t.index ["license_id"], name: "index_licensed_activity_types_on_license_id"
   end
 
   create_table "licenses", force: :cascade do |t|
@@ -160,8 +180,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
 
   create_table "loads", force: :cascade do |t|
     t.datetime "dispatch_at", precision: nil
-    t.boolean "has_landed"
-    t.bigint "plane_id", null: false
+    t.boolean "has_completed"
+    t.bigint "vehicle_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
@@ -183,21 +203,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.index ["load_master_id"], name: "index_loads_on_load_master_id"
     t.index ["operator_id", "load_date", "load_number"], name: "index_loads_on_operator_id_and_load_date_and_load_number", unique: true
     t.index ["pilot_id"], name: "index_loads_on_pilot_id"
-    t.index ["plane_id"], name: "index_loads_on_plane_id"
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
     t.index ["state"], name: "index_loads_on_state"
-  end
-
-  create_table "master_logs", force: :cascade do |t|
-    t.bigint "dzso_id"
-    t.bigint "operator_id", null: false
-    t.text "notes"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.date "date"
-    t.index ["dzso_id"], name: "index_master_logs_on_dzso_id"
-    t.index ["operator_id"], name: "index_master_logs_on_operator_id"
+    t.index ["vehicle_id"], name: "index_loads_on_vehicle_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -207,7 +216,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_role_id", null: false
-    t.integer "jump_count", default: 0, null: false
+    t.integer "load_count", default: 0, null: false
     t.datetime "discarded_at", precision: nil
     t.bigint "license_id"
     t.bigint "credits_cents"
@@ -294,35 +303,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.index ["user_id"], name: "index_packs_on_user_id"
   end
 
-  create_table "passengers", force: :cascade do |t|
-    t.string "name"
-    t.float "exit_weight"
-    t.bigint "operator_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["operator_id"], name: "index_passengers_on_operator_id"
-  end
-
   create_table "permissions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
     t.index ["name"], name: "index_permissions_on_name", unique: true
-  end
-
-  create_table "planes", force: :cascade do |t|
-    t.string "name"
-    t.integer "min_slots"
-    t.integer "max_slots"
-    t.integer "hours"
-    t.integer "next_maintenance_hours"
-    t.string "registration"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "operator_id", null: false
-    t.datetime "discarded_at", precision: nil
-    t.index ["discarded_at"], name: "index_planes_on_discarded_at"
-    t.index ["operator_id"], name: "index_planes_on_operator_id"
   end
 
   create_table "qualifications", force: :cascade do |t|
@@ -393,25 +378,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.bigint "ticket_type_id"
     t.bigint "load_id"
     t.bigint "rig_id"
-    t.bigint "jump_type_id"
+    t.bigint "activity_type_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.float "exit_weight"
-    t.bigint "passenger_id"
+    t.float "body_mass_kg"
+    t.bigint "guest_id"
     t.boolean "is_paid"
     t.bigint "transaction_id"
-    t.bigint "passenger_slot_id"
+    t.bigint "guest_slot_id"
     t.integer "group_number", default: 0, null: false
     t.bigint "membership_id"
     t.bigint "created_by_id"
     t.integer "lock_version", default: 0, null: false
+    t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
-    t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
+    t.index ["guest_id"], name: "index_slots_on_guest_id"
+    t.index ["guest_slot_id"], name: "index_slots_on_guest_slot_id"
     t.index ["load_id", "membership_id"], name: "index_slots_on_load_id_and_membership_id", unique: true, where: "(membership_id IS NOT NULL)"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["membership_id"], name: "index_slots_on_membership_id"
-    t.index ["passenger_id"], name: "index_slots_on_passenger_id"
-    t.index ["passenger_slot_id"], name: "index_slots_on_passenger_slot_id"
     t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["transaction_id"], name: "index_slots_on_transaction_id"
@@ -704,7 +689,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.string "image"
     t.string "phone"
     t.string "email"
-    t.float "exit_weight"
+    t.float "body_mass_kg"
     t.bigint "license_id"
     t.text "tokens"
     t.datetime "created_at", null: false
@@ -712,9 +697,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.string "push_token"
     t.string "unconfirmed_email"
     t.string "time_zone", default: "Australia/Brisbane"
-    t.integer "jump_count", default: 0, null: false
+    t.integer "load_count", default: 0, null: false
     t.integer "operator_count", default: 0, null: false
-    t.integer "plane_count", default: 0, null: false
     t.string "apf_number"
     t.integer "moderation_role", default: 0
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
@@ -722,6 +706,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
     t.index ["license_id"], name: "index_users_on_license_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
+  end
+
+  create_table "vehicles", force: :cascade do |t|
+    t.string "name"
+    t.integer "min_capacity"
+    t.integer "capacity"
+    t.integer "hours"
+    t.integer "next_maintenance_hours"
+    t.string "registration"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "operator_id", null: false
+    t.datetime "discarded_at", precision: nil
+    t.string "kind", default: "vehicle", null: false
+    t.index ["discarded_at"], name: "index_vehicles_on_discarded_at"
+    t.index ["operator_id"], name: "index_vehicles_on_operator_id"
   end
 
   create_table "weather_conditions", force: :cascade do |t|
@@ -742,22 +742,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "authentication_providers", "users"
+  add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
+  add_foreign_key "daily_logs", "operators"
   add_foreign_key "events", "memberships"
   add_foreign_key "events", "operators"
   add_foreign_key "extras", "operators"
   add_foreign_key "form_templates", "memberships", column: "created_by_id"
   add_foreign_key "form_templates", "memberships", column: "updated_by_id"
   add_foreign_key "form_templates", "operators"
-  add_foreign_key "licensed_jump_types", "jump_types"
-  add_foreign_key "licensed_jump_types", "licenses"
+  add_foreign_key "guests", "operators"
+  add_foreign_key "licensed_activity_types", "activity_types"
+  add_foreign_key "licensed_activity_types", "licenses"
   add_foreign_key "licenses", "federations"
   add_foreign_key "loads", "memberships", column: "gca_id"
   add_foreign_key "loads", "memberships", column: "load_master_id"
   add_foreign_key "loads", "memberships", column: "pilot_id"
   add_foreign_key "loads", "operators"
-  add_foreign_key "loads", "planes"
-  add_foreign_key "master_logs", "memberships", column: "dzso_id"
-  add_foreign_key "master_logs", "operators"
+  add_foreign_key "loads", "vehicles"
   add_foreign_key "memberships", "licenses"
   add_foreign_key "memberships", "operators"
   add_foreign_key "memberships", "user_roles"
@@ -768,8 +769,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
   add_foreign_key "orders", "operators"
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
-  add_foreign_key "passengers", "operators"
-  add_foreign_key "planes", "operators"
   add_foreign_key "qualifications", "federations"
   add_foreign_key "rig_inspections", "form_templates"
   add_foreign_key "rig_inspections", "memberships"
@@ -779,13 +778,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
   add_foreign_key "rigs", "users"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
-  add_foreign_key "slots", "jump_types"
+  add_foreign_key "slots", "activity_types"
+  add_foreign_key "slots", "guests"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "memberships"
   add_foreign_key "slots", "memberships", column: "created_by_id"
-  add_foreign_key "slots", "passengers"
   add_foreign_key "slots", "rigs"
-  add_foreign_key "slots", "slots", column: "passenger_slot_id"
+  add_foreign_key "slots", "slots", column: "guest_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
@@ -811,5 +810,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_140000) do
   add_foreign_key "user_role_permissions", "user_roles"
   add_foreign_key "user_roles", "operators"
   add_foreign_key "users", "licenses"
+  add_foreign_key "vehicles", "operators"
   add_foreign_key "weather_conditions", "operators"
 end

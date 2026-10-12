@@ -11,14 +11,14 @@
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
 #  user_role_id :bigint           not null
-#  jump_count   :integer          default(0), not null
+#  load_count   :integer          default(0), not null
 #
 class Membership < ApplicationRecord
   include MoneyAttributes
 
   money :credits
   include Discard::Model
-  include MasterLogEntry::Membership
+  include DailyLogEntry::Membership
 
   belongs_to :user, optional: true
   belongs_to :operator
@@ -42,13 +42,13 @@ class Membership < ApplicationRecord
 
   # Automatically updated by UserFederation:
   belongs_to :license, optional: true
-  has_many :licensed_jump_types, through: :license, source: :licensed_jump_types
-  has_many :jump_types, through: :licensed_jump_types, source: :jump_type
+  has_many :licensed_activity_types, through: :license, source: :licensed_activity_types
+  has_many :activity_types, through: :licensed_activity_types, source: :activity_type
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
   has_many :rigs, through: :user
   scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
-  scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_passenger student pilot fun_jumper) }) }
+  scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_guest student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
 
   # Finds Memberships belonging to an operator in
@@ -75,7 +75,7 @@ class Membership < ApplicationRecord
   validates :user_id, uniqueness: { scope: :operator_id }
 
   counter_culture :operator, column_name: :users_count
-  delegate :exit_weight,
+  delegate :body_mass_kg,
            :name,
            :email,
            :nickname,
@@ -220,7 +220,7 @@ class Membership < ApplicationRecord
 
     # Role is fun jumper if the user has a rig and has set up exit weight
     role ||= operator.user_roles.default_licensed if license
-    role ||= operator.user_roles.default_licensed if user.rigs.any? && user.exit_weight.present?
+    role ||= operator.user_roles.default_licensed if user.rigs.any? && user.body_mass_kg.present?
 
     # Default role is Student
     role ||= operator.user_roles.default
@@ -243,7 +243,7 @@ class Membership < ApplicationRecord
 
   def request_rig_inspection
     return unless user.rigs.any?
-    return unless user.exit_weight
+    return unless user.body_mass_kg
     return unless license_id
     return if rig_inspections.any?
     rig = rigs.not_inspected_at(operator).first

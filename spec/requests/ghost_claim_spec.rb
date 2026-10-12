@@ -12,11 +12,11 @@ RSpec.describe "Claiming a ghost account" do
   let(:student_role) { operator.user_roles.find_by(name: "student") }
   let(:password) { "Password1!" }
   let(:sign_up) do
-    { email: "ghost@example.com", password: password, passwordConfirmation: password, name: "Impostor", phone: "1", exitWeight: 80 }
+    { email: "ghost@example.com", password: password, passwordConfirmation: password, name: "Impostor", phone: "1", bodyMassKg: 80 }
   end
 
   def create_ghost
-    client_operation("CreateGhost", variables: { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, operator: operator.id, exitWeight: 70 }, as: owner_user)
+    client_operation("CreateGhost", variables: { name: "Gus Ghost", email: "ghost@example.com", role: student_role.id, operator: operator.id, bodyMassKg: 70 }, as: owner_user)
     User.find_by!(email: "ghost@example.com")
   end
 
@@ -40,7 +40,7 @@ RSpec.describe "Claiming a ghost account" do
 
     json = client_operation("UserSignUp", variables: sign_up)
 
-    expect(ghost.reload).to have_attributes(name: "Gus Ghost", exit_weight: 70, encrypted_password: digest, confirmed_at: nil)
+    expect(ghost.reload).to have_attributes(name: "Gus Ghost", body_mass_kg: 70, encrypted_password: digest, confirmed_at: nil)
     expect(ghost.valid_password?(password)).to be(false)
     expect(json.dig(:data, :userRegister, :credentials)).to be_nil
     expect(json.dig(:data, :userRegister, :authenticatable)).to be_nil

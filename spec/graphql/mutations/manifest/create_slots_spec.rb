@@ -5,11 +5,11 @@ require "rails_helper"
 module Mutations
   RSpec.describe Mutations::Manifest::CreateSlots, type: :request do
     let(:operator) { create(:operator, credits: 50) }
-    let(:plane) { create(:plane, operator: operator, max_slots: 10) }
+    let(:vehicle) { create(:vehicle, operator: operator, capacity: 10) }
     let(:ticket_type) { create(:ticket_type, operator: operator) }
     let(:gca) { create(:membership, operator: operator) }
     let(:pilot) { create(:membership, operator: operator) }
-    let(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
+    let(:vehicle_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
     let(:memberships) { create_list(:membership, 3, operator: operator, credits: 200) }
     let(:membership) do
       u = memberships.first
@@ -23,17 +23,17 @@ module Mutations
           post "/graphql",
                params: {
                  query: query(
-                   jump_type: JumpType.allowed_for(memberships).sample,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   user_group: memberships.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
+                   vehicle_load: vehicle_load,
+                   user_group: memberships.map { |user| { id: user.id, body_mass_kg: user.user.body_mass_kg } }
                  ),
                },
                headers: membership.user.create_new_auth_token
           JSON.parse(response.body)
         end
 
-        it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by memberships.count }
+        it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by memberships.count }
 
         it "expects credits to update" do
           post_request
@@ -59,12 +59,12 @@ module Mutations
                params: {
                  query: query(
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   jump_type: JumpType.allowed_for(memberships).sample,
+                   vehicle_load: vehicle_load,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
                    user_group: memberships.map do |user|
                      {
-                       id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name,
-                       passenger_exit_weight: 80,
+                       id: user.id, body_mass_kg: user.user.body_mass_kg, guest_name: Faker::Name.first_name,
+                       guest_body_mass_kg: 80,
                      }
                    end
                  ),
@@ -73,9 +73,9 @@ module Mutations
           JSON.parse(response.body)
         end
 
-        it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by memberships.count * 2 }
+        it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by memberships.count * 2 }
         it do
-          expect { post_request }.to change { ::Slot.where(load_id: plane_load.id, membership: membership).count }.by 1
+          expect { post_request }.to change { ::Slot.where(load_id: vehicle_load.id, membership: membership).count }.by 1
           expect { post_request }.not_to change { ::Membership.find(membership.id).credits }
           expect { post_request }.not_to change { ::Operator.find(operator.id).credits }
         end
@@ -91,9 +91,9 @@ module Mutations
                params: {
                  query: query(
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   jump_type: JumpType.allowed_for(memberships).sample,
-                   user_group: memberships.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
+                   vehicle_load: vehicle_load,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
+                   user_group: memberships.map { |user| { id: user.id, body_mass_kg: user.user.body_mass_kg } }
                  ),
                },
                headers: membership.user.create_new_auth_token
@@ -109,22 +109,22 @@ module Mutations
       end
     end
 
-    def query(user_group:, ticket_type:, plane_load:, jump_type:)
+    def query(user_group:, ticket_type:, vehicle_load:, activity_type:)
       <<~GQL
         mutation {
           createSlots(
             input: {
               attributes: {
                 ticketType: #{ticket_type.id}
-                jumpType: #{jump_type.id}
-                load: #{plane_load.id}
+                activityType: #{activity_type.id}
+                load: #{vehicle_load.id}
                 userGroup: [
                   #{user_group.map do |u|
                     "{
                       id: #{u[:id]},
-                      exitWeight: #{u[:exit_weight]},
-                      passengerName: #{u[:passenger_name] ? '"%s"' % u[:passenger_name] : 'null'},
-                      passengerExitWeight: #{u[:passenger_exit_weight] || 'null'}
+                      bodyMassKg: #{u[:body_mass_kg]},
+                      guestName: #{u[:guest_name] ? '"%s"' % u[:guest_name] : 'null'},
+                      guestBodyMassKg: #{u[:guest_body_mass_kg] || 'null'}
                     },"
                   end.join("\n")}
                 ]

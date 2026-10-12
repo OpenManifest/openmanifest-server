@@ -2,7 +2,7 @@
 
 class Demo::Generators::Users < ApplicationInteraction
   integer :gca_count, default: 3
-  integer :dzso_count, default: 3
+  integer :duty_officer_count, default: 3
   integer :jumper_count, default: 20
   integer :pilot_count, default: 2
   integer :tandem_instructor_count, default: 3
@@ -10,7 +10,7 @@ class Demo::Generators::Users < ApplicationInteraction
   integer :rig_inspector_count, default: 2
   integer :coach_count, default: 3
   steps :import_users!,
-        :assign_dzso,
+        :assign_duty_officer,
         :assign_gca,
         :assign_rig_inspectors,
         :assign_licenses,
@@ -132,9 +132,9 @@ class Demo::Generators::Users < ApplicationInteraction
     end
   end
 
-  def assign_dzso
-    @dzso = access_context.operator.memberships.staff.shuffle.take(dzso_count).each do |dz_user|
-      dz_user.grant! :actAsDZSO
+  def assign_duty_officer
+    @duty_officer = access_context.operator.memberships.staff.shuffle.take(duty_officer_count).each do |dz_user|
+      dz_user.grant! :actAsDutyOfficer
       dz_user
     end
   end
@@ -155,7 +155,7 @@ class Demo::Generators::Users < ApplicationInteraction
 
   def assign_rig_inspectors
     @rig_inspectors = access_context.operator.memberships.staff.shuffle.take(rig_inspector_count).map do |dz_user|
-      dz_user.grant! :actAsRigInspector
+      dz_user.grant! :actAsEquipmentInspector
       dz_user
     end
   end
