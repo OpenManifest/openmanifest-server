@@ -6,13 +6,13 @@ module Mutations::Users
 
     field :user_federation, Types::Users::UserFederation, null: true
     argument :attributes, Types::Input::UserFederationInput, required: true
-    argument :dropzone, ID, required: false,
-                            description: "The dropzone to log this for, defaults to the user's latest membership (a federation belongs to the user)"
+    argument :operator, ID, required: false,
+                            description: "The operator to log this for, defaults to the user's latest membership (a federation belongs to the user)"
 
-    def resolve(attributes:, dropzone: nil)
+    def resolve(attributes:, operator: nil)
       user = context[:current_resource]
-      membership = membership_for(user, dropzone)
-      return refuse("You are not a member of that dropzone") if dropzone.present? && membership.nil?
+      membership = membership_for(user, operator)
+      return refuse("You are not a member of that operator") if operator.present? && membership.nil?
 
       mutate(
         ::Federations::AssignUser,
@@ -21,16 +21,16 @@ module Mutations::Users
         license: attributes[:license],
         uid: attributes[:uid],
         user: user,
-        # Without a membership there is no dropzone to log it for
-        access_context: ::ApplicationInteraction::AccessContext.new(membership, user: user, dropzone: membership&.dropzone)
+        # Without a membership there is no operator to log it for
+        access_context: ::ApplicationInteraction::AccessContext.new(membership, user: user, operator: membership&.operator)
       )
     end
 
     private
 
-    def membership_for(user, dropzone_id)
-      memberships = user.dropzone_users.kept
-      return memberships.find_by(dropzone_id: dropzone_id) if dropzone_id.present?
+    def membership_for(user, operator_id)
+      memberships = user.memberships.kept
+      return memberships.find_by(operator_id: operator_id) if operator_id.present?
 
       memberships.order(id: :desc).first
     end

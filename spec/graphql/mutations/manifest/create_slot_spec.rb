@@ -3,13 +3,13 @@
 require "rails_helper"
 
 RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
-  let!(:dropzone) { create(:dropzone, credits: 50) }
-  let!(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
-  let!(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-  let!(:gca) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 200) }
+  let!(:operator) { create(:operator, credits: 50) }
+  let!(:vehicle) { create(:vehicle, operator: operator, capacity: 10) }
+  let!(:ticket_type) { create(:ticket_type, operator: operator) }
+  let!(:gca) { create(:membership, operator: operator) }
+  let!(:pilot) { create(:membership, operator: operator) }
+  let!(:vehicle_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
+  let!(:membership) { create(:membership, operator: operator, credits: 200) }
 
   describe ".resolve" do
     context "successfully" do
@@ -18,56 +18,56 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
-                 dropzone_user: dropzone_user,
-                 exit_weight: dropzone_user.exit_weight || 105
+                 vehicle_load: vehicle_load,
+                 membership: membership,
+                 body_mass_kg: membership.body_mass_kg || 105
                ),
              },
-             headers: dropzone_user.user.create_new_auth_token
+             headers: membership.user.create_new_auth_token
       end
 
       let(:json) do
         JSON.parse(response.body)
       end
 
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 1 }
-      it { expect { post_request }.to change { DropzoneUser.find(dropzone_user.id).credits }.by ticket_type.cost * -1 }
-      it { expect { post_request }.to change { Dropzone.find(dropzone.id).credits }.by ticket_type.cost }
-      it { expect { post_request }.to change { Dropzone.find(dropzone.id).sales.count }.by 1 }
-      it { expect { post_request }.to change { DropzoneUser.find(dropzone_user.id).purchases.count }.by 1 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by 1 }
+      it { expect { post_request }.to change { Membership.find(membership.id).credits }.by ticket_type.cost * -1 }
+      it { expect { post_request }.to change { Operator.find(operator.id).credits }.by ticket_type.cost }
+      it { expect { post_request }.to change { Operator.find(operator.id).sales.count }.by 1 }
+      it { expect { post_request }.to change { Membership.find(membership.id).purchases.count }.by 1 }
       it "expects no errors" do
         post_request
         expect(json["data"]["createSlot"]["errors"]).to be nil
       end
       it "expects no errors" do
         post_request
-        expect(json["data"]["createSlot"]["slot"]["exitWeight"]).to eq dropzone_user.exit_weight
+        expect(json["data"]["createSlot"]["slot"]["bodyMassKg"]).to eq membership.body_mass_kg
       end
     end
 
     context "successfully with tandem" do
-      let!(:ticket_type) { create(:ticket_type, is_tandem: true, dropzone: dropzone) }
+      let!(:ticket_type) { create(:ticket_type, is_tandem: true, operator: operator) }
       let(:post_request) do
         post "/graphql",
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
-                 dropzone_user: dropzone_user,
-                 exit_weight: dropzone_user.user.exit_weight,
-                 passenger_name: '"Eric"',
-                 passenger_exit_weight: 60.0
+                 vehicle_load: vehicle_load,
+                 membership: membership,
+                 body_mass_kg: membership.user.body_mass_kg,
+                 guest_name: '"Eric"',
+                 guest_body_mass_kg: 60.0
                ),
              },
-             headers: dropzone_user.user.create_new_auth_token
+             headers: membership.user.create_new_auth_token
         JSON.parse(response.body)
       end
 
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by 2 }
-      it { expect { post_request }.to change { Slot.where(load_id: plane_load.id, dropzone_user: dropzone_user).count }.by 1 }
-      it { expect { post_request }.not_to change { DropzoneUser.find(dropzone_user.id).credits } }
-      it { expect { post_request }.not_to change { Dropzone.find(dropzone.id).credits } }
-      it { expect { post_request }.to change { Order.where(seller: dropzone).count }.by 1 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by 2 }
+      it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id, membership: membership).count }.by 1 }
+      it { expect { post_request }.not_to change { Membership.find(membership.id).credits } }
+      it { expect { post_request }.not_to change { Operator.find(operator.id).credits } }
+      it { expect { post_request }.to change { Order.where(seller: operator).count }.by 1 }
       it { expect(post_request["data"]["createSlot"]["errors"]).to be nil }
       it { expect(post_request["data"]["createSlot"]["fieldErrors"]).to be nil }
       it { expect { post_request }.to change { Activity::Event.count } }
@@ -75,17 +75,17 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
 
     context "with errors" do
       before do
-        dropzone_user.update(credits: 0)
+        membership.update(credits: 0)
         post "/graphql",
              params: {
                query: query(
                  ticket_type: ticket_type,
-                 plane_load: plane_load,
-                 dropzone_user: dropzone_user,
-                 exit_weight: dropzone_user.user.exit_weight
+                 vehicle_load: vehicle_load,
+                 membership: membership,
+                 body_mass_kg: membership.user.body_mass_kg
                ),
              },
-             headers: dropzone_user.user.create_new_auth_token
+             headers: membership.user.create_new_auth_token
       end
 
       let(:json) do
@@ -98,19 +98,19 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
     end
   end
 
-  def query(dropzone_user:, ticket_type:, plane_load:, exit_weight:, passenger_name: nil, passenger_exit_weight: nil)
+  def query(membership:, ticket_type:, vehicle_load:, body_mass_kg:, guest_name: nil, guest_body_mass_kg: nil)
     <<~GQL
       mutation {
         createSlot(
           input: {
             attributes: {
-              dropzoneUser: "#{dropzone_user.id}"
+              membership: "#{membership.id}"
               ticketType: "#{ticket_type.id}"
-              jumpType: #{JumpType.allowed_for([dropzone_user]).sample.id}
-              load: "#{plane_load.id}"
-              exitWeight: #{exit_weight}
-              passengerExitWeight: #{passenger_exit_weight || 'null'}
-              passengerName: #{passenger_name || 'null'}
+              activityType: #{ActivityType.allowed_for([membership]).sample.id}
+              load: "#{vehicle_load.id}"
+              bodyMassKg: #{body_mass_kg}
+              guestBodyMassKg: #{guest_body_mass_kg || 'null'}
+              guestName: #{guest_name || 'null'}
             }
           }
         ) {
@@ -121,39 +121,39 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
           }
           slot {
             id
-            exitWeight
-            dropzoneUser {
+            bodyMassKg
+            membership {
               id
               user {
                 id
                 name
               }
             }
-            cost
+            costCents
             order {
               id
               buyer {
-                ...on DropzoneUser {
+                ...on Membership {
                   id
                   user {
                     id
                     name
                   }
                 }
-                ...on Dropzone {
+                ...on Operator {
                   id
                   name
                 }
               }
               seller {
-                ...on DropzoneUser {
+                ...on Membership {
                   id
                   user {
                     id
                     name
                   }
                 }
-                ...on Dropzone {
+                ...on Operator {
                   id
                   name
                 }
@@ -165,27 +165,27 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
                   transactionType
                   status
                   sender {
-                    ...on DropzoneUser {
+                    ...on Membership {
                       id
                       user {
                         id
                         name
                       }
                     }
-                    ...on Dropzone {
+                    ...on Operator {
                       id
                       name
                     }
                   }
                   receiver {
-                    ...on DropzoneUser {
+                    ...on Membership {
                       id
                       user {
                         id
                         name
                       }
                     }
-                    ...on Dropzone {
+                    ...on Operator {
                       id
                       name
                     }
