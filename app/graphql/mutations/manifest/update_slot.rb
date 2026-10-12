@@ -10,17 +10,17 @@ module Mutations::Manifest
     argument :id, Int, required: true
 
     # What can be edited on a slot: who jumps and on which load is not among it (a slot is moved with moveSlot, which
-    # checks capacity, credits and the target's dropzone)
-    UPDATABLE = %i(ticket_type jump_type rig exit_weight group_number extras lock_version).freeze
+    # checks capacity, credits and the target's operator)
+    UPDATABLE = %i(ticket_type activity_type rig body_mass_kg group_number extras lock_version).freeze
 
     def resolve(attributes:, id:)
       model = Slot.find(id)
       values = attributes.to_h.slice(*UPDATABLE)
-      dropzone_id = model.load.plane.dropzone_id
+      operator_id = model.load.vehicle.operator_id
 
-      return { slot: nil, field_errors: nil, errors: ["The ticket must belong to the same dropzone"] } if values[:ticket_type] && values[:ticket_type].dropzone_id != dropzone_id
+      return { slot: nil, field_errors: nil, errors: ["The ticket must belong to the same operator"] } if values[:ticket_type] && values[:ticket_type].operator_id != operator_id
 
-      values[:extras] = values[:extras].where(dropzone_id: dropzone_id) if values[:extras]
+      values[:extras] = values[:extras].where(operator_id: operator_id) if values[:extras]
       model.update!(values.compact)
 
       {
@@ -56,17 +56,20 @@ module Mutations::Manifest
       slot = Slot.find_by(id: id)
       return [false, { errors: ["Slot not found"] }] unless slot
 
-      is_current_user = slot&.dropzone_user.present? && context[:current_resource].id == slot.dropzone_user.user_id
+      is_current_user = slot&.membership.present? && context[:current_resource].id == slot.membership.user_id
 
       if context[:current_resource].can?(
         is_current_user ? "updateSlot" : "updateUserSlot",
-        dropzone_id: slot.load.plane.dropzone_id
+        operator_id: slot.load.vehicle.operator_id
       )
         true
       else
+        membership = slot.membership
         [
           false, {
-            errors: if is_current_user
+            errors: if is_current_user && membership.manifest_desk_only?(:updateSlot)
+                      [Membership::MANIFEST_DESK_MESSAGE]
+                    elsif is_current_user
                       ["You cant modify a manifested slot"]
                     else
                       ["You cant modify somebody elses slot"]

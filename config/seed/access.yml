@@ -3,13 +3,13 @@ permissions:
     - actAsPilot
     - actAsLoadMaster
     - actAsGCA
-    - actAsDZSO
-    - actAsRigInspector
+    - actAsDutyOfficer
+    - actAsEquipmentInspector
   crud: &crud
-    dropzone:
-      - updateDropzone
-      - deleteDropzone
-      - undeleteDropzone
+    operator:
+      - updateOperator
+      - deleteOperator
+      - undeleteOperator
     weather_conditions:
       - updateWeatherConditions
     load:
@@ -43,22 +43,22 @@ permissions:
       - deleteExtra
       - readExtra
       - undeleteExtra
-    aircrafts:
-      - createPlane
-      - updatePlane
-      - deletePlane
-      - undeletePlane
+    vehicles:
+      - createVehicle
+      - updateVehicle
+      - deleteVehicle
+      - undeleteVehicle
     equipment:
-      - createRig
-      - updateRig
-      - deleteRig
-      - readRig
-      - undeleteRig
-      - createDropzoneRig
-      - updateDropzoneRig
-      - deleteDropzoneRig
-      - readDropzoneRig
-      - undeleteDropzoneRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
+      - readEquipment
+      - undeleteEquipment
+      - createOperatorRig
+      - updateOperatorRig
+      - deleteOperatorRig
+      - readOperatorRig
+      - undeleteOperatorRig
     permissions:
       - readPermissions
       - updatePermissions
@@ -91,7 +91,7 @@ permissions:
       - viewRevenue
       - viewStatistics
 roles:
-  tandem_passenger:
+  tandem_guest:
     permissions:
       - readLoad
   student:
@@ -109,9 +109,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - createPackjob
       - updatePackjob
       - deletePackjob
@@ -127,9 +127,9 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
 
       - createPackjob
       - updatePackjob
@@ -148,15 +148,15 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
       - createUser
 
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - createPackjob
       - updatePackjob
@@ -169,7 +169,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewSystemActivity
@@ -182,13 +182,13 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - readUserTransactions
       - updateWeatherConditions
@@ -201,7 +201,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics
@@ -215,13 +215,13 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - updateWeatherConditions
 
@@ -237,7 +237,7 @@ roles:
       - readUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics
@@ -255,14 +255,14 @@ roles:
       - createSlot
       - updateSlot
       - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
 
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
+      - readOperatorRig
+      - updateOperatorRig
+      - createOperatorRig
+      - updateOperatorRig
 
       - createUserSlot
       - createUserSlotWithSelf
@@ -289,7 +289,7 @@ roles:
       - updateUser
       - actAsLoadMaster
       - actAsGCA
-      - actAsDZSO
+      - actAsDutyOfficer
 
       - viewUserActivity
       - viewStatistics

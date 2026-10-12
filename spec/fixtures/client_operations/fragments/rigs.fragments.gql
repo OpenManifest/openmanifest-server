@@ -16,7 +16,7 @@ fragment rigEssentials on Rig {
     id
     name
   }
-  dropzone {
+  operator {
     id
   }
 }

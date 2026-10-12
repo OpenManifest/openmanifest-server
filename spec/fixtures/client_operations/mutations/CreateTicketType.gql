@@ -17,7 +17,7 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
         costCents
       }
 
-      dropzone {
+      operator {
         id
 
         ticketTypes {
