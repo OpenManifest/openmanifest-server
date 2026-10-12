@@ -4,26 +4,26 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Mutations::Access::UpdateVisibility, type: :request do
-    let!(:dropzone) { create(:dropzone, state: :private, credits: 50) }
+    let!(:operator) { create(:operator, state: :private, credits: 50) }
     let!(:moderator) do
       create(
-        :dropzone_user,
-        dropzone: dropzone,
+        :membership,
+        operator: operator,
         user: create(:user, moderation_role: :moderator)
       )
     end
     let!(:user) do
       create(
-        :dropzone_user,
-        dropzone: dropzone,
+        :membership,
+        operator: operator,
         user: create(:user, moderation_role: :user)
       )
     end
     let!(:owner) do
       create(
-        :dropzone_user,
-        dropzone: dropzone,
-        user_role: dropzone.user_roles.find_by(name: :owner),
+        :membership,
+        operator: operator,
+        user_role: operator.user_roles.find_by(name: :owner),
         user: create(:user, moderation_role: :user)
       )
     end
@@ -39,12 +39,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :unpublish
           )
         end
 
-        it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "private" } } }) }
+        it { is_expected.to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "private" } } }) }
       end
 
       context "can request review" do
@@ -57,12 +57,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :request_publication
           )
         end
 
-        it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "in_review" } } }) }
+        it { is_expected.to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "in_review" } } }) }
       end
 
       context "can publish" do
@@ -75,12 +75,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :publish
           )
         end
 
-        it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } }) }
+        it { is_expected.to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "public" } } }) }
       end
     end
 
@@ -95,12 +95,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :unpublish
           )
         end
 
-        it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "private" } } }) }
+        it { is_expected.to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "private" } } }) }
       end
 
       context "can request review" do
@@ -113,12 +113,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :request_publication
           )
         end
 
-        it { is_expected.to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "in_review" } } }) }
+        it { is_expected.to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "in_review" } } }) }
       end
 
       context "can not publish" do
@@ -131,12 +131,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.reload.id,
+            id: operator.reload.id,
             event: :publish
           )
         end
 
-        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s } } }) }
+        it { is_expected.not_to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s } } }) }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
     end
@@ -152,12 +152,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :unpublish
           )
         end
 
-        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { state: "private" } } }) }
+        it { is_expected.not_to include_json(data: { updateVisibility: { operator: { state: "private" } } }) }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
 
@@ -171,12 +171,12 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :request_publication
           )
         end
 
-        it { is_expected.not_to include_json(data: { updateVisibility: { dropzone: { state: "in_review" } } }) }
+        it { is_expected.not_to include_json(data: { updateVisibility: { operator: { state: "in_review" } } }) }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
 
@@ -190,13 +190,13 @@ module Mutations
 
         let(:query_str) do
           query(
-            id: dropzone.id,
+            id: operator.id,
             event: :publish
           )
         end
 
         it {
-          is_expected.not_to include_json(data: { updateVisibility: { dropzone: { id: dropzone.id.to_s, state: "public" } } })
+          is_expected.not_to include_json(data: { updateVisibility: { operator: { id: operator.id.to_s, state: "public" } } })
         }
         it { is_expected.to include_json(data: { updateVisibility: { errors: ["You cannot perform this action"] } }) }
       end
@@ -207,11 +207,11 @@ module Mutations
         mutation {
           updateVisibility(
             input: {
-              dropzone: "#{id}",
+              operator: "#{id}",
               event: #{event}
             }
           ) {
-            dropzone {
+            operator {
               id
               state
             }

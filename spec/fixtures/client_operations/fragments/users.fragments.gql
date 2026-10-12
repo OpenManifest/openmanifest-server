@@ -4,7 +4,7 @@ fragment userEssentials on User {
   nickname
   phone
   email
-  exitWeight
+  bodyMassKg
   moderationRole
   image
   apfNumber
@@ -22,8 +22,8 @@ fragment userDetailed on User {
 
 fragment currentUser on User {
   ...userDetailed
-  dropzoneUsers {
-    ...dropzoneUserDetails
+  memberships {
+    ...membershipDetails
   }
   pushToken
 }

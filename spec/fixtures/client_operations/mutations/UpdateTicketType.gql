@@ -18,8 +18,8 @@ mutation UpdateTicketType($id: Int!, $attributes: TicketTypeInput!) {
         costCents
       }
 
-      dropzone {
-        ...dropzoneEssentials
+      operator {
+        ...operatorEssentials
 
         ticketTypes {
           ...ticketTypeEssentials

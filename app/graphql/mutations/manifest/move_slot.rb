@@ -18,7 +18,7 @@ module Mutations::Manifest
         Manifest::MoveSlot,
         :loads,
         access_context: access_context_for(
-          source_slot.dropzone
+          source_slot.operator
         ),
         source_slot: source_slot,
         target_slot: target_slot,
