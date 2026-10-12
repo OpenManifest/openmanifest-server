@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | UI foundations | U0.8, U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
+| 1 | UI foundations | U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
 | 2 | App shell | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
 | 3 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
 | 4 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
@@ -3922,7 +3922,7 @@ Size: M
 Fixes: none
 
 ### U0.8 — Spike headless primitives for overlays on web
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.4, U0.1
 Branch: modernise/u0-8-primitives-spike
@@ -4200,7 +4200,9 @@ Depends on: U2.1, U0.8
 Branch: modernise/u2-3-overlays
 Goal: One `Sheet`/`Dialog` API (bottom sheet on compact native, dialog or side panel elsewhere), `Menu`, `Popover`,
 `Tooltip`, `Banner`, `Toast` (replacing the notifications provider's snackbar visuals).
-Context: `layout/DialogOrSheet*.tsx` (P5.4), `@gorhom/bottom-sheet` 5.2.x, `providers/notifications`; U0.8 decision.
+Context: `layout/DialogOrSheet*.tsx` (P5.4), `@gorhom/bottom-sheet` 5.2.x, `providers/notifications`; U0.8 decision:
+**go** for `@rn-primitives` on the web (installed; the spike route `/__spike`, `app/screens/dev/SpikeScreen.tsx`, `e2e/spike.spec.ts` and the
+package entries stay until this task removes the route; rules for the select in `client:docs/ui/spike-rn-primitives.md`).
 Steps:
   1. `Overlay` API: `presentation: 'auto' | 'sheet' | 'dialog' | 'panel'`, title, footer slot (pinned), focus trap and
      Esc on web, returns focus on close.
