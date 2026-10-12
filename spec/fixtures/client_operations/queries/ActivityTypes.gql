@@ -4,7 +4,11 @@ query ActivityTypes($allowedForMembershipIds: [Int!]) {
   }
 }
 
-query AllowedActivityTypes($operatorId: ID!, $allowedForMembershipIds: [Int!]!, $isPublic: Boolean) {
+query AllowedActivityTypes(
+  $operatorId: ID!
+  $allowedForMembershipIds: [Int!]!
+  $isPublic: Boolean
+) {
   operator(id: $operatorId) {
     id
 

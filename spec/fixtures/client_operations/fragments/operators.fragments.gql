@@ -13,6 +13,8 @@ fragment operatorEssentials on Operator {
   createdAt
   timeZone
   terminology
+  industry
+  modules
 
   settings {
     allowManifestBypass
