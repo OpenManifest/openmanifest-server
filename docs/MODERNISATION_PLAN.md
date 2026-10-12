@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | UI foundations | U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
+| 1 | UI foundations | U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
 | 2 | App shell | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
 | 3 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
 | 4 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
@@ -3947,7 +3947,7 @@ Size: M
 Fixes: none
 
 ### U0.9 — Apply the logged quick fixes
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/u0-9-quick-fixes
@@ -3964,6 +3964,9 @@ Acceptance criteria (cloud VM):
   - Client checks, web export; backend rspec and rubocop.
 Acceptance criteria (owner, real device):
   - none
+Notes (done): `components/UserAvatar.web.old.tsx` was not dead (an MUI avatar imported by `popover/Menu.web.tsx` and
+`autocomplete/MembershipAutocomplete.web.tsx`), so it stays; `LocationPicker.oldios.tsx` was deleted. 88 `console.log/debug`
+calls removed with the debug-only code behind them (`api/crud/factory.tsx`); the bug is BUG-102.
 Out of scope: the visual quick fixes (WeatherBoard artwork, chart hatch, profile empty state, dark tab tint): they are
 rebuilt in U1–U5.
 Risk / rollback: revert.

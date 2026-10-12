@@ -29,7 +29,8 @@ module Types::Equipment
     def rig_inspections(operator_id: nil)
       operator = Operator.find_by(id: operator_id)
       return nil unless operator
-      rig.rig_inspections.at_operator(operator)
+      # The field is one inspection: the latest at this operator
+      object.rig_inspections.at_operator(operator).order(created_at: :desc).first
     end
   end
 end
