@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 3 | Phase 7 stage B: generic model | P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
+| 3 | Phase 7 stage B: generic model | P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
 | 4 | Manifest UI | U3.1, U3.2, U3.3, U3.4, U3.5, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
 | 5 | Member UI | U4.1, U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
 | 6 | People and setup | U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
@@ -5295,7 +5295,7 @@ Size: L
 Fixes: none
 
 ### P7.9 — Allow several vehicles on one load
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.8
 Branch: modernise/p7-9-multi-vehicle
