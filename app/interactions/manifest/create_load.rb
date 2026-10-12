@@ -17,7 +17,7 @@ class Manifest::CreateLoad < ApplicationInteraction
     end
   end
   # The places the load visits, in order (operators with per-load destinations)
-  array   :destination_ids, default: nil do
+  array :destination_ids, default: nil do
     integer
   end
   # Ignored: a new load is always open

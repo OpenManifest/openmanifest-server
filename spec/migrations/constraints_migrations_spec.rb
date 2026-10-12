@@ -9,12 +9,13 @@ require Rails.root.join("db/migrate/20261009150000_add_cents_columns_for_money")
 require Rails.root.join("db/migrate/20261011130000_drop_legacy_columns")
 require Rails.root.join("db/migrate/20261011140000_rename_dropzone_to_operator")
 require Rails.root.join("db/migrate/20261011150000_rename_aviation_names_to_generic")
+require Rails.root.join("db/migrate/20261012110000_create_load_vehicles")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
 #
 # The steps were written for the schema of their time, before P7.2 dropped the old money columns, P7.3 renamed the
-# tenant and P7.5 the aviation names. Each example builds its rows with today's models, goes back to that schema inside `with_legacy_schema` (the
+# tenant, P7.5 the aviation names and P7.9 the vehicle of a load. Each example builds its rows with today's models, goes back to that schema inside `with_legacy_schema` (the
 # migrations are reversible, so the rows come along), runs the step and returns to today's schema for the assertions.
 RSpec.describe "P6.16 constraint migrations" do
   let(:connection) { ActiveRecord::Base.connection }
@@ -31,6 +32,7 @@ RSpec.describe "P6.16 constraint migrations" do
 
   def with_legacy_schema
     ActiveRecord::Migration.suppress_messages do
+      CreateLoadVehicles.new.migrate(:down)
       RenameAviationNamesToGeneric.new.migrate(:down)
       RenameDropzoneToOperator.new.migrate(:down)
       DropLegacyColumns.new.migrate(:down)
@@ -42,6 +44,7 @@ RSpec.describe "P6.16 constraint migrations" do
       DropLegacyColumns.new.migrate(:up)
       RenameDropzoneToOperator.new.migrate(:up)
       RenameAviationNamesToGeneric.new.migrate(:up)
+      CreateLoadVehicles.new.migrate(:up)
     end
     reset_models
   end

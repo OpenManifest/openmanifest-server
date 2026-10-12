@@ -1,5 +1,16 @@
 #import "./slot.gql"
 
+fragment loadVehicleEssentials on LoadVehicle {
+  id
+  role
+  position
+  capacity
+  slotsCount
+  vehicle {
+    ...vehicleEssentials
+  }
+}
+
 fragment loadEssentials on Load {
   id
   lockVersion
@@ -21,6 +32,9 @@ fragment loadDetails on Load {
   ...loadEssentials
   vehicle {
     ...vehicleEssentials
+  }
+  vehicles {
+    ...loadVehicleEssentials
   }
   gca {
     ...membershipEssentials

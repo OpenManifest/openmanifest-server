@@ -97,7 +97,7 @@ class Load < ApplicationRecord
       row.assign_attributes(role: role, position: position)
       kept << row
     end
-    load_vehicles.each { |load_vehicle| load_vehicle.mark_for_destruction unless kept.include?(load_vehicle) }
+    load_vehicles.each { |load_vehicle| load_vehicle.mark_for_destruction if kept.exclude?(load_vehicle) }
   end
 
   # The seats of the vehicles that carry participants
@@ -197,7 +197,7 @@ class Load < ApplicationRecord
 
     minutes = operator.settings["vehicle_turnaround_minutes"].to_i
     busy = Load.kept.where(state: %i(boarding departed)).where.not(id: id).joins(:load_vehicles).
-           where(load_vehicles: { vehicle_id: load_vehicles.reject(&:marked_for_destruction?).map(&:vehicle_id) })
+      where(load_vehicles: { vehicle_id: load_vehicles.reject(&:marked_for_destruction?).map(&:vehicle_id) })
     busy = busy.where(dispatch_at: (dispatch_at - minutes.minutes)..(dispatch_at + minutes.minutes)) if minutes.positive? && dispatch_at
     errors.add(:base, "A vehicle is on another load that is called or on its way") if busy.exists?
   end

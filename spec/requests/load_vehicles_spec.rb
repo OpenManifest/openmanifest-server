@@ -88,10 +88,12 @@ RSpec.describe "Load vehicles" do
       end
 
       def manifest(row, who: member)
-        graphql(create_slot, { attributes: {
-          load: load.id, membership: who.id, ticketType: ticket.id, loadVehicle: row&.id, bodyMassKg: 80,
-          activityType: ActivityType.allowed_for([who]).first.id
-        }.compact })
+        graphql(create_slot, {
+          attributes: {
+            load: load.id, membership: who.id, ticketType: ticket.id, loadVehicle: row&.id, bodyMassKg: 80,
+            activityType: ActivityType.allowed_for([who]).first.id,
+          }.compact,
+        })
       end
 
       it "puts a jumper in a vehicle and counts them there" do

@@ -4,6 +4,7 @@ mutation CreateLoad(
   $gca: ID
   $maxSlots: Int
   $vehicle: ID
+  $vehicles: [LoadVehicleInput!]
   $state: LoadState
   $destinationIds: [Int!]
 ) {
@@ -15,6 +16,7 @@ mutation CreateLoad(
         gca: $gca
         maxSlots: $maxSlots
         vehicle: $vehicle
+        vehicles: $vehicles
         state: $state
         destinationIds: $destinationIds
       }
