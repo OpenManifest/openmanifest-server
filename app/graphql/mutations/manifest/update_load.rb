@@ -13,7 +13,7 @@ module Mutations::Manifest
       mutate(
         Manifest::UpdateLoad,
         :load,
-        access_context: access_context_for(load_by_id(id).vehicle.operator),
+        access_context: access_context_for(load_by_id(id).operator),
         load: load_by_id(id),
         **attributes.to_h.slice(
           :gca,
@@ -22,6 +22,7 @@ module Mutations::Manifest
           :max_slots,
           :dispatch_at,
           :vehicle,
+          :vehicles,
           :state,
           :name,
           :destination_ids,

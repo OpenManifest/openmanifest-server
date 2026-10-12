@@ -9,6 +9,13 @@ module Types
                            prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :dispatch_at, GraphQL::Types::ISO8601DateTime, required: false,
                                                               prepare: -> (value, ctx) { value ? value.to_datetime : nil }
+      argument :vehicles, [Types::Input::LoadVehicleInput], required: false,
+                                                            prepare: -> (value, ctx) {
+                                                              value.map do |entry|
+                                                                { vehicle: ::Vehicle.find_by(id: entry[:vehicle_id]), role: entry[:role] }
+                                                              end
+                                                            },
+                                                            description: "The vehicles of the load and their roles; they replace the load's. One that carries is needed"
       argument :vehicle, ID, required: false,
                              prepare: -> (value, ctx) { ::Vehicle.find_by(id: value) }
       argument :gca, ID, required: false,

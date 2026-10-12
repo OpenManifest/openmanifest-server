@@ -11,12 +11,12 @@ module Mutations::Manifest
 
     # What can be edited on a slot: who jumps and on which load is not among it (a slot is moved with moveSlot, which
     # checks capacity, credits and the target's operator)
-    UPDATABLE = %i(ticket_type activity_type destination rig body_mass_kg group_number extras lock_version).freeze
+    UPDATABLE = %i(ticket_type activity_type destination load_vehicle rig body_mass_kg group_number extras lock_version).freeze
 
     def resolve(attributes:, id:)
       model = Slot.find(id)
       values = attributes.to_h.slice(*UPDATABLE)
-      operator_id = model.load.vehicle.operator_id
+      operator_id = model.load.operator_id
 
       return { slot: nil, field_errors: nil, errors: ["The ticket must belong to the same operator"] } if values[:ticket_type] && values[:ticket_type].operator_id != operator_id
 
@@ -60,7 +60,7 @@ module Mutations::Manifest
 
       if context[:current_resource].can?(
         is_current_user ? "updateSlot" : "updateUserSlot",
-        operator_id: slot.load.vehicle.operator_id
+        operator_id: slot.load.operator_id
       )
         true
       else

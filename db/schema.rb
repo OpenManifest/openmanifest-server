@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -205,10 +205,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.index ["load_id"], name: "index_load_destinations_on_load_id"
   end
 
+  create_table "load_vehicles", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "vehicle_id", null: false
+    t.string "role", default: "carrying", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "slots_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["load_id", "position"], name: "index_load_vehicles_on_load_and_position"
+    t.index ["load_id", "vehicle_id"], name: "index_load_vehicles_on_load_and_vehicle", unique: true
+    t.index ["load_id"], name: "index_load_vehicles_on_load_id"
+    t.index ["vehicle_id"], name: "index_load_vehicles_on_vehicle_id"
+  end
+
   create_table "loads", force: :cascade do |t|
     t.datetime "dispatch_at", precision: nil
     t.boolean "has_completed"
-    t.bigint "vehicle_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
@@ -233,7 +246,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
     t.index ["state"], name: "index_loads_on_state"
-    t.index ["vehicle_id"], name: "index_loads_on_vehicle_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -430,6 +442,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.bigint "created_by_id"
     t.integer "lock_version", default: 0, null: false
     t.bigint "destination_id"
+    t.bigint "load_vehicle_id"
     t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["destination_id"], name: "index_slots_on_destination_id"
@@ -437,6 +450,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
     t.index ["guest_slot_id"], name: "index_slots_on_guest_slot_id"
     t.index ["load_id", "membership_id"], name: "index_slots_on_load_id_and_membership_id", unique: true, where: "(membership_id IS NOT NULL)"
     t.index ["load_id"], name: "index_slots_on_load_id"
+    t.index ["load_vehicle_id"], name: "index_slots_on_load_vehicle_id"
     t.index ["membership_id"], name: "index_slots_on_membership_id"
     t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
@@ -801,11 +815,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
   add_foreign_key "licenses", "federations"
   add_foreign_key "load_destinations", "destinations"
   add_foreign_key "load_destinations", "loads"
+  add_foreign_key "load_vehicles", "loads"
+  add_foreign_key "load_vehicles", "vehicles"
   add_foreign_key "loads", "memberships", column: "gca_id"
   add_foreign_key "loads", "memberships", column: "load_master_id"
   add_foreign_key "loads", "memberships", column: "pilot_id"
   add_foreign_key "loads", "operators"
-  add_foreign_key "loads", "vehicles"
   add_foreign_key "memberships", "licenses"
   add_foreign_key "memberships", "operators"
   add_foreign_key "memberships", "user_roles"
@@ -830,6 +845,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_100000) do
   add_foreign_key "slots", "activity_types"
   add_foreign_key "slots", "destinations"
   add_foreign_key "slots", "guests"
+  add_foreign_key "slots", "load_vehicles"
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "memberships"
   add_foreign_key "slots", "memberships", column: "created_by_id"

@@ -8,6 +8,8 @@ class Manifest::MoveSlot < ApplicationInteraction
   record :source_slot, class: Slot
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil
+  # The vehicle of the target load the slot rides in (loads with several vehicles that carry)
+  record :target_load_vehicle, class: LoadVehicle, default: nil
 
   validate :same_operator
 
@@ -58,12 +60,16 @@ class Manifest::MoveSlot < ApplicationInteraction
   # BUG-023). Lock order: the loads by id, then the member.
   def lock_rows
     [source_slot.load, destination_load].compact.uniq.sort_by(&:id).each(&:lock!)
+    target_load_vehicle&.lock!
     source_slot.reload
     source_slot.membership&.lock!
   end
 
   def move_slot
+    # A slot that goes to another load leaves the vehicle it rode in; one that stays on its load changes vehicle only when asked
+    vehicle_change = target_load_vehicle || destination_load != source_slot.load ? { load_vehicle: target_load_vehicle } : {}
     source_slot.assign_attributes(
+      **vehicle_change,
       load: destination_load,
       ticket_type: target_slot&.ticket_type || source_slot.ticket_type,
       activity_type: target_slot&.activity_type || source_slot.activity_type,
@@ -79,7 +85,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affordable?
-    return unless source_slot.load.vehicle.operator.is_credit_system_enabled?
+    return unless source_slot.load.operator.is_credit_system_enabled?
     # Check the cost of the current slot
     user_funds = source_slot.cost_cents + source_slot.membership.credits_cents.to_i
 
@@ -138,6 +144,10 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   # The target must be open and have room for the slot (and its guest): slot validations only run on create (BUG-092)
   def open_with_room
+    if target_load_vehicle && target_load_vehicle.load_id != destination_load.id
+      errors.add(:base, "That vehicle is not on load ##{destination_load.load_number}")
+      return
+    end
     return if destination_load == source_slot.load
 
     unless destination_load.open? || destination_load.boarding?
@@ -145,7 +155,7 @@ class Manifest::MoveSlot < ApplicationInteraction
       return
     end
 
-    capacity = destination_load.max_slots || destination_load.vehicle.capacity
+    capacity = destination_load.max_slots || destination_load.capacity
     needed = source_slot.has_guest? ? 2 : 1
     errors.add(:base, "No slots available on load ##{destination_load.load_number}") if capacity - destination_load.slots.count < needed
   end
@@ -156,7 +166,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   def same_operator
     operator_id = access_context&.operator&.id
     loads = [source_slot.load, destination_load].compact
-    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.vehicle.operator_id == operator_id }
+    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.operator_id == operator_id }
   end
 
   def destination_load

@@ -27,7 +27,7 @@ module Mutations::Manifest
     # Manifesting yourself needs createSlot; a group with other people needs createUserSlot, or createUserSlotWithSelf
     # when you are one of its members (BUG-062: this compared membership ids with the user id).
     def authorized?(attributes: nil)
-      operator = attributes[:load].vehicle.operator
+      operator = attributes[:load].operator
       membership = Membership.of(operator, context[:current_resource])
       return refuse("You are not a member of this operator") unless membership
 

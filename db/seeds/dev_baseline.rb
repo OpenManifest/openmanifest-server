@@ -50,7 +50,7 @@ owner_membership.update!(credits: 1000, license: license, expires_at: 1.year.fro
 %w(actAsPilot actAsGCA actAsLoadMaster actAsDutyOfficer actAsEquipmentInspector).each { |p| owner_membership.grant!(p) }
 members["pilot@example.com"].grant!("actAsPilot")
 
-if Load.joins(:vehicle).where(vehicles: { operator_id: operator.id }).none?
+if Load.where(operator_id: operator.id).none?
   context = ApplicationInteraction::AccessContext.new(owner_membership)
   first = Manifest::CreateLoad.run!(access_context: context, vehicle: vehicle, pilot: members["pilot@example.com"],
                                     gca: owner_membership, load_master: owner_membership, name: "Load 1")

@@ -109,6 +109,6 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   end
 
   def operator
-    vehicle_load.vehicle.operator
+    vehicle_load.operator
   end
 end

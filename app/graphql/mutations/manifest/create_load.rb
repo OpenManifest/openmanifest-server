@@ -9,7 +9,8 @@ module Mutations::Manifest
     argument :attributes, Types::Input::LoadInput, required: true
 
     def resolve(attributes:)
-      operator = attributes[:vehicle].operator
+      operator = (attributes[:vehicle] || attributes[:vehicles]&.first&.dig(:vehicle))&.operator
+      return { load: nil, field_errors: nil, errors: ["A load needs a vehicle"] } unless operator
 
       Time.use_zone(operator.time_zone) do
         mutate(
@@ -19,6 +20,7 @@ module Mutations::Manifest
           **attributes.to_h.slice(
             :name,
             :vehicle,
+            :vehicles,
             :pilot,
             :gca,
             :load_master,
@@ -32,7 +34,7 @@ module Mutations::Manifest
   end
 
   def authorized?(attributes: nil)
-    current_user = attributes[:vehicle].operator.memberships.find_by(user: context[:current_resource])
+    current_user = (attributes[:vehicle] || attributes[:vehicles]&.first&.dig(:vehicle)).operator.memberships.find_by(user: context[:current_resource])
     current_user.can?(:createLoad)
   end
 end

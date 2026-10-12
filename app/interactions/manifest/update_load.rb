@@ -14,6 +14,13 @@ class Manifest::UpdateLoad < ApplicationInteraction
   object :load_master, class: Membership, default: nil
   object :pilot, class: Membership, default: nil
   object :vehicle, class: Vehicle, default: nil
+  # The vehicles of the load with their roles; given, they replace the load's (operators with several vehicles per load)
+  array :vehicles, default: nil do
+    hash do
+      record :vehicle
+      string :role, default: "carrying"
+    end
+  end
   string :state, default: nil
   # The places the load visits, in order; given, they replace the load's (operators with per-load destinations)
   array :destination_ids, default: nil do
@@ -64,7 +71,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
       )
     end
 
-    if vehicle
+    if vehicle || vehicles
       compose(
         ::Activity::CreateEvent,
         access_context: access_context,
@@ -73,7 +80,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the vehicle for load ##{load.load_number} to #{vehicle.name} (#{vehicle.registration})"
+        message: "#{access_context.user.name} changed the #{vehicles ? 'vehicles' : 'vehicle'} for load ##{load.load_number} to #{vehicle_names}"
       )
     end
 
@@ -109,13 +116,39 @@ class Manifest::UpdateLoad < ApplicationInteraction
     errors.add(:base, "You have too many manifested jumpers") if max_slots < load.slots.count
   end
 
+  # The vehicles the load has after this change: the ones given, or the one given in place of the carrying ones (the
+  # support vehicles stay); nil when the vehicles do not change
+  def new_vehicle_roles
+    @new_vehicle_roles ||=
+      if vehicles
+        vehicles.map(&:symbolize_keys)
+      elsif vehicle
+        [{ vehicle: vehicle, role: "carrying" }] +
+          load.load_vehicles.select(&:support?).map { |support| { vehicle: support.vehicle, role: "support" } }
+      end
+  end
+
+  def vehicle_names
+    new_vehicle_roles.map { |entry| "#{entry[:vehicle].name} (#{entry[:vehicle].registration})" }.to_sentence
+  end
+
   def check_vehicle_change
-    return unless vehicle
-    if vehicle.capacity >= load.slots.count
-      load.assign_attributes(max_slots: vehicle.capacity)
-    else
-      errors.add(:base, "This vehicle cannot fit all manifested jumpers")
+    return unless new_vehicle_roles
+
+    carrying = new_vehicle_roles.select { |entry| entry[:role].to_s == "carrying" }
+    capacity = carrying.sum { |entry| entry[:vehicle].capacity.to_i }
+    if capacity < load.slots.count
+      errors.add(:base, "These vehicles cannot fit all manifested jumpers")
+      return
     end
+
+    kept_ids = new_vehicle_roles.pluck(:vehicle).map(&:id)
+    load.load_vehicles.each do |load_vehicle|
+      if kept_ids.exclude?(load_vehicle.vehicle_id) && load_vehicle.slots_count.positive?
+        errors.add(:base, "#{load_vehicle.vehicle.name} has manifested jumpers and cannot be taken off the load")
+      end
+    end
+    @new_capacity = capacity
   end
 
   def update_load
@@ -123,14 +156,14 @@ class Manifest::UpdateLoad < ApplicationInteraction
     load.lock_version = lock_version if lock_version
     load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
     load.destination_ids = destination_ids unless destination_ids.nil?
+    load.vehicle_roles = new_vehicle_roles if new_vehicle_roles
     load.assign_attributes(
       {
         gca: gca,
-        vehicle: vehicle,
         load_master: load_master,
         pilot: pilot,
         name: name,
-        max_slots: max_slots || load.max_slots || load.vehicle.capacity,
+        max_slots: max_slots || @new_capacity || load.max_slots || load.capacity,
       }.compact
     )
   end

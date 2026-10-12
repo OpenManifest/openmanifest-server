@@ -30,6 +30,8 @@ class Slot < ApplicationRecord
   belongs_to :guest, optional: true
   belongs_to :ticket_type
   belongs_to :load
+  # The vehicle of the load this slot rides in, when the load has several that carry (nil: the load's only one)
+  belongs_to :load_vehicle, optional: true
   belongs_to :rig, optional: true
   belongs_to :activity_type, optional: true
   # The place this slot goes to when destinations are per slot (skydiving: its altitude); the ticket type's by default
@@ -49,7 +51,9 @@ class Slot < ApplicationRecord
                   where.not(membership: nil).or(where.not(guest: nil)).where.not(ticket_type: nil, load: nil, activity_type: nil)
                 }
 
-  counter_culture %i(load vehicle operator), column_name: :slots_count
+  counter_culture %i(load operator), column_name: :slots_count
+  # The slots of each vehicle of a load with several (P7.9)
+  counter_culture :load_vehicle
   # The load's counters: every slot counts in slots_count, only the ready ones in ready_slots_count. The second counter
   # needs its own column_name, without it counter_culture also increments slots_count (BUG-019).
   counter_culture :load
@@ -61,7 +65,8 @@ class Slot < ApplicationRecord
   validates :activity_type, presence: true, if: -> { operator&.module?(:activities) }
   before_validation :default_destination, on: :create
   validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
-  validate :destination_of_operator
+  validate :destination_of_operator, :load_vehicle_of_load
+  validate :load_vehicle_has_room, if: -> { load_vehicle && (new_record? || load_vehicle_id_changed?) }
   validate :available?,
            :double_manifest?,
            :allowed_activity_type?,
@@ -128,6 +133,18 @@ class Slot < ApplicationRecord
     return if destination.nil? || destination.operator_id == operator&.id
 
     errors.add(:destination, :invalid)
+  end
+
+  def load_vehicle_of_load
+    return if load_vehicle.nil?
+
+    errors.add(:load_vehicle, :invalid) unless load_vehicle.load_id == load_id && load_vehicle.carrying?
+  end
+
+  def load_vehicle_has_room
+    return if load_vehicle.available_slots >= required_slots
+
+    errors.add(:base, "No slots available in #{load_vehicle.vehicle.name}")
   end
 
   def required_slots

@@ -20,7 +20,8 @@ class Vehicle < ApplicationRecord
   include Discard::Model
   include DailyLogEntry::Vehicle
 
-  has_many :loads, dependent: :destroy
+  has_many :load_vehicles, dependent: :destroy
+  has_many :loads, through: :load_vehicles
   has_many :pilots, through: :loads
   belongs_to :operator
 

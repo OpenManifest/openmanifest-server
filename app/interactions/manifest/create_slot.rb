@@ -11,6 +11,8 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :activity_type
   # Where the slot goes (per-slot destinations); the ticket type's destination when left out
   record :destination, default: nil
+  # The vehicle of the load the slot rides in; none: the load's (only) one
+  record :load_vehicle, default: nil
   record :rig, default: nil
   integer :group_number, default: nil
   float :body_mass_kg
@@ -73,6 +75,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   # Lock order: the load, then the member (CreateMultipleSlots locks the load and then all members by id).
   def lock_load_and_member
     load.lock!
+    load_vehicle&.lock!
     membership.lock!
   end
 
@@ -100,6 +103,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       body_mass_kg: body_mass_kg
     )
     @model.destination = destination if destination
+    @model.load_vehicle = load_vehicle if load_vehicle
     # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end
@@ -188,7 +192,7 @@ class Manifest::CreateSlot < ApplicationInteraction
   # The load, the member and the ticket type must belong to the operator the caller acts in
   def same_operator
     operator_id = access_context&.operator&.id
-    belongs = [load.vehicle.operator_id, membership.operator_id, ticket_type.operator_id].all?(operator_id)
+    belongs = [load.operator_id, membership.operator_id, ticket_type.operator_id].all?(operator_id)
     errors.add(:base, "The load, the jumper and the ticket must belong to the same operator") unless belongs
   end
 end

@@ -20,6 +20,7 @@ module Mutations::Manifest
           :membership,
           :activity_type,
           :destination,
+          :load_vehicle,
           :body_mass_kg,
           :rig,
           :load,

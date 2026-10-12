@@ -12,6 +12,9 @@ module Types
       argument :destination, GraphQL::Types::ID, required: false,
                                                  prepare: -> (value, ctx) { ::Destination.kept.find_by(id: value) },
                                                  description: "Where this slot goes (per-slot destinations); the ticket type's by default"
+      argument :load_vehicle, GraphQL::Types::ID, required: false,
+                                                  prepare: -> (value, ctx) { ::LoadVehicle.find_by(id: value) },
+                                                  description: "The vehicle of the load this slot rides in (loads with several vehicles that carry)"
       argument :load, GraphQL::Types::ID, required: false,
                                           prepare: -> (value, ctx) { ::Load.find_by(id: value) }
       argument :rig, GraphQL::Types::ID, required: false,

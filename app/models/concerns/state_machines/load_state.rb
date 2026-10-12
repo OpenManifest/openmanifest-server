@@ -31,7 +31,7 @@ module StateMachines::LoadState
           next if slot.membership.blank?
 
           Notification.create(
-            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.vehicle.operator.time_zone).strftime('%H:%M')}",
+            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.operator.time_zone).strftime('%H:%M')}",
             resource: record,
             received_by: slot.membership,
             notification_type: :boarding

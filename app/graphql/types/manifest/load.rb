@@ -20,12 +20,12 @@ module Types::Manifest
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :available_slots, Int, null: false
     def available_slots
-      preload(:vehicle).available_slots
+      preload(load_vehicles: :vehicle).available_slots
     end
 
     field :occupied_slots, Int, null: false
     def occupied_slots
-      preload(:vehicle).occupied_slots
+      preload(load_vehicles: :vehicle).occupied_slots
     end
 
     field :max_slots, Int, null: false
@@ -47,7 +47,16 @@ module Types::Manifest
     end
 
     async_field :pilot, Types::Users::Membership, null: true
-    async_field :vehicle, Types::Operator::Vehicle, null: false
+    field :vehicle, Types::Operator::Vehicle, null: false, description: "The first vehicle that carries participants"
+    def vehicle
+      preload(load_vehicles: :vehicle).vehicle
+    end
+
+    field :vehicles, [Types::Manifest::LoadVehicle], null: false, description: "The vehicles of the load, those that carry first"
+    def vehicles
+      preload(load_vehicles: :vehicle).load_vehicles.sort_by { |load_vehicle| [load_vehicle.position, load_vehicle.id] }
+    end
+
     async_field :load_master, Types::Users::Membership, null: true
     async_field :state, Types::Manifest::LoadState, null: false
     async_field :gca, Types::Users::Membership, null: true

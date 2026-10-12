@@ -48,7 +48,7 @@ class Operator < ApplicationRecord
   has_many :events, class_name: "Activity::Event"
 
   has_many :vehicles, -> { kept }, dependent: :destroy
-  has_many :loads, -> { kept }
+  has_many :loads, -> { kept }, dependent: :destroy
   has_many :destinations, -> { kept }, dependent: :destroy
 
   has_many :load_masters, through: :loads

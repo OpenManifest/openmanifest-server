@@ -37,7 +37,7 @@ module Mutations::Manifest
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
         "updateLoad",
-        operator_id: load_by_id(id).vehicle.operator_id
+        operator_id: load_by_id(id).operator_id
       )
         true
       else

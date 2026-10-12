@@ -26,6 +26,7 @@ module Types::Manifest
 
     async_field :ticket_type, Types::Operator::Ticket, null: true
     async_field :load, Types::Manifest::Load, null: false
+    async_field :load_vehicle, Types::Manifest::LoadVehicle, null: true
     async_field :destination, Types::Operator::Destination, null: true
     async_field :rig, Types::Equipment::Rig, null: true
     async_field :activity_type, Types::Meta::ActivityType, null: true
