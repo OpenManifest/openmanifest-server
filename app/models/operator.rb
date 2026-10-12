@@ -39,6 +39,8 @@ class Operator < ApplicationRecord
                    lat_column_name: :lat,
                    lng_column_name: :lng
   has_many :memberships, -> { kept }, dependent: :destroy
+  has_many :operator_activity_types, dependent: :destroy
+  has_many :activity_types, through: :operator_activity_types
 
   has_many :users, through: :memberships
   has_many :weather_conditions, dependent: :destroy
@@ -62,7 +64,7 @@ class Operator < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
-  belongs_to :federation
+  belongs_to :federation, optional: true
   belongs_to :rig_inspection_template,
              class_name: "FormTemplate",
              optional: true
@@ -70,6 +72,13 @@ class Operator < ApplicationRecord
   has_one_base64_attached :banner
   resize_attached_image :banner, size: [1280, 720]
   after_create :set_appsignal_gauge
+
+  validates :industry, presence: true, inclusion: { in: ->(_) { Industry.slugs }, message: :unknown_industry }, on: :create
+  validates :time_zone, presence: true
+  # Only industries with certifications have a federation (certification body)
+  validates :federation, presence: true, if: -> { module?(:certifications) }
+  validate :industry_unchanged, on: :update
+  validate :module_overrides_allowed
 
   scope :visibility, -> (visibility) { where(state: visibility) }
 
@@ -100,7 +109,7 @@ class Operator < ApplicationRecord
 
   # Today's date where the operator is (the server runs in UTC, the operator is not)
   def today
-    Time.current.in_time_zone(timezone).to_date
+    Time.current.in_time_zone(time_zone).to_date
   end
 
   # The weather of the operator's current day, created when it is first asked for
@@ -111,11 +120,64 @@ class Operator < ApplicationRecord
     weather_conditions.find_by!(date: today)
   end
 
-  def timezone
-    time_zone || "Australia/Brisbane"
-  end
-
   def set_appsignal_gauge
     Appsignal.set_gauge("operators.count", Operator.count)
+  end
+
+  # @return [Industry] the template this operator was created from
+  def industry_template = Industry.fetch(industry)
+
+  # Is a module on? The template says, the operator's own `modules` override it (true / false / a configuration)
+  def module?(name)
+    override = modules[name.to_s]
+    return override != false && override.present? unless override.nil?
+
+    industry_template.module?(name)
+  end
+
+  # The configuration of a module that is on, or nil
+  def module_config(name)
+    return nil unless module?(name)
+
+    override = modules[name.to_s]
+    override.is_a?(Hash) ? override : industry_template.modules[name.to_s]
+  end
+
+  # Terms in a language: the template's, deep-merged with the operator's own in settings["terminology"]
+  def terminology(locale = :en)
+    industry_template.terminology(locale).deep_merge(settings.fetch("terminology", {}))
+  end
+
+  # Units: the template's, then settings["units"]
+  def units
+    industry_template.units.merge(settings.fetch("units", {}))
+  end
+
+  # Minutes before departure at which a boarding call is offered: settings["call_schedule_minutes"] or the template's
+  def call_schedule_minutes
+    settings["call_schedule_minutes"].presence || industry_template.call_schedule_minutes
+  end
+
+  # The kinds of vehicle the operator runs (copied from the template at creation)
+  def vehicle_kinds
+    settings["vehicle_kinds"].presence || industry_template.vehicle_kinds
+  end
+
+  private
+
+  # Overrides name known modules, and a module the template marks `locked` stays on
+  def module_overrides_allowed
+    modules.each do |name, value|
+      if Industry::MODULES.exclude?(name)
+        errors.add(:modules, "#{name} is not a module")
+      elsif value == false && industry_template.modules.dig(name, "locked") == true
+        errors.add(:modules, "#{name} cannot be turned off")
+      end
+    end
+  end
+
+  # The industry is chosen at creation and never changes (GENERALISATION §2)
+  def industry_unchanged
+    errors.add(:industry, "cannot be changed") if industry_changed?
   end
 end

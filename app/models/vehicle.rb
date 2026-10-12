@@ -23,4 +23,7 @@ class Vehicle < ApplicationRecord
   has_many :loads, dependent: :destroy
   has_many :pilots, through: :loads
   belongs_to :operator
+
+  before_validation { self.kind ||= operator&.vehicle_kinds&.first }
+  validates :kind, presence: true
 end

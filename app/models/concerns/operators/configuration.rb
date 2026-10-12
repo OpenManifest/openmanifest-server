@@ -10,12 +10,16 @@ module Operators
         define_method(method_name) { settings[key.to_s] }
       end
 
-      # Set up default settings for an operator when initialized
+      # Set up default settings for an operator when initialized: the neutral ones, then the starting values of the
+      # operator's industry template, then what the operator has set
       after_initialize do
         # Partial selects (counter_culture's reconciliation) do not load the column
         next unless has_attribute?(:settings)
-        next if self.class.default_settings.keys.all? { |key| settings.key?(key) }
-        assign_attributes(settings: self.class.default_settings.merge(settings || {}))
+
+        template_settings = has_attribute?(:industry) && industry.present? ? Industry.fetch(industry).settings.symbolize_keys : {}
+        defaults = self.class.default_settings.merge(template_settings)
+        next if defaults.keys.all? { |key| settings.key?(key.to_s) }
+        assign_attributes(settings: defaults.merge((settings || {}).symbolize_keys))
       end
 
       def settings=(new_settings)

@@ -31,8 +31,8 @@ RSpec.describe "Weather and time zones" do
       end
     end
 
-    it "falls back to Brisbane without a zone" do
-      travel_to(late_evening_utc) { expect(build(:operator, time_zone: nil).today).to eq(Date.new(2026, 10, 9)) }
+    it "requires a zone" do
+      expect(build(:operator, time_zone: nil)).not_to be_valid
     end
   end
 

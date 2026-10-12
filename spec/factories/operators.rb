@@ -31,6 +31,7 @@ FactoryBot.define do
     primary_color { Faker::Color.hex_color }
     secondary_color { Faker::Color.hex_color }
     is_credit_system_enabled { true }
+    industry { "skydiving" }
     time_zone { "Australia/Brisbane" }
     federation { Federation.first }
 

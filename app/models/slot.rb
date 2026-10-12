@@ -30,7 +30,7 @@ class Slot < ApplicationRecord
   belongs_to :ticket_type
   belongs_to :load
   belongs_to :rig, optional: true
-  belongs_to :activity_type
+  belongs_to :activity_type, optional: true
   has_one :operator, through: :load
 
   has_one :order, as: :item, required: false
@@ -54,6 +54,8 @@ class Slot < ApplicationRecord
                   column_name: proc { |slot| slot.ready? ? "ready_slots_count" : nil },
                   column_names: -> { { Slot.ready => "ready_slots_count" } }
 
+  # Only industries with the activities module (skydiving: jump types) have slots with an activity
+  validates :activity_type, presence: true, if: -> { operator&.module?(:activities) }
   validate :available?,
            :double_manifest?,
            :allowed_activity_type?,
@@ -149,6 +151,7 @@ class Slot < ApplicationRecord
   end
 
   def allowed_activity_type?
+    return if activity_type.blank?
     return true if is_guest? && ticket_type.is_tandem?
     return if activity_type.allowed_for?(membership)
     return unless operator.require_license?

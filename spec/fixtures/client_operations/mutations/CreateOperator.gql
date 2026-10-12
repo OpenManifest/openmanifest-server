@@ -1,7 +1,9 @@
 mutation CreateOperator(
+  $industry: Industry!
   $name: String!
   $banner: String
-  $federation: Int!
+  $federation: Int
+  $timeZone: String!
   $lat: Float
   $lng: Float
   $primaryColor: String
@@ -9,10 +11,12 @@ mutation CreateOperator(
 ) {
   createOperator(
     input: {
+      industry: $industry
       attributes: {
         name: $name
         banner: $banner
         federation: $federation
+        timeZone: $timeZone
         primaryColor: $primaryColor
         secondaryColor: $secondaryColor
         lat: $lat

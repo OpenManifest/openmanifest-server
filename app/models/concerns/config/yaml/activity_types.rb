@@ -2,11 +2,12 @@ module Config::Yaml::ActivityTypes
   extend ActiveSupport::Concern
 
   class_methods do
-    # Parse YAML config for default configuration
+    # The activity types of every industry catalogue (config/industries/*/catalogue.yml), once each
     #
-    # @return [Hash<Symbol, Array<String>>]
+    # @return [Array<Hash{Symbol => String}>] name and slug
     def config
-      @config ||= YAML.safe_load_file("config/seed/global.yml", symbolize_names: true)[:activity_types]
+      @config ||= ::Industry.all.values.flat_map { |industry| industry.catalogue.fetch("activity_types", []) }.
+        map(&:symbolize_keys).uniq { |activity_type| activity_type[:slug] }
     end
   end
 end

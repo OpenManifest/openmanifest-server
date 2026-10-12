@@ -20,6 +20,18 @@ module Types
                                                    description: "The caller's membership of this operator, or null if they have not joined it (see joinOperator)"
     async_field :user_roles, [Types::Access::UserRole], null: false
     field :settings, Types::Operator::Settings, null: true
+    field :industry, Types::IndustryEnum, null: false, description: "The industry template the operator was created from"
+    field :modules, GraphQL::Types::JSON, null: false, description: "The enabled modules with their configuration"
+    def modules
+      ::Industry::MODULES.filter_map { |name| [name, object.module_config(name)] if object.module?(name) }.to_h
+    end
+    field :terminology, GraphQL::Types::JSON, null: false, description: "Terms of the operator's industry, with its own changes" do
+      argument :locale, String, required: false, default_value: "en"
+    end
+    def terminology(locale: "en")
+      object.terminology(locale)
+    end
+    field :units, GraphQL::Types::JSON, null: false, description: "The units the operator shows"
     async_field :federation, Types::Meta::Federation, null: false
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 
@@ -35,9 +47,6 @@ module Types
     field :current_conditions, Types::Operator::Weather::Condition, null: false
 
     field :time_zone, String, null: false, description: "The operator's time zone (IANA name): its days, and the times of its loads, are in it"
-    def time_zone
-      object.timezone
-    end
 
     field :membership, Types::Users::Membership, null: true do
       argument :id, Int, required: false

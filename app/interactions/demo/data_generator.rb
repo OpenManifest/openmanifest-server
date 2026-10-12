@@ -2,6 +2,7 @@
 
 class Demo::DataGenerator < ApplicationInteraction
   record :operator, default: nil
+  string :industry, default: "skydiving"
   date_time :start_date, default: -> { 3.months.ago.to_datetime }
 
   import_filters Demo::Generators::Users
@@ -19,6 +20,8 @@ class Demo::DataGenerator < ApplicationInteraction
     @dz ||= operator || compose(
       ::Setup::Operators::CreateOperator,
       owner: User.create_fake,
+      industry: industry,
+      time_zone: "Australia/Brisbane",
       name: "Skydive #{Faker::Address.city}",
       lat: Faker::Address.latitude,
       lng: Faker::Address.longitude,

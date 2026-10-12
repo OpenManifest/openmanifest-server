@@ -11,6 +11,8 @@ if operator.new_record?
   # Create a fake user
   owner = User.create_fake
   operator.federation = Federation.first
+  operator.industry = "skydiving"
+  operator.time_zone = "Australia/Brisbane"
   operator.is_public = true
   operator.primary_color = "#1D3557"
   operator.secondary_color = "#E63946"
@@ -31,7 +33,7 @@ if operator.new_record?
 
   operator.rig_inspection_template = FormTemplate.create(
     name: "Rig Inspection",
-    definition: RigInspection.default_form.to_json,
+    definition: Industry.fetch("skydiving").presets.dig("inspection_forms", "equipment_inspection").to_json,
     created_by: owner,
     updated_by: owner,
   )

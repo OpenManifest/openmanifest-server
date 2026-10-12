@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_11_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -244,6 +244,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
     t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
   end
 
+  create_table "operator_activity_types", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "activity_type_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["activity_type_id"], name: "index_operator_activity_types_on_activity_type_id"
+    t.index ["operator_id", "activity_type_id"], name: "index_operator_activity_types_uniqueness", unique: true
+    t.index ["operator_id"], name: "index_operator_activity_types_on_operator_id"
+  end
+
   create_table "operators", force: :cascade do |t|
     t.string "name"
     t.bigint "federation_id"
@@ -257,7 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
     t.boolean "is_credit_system_enabled", default: false
     t.bigint "rig_inspection_template_id"
     t.string "image"
-    t.string "time_zone", default: "Australia/Brisbane"
+    t.string "time_zone", null: false
     t.integer "users_count", default: 0, null: false
     t.integer "slots_count", default: 0, null: false
     t.integer "loads_count", default: 0, null: false
@@ -266,6 +276,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
     t.string "state", default: "private"
     t.jsonb "settings", default: {}
     t.bigint "credits_cents"
+    t.string "industry", null: false
+    t.jsonb "modules", default: {}, null: false
     t.index ["discarded_at"], name: "index_operators_on_discarded_at"
     t.index ["federation_id"], name: "index_operators_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_operators_on_rig_inspection_template_id"
@@ -664,6 +676,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "operator_id", null: false
+    t.boolean "is_default", default: false, null: false
+    t.boolean "is_default_certified", default: false, null: false
     t.index ["name", "operator_id"], name: "index_user_roles_on_name_and_operator_id", unique: true
     t.index ["operator_id"], name: "index_user_roles_on_operator_id"
   end
@@ -719,7 +733,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
     t.datetime "updated_at", null: false
     t.bigint "operator_id", null: false
     t.datetime "discarded_at", precision: nil
-    t.string "kind", default: "vehicle", null: false
+    t.string "kind", null: false
     t.index ["discarded_at"], name: "index_vehicles_on_discarded_at"
     t.index ["operator_id"], name: "index_vehicles_on_operator_id"
   end
@@ -765,6 +779,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_150000) do
   add_foreign_key "memberships", "users"
   add_foreign_key "notifications", "memberships", column: "received_by_id"
   add_foreign_key "notifications", "memberships", column: "sent_by_id"
+  add_foreign_key "operator_activity_types", "activity_types"
+  add_foreign_key "operator_activity_types", "operators"
   add_foreign_key "operators", "form_templates", column: "rig_inspection_template_id"
   add_foreign_key "orders", "operators"
   add_foreign_key "packs", "rigs"

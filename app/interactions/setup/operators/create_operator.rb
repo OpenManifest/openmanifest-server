@@ -4,7 +4,9 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
   string :name
   string :banner, default: nil
   object :owner, class: User
-  record :federation
+  string :industry
+  string :time_zone
+  record :federation, default: nil
   boolean :request_publication, default: false
   boolean :is_public, default: false
   decimal :lat, default: 0.0
@@ -16,7 +18,7 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
   steps :build_operator,
         :create_roles,
         :build_owner,
-        :build_rig_inspection_template,
+        :apply_presets,
         :attach_banner,
         :save!
 
@@ -50,6 +52,8 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
   def build_operator
     @operator = Operator.new(
       name: name,
+      industry: industry,
+      time_zone: time_zone,
       federation: federation,
       request_publication: request_publication,
       is_public: is_public,
@@ -62,8 +66,14 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
     save!
   end
 
+  # The roles come first: the owner needs one
   def create_roles
     compose(::Setup::Operators::Access::CreateDefaults, operator: @operator)
+  end
+
+  # Everything else the industry template presets (ticket types, activity types, inspection form, ...)
+  def apply_presets
+    compose(::Presets::Apply, operator: @operator, created_by: @owner)
   end
 
   def attach_banner
@@ -76,18 +86,6 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
 
   def save!
     errors.merge!(@operator.errors) unless @operator.save
-    @operator
-  end
-
-  def build_rig_inspection_template
-    @operator.rig_inspection_template = FormTemplate.create(
-      name: "Rig Inspection",
-      definition: RigInspection.default_form.to_json,
-      created_by: @owner,
-      updated_by: @owner,
-    )
-    save!
-    @operator.rig_inspection_template.update(operator: @operator)
     @operator
   end
 end

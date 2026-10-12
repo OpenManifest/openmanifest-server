@@ -6,13 +6,15 @@ module Mutations::Setup::Operators
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
+    argument :industry, Types::IndustryEnum, required: true
     argument :attributes, Types::Input::OperatorInput, required: true
 
-    def resolve(attributes:)
+    def resolve(industry:, attributes:)
       mutate(
         ::Setup::Operators::CreateOperator,
         :operator,
         owner: context[:current_resource],
+        industry: industry,
         **attributes.to_h.slice(
           :name,
           :lat,
@@ -23,12 +25,13 @@ module Mutations::Setup::Operators
           :is_public,
           :primary_color,
           :secondary_color,
-          :is_credit_system_enabled
+          :is_credit_system_enabled,
+          :time_zone
         )
       )
     end
 
-    def authorized?(attributes: nil)
+    def authorized?(industry: nil, attributes: nil)
       true
     end
   end

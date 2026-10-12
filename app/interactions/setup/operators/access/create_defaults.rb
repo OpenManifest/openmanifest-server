@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Creates the roles of an operator's industry preset (presets.yml `roles`) with their permissions. Safe to run again: it
+# adds what is missing and leaves the rest (the operator owns its roles after creation).
 class Setup::Operators::Access::CreateDefaults < ApplicationInteraction
   record :operator
   array :permissions, default: -> { Permission.all.to_a }
@@ -25,10 +27,12 @@ class Setup::Operators::Access::CreateDefaults < ApplicationInteraction
   end
 
   def create_default_roles
-    @roles = UserRole.slugs.map do |slug|
+    @roles = role_presets.map do |name, preset|
       UserRole.new(
-        name: slug,
-        operator: operator
+        name: name,
+        operator: operator,
+        is_default: preset["default"] == true,
+        is_default_certified: preset["default_certified"] == true
       )
     end
     UserRole.import!(
@@ -63,53 +67,59 @@ class Setup::Operators::Access::CreateDefaults < ApplicationInteraction
   end
 
   def assert_success!
-    missing_roles = @roles.pluck(:slug) - UserRole.config.keys.map(&:to_s)
-    missing_role_permissions = @default_role_permissions.filter_map do |role_permission_hash|
-      next nil if @role_permissions.any? do |role_permission|
-        return false unless role_permission.user_role_id == role_permission_hash[:user_role].id
-        return false unless role_permission.permission_id == role_permission_hash[:permission].id
-        true
-      end
-      "UserRole<#{role_permission_hash[:user_role].name}> Permission<#{role_permission_hash[:permission].name}>"
-    end
-
+    missing_roles = role_presets.keys - operator.user_roles.reload.pluck(:name)
     fail "Failed to create roles #{missing_roles.join(', ')}" if missing_roles.any?
-    if missing_role_permissions.any?
-      missing_role_permissions.each do |message|
-        warn message
-      end
-      fail "Failed to create all role permissions"
+
+    missing = default_role_permissions.reject do |attrs|
+      UserRolePermission.exists?(user_role_id: attrs[:user_role].id, permission_id: attrs[:permission].id)
     end
+    return if missing.empty?
+
+    missing.each { |attrs| warn "UserRole<#{attrs[:user_role].name}> Permission<#{attrs[:permission].name}>" }
+    fail "Failed to create all role permissions"
   end
 
   private
 
+  # @return [Hash{String => Hash}] the roles of the operator's industry: name => { default:, permissions: }
+  def role_presets
+    @role_presets ||= operator.industry_template.presets.fetch("roles", {})
+  end
+
+  # The permission names of a role preset: a list, or "all" for every permission
+  def permission_names(role_name)
+    preset = role_presets[role_name]
+    return [] unless preset
+
+    preset["permissions"] == "all" ? Permission.slugs.map(&:to_s) : Array(preset["permissions"]).map(&:to_s)
+  end
+
   def default_role_permissions
-    @default_role_permissions ||= operator.user_roles.filter_map do |role|
-      UserRole.config[role.name.to_sym].values.flatten.filter_map do |permission|
+    @default_role_permissions ||= operator.user_roles.reload.flat_map do |role|
+      permission_names(role.name).filter_map do |permission|
         # Acting permissions should not be assigned to roles, only users,
         # as we want to grant and revoke these on a user basis
         next nil if /^actAs/.match?(permission)
 
-        role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
+        role_permission = permissions.find { |p| p.name.to_s == permission }
         next nil unless role_permission
         {
           user_role: role,
           permission: role_permission,
         }
       end
-    end.flatten
+    end
   end
 
   def default_role_user_permissions
-    @default_role_user_permissions ||= operator.user_roles.includes(:memberships).filter_map do |role|
-      role.memberships.filter_map do |membership|
-        UserRole.config[role.name.to_sym].values.flatten.sort.reverse.filter_map do |permission|
+    @default_role_user_permissions ||= operator.user_roles.includes(:memberships).flat_map do |role|
+      role.memberships.flat_map do |membership|
+        permission_names(role.name).sort.reverse.filter_map do |permission|
           # Acting permissions should not be assigned to roles, only users,
           # as we want to grant and revoke these on a user basis
           next nil unless /^actAs/.match?(permission)
 
-          role_permission = permissions.find { |p| p.name.to_s == permission.to_s }
+          role_permission = permissions.find { |p| p.name.to_s == permission }
           next nil unless role_permission
           {
             membership: membership,
@@ -117,14 +127,6 @@ class Setup::Operators::Access::CreateDefaults < ApplicationInteraction
           }
         end
       end
-    end.flatten || []
-    @default_role_user_permissions ||= []
-  end
-
-  # Find all permission slugs defined in the yml
-  #
-  # @return [Array<String>]
-  def yaml_permission_slugs
-    @yaml_permission_slugs ||= (Permission.default_acting + Permission.default_crud).map(&:to_s)
+    end
   end
 end

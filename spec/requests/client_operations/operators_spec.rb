@@ -67,12 +67,6 @@ RSpec.describe "Client operations: operators and access" do
       expect(client_operation("Operator", variables: { operatorId: operator.id }, as: user).dig(:data, :operator, :timeZone)).to eq("Australia/Sydney")
     end
 
-    it "falls back to Brisbane for an operator without a time zone" do
-      operator.update_columns(time_zone: nil)
-
-      expect(client_operation("Operator", variables: { operatorId: operator.id }, as: user).dig(:data, :operator, :timeZone)).to eq("Australia/Brisbane")
-    end
-
     it "does not create a membership when a stranger reads an operator" do
       stranger = create(:user)
 
@@ -153,7 +147,7 @@ RSpec.describe "Client operations: operators and access" do
   end
 
   describe "CreateOperator" do
-    let(:variables) { { name: "New Operator", federation: Federation.first.id, primaryColor: "#112233" } }
+    let(:variables) { { industry: "SKYDIVING", name: "New Operator", federation: Federation.first.id, timeZone: "Australia/Brisbane", primaryColor: "#112233" } }
 
     it "creates a private operator owned by the caller" do
       json = nil

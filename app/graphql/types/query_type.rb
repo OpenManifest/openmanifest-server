@@ -13,6 +13,12 @@ module Types
     field :memberships,  resolver: Resolvers::Users::Memberships
     field :daily_log, resolver: Resolvers::Operator::DailyLog
 
+    field :industries, [Types::IndustryTemplateType], null: false,
+                                                      description: "The industry templates an operator can be created from"
+    def industries
+      ::Industry.selectable
+    end
+
     field :operators,       resolver: Resolvers::Operators
     field :operator,        resolver: Resolvers::Operator
     field :loads,           resolver: Resolvers::Operator::Loads
