@@ -3,7 +3,7 @@
 module Mutations::Setup::Tickets
   class CreateExtra < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :extra, Types::Dropzone::Tickets::Addon, null: true
+    field :extra, Types::Operator::Tickets::Addon, null: true
     field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::ExtraInput, required: true
@@ -11,8 +11,8 @@ module Mutations::Setup::Tickets
 
     def resolve(attributes:, id: nil)
       model = find_or_build_model(id)
-      # An existing add-on never moves to another dropzone
-      model.attributes = id ? attributes.to_h.except(:dropzone_id) : attributes.to_h
+      # An existing add-on never moves to another operator
+      model.attributes = id ? attributes.to_h.except(:operator_id) : attributes.to_h
 
       model.save!
 
@@ -22,9 +22,9 @@ module Mutations::Setup::Tickets
         resource: model,
         access_level: :admin,
         action: :created,
-        dropzone_id: attributes[:dropzone_id],
-        created_by: DropzoneUser.find_by(
-          dropzone_id: attributes[:dropzone_id],
+        operator_id: attributes[:operator_id],
+        created_by: Membership.find_by(
+          operator_id: attributes[:operator_id],
           user_id: context[:current_resource].id
         )
       )
@@ -65,13 +65,13 @@ module Mutations::Setup::Tickets
     end
 
     def authorized?(attributes: nil, id: nil)
-      # With an id this edits an existing add-on: its own dropzone decides (BUG-009), not the one the client says
+      # With an id this edits an existing add-on: its own operator decides (BUG-009), not the one the client says
       existing = id && Extra.find_by(id: id)
       return [false, { errors: ["Ticket add-on not found"] }] if id && !existing
 
       if context[:current_resource].can?(
         existing ? "updateExtra" : "createExtra",
-        dropzone_id: existing ? existing.dropzone_id : attributes[:dropzone_id]
+        operator_id: existing ? existing.operator_id : attributes[:operator_id]
       )
         true
       else

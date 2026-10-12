@@ -4,7 +4,7 @@ module Mutations::Setup::Tickets
   class UpdateTicketType < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :ticket_type, Types::Dropzone::Ticket, null: true
+    field :ticket_type, Types::Operator::Ticket, null: true
 
     argument :attributes, Types::Input::TicketTypeInput, required: true
     argument :id, Int, required: true
@@ -12,9 +12,9 @@ module Mutations::Setup::Tickets
     def resolve(attributes:, id:)
       model = TicketType.find(id)
 
-      # A ticket type never moves to another dropzone, and only this dropzone's add-ons can be linked to it
-      attrs = attributes.to_h.except(:dropzone_id, :extra_ids)
-      attrs[:extra_ids] = model.dropzone.extras.where(id: attributes[:extra_ids]).pluck(:id) unless attributes[:extra_ids].nil?
+      # A ticket type never moves to another operator, and only this operator's add-ons can be linked to it
+      attrs = attributes.to_h.except(:operator_id, :extra_ids)
+      attrs[:extra_ids] = model.operator.extras.where(id: attributes[:extra_ids]).pluck(:id) unless attributes[:extra_ids].nil?
       model.update!(attrs)
 
       {
@@ -47,7 +47,7 @@ module Mutations::Setup::Tickets
     def authorized?(id: nil, attributes: nil)
       if context[:current_resource].can?(
         "updateTicketType",
-        dropzone_id: TicketType.find(id).dropzone_id
+        operator_id: TicketType.find(id).operator_id
       )
         true
       else
