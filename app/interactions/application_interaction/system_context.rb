@@ -5,8 +5,8 @@
 class ApplicationInteraction::SystemContext < ApplicationInteraction::AccessContext
   SYSTEM_USER = Struct.new(:id, :name).new(nil, "System").freeze
 
-  def initialize(dropzone = nil)
-    super(nil, dropzone: dropzone)
+  def initialize(operator = nil)
+    super(nil, operator: operator)
   end
 
   def user

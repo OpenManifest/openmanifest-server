@@ -2,23 +2,23 @@
 
 module Mutations::Setup::Demo
   class Generate < Mutations::BaseMutation
-    field :dropzone, Types::DropzoneType, null: true
+    field :operator, Types::OperatorType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::DemoDataInput, required: true
-    argument :dropzone, ID, required: true,
-                            prepare: -> (id, ctx) { ::Dropzone.find_by(id: id) }
+    argument :operator, ID, required: true,
+                            prepare: -> (id, ctx) { ::Operator.find_by(id: id) }
 
-    def resolve(attributes:, dropzone:)
+    def resolve(attributes:, operator:)
       mutate(
         ::Demo::DataGenerator,
-        :dropzone,
-        dropzone: attributes[:dropzone],
-        access_context: access_context_for(attributes[:dropzone]),
+        :operator,
+        operator: attributes[:operator],
+        access_context: access_context_for(attributes[:operator]),
         **attributes.to_h.slice(
           :gca_count,
-          :dzso_count,
+          :duty_officer_count,
           :jumper_count,
           :pilot_count,
           :tandem_instructor_count,
