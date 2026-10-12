@@ -1,7 +1,9 @@
 fragment ticketTypeEssentials on TicketType {
   id
   name
-  altitude
+  defaultDestination {
+    ...destinationEssentials
+  }
   costCents
   isTandem
   allowManifestingSelf

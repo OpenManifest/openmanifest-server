@@ -9,7 +9,7 @@ module Types
       argument :exit_spot_miles, Float, required: false
       argument :offset_miles, Float, required: false
       argument :offset_direction, String, required: false
-      argument :dropzone_id, Int, required: true
+      argument :operator_id, Int, required: true
     end
   end
 end

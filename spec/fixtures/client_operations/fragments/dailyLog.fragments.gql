@@ -1,0 +1,57 @@
+fragment dailyLogSlot on DailyLogSlot {
+  id
+  altitude
+  activityType
+  name
+}
+
+fragment dailyLogUser on DailyLogUser {
+  id
+  email
+  name
+  nickname
+  phone
+}
+
+fragment dailyLogVehicle on DailyLogVehicle {
+  id
+  name
+  registration
+}
+
+fragment dailyLogLoad on DailyLogLoad {
+  id
+  loadNumber
+  dispatchAt
+  vehicle {
+    ...dailyLogVehicle
+  }
+  gca {
+    ...dailyLogUser
+  }
+  pilot {
+    ...dailyLogUser
+  }
+  loadMaster {
+    ...dailyLogUser
+  }
+  slots {
+    ...dailyLogSlot
+  }
+}
+
+fragment dailyLogEntry on DailyLogEntry {
+  id
+  date
+  notes
+  downloadUrl
+  dutyOfficer {
+    ...dailyLogUser
+  }
+  loads {
+    ...dailyLogLoad
+  }
+  location {
+    ...location
+  }
+}

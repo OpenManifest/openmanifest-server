@@ -2,17 +2,20 @@ fragment slotEssentials on Slot {
   id
   lockVersion
   createdAt
-  exitWeight
-  passengerName
-  passengerExitWeight
+  bodyMassKg
+  guestName
+  guestBodyMassKg
   wingLoading
   groupNumber
   costCents
   ticketType {
     ...ticketTypeDetails
   }
-  jumpType {
-    ...jumpTypeEssentials
+  destination {
+    ...destinationEssentials
+  }
+  activityType {
+    ...activityTypeEssentials
   }
   extras {
     id
@@ -25,8 +28,8 @@ fragment slotDetails on Slot {
   rig {
     ...rigEssentials
   }
-  dropzoneUser {
-    ...dropzoneUserEssentials
+  membership {
+    ...membershipEssentials
   }
 }
 
@@ -39,8 +42,8 @@ fragment userSlotDetails on Slot {
 
 fragment slotExhaustive on Slot {
   ...slotDetails
-  dropzoneUser {
-    ...dropzoneUserDetails
+  membership {
+    ...membershipDetails
   }
   load {
     ...loadDetails

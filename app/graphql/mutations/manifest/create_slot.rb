@@ -13,18 +13,19 @@ module Mutations::Manifest
         Manifest::CreateSlot,
         :slot,
         access_context: access_context_for(
-          attributes[:dropzone_user].dropzone
+          attributes[:membership].operator
         ),
         **attributes.to_h.slice(
           :ticket_type,
-          :dropzone_user,
-          :jump_type,
-          :exit_weight,
+          :membership,
+          :activity_type,
+          :destination,
+          :body_mass_kg,
           :rig,
           :load,
           :group_number,
-          :passenger_name,
-          :passenger_exit_weight,
+          :guest_name,
+          :guest_body_mass_kg,
         ),
         extra_ids: attributes[:extras]&.pluck(:id)
       )

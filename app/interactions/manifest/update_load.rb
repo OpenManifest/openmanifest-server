@@ -10,11 +10,15 @@ class Manifest::UpdateLoad < ApplicationInteraction
   date_time :dispatch_at, default: nil
   string :name, default: nil
   integer :max_slots, default: nil
-  object :gca, class: DropzoneUser, default: nil
-  object :load_master, class: DropzoneUser, default: nil
-  object :pilot, class: DropzoneUser, default: nil
-  object :plane, class: Plane, default: nil
+  object :gca, class: Membership, default: nil
+  object :load_master, class: Membership, default: nil
+  object :pilot, class: Membership, default: nil
+  object :vehicle, class: Vehicle, default: nil
   string :state, default: nil
+  # The places the load visits, in order; given, they replace the load's (operators with per-load destinations)
+  array :destination_ids, default: nil do
+    integer
+  end
   # The version of the load the client based its change on (optimistic locking, BUG-024)
   integer :lock_version, default: nil
 
@@ -23,12 +27,12 @@ class Manifest::UpdateLoad < ApplicationInteraction
   # The state the client asks for, and the event of the load's state machine that gets it there
   STATE_EVENTS = {
     "open" => :reopen,
-    "boarding_call" => :dispatch,
-    "in_flight" => :take_off,
+    "boarding" => :call,
+    "departed" => :depart,
   }.freeze
 
   steps :check_max_slots,
-        :check_plane_change,
+        :check_vehicle_change,
         :update_load,
         :save,
         :change_state,
@@ -43,7 +47,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
       )
@@ -54,22 +58,22 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} cancelled call for load ##{load.load_number}"
       )
     end
 
-    if plane
+    if vehicle
       compose(
         ::Activity::CreateEvent,
         access_context: access_context,
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the plane for load ##{load.load_number} to #{plane.name} (#{plane.registration})"
+        message: "#{access_context.user.name} changed the vehicle for load ##{load.load_number} to #{vehicle.name} (#{vehicle.registration})"
       )
     end
 
@@ -80,7 +84,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} changed the GCA for load ##{load.load_number} to #{gca.user.name}"
       )
@@ -93,7 +97,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         resource: load,
         access_level: :user,
         action: :updated,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         created_by: access_context.subject,
         message: "#{access_context.user.name} changed the load master for load ##{load.load_number} to #{load_master.user.name}"
       )
@@ -105,12 +109,12 @@ class Manifest::UpdateLoad < ApplicationInteraction
     errors.add(:base, "You have too many manifested jumpers") if max_slots < load.slots.count
   end
 
-  def check_plane_change
-    return unless plane
-    if plane.max_slots >= load.slots.count
-      load.assign_attributes(max_slots: plane.max_slots)
+  def check_vehicle_change
+    return unless vehicle
+    if vehicle.capacity >= load.slots.count
+      load.assign_attributes(max_slots: vehicle.capacity)
     else
-      errors.add(:base, "This plane cannot fit all manifested jumpers")
+      errors.add(:base, "This vehicle cannot fit all manifested jumpers")
     end
   end
 
@@ -118,14 +122,15 @@ class Manifest::UpdateLoad < ApplicationInteraction
     # An older version than the stored one makes the save raise StaleObjectError, the mutation answers CONFLICT
     load.lock_version = lock_version if lock_version
     load.assign_attributes(dispatch_at: dispatch_at) if inputs.given?(:dispatch_at)
+    load.destination_ids = destination_ids unless destination_ids.nil?
     load.assign_attributes(
       {
         gca: gca,
-        plane: plane,
+        vehicle: vehicle,
         load_master: load_master,
         pilot: pilot,
         name: name,
-        max_slots: max_slots || load.max_slots || load.plane.max_slots,
+        max_slots: max_slots || load.max_slots || load.vehicle.capacity,
       }.compact
     )
   end
@@ -142,7 +147,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
     return if target.blank? || target == load.state
 
     case target
-    when "landed"
+    when "completed"
       compose(::Manifest::FinalizeLoad, load: load, access_context: access_context)
     when "cancelled"
       compose(::Manifest::CancelLoad, load: load, access_context: access_context)
@@ -150,7 +155,9 @@ class Manifest::UpdateLoad < ApplicationInteraction
       event = STATE_EVENTS.fetch(target)
       return if load.public_send(event)
 
-      errors.add(:base, "Load ##{load.load_number} can't go from #{load.state.humanize.downcase} to #{target.humanize.downcase}")
+      # The state machine saves the load, so a rule of the load (destinations) says why it refused
+      reason = load.errors.full_messages_for(:destinations).to_sentence.presence
+      errors.add(:base, reason || "Load ##{load.load_number} can't go from #{load.state.humanize.downcase} to #{target.humanize.downcase}")
     end
   end
 
@@ -158,6 +165,6 @@ class Manifest::UpdateLoad < ApplicationInteraction
     return state if state.present?
     return unless inputs.given?(:dispatch_at)
 
-    dispatch_at.present? ? "boarding_call" : "open"
+    dispatch_at.present? ? "boarding" : "open"
   end
 end
