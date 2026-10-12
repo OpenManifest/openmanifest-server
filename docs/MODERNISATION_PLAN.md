@@ -241,7 +241,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | App shell | U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
+| 1 | App shell | U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
 | 2 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
 | 3 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
 | 4 | Manifest UI | U3.1, U3.2, U3.3, U3.4, U3.5, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
@@ -4026,7 +4026,7 @@ Size: M
 Fixes: BUG-100
 
 ### U1.2 — Build the responsive shell: tabs, rail and sidebar
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.1
 Branch: modernise/u1-2-shell
