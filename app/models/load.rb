@@ -91,7 +91,7 @@ class Load < ApplicationRecord
     entries.each_with_index do |entry, position|
       vehicle = entry.fetch(:vehicle)
       role = (entry[:role] || "carrying").to_s
-      row = load_vehicles.find { |load_vehicle| load_vehicle.vehicle_id == vehicle.id && !kept.include?(load_vehicle) } ||
+      row = load_vehicles.find { |load_vehicle| load_vehicle.vehicle_id == vehicle.id && kept.exclude?(load_vehicle) } ||
             load_vehicles.build(vehicle: vehicle)
       row.assign_attributes(role: role, position: position)
       kept << row

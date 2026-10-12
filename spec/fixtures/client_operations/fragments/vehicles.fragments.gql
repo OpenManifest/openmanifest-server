@@ -4,4 +4,5 @@ fragment vehicleEssentials on Vehicle {
   capacity
   name
   registration
+  kind
 }

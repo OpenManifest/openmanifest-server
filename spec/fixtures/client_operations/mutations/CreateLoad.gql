@@ -5,6 +5,7 @@ mutation CreateLoad(
   $maxSlots: Int
   $vehicle: ID
   $vehicles: [LoadVehicleInput!]
+  $crew: [LoadCrewInput!]
   $state: LoadState
   $destinationIds: [Int!]
 ) {
@@ -17,6 +18,7 @@ mutation CreateLoad(
         maxSlots: $maxSlots
         vehicle: $vehicle
         vehicles: $vehicles
+        crew: $crew
         state: $state
         destinationIds: $destinationIds
       }

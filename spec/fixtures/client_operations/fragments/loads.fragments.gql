@@ -36,6 +36,9 @@ fragment loadDetails on Load {
   vehicles {
     ...loadVehicleEssentials
   }
+  crew {
+    ...loadCrewEssentials
+  }
   gca {
     ...membershipEssentials
   }
