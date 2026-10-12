@@ -9,17 +9,17 @@ class Demo::Generators::Tickets < ApplicationInteraction
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: access_context.dropzone,
+      resource: access_context.operator,
       action: :created,
       access_level: :system,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "[System] Created demo tickets: Height, Hop n Pop and Tandem"
     )
   end
 
   def create_height_ticket
-    access_context.dropzone.ticket_types.find_or_create_by(
+    access_context.operator.ticket_types.find_or_create_by(
       name: "Height",
       currency: "AUD",
       cost: 38,
@@ -30,7 +30,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
   end
 
   def create_hop_n_pop_ticket
-    access_context.dropzone.ticket_types.find_or_create_by(
+    access_context.operator.ticket_types.find_or_create_by(
       name: "Hop n Pop",
       currency: "AUD",
       cost: 25,
@@ -41,7 +41,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
   end
 
   def create_tandem_ticket
-    access_context.dropzone.ticket_types.find_or_create_by(
+    access_context.operator.ticket_types.find_or_create_by(
       name: "Tandem",
       currency: "AUD",
       cost: 299,

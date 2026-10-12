@@ -2,22 +2,22 @@
 
 module Mutations::Access
   class UpdateVisibility < Mutations::BaseMutation
-    field :dropzone, Types::DropzoneType, null: true
+    field :operator, Types::OperatorType, null: true
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
 
-    argument :dropzone, GraphQL::Types::ID, required: true,
-                                            prepare: -> (id, ctx) { Dropzone.find_by(id: id) }
-    argument :event, Types::Dropzone::StateEvent, required: true
+    argument :operator, GraphQL::Types::ID, required: true,
+                                            prepare: -> (id, ctx) { Operator.find_by(id: id) }
+    argument :event, Types::Operator::StateEvent, required: true
 
-    def resolve(dropzone:, event:)
+    def resolve(operator:, event:)
       mutate(
-        Setup::Dropzones::UpdateVisibility,
-        :dropzone,
+        Setup::Operators::UpdateVisibility,
+        :operator,
         access_context: access_context_for(
-          dropzone
+          operator
         ),
-        dropzone: dropzone,
+        operator: operator,
         event: event,
       )
     end
