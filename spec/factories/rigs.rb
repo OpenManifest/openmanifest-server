@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :rig do
-    dropzone { nil }
+    operator { nil }
     make { ["Vector", "Mirage", "Javelin"].sample }
     model { { vector: ["v310", "v314"], javelin: ["jfk1", "jrk14"], mirage: ["g4.1", "g4.2"] }[make.downcase.to_sym].sample }
     serial { Faker::Number.between(from: 10000, to: 99999) }

@@ -4,8 +4,8 @@ require "rails_helper"
 
 RSpec.describe Federations::AssignUser do
   let!(:user) { create(:user) }
-  let!(:dropzone) { create(:dropzone) }
-  let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, user: user) }
+  let!(:operator) { create(:operator) }
+  let!(:membership) { create(:membership, operator: operator, user: user) }
   let!(:apf_response) do
     [
       {
@@ -26,7 +26,7 @@ RSpec.describe Federations::AssignUser do
         federation: Federation.find_by(slug: :apf),
         uid: "21922484",
         access_context: ApplicationInteraction::AccessContext.new(
-          dropzone_user
+          membership
         )
       )
     end
@@ -34,9 +34,9 @@ RSpec.describe Federations::AssignUser do
     it { expect(user.reload.licenses.includes(:federation).find_by(federation: { slug: :apf }).name).to eq "Certificate E" }
     it { expect(user.reload.qualifications.reload.find_by(name: "Freefly Crest HU")).not_to be nil }
     it { expect(user.reload.qualifications.find_by(name: "Display General")).not_to be nil }
-    it { expect(dropzone_user.reload.license.id).not_to be nil }
+    it { expect(membership.reload.license.id).not_to be nil }
     it {
-      expect(dropzone_user.reload.license.id).to eq user.reload.licenses.includes(:federation).find_by(federation: { slug: :apf }).id
+      expect(membership.reload.license.id).to eq user.reload.licenses.includes(:federation).find_by(federation: { slug: :apf }).id
     }
   end
 end
