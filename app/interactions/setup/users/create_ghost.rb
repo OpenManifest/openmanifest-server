@@ -3,8 +3,8 @@
 class Setup::Users::CreateGhost < ApplicationInteraction
   string :name
   string :email
-  decimal :exit_weight
-  record :dropzone
+  decimal :body_mass_kg
+  record :operator
   record :role, class: ::UserRole
 
   string :phone, default: nil
@@ -14,7 +14,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
   allow :createUser
   steps :check_user_exists,
         :initialize_user,
-        :create_dropzone_user,
+        :create_membership,
         :invite,
         :assign_federation,
         :record
@@ -26,7 +26,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
       resource: @user,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Created a new user: '#{@user.name}' (#{@user.email})"
     )
@@ -40,7 +40,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
       resource: @user&.persisted? ? @user : nil,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Failed creating user: '#{name}' (#{email}) - #{errors.full_messages.join(', ')}"
     )
@@ -59,7 +59,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     @user.assign_attributes(
       name: name,
       phone: phone,
-      exit_weight: exit_weight,
+      body_mass_kg: body_mass_kg,
       email: email,
       password: SecureRandom.urlsafe_base64(9)
     )
@@ -67,9 +67,9 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     errors.merge!(@user.errors) unless @user.save
   end
 
-  def create_dropzone_user
-    return unless dropzone
-    dropzone.dropzone_users.create(
+  def create_membership
+    return unless operator
+    operator.memberships.create(
       user_role: role,
       user: @user
     )
