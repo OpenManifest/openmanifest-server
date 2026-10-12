@@ -10,7 +10,7 @@ module Types
       argument :pack_value, Int, required: false
       argument :repack_expires_at, Int, required: false
       argument :maintained_at, Int, required: false
-      argument :dropzone_id, Int, required: false
+      argument :operator_id, Int, required: false
       argument :packing_card, String, required: false
       argument :user_id, Int, required: false
       argument :rig_type, String, required: false,

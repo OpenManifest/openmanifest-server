@@ -12,8 +12,8 @@ module Mutations::Setup::RigInspections
     def resolve(attributes:, id: nil)
       model = FormTemplate.find(id)
 
-      # A template never moves to another dropzone
-      model.update!(attributes.to_h.except(:dropzone_id))
+      # A template never moves to another operator
+      model.update!(attributes.to_h.except(:operator_id))
       {
         form_template: model,
         errors: nil,
@@ -42,10 +42,10 @@ module Mutations::Setup::RigInspections
     end
 
     def authorized?(id: nil, attributes: nil)
-      # The record's own dropzone, not the one the client says (BUG-009)
+      # The record's own operator, not the one the client says (BUG-009)
       if context[:current_resource].can?(
         "updateFormTemplate",
-        dropzone_id: FormTemplate.find(id).dropzone_id
+        operator_id: FormTemplate.find(id).operator_id
       )
         true
       else

@@ -2,7 +2,7 @@
 
 module Mutations::Users
   class SignUp < GraphqlDevise::Mutations::Register
-    argument :exit_weight, Float, required: true
+    argument :body_mass_kg, Float, required: true
     argument :license_id, Int, required: false
     argument :name, String, required: true
     argument :phone, String, required: true
