@@ -1,23 +1,23 @@
 class Subscriptions::Users::UserUpdated < Types::Base::Subscription
-  argument :dropzone_user_id, ID, required: true
-  field :dropzone_user, Types::Users::DropzoneUser, null: true
+  argument :membership_id, ID, required: true
+  field :membership, Types::Users::Membership, null: true
 
-  # A member follows their own membership; anybody else's needs readUser at that dropzone (BUG-011)
-  def authorized?(dropzone_user_id:, **)
+  # A member follows their own membership; anybody else's needs readUser at that operator (BUG-011)
+  def authorized?(membership_id:, **)
     super
-    dropzone_user = ::DropzoneUser.find_by(id: dropzone_user_id)
-    authorize_record!(dropzone_user, dropzone_user&.user_id == current_user.id ? nil : :readUser)
+    membership = ::Membership.find_by(id: membership_id)
+    authorize_record!(membership, membership&.user_id == current_user.id ? nil : :readUser)
     true
   end
 
   # It's passed to other methods as `load`
-  def subscribe(dropzone_user_id:)
-    query = ::DropzoneUser.all
-    { dropzone_user: query.find_by(id: dropzone_user_id) }
+  def subscribe(membership_id:)
+    query = ::Membership.all
+    { membership: query.find_by(id: membership_id) }
   end
 
-  def update(dropzone_user_id:)
-    query = ::DropzoneUser.all
-    { dropzone_user: query.find_by(id: dropzone_user_id) }
+  def update(membership_id:)
+    query = ::Membership.all
+    { membership: query.find_by(id: membership_id) }
   end
 end
