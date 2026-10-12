@@ -6,7 +6,7 @@ fragment loadEssentials on Load {
   name
   createdAt
   dispatchAt
-  hasLanded
+  hasCompleted
   loadNumber
   isFull
   state
@@ -19,17 +19,17 @@ fragment loadEssentials on Load {
 
 fragment loadDetails on Load {
   ...loadEssentials
-  plane {
-    ...planeEssentials
+  vehicle {
+    ...vehicleEssentials
   }
   gca {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   pilot {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   loadMaster {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   slots {
     ...slotDetails
