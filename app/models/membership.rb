@@ -206,7 +206,8 @@ class Membership < ApplicationRecord
   # Sets the level to the highest the user holds at the bodies the operator accepts
   def refresh_certification_level
     level = user.highest_certification_level(operator.certification_body_ids)
-    update_columns(certification_level_id: level&.id, updated_at: Time.current) unless level&.id == certification_level_id
+    # A membership defaults its level in memory when it is loaded (set_defaults), so compare with what is stored
+    update_columns(certification_level_id: level&.id, updated_at: Time.current) unless level&.id == certification_level_id_in_database
   end
 
   private

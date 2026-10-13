@@ -44,7 +44,7 @@ module Mutations
 
         it do
           post_request
-          expect(json[:data][:createGhost][:user][:memberships].first[:certification_level]).not_to be nil
+          expect(json[:data][:createGhost][:user][:memberships].first[:certificationLevel]).not_to be nil
         end
       end
     end
@@ -61,7 +61,7 @@ module Mutations
                 bodyMassKg: #{body_mass_kg},
                 operator: #{operator_id},
                 role: #{role_id},
-                certification_level: #{certification_level_id},
+                certificationLevel: #{certification_level_id},
                 certificationBodyNumber: "#{certification_body_number}"
               }
             }
@@ -77,7 +77,7 @@ module Mutations
               phone
               memberships {
                 id
-                certification_level {
+                certificationLevel {
                   id
                   name
                 }

@@ -50,7 +50,7 @@ module Mutations
           expect(membership.reload.certification_level.id).to eq certification_level.reload.id
           expect(json[:data][:updateUser][:membership][:user][:memberships].find do |d|
                    d[:id].to_i == membership.id
-                 end[:certification_level][:id].to_i).to eq certification_level.reload.id
+                 end[:certificationLevel][:id].to_i).to eq certification_level.reload.id
         end
       end
     end
@@ -66,7 +66,7 @@ module Mutations
                 email: "#{email}",
                 phone: "#{phone}",
                 bodyMassKg: #{body_mass_kg},
-                certification_level: #{certification_level_id},
+                certificationLevel: #{certification_level_id},
               }
             }
           ) {
@@ -83,7 +83,7 @@ module Mutations
                 phone
                 memberships {
                   id
-                  certification_level {
+                  certificationLevel {
                     id
                     name
                   }
