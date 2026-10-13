@@ -11,7 +11,7 @@ module Mutations
         execute_query(id: operator.id.to_s)
       end
 
-      it { is_expected.to include_json(operator: { settings: { requireRigInspection: true, requireLicense: true, requireCredits: true, allowManifestBypass: false, allowNegativeCredits: false } }) }
+      it { is_expected.to include_json(operator: { settings: { requireRigInspection: true, requireCertification: true, requireCredits: true, allowManifestBypass: false, allowNegativeCredits: false } }) }
     end
 
     create_query(:id) do
@@ -21,7 +21,7 @@ module Mutations
             id
             settings {
               requireRigInspection
-              requireLicense
+              requireCertification
               requireCredits
               requireMembership
               allowNegativeCredits

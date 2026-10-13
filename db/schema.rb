@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -83,6 +83,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_authentication_providers_on_user_id"
+  end
+
+  create_table "certification_bodies", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "industry"
+    t.string "verification_provider"
+    t.index ["slug"], name: "index_certification_bodies_on_slug", unique: true
+  end
+
+  create_table "certification_levels", force: :cascade do |t|
+    t.string "name"
+    t.bigint "certification_body_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "rank", default: 0, null: false
+    t.string "equivalence_key"
+    t.index ["certification_body_id"], name: "index_certification_levels_on_certification_body_id"
+    t.index ["name", "certification_body_id"], name: "index_certification_levels_on_name_and_certification_body_id", unique: true
   end
 
   create_table "crew_roles", force: :cascade do |t|
@@ -158,16 +179,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.datetime "updated_at", null: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
+    t.bigint "required_qualification_id"
     t.index ["discarded_at"], name: "index_extras_on_discarded_at"
     t.index ["operator_id"], name: "index_extras_on_operator_id"
-  end
-
-  create_table "federations", force: :cascade do |t|
-    t.string "name"
-    t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["slug"], name: "index_federations_on_slug", unique: true
+    t.index ["required_qualification_id"], name: "index_extras_on_required_qualification_id"
   end
 
   create_table "form_templates", force: :cascade do |t|
@@ -190,25 +205,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["operator_id"], name: "index_guests_on_operator_id"
-  end
-
-  create_table "licensed_activity_types", force: :cascade do |t|
-    t.bigint "license_id", null: false
-    t.bigint "activity_type_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["activity_type_id"], name: "index_licensed_activity_types_on_activity_type_id"
-    t.index ["license_id", "activity_type_id"], name: "idx_on_license_id_activity_type_id_6de0e24a40", unique: true
-    t.index ["license_id"], name: "index_licensed_activity_types_on_license_id"
-  end
-
-  create_table "licenses", force: :cascade do |t|
-    t.string "name"
-    t.bigint "federation_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_licenses_on_federation_id"
-    t.index ["name", "federation_id"], name: "index_licenses_on_name_and_federation_id", unique: true
   end
 
   create_table "load_crew_assignments", force: :cascade do |t|
@@ -283,10 +279,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.bigint "user_role_id", null: false
     t.integer "load_count", default: 0, null: false
     t.datetime "discarded_at", precision: nil
-    t.bigint "license_id"
+    t.bigint "certification_level_id"
     t.bigint "credits_cents"
+    t.index ["certification_level_id"], name: "index_memberships_on_certification_level_id"
     t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
-    t.index ["license_id"], name: "index_memberships_on_license_id"
     t.index ["operator_id"], name: "index_memberships_on_operator_id"
     t.index ["user_id", "operator_id"], name: "index_memberships_on_user_id_and_operator_id", unique: true
     t.index ["user_id"], name: "index_memberships_on_user_id"
@@ -319,9 +315,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.index ["operator_id"], name: "index_operator_activity_types_on_operator_id"
   end
 
+  create_table "operator_certification_bodies", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "certification_body_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["certification_body_id"], name: "index_operator_certification_bodies_on_certification_body_id"
+    t.index ["operator_id", "certification_body_id"], name: "index_operator_certification_bodies_uniqueness", unique: true
+    t.index ["operator_id"], name: "index_operator_certification_bodies_on_operator_id"
+  end
+
   create_table "operators", force: :cascade do |t|
     t.string "name"
-    t.bigint "federation_id"
     t.float "lat"
     t.float "lng"
     t.datetime "created_at", null: false
@@ -345,7 +350,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.jsonb "modules", default: {}, null: false
     t.string "currency", default: "AUD", null: false
     t.index ["discarded_at"], name: "index_operators_on_discarded_at"
-    t.index ["federation_id"], name: "index_operators_on_federation_id"
     t.index ["rig_inspection_template_id"], name: "index_operators_on_rig_inspection_template_id"
     t.index ["state"], name: "index_operators_on_state"
   end
@@ -388,13 +392,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.index ["name"], name: "index_permissions_on_name", unique: true
   end
 
+  create_table "permitted_activities", force: :cascade do |t|
+    t.bigint "certification_level_id", null: false
+    t.bigint "activity_type_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["activity_type_id"], name: "index_permitted_activities_on_activity_type_id"
+    t.index ["certification_level_id", "activity_type_id"], name: "idx_on_certification_level_id_activity_type_id_2973f01282", unique: true
+    t.index ["certification_level_id"], name: "index_permitted_activities_on_certification_level_id"
+  end
+
   create_table "qualifications", force: :cascade do |t|
     t.string "name"
     t.string "slug"
-    t.bigint "federation_id", null: false
+    t.bigint "certification_body_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_qualifications_on_federation_id"
+    t.index ["certification_body_id"], name: "index_qualifications_on_certification_body_id"
   end
 
   create_table "receipts", force: :cascade do |t|
@@ -674,9 +688,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
     t.bigint "default_destination_id"
+    t.integer "min_certification_rank"
+    t.bigint "required_qualification_id"
     t.index ["default_destination_id"], name: "index_ticket_types_on_default_destination_id"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
     t.index ["operator_id"], name: "index_ticket_types_on_operator_id"
+    t.index ["required_qualification_id"], name: "index_ticket_types_on_required_qualification_id"
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -698,28 +715,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.index ["transaction_type"], name: "index_transactions_on_transaction_type"
   end
 
-  create_table "user_federation_qualifications", force: :cascade do |t|
-    t.bigint "user_federation_id", null: false
-    t.bigint "qualification_id", null: false
-    t.datetime "expires_at", precision: nil
-    t.string "uid"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["qualification_id"], name: "index_user_federation_qualifications_on_qualification_id"
-    t.index ["user_federation_id"], name: "index_user_federation_qualifications_on_user_federation_id"
-  end
-
-  create_table "user_federations", force: :cascade do |t|
+  create_table "user_certifications", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "federation_id", null: false
-    t.bigint "license_id"
+    t.bigint "certification_body_id", null: false
+    t.bigint "certification_level_id"
     t.string "uid"
-    t.string "license_number"
+    t.string "number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_user_federations_on_federation_id"
-    t.index ["license_id"], name: "index_user_federations_on_license_id"
-    t.index ["user_id"], name: "index_user_federations_on_user_id"
+    t.datetime "verified_at"
+    t.bigint "verified_by_id"
+    t.index ["certification_body_id"], name: "index_user_certifications_on_certification_body_id"
+    t.index ["certification_level_id"], name: "index_user_certifications_on_certification_level_id"
+    t.index ["user_id"], name: "index_user_certifications_on_user_id"
+    t.index ["verified_by_id"], name: "index_user_certifications_on_verified_by_id"
   end
 
   create_table "user_permissions", force: :cascade do |t|
@@ -730,6 +739,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.index ["membership_id", "permission_id"], name: "index_user_permissions_on_membership_id_and_permission_id", unique: true
     t.index ["membership_id"], name: "index_user_permissions_on_membership_id"
     t.index ["permission_id"], name: "index_user_permissions_on_permission_id"
+  end
+
+  create_table "user_qualifications", force: :cascade do |t|
+    t.bigint "user_certification_id", null: false
+    t.bigint "qualification_id", null: false
+    t.datetime "expires_at", precision: nil
+    t.string "number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
+    t.index ["qualification_id"], name: "index_user_qualifications_on_qualification_id"
+    t.index ["user_certification_id"], name: "index_user_qualifications_on_user_certification_id"
   end
 
   create_table "user_role_permissions", force: :cascade do |t|
@@ -775,7 +796,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.string "phone"
     t.string "email"
     t.float "body_mass_kg"
-    t.bigint "license_id"
     t.text "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -784,11 +804,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
     t.string "time_zone", default: "Australia/Brisbane"
     t.integer "load_count", default: 0, null: false
     t.integer "operator_count", default: 0, null: false
-    t.string "apf_number"
     t.integer "moderation_role", default: 0
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["license_id"], name: "index_users_on_license_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
@@ -827,6 +845,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "authentication_providers", "users"
+  add_foreign_key "certification_levels", "certification_bodies"
   add_foreign_key "crew_roles", "operators"
   add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
   add_foreign_key "daily_logs", "operators"
@@ -834,13 +853,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   add_foreign_key "events", "memberships"
   add_foreign_key "events", "operators"
   add_foreign_key "extras", "operators"
+  add_foreign_key "extras", "qualifications", column: "required_qualification_id"
   add_foreign_key "form_templates", "memberships", column: "created_by_id"
   add_foreign_key "form_templates", "memberships", column: "updated_by_id"
   add_foreign_key "form_templates", "operators"
   add_foreign_key "guests", "operators"
-  add_foreign_key "licensed_activity_types", "activity_types"
-  add_foreign_key "licensed_activity_types", "licenses"
-  add_foreign_key "licenses", "federations"
   add_foreign_key "load_crew_assignments", "crew_roles"
   add_foreign_key "load_crew_assignments", "load_vehicles"
   add_foreign_key "load_crew_assignments", "loads"
@@ -850,7 +867,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   add_foreign_key "load_vehicles", "loads"
   add_foreign_key "load_vehicles", "vehicles"
   add_foreign_key "loads", "operators"
-  add_foreign_key "memberships", "licenses"
+  add_foreign_key "memberships", "certification_levels"
   add_foreign_key "memberships", "operators"
   add_foreign_key "memberships", "user_roles"
   add_foreign_key "memberships", "users"
@@ -858,11 +875,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   add_foreign_key "notifications", "memberships", column: "sent_by_id"
   add_foreign_key "operator_activity_types", "activity_types"
   add_foreign_key "operator_activity_types", "operators"
+  add_foreign_key "operator_certification_bodies", "certification_bodies"
+  add_foreign_key "operator_certification_bodies", "operators"
   add_foreign_key "operators", "form_templates", column: "rig_inspection_template_id"
   add_foreign_key "orders", "operators"
   add_foreign_key "packs", "rigs"
   add_foreign_key "packs", "users"
-  add_foreign_key "qualifications", "federations"
+  add_foreign_key "permitted_activities", "activity_types"
+  add_foreign_key "permitted_activities", "certification_levels"
+  add_foreign_key "qualifications", "certification_bodies"
   add_foreign_key "rig_inspections", "form_templates"
   add_foreign_key "rig_inspections", "memberships"
   add_foreign_key "rig_inspections", "memberships", column: "inspected_by_id"
@@ -894,18 +915,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_130000) do
   add_foreign_key "ticket_type_extras", "ticket_types"
   add_foreign_key "ticket_types", "destinations", column: "default_destination_id"
   add_foreign_key "ticket_types", "operators"
+  add_foreign_key "ticket_types", "qualifications", column: "required_qualification_id"
   add_foreign_key "transactions", "receipts"
-  add_foreign_key "user_federation_qualifications", "qualifications"
-  add_foreign_key "user_federation_qualifications", "user_federations"
-  add_foreign_key "user_federations", "federations"
-  add_foreign_key "user_federations", "licenses"
-  add_foreign_key "user_federations", "users"
+  add_foreign_key "user_certifications", "certification_bodies"
+  add_foreign_key "user_certifications", "certification_levels"
+  add_foreign_key "user_certifications", "users"
+  add_foreign_key "user_certifications", "users", column: "verified_by_id"
   add_foreign_key "user_permissions", "memberships"
   add_foreign_key "user_permissions", "permissions"
+  add_foreign_key "user_qualifications", "qualifications"
+  add_foreign_key "user_qualifications", "user_certifications"
   add_foreign_key "user_role_permissions", "permissions"
   add_foreign_key "user_role_permissions", "user_roles"
   add_foreign_key "user_roles", "operators"
-  add_foreign_key "users", "licenses"
   add_foreign_key "vehicles", "operators"
   add_foreign_key "weather_conditions", "operators"
 end

@@ -281,31 +281,105 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
   end
 
-  describe "Federations" do
-    it "lists the federations" do
-      json = client_operation("Federations", as: user)
+  describe "CertificationBodies" do
+    it "lists the certification bodies" do
+      json = client_operation("CertificationBodies", as: user)
 
-      expect(json.dig(:data, :federations).pluck(:slug)).to include("apf")
+      expect(json.dig(:data, :certificationBodies).pluck(:slug)).to include("apf")
+      expect(json.dig(:data, :certificationBodies).find { |body| body[:slug] == "apf" }).to include(industry: "skydiving", verificationProvider: "apf")
+    end
+
+    it "lists the bodies of one industry" do
+      CertificationBody.create!(name: "PADI", slug: "padi", industry: "generic")
+
+      json = client_operation("CertificationBodies", variables: { industry: "SKYDIVING" }, as: user)
+
+      expect(json.dig(:data, :certificationBodies).pluck(:slug)).to include("apf")
+      expect(json.dig(:data, :certificationBodies).pluck(:slug)).not_to include("padi")
     end
 
     it "requires authentication" do
-      expect(client_operation("Federations").dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
+      expect(client_operation("CertificationBodies").dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
   end
 
-  describe "Licenses" do
-    it "lists the licenses of a federation" do
-      federation = Federation.find_by(slug: "apf")
+  describe "CertificationLevels" do
+    it "lists the certification levels of a body from the lowest rank, with their rank" do
+      certification_body = CertificationBody.find_by(slug: "apf")
 
-      json = client_operation("Licenses", variables: { federationId: federation.id }, as: user)
+      json = client_operation("CertificationLevels", variables: { certificationBodyId: certification_body.id }, as: user)
 
-      expect(json.dig(:data, :licenses).pluck(:name)).to match_array(federation.licenses.pluck(:name))
+      levels = json.dig(:data, :certificationLevels)
+      expect(levels.pluck(:name)).to eq(certification_body.certification_levels.pluck(:name))
+      expect(levels.pluck(:rank)).to eq(levels.pluck(:rank).sort)
+      expect(levels.first).to include(name: "No license", rank: 0, equivalenceKey: "none")
     end
 
-    it "lists every license without a federation" do
-      json = client_operation("Licenses", as: user)
+    it "lists every certification level without a body" do
+      json = client_operation("CertificationLevels", as: user)
 
-      expect(json.dig(:data, :licenses).size).to eq(License.count)
+      expect(json.dig(:data, :certificationLevels).size).to eq(CertificationLevel.count)
+    end
+  end
+
+  describe "Qualifications" do
+    let!(:rating) { create(:qualification, certification_body: CertificationBody.find_by(slug: "apf"), name: "Tandem rating") }
+
+    it "lists the qualifications, of one body when given" do
+      other = create(:qualification, certification_body: CertificationBody.create!(name: "Other", slug: "other", industry: "skydiving"))
+
+      all = client_operation("Qualifications", as: user)
+      apf = client_operation("Qualifications", variables: { certificationBodyId: rating.certification_body_id }, as: user)
+
+      expect(all.dig(:data, :qualifications).pluck(:id)).to include(rating.id.to_s, other.id.to_s)
+      expect(apf.dig(:data, :qualifications).pluck(:id)).to eq([rating.id.to_s])
+      expect(apf.dig(:data, :qualifications, 0, :certificationBody)).to include(slug: "apf")
+    end
+
+    it "requires authentication" do
+      expect(client_operation("Qualifications").dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
+    end
+  end
+
+  describe "AddUserQualification" do
+    let(:body) { CertificationBody.find_by(slug: "apf") }
+    let!(:rating) { create(:qualification, certification_body: body, name: "Tandem rating") }
+    let(:newcomer) { create(:user) }
+
+    it "records the qualification of the caller with its number and expiry" do
+      json = client_operation("AddUserQualification", variables: { qualificationId: rating.id, number: "T-9", expiresAt: 1.year.from_now.iso8601 }, as: newcomer)
+
+      expect(json.dig(:data, :addUserQualification, :errors)).to be_blank
+      expect(json.dig(:data, :addUserQualification, :userQualification)).to include(name: "Tandem rating", number: "T-9", current: true)
+      expect(newcomer.reload.qualified_for?(rating)).to be true
+    end
+
+    it "joins the caller to the body of the qualification, without a level" do
+      client_operation("AddUserQualification", variables: { qualificationId: rating.id, number: "T-9" }, as: newcomer)
+
+      held = UserCertification.find_by!(user: newcomer, certification_body: body)
+      expect(held.certification_level_id).to be_nil
+    end
+
+    it "updates the number and the expiry when it is recorded again" do
+      client_operation("AddUserQualification", variables: { qualificationId: rating.id, number: "T-9", expiresAt: 1.year.from_now.iso8601 }, as: newcomer)
+
+      expect do
+        client_operation("AddUserQualification", variables: { qualificationId: rating.id, number: "T-10", expiresAt: 1.day.ago.iso8601 }, as: newcomer)
+      end.not_to change(UserQualification, :count)
+
+      expect(newcomer.reload.user_qualifications.first).to have_attributes(number: "T-10")
+      expect(newcomer.qualified_for?(rating)).to be false
+    end
+
+    it "reports a qualification that does not exist" do
+      json = client_operation("AddUserQualification", variables: { qualificationId: 0 }, as: user)
+
+      expect(json.dig(:data, :addUserQualification, :errors)).to eq(["Qualification not found"])
+    end
+
+    it "requires authentication" do
+      expect(client_operation("AddUserQualification", variables: { qualificationId: rating.id }).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
   end
 

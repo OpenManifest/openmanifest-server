@@ -10,7 +10,7 @@ operator = Operator.find_or_initialize_by(
 if operator.new_record?
   # Create a fake user
   owner = User.create_fake
-  operator.federation = Federation.first
+  operator.certification_bodies = [CertificationBody.first]
   operator.industry = "skydiving"
   operator.time_zone = "Australia/Brisbane"
   operator.is_public = true
@@ -177,12 +177,11 @@ if operator.memberships.length < 2
       )
     )
 
-    # Pick a random license
-    dz_user.user.update(
-      license: License.order(Arel.sql("RANDOM()")).first
-    )
+    # Pick a random certification level
+    level = CertificationLevel.order(Arel.sql("RANDOM()")).first
+    UserCertification.create!(user: dz_user.user, certification_body: level.certification_body, certification_level: level)
 
-    puts "-- Created user [#{dz_user.user_role.name}]: #{dz_user.user.name} (License #{dz_user.user.license.name})"
+    puts "-- Created user [#{dz_user.user_role.name}]: #{dz_user.user.name} (#{level.name})"
 
     # Create a rig
     case index % 3

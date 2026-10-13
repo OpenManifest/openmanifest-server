@@ -10,7 +10,7 @@ module Mutations::Users
     argument :membership, ID, required: false,
                               prepare: -> (value, ctx) { Membership.find_by(id: value) }
 
-    PROFILE_ATTRIBUTES = %i(name nickname push_token image federation_number phone email license body_mass_kg).freeze
+    PROFILE_ATTRIBUTES = %i(name nickname push_token image certification_body_number phone email certification_level body_mass_kg).freeze
 
     # Only the attributes that were sent are passed on: `pushToken: null` clears the push token, leaving it out keeps it.
     # Without a member (logging out before choosing an operator) the caller updates their own profile.

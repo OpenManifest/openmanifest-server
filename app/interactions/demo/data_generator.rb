@@ -28,7 +28,7 @@ class Demo::DataGenerator < ApplicationInteraction
       primary_color: Faker::Color.hex_color,
       secondary_color: Faker::Color.hex_color,
       is_credit_system_enabled: true,
-      federation: Federation.first,
+      certification_body_ids: [CertificationBody.first.id],
     )
   end
 

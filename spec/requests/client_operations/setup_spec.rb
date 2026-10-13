@@ -131,6 +131,53 @@ RSpec.describe "Client operations: setup" do
     it "refuses a jumper" do
       expect { client_operation("CreateTicketType", variables: { attributes: attributes }, as: user) }.not_to change(TicketType, :count)
     end
+
+    describe "certification requirements" do
+      let(:body) { operator.certification_bodies.first }
+      let(:rating) { create(:qualification, certification_body: body, name: "Tandem rating") }
+
+      it "stores the minimum rank and the qualification a ticket asks for" do
+        json = client_operation("CreateTicketType", variables: { attributes: attributes.merge(minCertificationRank: 30, requiredQualificationId: rating.id) }, as: owner_user)
+
+        expect(json.dig(:data, :createTicketType, :ticketType)).to include(minCertificationRank: 30)
+        expect(json.dig(:data, :createTicketType, :ticketType, :requiredQualification)).to include(name: "Tandem rating", slug: rating.slug)
+      end
+
+      it "refuses a qualification of a body the operator does not accept" do
+        foreign = create(:qualification, certification_body: CertificationBody.create!(name: "Other", slug: "other", industry: "skydiving"))
+
+        json = nil
+        expect do
+          json = client_operation("CreateTicketType", variables: { attributes: attributes.merge(requiredQualificationId: foreign.id) }, as: owner_user)
+        end.not_to change(TicketType, :count)
+
+        expect(json.dig(:data, :createTicketType, :fieldErrors, 0, :field)).to eq("required_qualification")
+      end
+
+      it "refuses a negative rank" do
+        expect { client_operation("CreateTicketType", variables: { attributes: attributes.merge(minCertificationRank: -1) }, as: owner_user) }.not_to change(TicketType, :count)
+      end
+
+      it "changes the requirement of a ticket and clears it again" do
+        ticket = create(:ticket_type, operator: operator, min_certification_rank: 20)
+
+        client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { minCertificationRank: 40, requiredQualificationId: rating.id } }, as: owner_user)
+        expect(ticket.reload).to have_attributes(min_certification_rank: 40, required_qualification_id: rating.id)
+
+        client_operation("UpdateTicketType", variables: { id: ticket.id, attributes: { minCertificationRank: nil, requiredQualificationId: nil } }, as: owner_user)
+        expect(ticket.reload).to have_attributes(min_certification_rank: nil, required_qualification_id: nil)
+      end
+
+      it "lets an extra ask for a qualification, which the operator reports as required" do
+        json = client_operation("CreateTicketAddon", variables: { attributes: { name: "Nitrox", costCents: 500, operatorId: operator.id, requiredQualificationId: rating.id } }, as: owner_user)
+
+        expect(json.dig(:data, :createExtra, :extra, :requiredQualification)).to include(name: "Tandem rating")
+        expect(operator.reload.extras.pluck(:required_qualification_id)).to eq([rating.id])
+
+        required = client_operation("Operator", variables: { operatorId: operator.id }, as: owner_user).dig(:data, :operator, :requiredQualifications)
+        expect(required.pluck(:name)).to eq(["Tandem rating"])
+      end
+    end
   end
 
   describe "UpdateTicketType" do

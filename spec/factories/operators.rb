@@ -6,7 +6,6 @@
 #
 #  id                         :bigint           not null, primary key
 #  name                       :string
-#  federation_id              :bigint
 #  lat                        :float
 #  lng                        :float
 #  created_at                 :datetime         not null
@@ -33,7 +32,7 @@ FactoryBot.define do
     is_credit_system_enabled { true }
     industry { "skydiving" }
     time_zone { "Australia/Brisbane" }
-    federation { Federation.first }
+    certification_bodies { [CertificationBody.first] }
 
     after(:create) do |operator|
       Setup::Operators::Access::CreateDefaults.run!(operator: operator)

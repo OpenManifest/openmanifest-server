@@ -26,7 +26,6 @@
 #  phone                  :string
 #  email                  :string
 #  body_mass_kg            :float
-#  license_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -74,12 +73,27 @@ class User < ApplicationRecord
   has_many :loads, -> { kept }, through: :slots
   has_many :user_roles, through: :memberships
 
-  belongs_to :license, optional: true
+  has_many :user_certifications, dependent: :destroy
+  has_many :certification_levels, through: :user_certifications
+  has_many :user_qualifications, through: :user_certifications
+  has_many :qualifications, through: :user_qualifications
 
-  has_many :user_federations
-  has_many :licenses, through: :user_federations
-  has_many :user_federation_qualifications, through: :user_federations
-  has_many :qualifications, through: :user_federation_qualifications
+  # The level of the highest rank the user holds, among the bodies given (any when none)
+  #
+  # @param [Array<Integer>, nil] certification_body_ids
+  # @return [CertificationLevel, nil]
+  def highest_certification_level(certification_body_ids = nil)
+    levels = certification_levels
+    levels = levels.where(certification_body_id: certification_body_ids) unless certification_body_ids.nil?
+    levels.reorder(rank: :desc, id: :desc).first
+  end
+
+  # Does the user hold the qualification and is it still valid?
+  def qualified_for?(qualification)
+    return true if qualification.blank?
+
+    user_qualifications.current.exists?(qualification_id: qualification.id)
+  end
 
   # @return [Membership, nil] the membership at the operator, nil for a user who has not joined it
   def at(operator)

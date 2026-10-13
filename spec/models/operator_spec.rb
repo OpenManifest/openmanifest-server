@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Membership do
-  let!(:federation) { Federation.find_by(slug: :apf) }
-  let!(:operators) { create_list(:operator_with_loads, 6, federation: federation) }
+  let!(:certification_body) { CertificationBody.find_by(slug: :apf) }
+  let!(:operators) { create_list(:operator_with_loads, 6, certification_bodies: [certification_body]) }
 
   before do
     operators.shuffle.take(3).each(&:discard)
@@ -12,5 +12,5 @@ RSpec.describe Membership do
 
   it { expect(Operator.kept.count).to eq 3 }
   it { expect(Operator.count).to eq 6 }
-  it { expect(federation.operators.count).to eq 3 }
+  it { expect(certification_body.operators.count).to eq 3 }
 end

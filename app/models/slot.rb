@@ -70,6 +70,7 @@ class Slot < ApplicationRecord
   validate :available?,
            :double_manifest?,
            :allowed_activity_type?,
+           :certified_for_ticket?,
            :membership_in_date?,
            :affordable?,
            on: :create
@@ -183,11 +184,26 @@ class Slot < ApplicationRecord
     errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
   end
 
+  # The ticket type asks for a minimum rank or a qualification, and so may an extra
+  def certified_for_ticket?
+    return if is_guest? || membership.blank?
+    return unless operator.module?(:certifications)
+
+    unmet = ticket_type.unmet_certification_requirements(membership)
+    extras.each do |extra|
+      unmet << :qualification unless membership.user.qualified_for?(extra.required_qualification)
+    end
+    return if unmet.empty?
+    return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
+
+    errors.add(:base, "#{membership.user.name} is missing a certification: #{unmet.uniq.map { |kind| kind.to_s.humanize.downcase }.join(', ')}")
+  end
+
   def allowed_activity_type?
     return if activity_type.blank?
     return true if is_guest? && ticket_type.is_tandem?
     return if activity_type.allowed_for?(membership)
-    return unless operator.require_license?
+    return unless operator.require_certification?
     return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
     errors.add(:activity_type, "User cannot be manifested for #{activity_type.name} jumps")
   end

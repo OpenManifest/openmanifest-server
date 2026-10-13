@@ -14,30 +14,41 @@ activity_types:
   slug: fs
 - name: Wingsuit
   slug: ws
-federations:
+certification_bodies:
   apf:
     name: APF
     slug: apf
-    licenses:
+    verification_provider: apf
+    certification_levels:
     - name: No license
-      licensed_activity_types:
+      rank: 0
+      equivalence_key: none
+      permitted_activities:
     - name: Student
-      licensed_activity_types:
+      rank: 10
+      equivalence_key: student
+      permitted_activities:
       - fs
     - name: Certificate A
-      licensed_activity_types:
+      rank: 20
+      equivalence_key: a
+      permitted_activities:
       - fs
       - hp
       - hnp
     - name: Certificate B
-      licensed_activity_types:
+      rank: 30
+      equivalence_key: b
+      permitted_activities:
       - fs
       - hnp
       - hp
       - angle
       - freefly
     - name: Certificate C
-      licensed_activity_types:
+      rank: 40
+      equivalence_key: c
+      permitted_activities:
       - fs
       - hnp
       - hp
@@ -45,7 +56,9 @@ federations:
       - freefly
       - cam
     - name: Certificate D
-      licensed_activity_types:
+      rank: 50
+      equivalence_key: d
+      permitted_activities:
       - fs
       - hnp
       - hp
@@ -54,7 +67,9 @@ federations:
       - cam
       - ws
     - name: Certificate E
-      licensed_activity_types:
+      rank: 60
+      equivalence_key: e
+      permitted_activities:
       - fs
       - hnp
       - hp
@@ -63,7 +78,9 @@ federations:
       - cam
       - ws
     - name: Certificate F
-      licensed_activity_types:
+      rank: 70
+      equivalence_key: f
+      permitted_activities:
       - fs
       - hnp
       - hp

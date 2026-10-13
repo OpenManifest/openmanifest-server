@@ -6,7 +6,9 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
   object :owner, class: User
   string :industry
   string :time_zone
-  record :federation, default: nil
+  array :certification_body_ids, default: [] do
+    integer
+  end
   boolean :request_publication, default: false
   boolean :is_public, default: false
   decimal :lat, default: 0.0
@@ -54,7 +56,7 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
       name: name,
       industry: industry,
       time_zone: time_zone,
-      federation: federation,
+      certification_body_ids: certification_body_ids,
       request_publication: request_publication,
       is_public: is_public,
       lat: lat,

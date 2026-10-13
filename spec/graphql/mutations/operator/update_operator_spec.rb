@@ -13,17 +13,17 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
         name: 'dopezone',
         allow_negative_credits: true,
         allow_manifest_bypass: true,
-        require_license: false,
+        require_certification: false,
         require_credits: false,
         require_membership: false,
         require_rig_inspection: false
       )
     end
 
-    it { is_expected.to include_json(updateOperator: { operator: { id: operator.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireLicense: false, requireRigInspection: false, requireCredits: false, requireMembership: false } } }) }
+    it { is_expected.to include_json(updateOperator: { operator: { id: operator.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireCertification: false, requireRigInspection: false, requireCredits: false, requireMembership: false } } }) }
   end
 
-  create_query(:id, :name, :allow_negative_credits, :allow_manifest_bypass, :require_license, :require_rig_inspection, :require_credits, :require_membership) do
+  create_query(:id, :name, :allow_negative_credits, :allow_manifest_bypass, :require_certification, :require_rig_inspection, :require_credits, :require_membership) do
     <<-GQL
     mutation {
       updateOperator(
@@ -34,7 +34,7 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
             settings: {
               allowNegativeCredits: #{allow_negative_credits},
               allowManifestBypass: #{allow_manifest_bypass},
-              requireLicense: #{require_license},
+              requireCertification: #{require_certification},
               requireRigInspection: #{require_rig_inspection},
               requireCredits: #{require_credits},
               requireMembership: #{require_membership}
@@ -48,7 +48,7 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
           name
           settings {
             requireRigInspection
-            requireLicense
+            requireCertification
             requireCredits
             requireMembership
             allowNegativeCredits

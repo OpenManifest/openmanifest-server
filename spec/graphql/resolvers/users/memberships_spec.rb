@@ -11,7 +11,7 @@ module Mutations
         to_return(body: [].to_json, headers: { "Content-Type" => "application/json" })
     end
     let!(:student) { create(:membership, credits: 100, operator: operator, user: create(:user), user_role: operator.user_roles.default_licensed) }
-    let!(:ghost) { ::Setup::Users::CreateGhost.run!(operator: operator, name: 'Fake User', phone: '1234567', body_mass_kg: 80, role: operator.user_roles.second, email: 'fake@email.com', access_context: access_context, license: operator.federation.licenses.last) }
+    let!(:ghost) { ::Setup::Users::CreateGhost.run!(operator: operator, name: 'Fake User', phone: '1234567', body_mass_kg: 80, role: operator.user_roles.second, email: 'fake@email.com', access_context: access_context, certification_level: operator.certification_bodies.first.certification_levels.last) }
 
     describe "Can see newly created ghost user" do
       subject do

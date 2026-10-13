@@ -97,7 +97,7 @@ class Industry
   # What Presets::Apply copies into a new operator: roles, ticket_types, extras, activity_types, inspection_forms, ...
   def presets = @presets ||= merged("presets.yml")
 
-  # Global data seeded once: activity_types and federations (certification bodies)
+  # Global data seeded once: activity_types and certification_bodies
   def catalogue = @catalogue ||= merged("catalogue.yml")
 
   %w(name description icon).each { |key| define_method(key) { template[key] } }

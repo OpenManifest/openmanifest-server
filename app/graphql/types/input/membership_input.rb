@@ -10,11 +10,11 @@ module Types
       argument :nickname, String, required: false
       argument :push_token, String, required: false
       argument :image, String, required: false
-      argument :federation_number, String, required: false
+      argument :certification_body_number, String, required: false
       argument :phone, String, required: false
       argument :email, String, required: false
-      argument :license, Int, required: false,
-                              prepare: -> (value, ctx) { License.find_by(id: value) }
+      argument :certification_level, Int, required: false,
+                                          prepare: -> (value, ctx) { CertificationLevel.find_by(id: value) }
       argument :body_mass_kg, Float, required: false
     end
   end

@@ -17,7 +17,7 @@ class Resolvers::Users::Memberships < Resolvers::Base
     query = operator.memberships
     query = query.includes(user_permissions: :permission) if permissions.present?
 
-    query = query.where.not(license_id: nil) if licensed
+    query = query.where.not(certification_level_id: nil) if licensed
 
     if permissions.present?
       # Roles of this operator that grant any of the permissions (BUG-093: this used to compare role ids with

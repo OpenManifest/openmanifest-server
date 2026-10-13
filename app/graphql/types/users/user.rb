@@ -12,11 +12,11 @@ module Types::Users
     field :nickname, String, null: true
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false
-    field :apf_number, String, null: true
     async_field :rigs, [Types::Equipment::Rig], null: true
-    async_field :licenses, [Types::Meta::License], null: true
+    async_field :certification_levels, [Types::Meta::CertificationLevel], null: true
     async_field :memberships, [Types::Users::Membership], null: true
-    async_field :user_federations, [Types::Users::UserFederation], null: true
+    async_field :user_certifications, [Types::Users::UserCertification], null: true
+    async_field :user_qualifications, [Types::Users::UserQualification], null: true
 
     field :image, String, null: true, method: :avatar_url
     timestamp_fields

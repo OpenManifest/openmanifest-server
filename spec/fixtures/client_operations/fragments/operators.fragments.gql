@@ -25,7 +25,7 @@ fragment operatorEssentials on Operator {
     allowDoubleManifesting
     allowSelfManifest
     requireCredits
-    requireLicense
+    requireCertification
     requireMembership
     requireRigInspection
     requireEquipment
@@ -66,10 +66,11 @@ fragment operatorStatistics on Operator {
 fragment operatorDetailed on Operator {
   ...operatorEssentials
 
-  federation {
-    id
-    name
-    slug
+  certificationBodies {
+    ...certificationBodyEssentials
+  }
+  requiredQualifications {
+    ...qualificationEssentials
   }
 
   currentConditions {

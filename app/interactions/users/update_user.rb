@@ -9,16 +9,16 @@ class Users::UpdateUser < ApplicationInteraction
   string :nickname, default: nil
   string :push_token, default: nil
   string :image, default: nil
-  string :federation_number, default: nil
+  string :certification_body_number, default: nil
   string :phone, default: nil
   string :email, default: nil
   decimal :body_mass_kg, default: nil
-  record :license, default: nil
+  record :certification_level, default: nil
 
   steps :authorize,
         :check_email,
         :assign_attributes,
-        :assign_federation,
+        :assign_certification_body,
         :result
 
   def assign_attributes
@@ -63,17 +63,16 @@ class Users::UpdateUser < ApplicationInteraction
     errors.add(:email, "has already been taken")
   end
 
-  def assign_federation
-    return unless license
-    # If license id changed, then update all Memberships
-    # with the same federation as that license to have the
-    # new license:
+  def assign_certification_body
+    return unless certification_level
+    # Joining the body of the chosen level updates the level of every membership
+    # at an operator that accepts that body:
     compose(
-      Federations::AssignUser,
+      Certifications::AssignUser,
       user: target_user,
-      license: license,
-      uid: federation_number,
-      federation: license.federation,
+      certification_level: certification_level,
+      uid: certification_body_number,
+      certification_body: certification_level.certification_body,
       access_context: access_context
     )
   end

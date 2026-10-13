@@ -147,7 +147,7 @@ RSpec.describe "Client operations: operators and access" do
   end
 
   describe "CreateOperator" do
-    let(:variables) { { industry: "SKYDIVING", name: "New Operator", federation: Federation.first.id, timeZone: "Australia/Brisbane", primaryColor: "#112233" } }
+    let(:variables) { { industry: "SKYDIVING", name: "New Operator", certificationBodyIds: [CertificationBody.first.id], timeZone: "Australia/Brisbane", primaryColor: "#112233" } }
 
     it "creates a private operator owned by the caller" do
       json = nil
@@ -192,6 +192,27 @@ RSpec.describe "Client operations: operators and access" do
       expect(json.dig(:data, :updateOperator, :errors)).to be_nil
       expect(operator.reload.call_schedule_minutes).to eq([25, 5])
       expect(json.dig(:data, :updateOperator, :operator, :callScheduleMinutes)).to eq([25, 5])
+    end
+
+    it "changes the certification bodies the operator accepts" do
+      uspa = CertificationBody.create!(name: "USPA", slug: "uspa", industry: "skydiving")
+      apf = CertificationBody.find_by!(slug: "apf")
+
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, certificationBodyIds: [apf.id, uspa.id] } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :errors)).to be_nil
+      expect(json.dig(:data, :updateOperator, :operator, :certificationBodies).pluck(:slug)).to contain_exactly("apf", "uspa")
+      expect(operator.reload.certification_bodies).to contain_exactly(apf, uspa)
+
+      client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, certificationBodyIds: [uspa.id] } }, as: moderator)
+      expect(operator.reload.certification_bodies).to eq([uspa])
+    end
+
+    it "refuses to leave an operator with certifications without a body" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, certificationBodyIds: [] } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :operator)).to be_nil
+      expect(operator.reload.certification_bodies).not_to be_empty
     end
 
     it "sets the units and the currency the operator shows" do

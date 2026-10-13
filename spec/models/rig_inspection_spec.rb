@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe RigInspection do
-  let!(:federation) { Federation.find_by(slug: :apf) }
+  let!(:certification_body) { CertificationBody.find_by(slug: :apf) }
   let!(:operator) { create(:operator) }
   let!(:memberships) { create_list(:membership, 5, operator: operator) }
   let!(:operator_rigs) { create_list(:rig, 5, operator: operator, is_public: true) }

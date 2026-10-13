@@ -13,7 +13,7 @@ class Demo::Generators::Users < ApplicationInteraction
         :assign_duty_officer,
         :assign_gca,
         :assign_rig_inspectors,
-        :assign_licenses,
+        :assign_certification_levels,
         :add_credits!
 
   success do
@@ -160,22 +160,22 @@ class Demo::Generators::Users < ApplicationInteraction
     end
   end
 
-  def assign_licenses
-    access_context.operator.memberships.includes(:license).where(license: { id: nil }).each do |dz_user|
-      license_options = access_context.operator.federation.licenses.order(id: :desc)
-      license_options = license_options.limit(3).to_a.sample if %i(
+  def assign_certification_levels
+    access_context.operator.memberships.includes(:certification_level).where(certification_level: { id: nil }).each do |dz_user|
+      certification_level_options = access_context.operator.certification_bodies.first.certification_levels.reorder(rank: :desc)
+      certification_level_options = certification_level_options.limit(3).to_a.sample if %i(
         chief_instructor tandem_instructor aff_instructor
         coach
       ).include?(dz_user.user_role.name)
-      license_options = license_options.to_a.sample unless %i(
+      certification_level_options = certification_level_options.to_a.sample unless %i(
         chief_instructor tandem_instructor aff_instructor
         coach
       ).include?(dz_user.user_role.name)
       compose(
-        ::Federations::AssignUser,
+        ::Certifications::AssignUser,
         access_context: ::ApplicationInteraction::AccessContext.new(dz_user),
-        federation: access_context.operator.federation,
-        license: license_options,
+        certification_body: access_context.operator.certification_bodies.first,
+        certification_level: certification_level_options,
         uid: Random.rand(10000..16000).to_s,
         user: dz_user.user
       )

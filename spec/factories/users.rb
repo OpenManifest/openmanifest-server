@@ -26,7 +26,7 @@
 #  phone                  :string
 #  email                  :string
 #  body_mass_kg            :float
-#  license_id             :bigint
+#  certification_level_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -44,7 +44,6 @@ FactoryBot.define do
     phone { Faker::PhoneNumber.cell_phone }
     email { Faker::Internet.email }
     body_mass_kg { Faker::Number.between(from: 60, to: 120) }
-    license { License.all.sample }
     provider { "email" }
     password { Faker::Internet.password(min_length: 10, max_length: 20) }
     confirmed_at { DateTime.now }
@@ -55,14 +54,14 @@ FactoryBot.define do
     end
   end
 
-  factory :user_with_license, parent: :user do
+  factory :user_with_certification_level, parent: :user do
     transient do
-      federation { Federation.first }
-      license { Federation.first.licenses.sample }
+      certification_body { CertificationBody.first }
+      certification_level { CertificationBody.first.certification_levels.sample }
     end
 
     after(:create) do |user, evaluator|
-      create(:user_federation, federation: evaluator.federation, license: evaluator.license, user: user)
+      create(:user_certification, certification_body: evaluator.certification_body, certification_level: evaluator.certification_level, user: user)
     end
   end
 end

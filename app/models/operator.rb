@@ -6,7 +6,6 @@
 #
 #  id                         :bigint           not null, primary key
 #  name                       :string
-#  federation_id              :bigint
 #  lat                        :float
 #  lng                        :float
 #  created_at                 :datetime         not null
@@ -69,7 +68,8 @@ class Operator < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
-  belongs_to :federation, optional: true
+  has_many :operator_certification_bodies, dependent: :destroy
+  has_many :certification_bodies, through: :operator_certification_bodies
   belongs_to :rig_inspection_template,
              class_name: "FormTemplate",
              optional: true
@@ -81,8 +81,8 @@ class Operator < ApplicationRecord
   validates :industry, presence: true, inclusion: { in: ->(_) { Industry.slugs }, message: :unknown_industry }, on: :create
   validates :time_zone, presence: true
   validates :currency, format: { with: /\A[A-Z]{3}\z/ }
-  # Only industries with certifications have a federation (certification body)
-  validates :federation, presence: true, if: -> { module?(:certifications) }
+  # Only industries with certifications accept certification bodies, and then at least one
+  validates :certification_bodies, presence: true, if: -> { module?(:certifications) }
   validate :industry_unchanged, on: :update
   validate :module_overrides_allowed, :call_schedule_valid, :units_known
 

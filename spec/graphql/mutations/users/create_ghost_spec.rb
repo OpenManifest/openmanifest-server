@@ -4,7 +4,7 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Mutations::Users::CreateGhost, type: :request do
-    include_context("federation_sync")
+    include_context("certification_body_sync")
     let!(:operator) { create(:operator, credits: 50) }
     let!(:membership) { create(:membership, operator: operator, credits: 50) }
 
@@ -20,8 +20,8 @@ module Mutations
             phone: "123123123",
             email: "some@rspec.com",
             role_id: operator.user_roles.to_a.sample.id,
-            federation_number: "321321",
-            license_id: operator.federation.licenses.to_a.sample.id,
+            certification_body_number: "321321",
+            certification_level_id: operator.certification_bodies.first.certification_levels.to_a.sample.id,
             body_mass_kg: 50,
             operator_id: operator.id
           )
@@ -44,12 +44,12 @@ module Mutations
 
         it do
           post_request
-          expect(json[:data][:createGhost][:user][:memberships].first[:license]).not_to be nil
+          expect(json[:data][:createGhost][:user][:memberships].first[:certification_level]).not_to be nil
         end
       end
     end
 
-    def query(name:, email:, phone:, body_mass_kg:, operator_id:, role_id:, license_id:, federation_number:)
+    def query(name:, email:, phone:, body_mass_kg:, operator_id:, role_id:, certification_level_id:, certification_body_number:)
       <<~GQL
         mutation {
           createGhost(
@@ -61,8 +61,8 @@ module Mutations
                 bodyMassKg: #{body_mass_kg},
                 operator: #{operator_id},
                 role: #{role_id},
-                license: #{license_id},
-                federationNumber: "#{federation_number}"
+                certification_level: #{certification_level_id},
+                certificationBodyNumber: "#{certification_body_number}"
               }
             }
           ) {
@@ -77,7 +77,7 @@ module Mutations
               phone
               memberships {
                 id
-                license {
+                certification_level {
                   id
                   name
                 }

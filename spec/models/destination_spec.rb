@@ -5,7 +5,7 @@ require "rails_helper"
 # P7.8: destinations, in both scopes (per slot: skydiving; per load: everyone else)
 RSpec.describe Destination do
   let(:owner) { create(:user) }
-  let(:skydiving) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", federation: Federation.first) }
+  let(:skydiving) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
   let(:boats) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "generic", name: "Boats", time_zone: "Australia/Brisbane") }
 
   describe "presets" do

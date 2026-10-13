@@ -2,9 +2,9 @@
 
 require "rails_helper"
 
-RSpec.describe "Client operations: users, permissions, federation and notifications" do
+RSpec.describe "Client operations: users, permissions, certification_body and notifications" do
   include_context "operator"
-  include_context "federation_sync"
+  include_context "certification_body_sync"
 
   let(:owner_user) { create(:user) }
   let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
@@ -19,11 +19,11 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       json = client_operation("Memberships", variables: { operatorId: operator.id }, as: owner_user)
 
       expect(member_ids(json)).to match_array([fun_jumper, instructor, owner].map { |member| member.id.to_s })
-      expect(json.dig(:data, :memberships, :edges, 0, :node)).to include(:role, :license, :user, :hasMembership)
+      expect(json.dig(:data, :memberships, :edges, 0, :node)).to include(:role, :certificationLevel, :user, :hasMembership)
     end
 
     it "includes unlicensed members when licensed is false" do
-      unlicensed = create(:membership, operator: operator).tap { |member| member.update!(license: nil) }
+      unlicensed = create(:membership, operator: operator).tap { |member| member.update!(certification_level: nil) }
 
       default = client_operation("Memberships", variables: { operatorId: operator.id }, as: owner_user)
       all = client_operation("Memberships", variables: { operatorId: operator.id, licensed: false }, as: owner_user)
@@ -69,7 +69,7 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
   end
 
   describe "Membership" do
-    it "returns the member with role, license and user" do
+    it "returns the member with role, certification_level and user" do
       json = client_operation("Membership", variables: { id: fun_jumper.id }, as: owner_user)
 
       expect(json.dig(:data, :membership)).to include(id: fun_jumper.id.to_s)
@@ -457,28 +457,29 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
     end
   end
 
-  describe "JoinFederation" do
-    let(:federation) { Federation.find_by(slug: "apf") || Federation.first }
-    let(:variables) { { federation: federation.id, uid: "12345", license: federation.licenses.first.id } }
+  describe "JoinCertificationBody" do
+    let(:certification_body) { CertificationBody.find_by(slug: "apf") || CertificationBody.first }
+    let(:variables) { { certificationBody: certification_body.id, uid: "12345", number: "C-42", certificationLevel: certification_body.certification_levels.first.id } }
 
-    it "links the caller to the federation" do
-      json = client_operation("JoinFederation", variables: variables, as: user)
+    it "links the caller to the certification_body" do
+      json = client_operation("JoinCertificationBody", variables: variables, as: user)
 
-      expect(json.dig(:data, :joinFederation, :errors)).to be_nil
-      expect(json.dig(:data, :joinFederation, :userFederation, :uid)).to eq("12345")
-      expect(user.user_federations.count).to eq(1)
+      expect(json.dig(:data, :joinCertificationBody, :errors)).to be_nil
+      expect(json.dig(:data, :joinCertificationBody, :userCertification, :uid)).to eq("12345")
+      expect(json.dig(:data, :joinCertificationBody, :userCertification, :number)).to eq("C-42")
+      expect(user.user_certifications.count).to eq(1)
     end
 
     it "works for a user who has not joined any operator yet" do
       newcomer = create(:user)
 
-      json = client_operation("JoinFederation", variables: variables, as: newcomer)
+      json = client_operation("JoinCertificationBody", variables: variables, as: newcomer)
 
-      expect(json.dig(:data, :joinFederation, :errors)).to be_nil
+      expect(json.dig(:data, :joinCertificationBody, :errors)).to be_nil
     end
 
-    def join_federation_at(operator_id, as:)
-      query = "mutation($attributes: UserFederationInput!, $operator: ID) { joinFederation(input: { attributes: $attributes, operator: $operator }) { errors userFederation { uid } } }"
+    def join_certification_body_at(operator_id, as:)
+      query = "mutation($attributes: UserCertificationInput!, $operator: ID) { joinCertificationBody(input: { attributes: $attributes, operator: $operator }) { errors userCertification { uid } } }"
       post "/graphql",
            params: { query: query, variables: { attributes: variables, operator: operator_id }.to_json },
            headers: as.create_new_auth_token
@@ -489,21 +490,21 @@ RSpec.describe "Client operations: users, permissions, federation and notificati
       other_operator = create(:operator, state: "public")
       create(:membership, operator: other_operator, user: user)
 
-      json = join_federation_at(other_operator.id, as: user)
+      json = join_certification_body_at(other_operator.id, as: user)
 
-      expect(json.dig(:data, :joinFederation, :errors)).to be_nil
+      expect(json.dig(:data, :joinCertificationBody, :errors)).to be_nil
       expect(Activity::Event.where(operator: other_operator, action: :assigned)).to exist
     end
 
     it "refuses an operator the user is not a member of" do
       json = nil
-      expect { json = join_federation_at(create(:operator).id, as: user) }.not_to(change { UserFederation.count })
+      expect { json = join_certification_body_at(create(:operator).id, as: user) }.not_to(change { UserCertification.count })
 
-      expect(json.dig(:data, :joinFederation, :errors)).to eq(["You are not a member of that operator"])
+      expect(json.dig(:data, :joinCertificationBody, :errors)).to eq(["You are not a member of that operator"])
     end
 
     it "requires authentication" do
-      expect(client_operation("JoinFederation", variables: variables).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
+      expect(client_operation("JoinCertificationBody", variables: variables).dig(:errors, 0, :extensions, :code)).to eq("AUTHENTICATION_ERROR")
     end
   end
 

@@ -76,7 +76,7 @@ RSpec.configure do |config|
   # Examples that run several database connections at once (row locks) need committed data: delete what they created and
   # keep the global seeds
   config.before(:each, :concurrent) do
-    DatabaseCleaner.strategy = [:deletion, { except: %w(ar_internal_metadata schema_migrations federations activity_types licensed_activity_types licenses permissions) }]
+    DatabaseCleaner.strategy = [:deletion, { except: %w(ar_internal_metadata schema_migrations certification_bodies activity_types permitted_activities certification_levels permissions) }]
   end
 
   config.before(:each) do

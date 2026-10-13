@@ -7,13 +7,12 @@ fragment userEssentials on User {
   bodyMassKg
   moderationRole
   image
-  apfNumber
 }
 
 fragment userDetailed on User {
   ...userEssentials
-  userFederations {
-    ...userFederationEssentials
+  userCertifications {
+    ...userCertificationEssentials
   }
   rigs {
     ...userRigDetailed

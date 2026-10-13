@@ -32,23 +32,21 @@ module Types::Users
     field :has_credits, Boolean, null: false
     field :has_body_mass_kg, Boolean, null: false
     field :has_reserve_in_date, Boolean, null: false
-    field :has_license, Boolean, null: false
+    field :has_certification_level, Boolean, null: false
 
     async_field :role, Types::Access::UserRole, null: true, method: :user_role
 
     field :permissions, [Types::Access::PermissionType], null: true
 
     async_field :operator, Types::OperatorType, null: false
-    async_field :license, Types::Meta::License, null: true
+    async_field :certification_level, Types::Meta::CertificationLevel, null: true
     async_field :user, Types::Users::User, null: false
 
     async_field :activity_types, [Types::Meta::ActivityType], null: true
-    field :user_federation, Types::Users::UserFederation, null: true
-    def user_federation
-      ::UserFederation.find_by(
-        user_id: object.user,
-        federation_id: object.operator.federation_id
-      )
+    field :user_certification, Types::Users::UserCertification, null: true, description: "The member's certification that gives the level, at a body the operator accepts"
+    def user_certification
+      accepted = ::UserCertification.where(user_id: object.user_id, certification_body_id: object.operator.certification_body_ids)
+      accepted.find_by(certification_level_id: object.certification_level_id) || accepted.order(:id).first
     end
 
     def slots
@@ -98,8 +96,8 @@ module Types::Users
       end
     end
 
-    def has_license
-      object.license_id.present?
+    def has_certification_level
+      object.certification_level_id.present?
     end
 
     def permissions

@@ -26,7 +26,7 @@
 #  phone                  :string
 #  email                  :string
 #  body_mass_kg            :float
-#  license_id             :bigint
+#  certification_level_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null

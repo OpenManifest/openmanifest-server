@@ -10,6 +10,8 @@ module Types
       argument :allow_manifesting_self, Boolean, required: false
       argument :operator_id, Int, required: false
       argument :is_tandem, Boolean, required: false
+      argument :min_certification_rank, Int, required: false
+      argument :required_qualification_id, Int, required: false
 
       argument :extra_ids, [Int], required: false
     end

@@ -34,7 +34,13 @@ module Types
     end
     field :currency, String, null: false, description: "ISO 4217 code of the money the operator sells in"
     field :units, GraphQL::Types::JSON, null: false, description: "The units the operator shows"
-    async_field :federation, Types::Meta::Federation, null: false
+    field :required_qualifications, [Types::Meta::Qualification], null: false, description: "Qualifications that the operator's ticket types or extras ask for"
+    def required_qualifications
+      ids = object.ticket_types.kept.where.not(required_qualification_id: nil).pluck(:required_qualification_id) +
+            object.extras.where.not(required_qualification_id: nil).pluck(:required_qualification_id)
+      ::Qualification.where(id: ids.uniq).order(:name)
+    end
+    async_field :certification_bodies, [Types::Meta::CertificationBody], null: false, description: "The certification bodies the operator accepts"
     async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
 
     field :allowed_activity_types, [Types::Meta::ActivityType], null: false do

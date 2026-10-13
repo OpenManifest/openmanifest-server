@@ -5,8 +5,7 @@ module Types
     class OperatorInput < Types::Base::Input
       argument :name, String, required: true
       argument :banner, String, required: false
-      argument :federation, Int, required: false,
-                                 prepare: -> (value, ctx) { Federation.find_by(id: value) }
+      argument :certification_body_ids, [Int], required: false, description: "The certification bodies the operator accepts"
       argument :request_publication, Boolean, required: false
       argument :is_public, Boolean, required: false
       argument :lat, Float, required: false

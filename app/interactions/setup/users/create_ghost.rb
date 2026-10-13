@@ -8,15 +8,15 @@ class Setup::Users::CreateGhost < ApplicationInteraction
   record :role, class: ::UserRole
 
   string :phone, default: nil
-  string :federation_number, default: nil
-  record :license, default: nil
+  string :certification_body_number, default: nil
+  record :certification_level, default: nil
 
   allow :createUser
   steps :check_user_exists,
         :initialize_user,
         :create_membership,
         :invite,
-        :assign_federation,
+        :assign_certification_body,
         :record
 
   success do
@@ -79,16 +79,16 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     @user&.send_confirmation_instructions
   end
 
-  def assign_federation
-    return unless license
-    federation = Federation.includes(:licenses).find_by(licenses: { id: license.id })
-    return unless federation
+  def assign_certification_body
+    return unless certification_level
+    certification_body = CertificationBody.includes(:certification_levels).find_by(certification_levels: { id: certification_level.id })
+    return unless certification_body
     compose(
-      Federations::AssignUser,
+      Certifications::AssignUser,
       user: @user,
-      uid: federation_number,
-      license: license,
-      federation: federation,
+      uid: certification_body_number,
+      certification_level: certification_level,
+      certification_body: certification_body,
       access_context: access_context
     )
   end

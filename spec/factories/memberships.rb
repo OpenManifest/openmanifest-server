@@ -16,7 +16,7 @@
 FactoryBot.define do
   factory :membership do
     transient do
-      federation { Federation.first }
+      certification_body { CertificationBody.first }
     end
     user
     operator { nil }
@@ -25,10 +25,10 @@ FactoryBot.define do
     user_role do
       operator.user_roles.reload.order(:id).third
     end
-    license { Federation.first.licenses.where.not(name: 'No license').sample }
+    certification_level { CertificationBody.first.certification_levels.where.not(name: 'No license').sample }
 
     after(:create) do |dz_user, evaluator|
-      create(:user_federation, federation: evaluator.federation, license: dz_user.license, user: dz_user.user)
+      create(:user_certification, certification_body: evaluator.certification_body, certification_level: dz_user.certification_level, user: dz_user.user)
     end
   end
 end

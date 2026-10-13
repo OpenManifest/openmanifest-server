@@ -6,6 +6,7 @@ module Types
       argument :name, String, required: false
       money_argument :cost
       argument :operator_id, Int, required: false
+      argument :required_qualification_id, Int, required: false
       argument :ticket_type_ids, [Int], required: false
     end
   end

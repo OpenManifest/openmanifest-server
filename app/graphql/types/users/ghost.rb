@@ -5,7 +5,7 @@ module Types::Users
     field :email, String, null: true
     field :body_mass_kg, Integer, null: true
     field :id, GraphQL::Types::ID, null: false
-    field :license, Types::Meta::License, null: true
+    field :certification_level, Types::Meta::CertificationLevel, null: true
     field :memberships, [Types::Users::Membership], null: true
     field :phone, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false

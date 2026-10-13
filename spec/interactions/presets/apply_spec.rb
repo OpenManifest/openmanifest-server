@@ -11,7 +11,7 @@ RSpec.describe Presets::Apply do
 
   describe "a skydiving operator" do
     let(:parity) { YAML.safe_load_file(Rails.root.join("spec/fixtures/industries/skydiving_parity.yml")) }
-    let(:operator) { create_operator("skydiving", federation: Federation.first) }
+    let(:operator) { create_operator("skydiving", certification_body_ids: [CertificationBody.first.id]) }
 
     it "has the roles it had before industry templates" do
       expect(operator.user_roles.pluck(:name)).to match_array(parity["roles"].keys)
@@ -47,14 +47,14 @@ RSpec.describe Presets::Apply do
 
   describe "applying twice" do
     it "adds nothing the second time" do
-      operator = create_operator("skydiving", federation: Federation.first)
+      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.first.id])
 
       expect { described_class.run!(operator: operator) }.
         not_to(change { [operator.user_roles.count, UserRolePermission.count, operator.ticket_types.count, OperatorActivityType.count] })
     end
 
     it "leaves the changes an operator made to its roles" do
-      operator = create_operator("skydiving", federation: Federation.first)
+      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.first.id])
       role = operator.user_roles.find_by!(name: "student")
       role.user_role_permissions.destroy_all
 
@@ -74,7 +74,7 @@ RSpec.describe Presets::Apply do
     end
 
     it "starts with no requirements" do
-      expect(operator.settings).to include("require_license" => false, "require_credits" => false, "require_equipment" => false)
+      expect(operator.settings).to include("require_certification" => false, "require_credits" => false, "require_equipment" => false)
     end
 
     it "can create a vehicle, a load and a slot" do

@@ -6,6 +6,7 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
       message
     }
     ticketType {
+      ...ticketTypeEssentials
       id
       name
       defaultDestination {

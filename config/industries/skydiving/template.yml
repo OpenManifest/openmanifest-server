@@ -20,7 +20,7 @@ daily_log: { template: apf_master_log }
 # lists every key and its neutral value)
 settings:
   require_rig_inspection: true
-  require_license: true
+  require_certification: true
   require_credits: true
   require_membership: true
   allow_negative_credits: false

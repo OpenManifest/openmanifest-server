@@ -36,8 +36,8 @@ module Operators
         {
           # User must have a rig with a valid inspection to manifest?
           require_rig_inspection: true,
-          # User must have a valid license to manifest?
-          require_license: true,
+          # User must have a valid certification to manifest?
+          require_certification: true,
           # User must have credits to manifest?
           require_credits: true,
           # Users membership must be valid?

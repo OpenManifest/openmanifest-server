@@ -84,6 +84,8 @@ module Vocabulary
   def pluralize(word, suffix)
     return word if suffix.empty?
 
+    return "#{word.delete_suffix('y')}ies" if word.match?(/[^aeiou]y\z/)
+
     word.end_with?("s", "x", "ch", "sh") ? "#{word}es" : "#{word}s"
   end
 

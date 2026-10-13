@@ -19,7 +19,7 @@ module Mutations::Setup::Operators
           :name,
           :lat,
           :lng,
-          :federation,
+          :certification_body_ids,
           :banner,
           :request_publication,
           :is_public,

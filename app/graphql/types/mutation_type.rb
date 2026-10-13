@@ -20,7 +20,8 @@ module Types
     field :update_membership, mutation: Mutations::Users::UpdateMembership
     field :update_user,                 mutation: Mutations::Users::UpdateUser
     field :delete_user,                 mutation: Mutations::Users::DeleteUser
-    field :join_federation,             mutation: Mutations::Users::JoinFederation
+    field :join_certification_body,             mutation: Mutations::Users::JoinCertificationBody
+    field :add_user_qualification,              mutation: Mutations::Users::AddUserQualification
 
     # Setup
     field :delete_vehicle, mutation: Mutations::Setup::Vehicles::DeleteVehicle

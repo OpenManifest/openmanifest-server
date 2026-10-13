@@ -1,8 +1,8 @@
 class Types::Input::Operator::SettingsInput < Types::Base::Input
   argument :require_rig_inspection, Boolean, required: false,
                                              description: 'Whether or not rig inspections are required before manifesting a jump'
-  argument :require_license, Boolean, required: false,
-                                      description: 'Should a valid license be required to manifest a jump?'
+  argument :require_certification, Boolean, required: false,
+                                            description: 'Should a valid certification be required to manifest a jump?'
   argument :require_credits, Boolean, required: false,
                                       description: 'When this is enabled, users cannot manifest if they have no credits'
   argument :require_membership, Boolean, required: false,

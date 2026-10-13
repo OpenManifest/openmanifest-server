@@ -18,7 +18,8 @@ end
 owner = dev_user("owner@example.com", "Olive Owner")
 operator = Operator.find_by(name: "Demo Dropzone")
 operator ||= Setup::Operators::CreateOperator.run!(
-  name: "Demo Dropzone", industry: "skydiving", time_zone: "Australia/Brisbane", owner: owner, federation: Federation.find_by(slug: "apf") || Federation.first,
+  name: "Demo Dropzone", industry: "skydiving", time_zone: "Australia/Brisbane", owner: owner,
+  certification_body_ids: [(CertificationBody.find_by(slug: "apf") || CertificationBody.first).id],
   lat: nil, lng: nil, is_credit_system_enabled: true, primary_color: "#1D3557", secondary_color: "#E63946"
 )
 operator.update!(state: "public", settings: {
@@ -33,7 +34,8 @@ ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_ce
 operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, default_destination: Destination.altitude_for(operator, 14_000),
                                          allow_manifesting_self: false, is_tandem: true, currency: "AUD")
 roles = operator.user_roles.index_by(&:name)
-license = (Federation.find_by(slug: "apf") || Federation.first).licenses.where.not(name: "No license").first
+apf = CertificationBody.find_by(slug: "apf") || CertificationBody.first
+level = apf.certification_levels.where.not(name: "No license").first
 members = {}
 [
   ["pilot@example.com", "Pat Pilot", "pilot"], ["manifest@example.com", "Max Manifest", "manifest"],
@@ -41,12 +43,14 @@ members = {}
   ["student@example.com", "Stu Student", "student"],
 ].each do |email, name, role|
   membership = operator.memberships.find_or_initialize_by(user: dev_user(email, name))
-  membership.assign_attributes(user_role: roles.fetch(role), credits: 400, license: license, expires_at: 1.year.from_now)
+  membership.assign_attributes(user_role: roles.fetch(role), credits: 400, certification_level: level, expires_at: 1.year.from_now)
   membership.save!
+  UserCertification.find_or_create_by!(user: membership.user, certification_body: apf) { |held| held.certification_level = level }
   members[email] = membership
 end
 owner_membership = operator.memberships.find_by!(user: owner)
-owner_membership.update!(credits: 1000, license: license, expires_at: 1.year.from_now)
+owner_membership.update!(credits: 1000, certification_level: level, expires_at: 1.year.from_now)
+UserCertification.find_or_create_by!(user: owner, certification_body: apf) { |held| held.certification_level = level }
 %w(actAsPilot actAsGCA actAsLoadMaster actAsDutyOfficer actAsEquipmentInspector).each { |p| owner_membership.grant!(p) }
 members["pilot@example.com"].grant!("actAsPilot")
 

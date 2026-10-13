@@ -158,13 +158,13 @@ RSpec.describe "Notifications and push tokens" do
       expect { described_class.perform_now(0, member.id) }.not_to raise_error
     end
 
-    it "is enqueued with ids when a member with a rig, a weight and a license joins" do
+    it "is enqueued with ids when a member with a rig, a weight and a certification_level joins" do
       rig
       member.user.update!(body_mass_kg: 80)
       joiner = create(:user, body_mass_kg: 80)
       create(:rig, user: joiner, operator: nil)
 
-      expect { create(:membership, operator: operator, user: joiner, license: Federation.first.licenses.where.not(name: "No license").first) }.
+      expect { create(:membership, operator: operator, user: joiner, certification_level: CertificationBody.first.certification_levels.where.not(name: "No license").first) }.
         to have_enqueued_job(described_class).with(joiner.rigs.first.id, kind_of(Integer))
     end
   end

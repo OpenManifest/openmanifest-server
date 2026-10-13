@@ -11,7 +11,7 @@ fragment currentUserEssentials on Membership {
   hasMembership
   hasReserveInDate
   hasRigInspection
-  hasLicense
+  hasCertificationLevel
   permissions
   expiresAt
 
@@ -37,8 +37,8 @@ fragment currentUserDetailed on Membership {
   availableRigs {
     ...rigEssentials
   }
-  license {
-    ...licenseDetails
+  certificationLevel {
+    ...certificationLevelDetails
   }
 
   user {

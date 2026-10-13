@@ -1,8 +1,8 @@
 class Types::Operator::Settings < Types::Base::Object
   field :require_rig_inspection, Boolean, null: true,
                                           description: 'Whether or not rig inspections are required before manifesting a jump'
-  field :require_license, Boolean, null: true,
-                                   description: 'Should a valid license be required to manifest a jump?'
+  field :require_certification, Boolean, null: true,
+                                         description: 'Should a valid certification be required to manifest a jump?'
   field :require_credits, Boolean, null: true,
                                    description: 'When this is enabled, users cannot manifest if they have no credits'
   field :require_membership, Boolean, null: true,

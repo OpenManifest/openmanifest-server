@@ -68,6 +68,7 @@ groups:
     - { old: user_federation_qualification, new: user_qualification }
     - { old: user_federation, new: user_certification }
     - { old: licensed_jump_type, new: permitted_activity }
+    - { old: licensed_activity_type, new: permitted_activity }
     - { old: federation, new: certification_body }
     - { old: license, new: certification_level }
   equipment:

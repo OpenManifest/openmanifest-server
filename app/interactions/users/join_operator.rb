@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # A user becomes a member of an operator. Only public operators can be joined (a moderator can join any), the role is the
-# one Membership assigns by default (student, or fun jumper for someone with a license or a rig and exit weight), and
+# one Membership assigns by default (student, or fun jumper for someone with a certification level or a rig and body mass), and
 # joining twice returns the existing membership. A member who left (or was removed) and joins again gets the same
 # membership back, with the default role and without the permissions that were granted to them directly: a removal is not
 # undone by joining again.

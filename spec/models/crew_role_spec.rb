@@ -5,7 +5,7 @@ require "rails_helper"
 # P7.10: crew roles are data of the operator; loads are validated from them
 RSpec.describe CrewRole do
   let(:owner) { create(:user) }
-  let(:dropzone) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", federation: Federation.first) }
+  let(:dropzone) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
   let(:rafting) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "generic", name: "Rafts", time_zone: "Australia/Brisbane") }
 
   describe "presets" do

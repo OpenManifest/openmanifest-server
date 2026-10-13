@@ -14,6 +14,7 @@ module Types::Operator::Tickets
     end
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true
+    async_field :required_qualification, Types::Meta::Qualification, null: true
     async_field :ticket_types, [Types::Operator::Ticket], null: false
     async_field :operator, Types::OperatorType, null: false
     timestamp_fields

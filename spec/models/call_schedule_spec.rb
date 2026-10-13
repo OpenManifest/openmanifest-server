@@ -5,7 +5,7 @@ require "rails_helper"
 # P7.11: the minutes of the boarding calls come from the operator, and from its template until it sets them
 RSpec.describe Operator, "call schedule" do
   let(:owner) { create(:user) }
-  let(:dropzone) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", federation: Federation.first) }
+  let(:dropzone) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
 
   it "is the template's until the operator sets one" do
     expect(dropzone.call_schedule_minutes).to eq([20, 15, 10])

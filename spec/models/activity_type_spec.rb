@@ -19,24 +19,24 @@
 require "rails_helper"
 
 RSpec.describe ActivityType do
-  let!(:federation) { Federation.find_by(slug: :apf) }
+  let!(:certification_body) { CertificationBody.find_by(slug: :apf) }
   let!(:operator) { create(:operator) }
   let!(:user1) { create(:user) }
   let!(:certificate_e_user) do
-    create(:membership, operator: operator, user: user1, license: federation.licenses.find_by(name: "Certificate E"))
+    create(:membership, operator: operator, user: user1, certification_level: certification_body.certification_levels.find_by(name: "Certificate E"))
   end
 
   let!(:user2) { create(:user) }
   let!(:certificate_a_user) do
-    create(:membership, operator: operator, user: user2, license: federation.licenses.find_by(name: "Certificate A"))
+    create(:membership, operator: operator, user: user2, certification_level: certification_body.certification_levels.find_by(name: "Certificate A"))
   end
 
   let!(:user3) { create(:user) }
   let!(:certificate_c_user) do
-    create(:membership, operator: operator, user: user3, license: federation.licenses.find_by(name: "Certificate C"))
+    create(:membership, operator: operator, user: user3, certification_level: certification_body.certification_levels.find_by(name: "Certificate C"))
   end
 
-  it "E license user is allowed for any jump" do
+  it "E certification_level user is allowed for any jump" do
     expect(
       ActivityType.allowed_for(
         certificate_e_user
@@ -44,7 +44,7 @@ RSpec.describe ActivityType do
     ).to eq ActivityType.all.pluck(:slug).sort
   end
 
-  it "A license only allowed for flat" do
+  it "A certification_level only allowed for flat" do
     expect(
       ActivityType.allowed_for(
         certificate_a_user
@@ -52,7 +52,7 @@ RSpec.describe ActivityType do
     ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it "A license and E license user only allowed for A licensed jump" do
+  it "A certification_level and E certification_level user only allowed for A licensed jump" do
     expect(
       ActivityType.allowed_for([
         certificate_e_user,
@@ -61,7 +61,7 @@ RSpec.describe ActivityType do
     ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it "A license, C license and E license user only allowed for A licensed jump" do
+  it "A certification_level, C certification_level and E certification_level user only allowed for A licensed jump" do
     expect(
       ActivityType.allowed_for([
         certificate_e_user,
@@ -71,7 +71,7 @@ RSpec.describe ActivityType do
     ).to eq ["fs", "hnp", "hp"].sort
   end
 
-  it "C license and E license users allowed for C licensed jumps" do
+  it "C certification_level and E certification_level users allowed for C licensed jumps" do
     expect(
       ActivityType.allowed_for([
         certificate_e_user,

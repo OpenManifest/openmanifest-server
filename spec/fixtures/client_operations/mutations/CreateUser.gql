@@ -2,9 +2,9 @@ mutation CreateGhost(
   $name: String!
   $phone: String
   $email: String!
-  $federationNumber: String
+  $certificationBodyNumber: String
   $role: Int!
-  $license: Int
+  $certificationLevel: Int
   $operator: Int!
   $bodyMassKg: Float!
 ) {
@@ -12,12 +12,12 @@ mutation CreateGhost(
     input: {
       attributes: {
         role: $role
-        federationNumber: $federationNumber
+        certificationBodyNumber: $certificationBodyNumber
         name: $name
         phone: $phone
         email: $email
         operator: $operator
-        license: $license
+        certificationLevel: $certificationLevel
         bodyMassKg: $bodyMassKg
       }
     }

@@ -63,8 +63,8 @@ RSpec.describe Manifest::CreateSlot do
 
     context "when the user isnt allowed to manifest with the requested jump type" do
       let!(:membership) do
-        create(:membership, operator: operator, credits: 200, federation: Federation.find_by(slug: :apf),
-                            license: Federation.find_by(slug: :apf).licenses.find_by(name: "Certificate A"))
+        create(:membership, operator: operator, credits: 200, certification_body: CertificationBody.find_by(slug: :apf),
+                            certification_level: CertificationBody.find_by(slug: :apf).certification_levels.find_by(name: "Certificate A"))
       end
       let!(:forbidden_activity_type) { ActivityType.where.not(id: ActivityType.allowed_for([membership]).pluck(:id)).sample }
       let!(:outcome) do

@@ -38,10 +38,10 @@ class Membership < ApplicationRecord
   has_many :rig_inspections, dependent: :destroy
   has_many :approved_rigs, through: :rig_inspections, source: :rig
 
-  # Automatically updated by UserFederation:
-  belongs_to :license, optional: true
-  has_many :licensed_activity_types, through: :license, source: :licensed_activity_types
-  has_many :activity_types, through: :licensed_activity_types, source: :activity_type
+  # Automatically updated by UserCertification:
+  belongs_to :certification_level, optional: true
+  has_many :permitted_activities, through: :certification_level, source: :permitted_activities
+  has_many :activity_types, through: :permitted_activities, source: :activity_type
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
   has_many :rigs, through: :user
@@ -49,10 +49,12 @@ class Membership < ApplicationRecord
   scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_guest student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
 
-  # Finds Memberships belonging to an operator in
-  # a given federation
-  scope :in_federation, -> (federation) { includes(:operator).where(operator: { federation: federation }) }
-  scope :with_license, -> (record_or_id) { where(license: record_or_id) }
+  # Finds Memberships belonging to an operator that accepts
+  # a given certification body
+  scope :in_certification_body, -> (certification_body) do
+    where(operator_id: OperatorCertificationBody.where(certification_body: certification_body).select(:operator_id))
+  end
+  scope :with_certification_level, -> (record_or_id) { where(certification_level: record_or_id) }
 
   # All operator users for the given user
   scope :for_user, -> (u) { where(user: u) }
@@ -60,13 +62,13 @@ class Membership < ApplicationRecord
   # Users manifested on a load
   scope :manifested_on, -> (load) { includes(:slots).where(slots: { load: load }) }
 
-  # Gets operator users without a specific license,
-  # e.g nil, or another license than the given one.
-  # If none is given, get all Memberships without any license
-  scope :without_license, -> (specific_license = nil) do
-    next where(license: nil) unless specific_license
-    without_license.or(
-      where.not(license: specific_license)
+  # Gets memberships without a specific certification level,
+  # e.g nil, or another level than the given one.
+  # If none is given, get all Memberships without any level
+  scope :without_certification_level, -> (specific_certification_level = nil) do
+    next where(certification_level: nil) unless specific_certification_level
+    without_certification_level.or(
+      where.not(certification_level: specific_certification_level)
     )
   end
 
@@ -196,19 +198,30 @@ class Membership < ApplicationRecord
     )
   end
 
+  # The rank of the highest level the member holds at a body the operator accepts; 0 for none
+  def certification_rank
+    certification_level&.rank || 0
+  end
+
+  # Sets the level to the highest the user holds at the bodies the operator accepts
+  def refresh_certification_level
+    level = user.highest_certification_level(operator.certification_body_ids)
+    update_columns(certification_level_id: level&.id, updated_at: Time.current) unless level&.id == certification_level_id
+  end
+
   private
 
   # Set up default role for new users when the Membership is initialized
   def set_defaults
-    set_default_license
+    set_default_certification_level
     set_default_role
   end
 
   # Sets the default role for a Membership when initializing,
   # which defaults to UserRole::DEFAULT for users that have
-  # no license in the operator's federation, and no exit weight
-  # or rig defined, and to UserRole::DEFAULT_LICENSED if license
-  # exists or exit weight and rig are defined
+  # no certification level at a body the operator accepts, and no body mass
+  # or rig defined, and to the certified default if a level
+  # exists or body mass and rig are defined
   def set_default_role
     return unless operator
     return if user_role_id.present?
@@ -216,8 +229,8 @@ class Membership < ApplicationRecord
     # Role defaults to admin if the user has moderator role
     role ||= operator.user_roles.admin if user.is_moderator?
 
-    # Role is fun jumper if the user has a rig and has set up exit weight
-    role ||= operator.user_roles.default_licensed if license
+    # Role is fun jumper if the user has a rig and has set up body mass
+    role ||= operator.user_roles.default_licensed if certification_level
     role ||= operator.user_roles.default_licensed if user.rigs.any? && user.body_mass_kg.present?
 
     # Default role is Student
@@ -226,13 +239,14 @@ class Membership < ApplicationRecord
     assign_attributes(user_role: role)
   end
 
-  def set_default_license
-    return if license_id.present?
+  def set_default_certification_level
+    return if certification_level_id.present?
     return unless user
-    license_from_federation, = user.licenses.for_federation(operator.federation_id)
-    return unless license_from_federation
-    # Find any existing UserFederations this user has for the same Federation
-    assign_attributes(license: license_from_federation)
+    # The highest level the user holds at a body the operator accepts
+    level = user.highest_certification_level(operator.certification_body_ids)
+    return unless level
+
+    assign_attributes(certification_level: level)
   end
 
   def set_appsignal_gauge
@@ -242,7 +256,7 @@ class Membership < ApplicationRecord
   def request_rig_inspection
     return unless user.rigs.any?
     return unless user.body_mass_kg
-    return unless license_id
+    return unless certification_level_id
     return if rig_inspections.any?
     rig = rigs.not_inspected_at(operator).first
     return unless rig

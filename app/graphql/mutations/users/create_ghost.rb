@@ -12,7 +12,7 @@ module Mutations::Users
       mutate(
         ::Setup::Users::CreateGhost,
         :user,
-        license: attributes[:license],
+        certification_level: attributes[:certification_level],
         role: attributes[:role],
         operator: attributes[:operator],
         body_mass_kg: attributes[:body_mass_kg],

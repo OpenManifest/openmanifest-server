@@ -17,7 +17,7 @@ operator = Operator.find_by(name: "Demo")
     gca: Membership.where(operator: operator).order(Arel.sql("RANDOM()")).first.user,
   )
 
-  dz_users = Membership.includes(:user).where.not(user: { license_id: nil }).where(operator: operator).order(Arel.sql("RANDOM()")).take(random_vehicle.capacity + 1)
+  dz_users = Membership.includes(:user).where.not(certification_level_id: nil).where(operator: operator).order(Arel.sql("RANDOM()")).take(random_vehicle.capacity + 1)
   filled_slots = index == 4 ? (random_vehicle.capacity / 3).to_i : random_vehicle.capacity
 
   puts "Load created"

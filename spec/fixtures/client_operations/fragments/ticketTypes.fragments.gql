@@ -7,6 +7,10 @@ fragment ticketTypeEssentials on TicketType {
   costCents
   isTandem
   allowManifestingSelf
+  minCertificationRank
+  requiredQualification {
+    ...qualificationEssentials
+  }
 }
 
 fragment ticketTypeDetails on TicketType {
@@ -20,6 +24,9 @@ fragment ticketTypeAddonEssentials on Extra {
   id
   name
   costCents
+  requiredQualification {
+    ...qualificationEssentials
+  }
 }
 
 fragment ticketTypeAddonDetails on Extra {

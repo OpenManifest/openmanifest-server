@@ -7,7 +7,7 @@ class Activity::CreateEvent < ApplicationInteraction
   string :details, default: ""
   symbol :access_level, default: :user
   # Events belong to an operator, nobody can see one without it: what happens outside any operator (a user joining a
-  # federation before joining an operator) is not logged
+  # certification body before joining an operator) is not logged
   record :operator, default: nil
   object :resource, class: ApplicationRecord, default: nil
   date_time :created_at, default: -> { DateTime.now }

@@ -19,6 +19,8 @@ module Types::Operator
     async_field :default_destination, Types::Operator::Destination, null: true
     field :allow_manifesting_self, Boolean, null: true
     field :is_tandem, Boolean, null: true
+    field :min_certification_rank, Int, null: true, description: "The lowest rank of certification level that may buy this ticket"
+    async_field :required_qualification, Types::Meta::Qualification, null: true
     field :extras, [Types::Operator::Tickets::Addon], null: false
     def extras
       dataloader.with(::Sources::AssociationLoader, [:extras]).load(object).extras

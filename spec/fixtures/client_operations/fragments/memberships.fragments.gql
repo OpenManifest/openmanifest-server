@@ -4,13 +4,13 @@ fragment membershipEssentials on Membership {
   expiresAt
   hasCredits
   hasMembership
-  hasLicense
+  hasCertificationLevel
   hasBodyMassKg
   role {
     ...roleEssentials
   }
-  license {
-    ...licenseEssentials
+  certificationLevel {
+    ...certificationLevelEssentials
   }
   user {
     ...userEssentials
@@ -20,8 +20,8 @@ fragment membershipEssentials on Membership {
 fragment membershipDetails on Membership {
   ...membershipEssentials
   creditsCents
-  license {
-    ...licenseDetails
+  certificationLevel {
+    ...certificationLevelDetails
   }
   user {
     ...userDetailed

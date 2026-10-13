@@ -33,6 +33,7 @@ RSpec.describe "P6.16 constraint migrations" do
 
   def with_legacy_schema
     ActiveRecord::Migration.suppress_messages do
+      GeneraliseCertifications.new.migrate(:down)
       CreateCrewRoles.new.migrate(:down)
       CreateLoadVehicles.new.migrate(:down)
       RenameAviationNamesToGeneric.new.migrate(:down)
@@ -48,6 +49,7 @@ RSpec.describe "P6.16 constraint migrations" do
       RenameAviationNamesToGeneric.new.migrate(:up)
       CreateLoadVehicles.new.migrate(:up)
       CreateCrewRoles.new.migrate(:up)
+      GeneraliseCertifications.new.migrate(:up)
     end
     reset_models
   end
@@ -70,7 +72,7 @@ RSpec.describe "P6.16 constraint migrations" do
     before { connection.remove_index :memberships, name: "index_memberships_on_user_id_and_operator_id" }
 
     def duplicate_membership(**attrs)
-      Membership.new(operator: operator, user: user, user_role: oldest.user_role, license: oldest.license, **attrs).tap { |member| member.save!(validate: false) }
+      Membership.new(operator: operator, user: user, user_role: oldest.user_role, certification_level: oldest.certification_level, **attrs).tap { |member| member.save!(validate: false) }
     end
 
     it "merges the duplicates into the oldest membership" do

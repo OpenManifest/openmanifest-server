@@ -10,7 +10,7 @@ units: { distance: km, mass: kg, temperature: c }
 call_schedule_minutes: [15]
 settings:
   require_rig_inspection: false
-  require_license: false
+  require_certification: false
   require_credits: false
   require_membership: false
   allow_negative_credits: false

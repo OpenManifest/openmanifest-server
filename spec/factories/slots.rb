@@ -35,7 +35,7 @@ FactoryBot.define do
     ticket_type { create(:ticket_type, operator: load.vehicle.operator) }
     is_paid { false }
     body_mass_kg { membership.user.body_mass_kg }
-    activity_type { membership.user.license.licensed_activity_types.sample.activity_type }
+    activity_type { membership.user.certification_level.permitted_activities.sample.activity_type }
     rig { membership.user.rigs.sample }
     created_by { membership }
   end

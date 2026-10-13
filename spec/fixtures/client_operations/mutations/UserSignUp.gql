@@ -6,7 +6,7 @@ mutation UserSignUp(
   $phone: String!
   $pushToken: String
   $bodyMassKg: Float!
-  $licenseId: Int
+  $certificationLevelId: Int
 ) {
   userRegister(
     email: $email
@@ -16,7 +16,7 @@ mutation UserSignUp(
     name: $name
     phone: $phone
     pushToken: $pushToken
-    licenseId: $licenseId
+    certificationLevelId: $certificationLevelId
     confirmUrl: "https://openmanifest.org/confirm/"
   ) {
     fieldErrors {
