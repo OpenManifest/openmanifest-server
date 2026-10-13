@@ -5,7 +5,7 @@ require "active_interaction"
 class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :load
   record :ticket_type
-  record :jump_type
+  record :activity_type
   integer :group_number, default: nil
   # Add-ons bought for every member of the group
   array :extra_ids, default: nil do
@@ -14,19 +14,21 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   date_time :created_at, default: -> { DateTime.current }
   array :users do
     hash do
-      record :dropzone_user
-      float :exit_weight
-      record :rig, default: nil
-      string :passenger_name, default: nil
-      float :passenger_exit_weight, default: nil
+      record :membership
+      float :body_mass_kg
+      array :equipment_ids, default: nil do
+        integer
+      end
+      string :guest_name, default: nil
+      float :guest_body_mass_kg, default: nil
     end
   end
 
-  validates :ticket_type, :jump_type, :users, presence: true
+  validates :ticket_type, :activity_type, :users, presence: true
 
   steps :lock_load_and_members,
         :check_available_slots,
-        :check_allowed_jump_type,
+        :check_allowed_activity_type,
         :check_credits,
         :create_slots
 
@@ -34,12 +36,12 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   # BUG-023). Lock order: the load, then the members by id.
   def lock_load_and_members
     load.lock!
-    dropzone_users.sort_by(&:id).each(&:lock!)
+    memberships.sort_by(&:id).each(&:lock!)
   end
 
   # The whole group gets one group number (BUG-027)
   def create_slots
-    group = group_number || plane_load.next_group_number
+    group = group_number || vehicle_load.next_group_number
 
     users.map do |user|
       compose(
@@ -49,7 +51,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
         created_at: created_at,
         group_includes_self: group_includes_self?,
         ticket_type: ticket_type,
-        jump_type: jump_type,
+        activity_type: activity_type,
         extra_ids: extra_ids,
         load: load,
         **user
@@ -59,56 +61,56 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   end
 
   def group_includes_self?
-    access_context&.subject.present? && users.any? { |user| user[:dropzone_user] == access_context.subject }
+    access_context&.subject.present? && users.any? { |user| user[:membership] == access_context.subject }
   end
 
   def check_available_slots
     # Check how many users we're manifesting, and return
     # an error if there aren't enough slots on this load
-    slots_expected = users.sum { |user| user[:passenger_name] ? 2 : 1 }
+    slots_expected = users.sum { |user| user[:guest_name] ? 2 : 1 }
 
-    return unless slots_expected > plane_load.reload.available_slots
-    errors.add(:base, "Only #{plane_load.available_slots} slots available")
+    return unless slots_expected > vehicle_load.reload.available_slots
+    errors.add(:base, "Only #{vehicle_load.available_slots} slots available")
   end
 
   def check_credits
-    return unless dropzone.is_credit_system_enabled?
+    return unless operator.is_credit_system_enabled?
 
-    cost = ticket_type.cost_cents.to_i + Extra.where(dropzone: dropzone, id: extra_ids).sum(:cost_cents)
+    cost = ticket_type.cost_cents.to_i + Extra.where(operator: operator, id: extra_ids).sum(:cost_cents)
     users.each do |user|
-      next unless cost > (user[:dropzone_user].credits_cents || 0)
+      next unless cost > (user[:membership].credits_cents || 0)
 
-      errors.add(:base, "#{user[:dropzone_user].user.name} doesn't have enough credits to manifest for this jump")
-      errors.add(:credits, "Not enough credits to manifest #{user[:dropzone_user].user.name}")
+      errors.add(:base, "#{user[:membership].user.name} doesn't have enough credits to manifest for this jump")
+      errors.add(:credits, "Not enough credits to manifest #{user[:membership].user.name}")
     end
   end
 
-  def check_allowed_jump_type
-    return if jump_type.allowed_for?(dropzone_users)
-    errors.add(:jump_type_id, "Not all members are licensed for #{jump_type.name} jumps")
+  def check_allowed_activity_type
+    return if activity_type.allowed_for?(memberships)
+    errors.add(:activity_type_id, "Not all members are licensed for #{activity_type.name} jumps")
   end
 
   def check_double_manifesting
     # Check if the user is manifest on any loads that have
     # not yet been dispatched
-    Slot.where(load: dropzone.loads.on(dropzone.today).active, dropzone_user: dropzone_users).each do |existing_slot|
-      if !existing_slot.dropzone_user.can?(:createDoubleSlot)
-        errors.add(:base, "#{existing_slot.dropzone_user.user.name} can not be double-manifested")
+    Slot.where(load: operator.loads.on(operator.today).active, membership: memberships).each do |existing_slot|
+      if !existing_slot.membership.can?(:createDoubleSlot)
+        errors.add(:base, "#{existing_slot.membership.user.name} can not be double-manifested")
       end
     end
   end
 
   private
 
-  def dropzone_users
-    users.pluck(:dropzone_user)
+  def memberships
+    users.pluck(:membership)
   end
 
-  def plane_load
+  def vehicle_load
     load.reload
   end
 
-  def dropzone
-    plane_load.plane.dropzone
+  def operator
+    vehicle_load.operator
   end
 end

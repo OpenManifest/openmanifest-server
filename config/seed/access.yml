@@ -3,13 +3,13 @@ permissions:
     - actAsPilot
     - actAsLoadMaster
     - actAsGCA
-    - actAsDZSO
-    - actAsRigInspector
+    - actAsDutyOfficer
+    - actAsEquipmentInspector
   crud: &crud
-    dropzone:
-      - updateDropzone
-      - deleteDropzone
-      - undeleteDropzone
+    operator:
+      - updateOperator
+      - deleteOperator
+      - undeleteOperator
     weather_conditions:
       - updateWeatherConditions
     load:
@@ -43,22 +43,22 @@ permissions:
       - deleteExtra
       - readExtra
       - undeleteExtra
-    aircrafts:
-      - createPlane
-      - updatePlane
-      - deletePlane
-      - undeletePlane
+    vehicles:
+      - createVehicle
+      - updateVehicle
+      - deleteVehicle
+      - undeleteVehicle
     equipment:
-      - createRig
-      - updateRig
-      - deleteRig
-      - readRig
-      - undeleteRig
-      - createDropzoneRig
-      - updateDropzoneRig
-      - deleteDropzoneRig
-      - readDropzoneRig
-      - undeleteDropzoneRig
+      - createEquipment
+      - updateEquipment
+      - deleteEquipment
+      - readEquipment
+      - undeleteEquipment
+      - createOperatorEquipment
+      - updateOperatorEquipment
+      - deleteOperatorEquipment
+      - readOperatorEquipment
+      - undeleteOperatorEquipment
     permissions:
       - readPermissions
       - updatePermissions
@@ -90,215 +90,3 @@ permissions:
     statistics:
       - viewRevenue
       - viewStatistics
-roles:
-  tandem_passenger:
-    permissions:
-      - readLoad
-  student:
-    permissions:
-      - readLoad
-      - createSlot
-  pilot:
-    permissions:
-      - readLoad
-      - createSlot
-      - actAsPilot
-  fun_jumper:
-    permissions:
-      - readLoad
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-      - readUser
-      - actAsLoadMaster
-      - actAsGCA
-      - viewUserActivity
-      - viewStatistics
-  coach:
-    permissions:
-      - readLoad
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-
-      - readUser
-      - actAsLoadMaster
-      - actAsGCA
-
-      - viewUserActivity
-      - viewStatistics
-  aff_instructor:
-    permissions:
-      - readLoad
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - createUser
-
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
-
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-
-      - readUserTransactions
-      - updateWeatherConditions
-
-      - readUser
-      - actAsLoadMaster
-      - actAsGCA
-      - actAsDZSO
-
-      - viewUserActivity
-      - viewSystemActivity
-      - viewAdminActivity
-      - viewRevenue
-      - viewStatistics
-  tandem_instructor:
-    permissions:
-      - readLoad
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
-
-      - readUserTransactions
-      - updateWeatherConditions
-
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-
-      - readUser
-      - actAsLoadMaster
-      - actAsGCA
-      - actAsDZSO
-
-      - viewUserActivity
-      - viewStatistics
-      - viewSystemActivity
-      - viewAdminActivity
-      - viewRevenue
-
-  chief_instructor:
-    permissions:
-      - readLoad
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
-
-      - updateWeatherConditions
-
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-
-      - readUserTransactions
-      - grantPermission
-      - revokePermission
-
-      - readUser
-      - actAsLoadMaster
-      - actAsGCA
-      - actAsDZSO
-
-      - viewUserActivity
-      - viewStatistics
-      - viewSystemActivity
-      - viewAdminActivity
-      - viewRevenue
-  manifest:
-    permissions:
-      - readLoad
-      - updateLoad
-      - createLoad
-
-      - updateWeatherConditions
-
-      - createSlot
-      - updateSlot
-      - deleteSlot
-      - createRig
-      - updateRig
-      - deleteRig
-
-      - readDropzoneRig
-      - updateDropzoneRig
-      - createDropzoneRig
-      - updateDropzoneRig
-
-      - createUserSlot
-      - createUserSlotWithSelf
-      - deleteUserSlot
-      - updateUserSlot
-
-      - createPackjob
-      - updatePackjob
-      - deletePackjob
-      - readPackjob
-
-      - createFormTemplate
-      - updateFormTemplate
-      - deleteFormTemplate
-      - readFormTemplate
-
-      - createUserTransaction
-      - readUserTransactions
-
-      - grantPermission
-      - revokePermission
-
-      - readUser
-      - updateUser
-      - actAsLoadMaster
-      - actAsGCA
-      - actAsDZSO
-
-      - viewUserActivity
-      - viewStatistics
-      - viewSystemActivity
-      - viewAdminActivity
-      - viewRevenue
-  admin:
-    <<: *crud
-    all_acting: *acting
-  owner:
-    <<: *crud
-    all_acting: *acting

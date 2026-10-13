@@ -5,7 +5,7 @@
 # Table name: orders
 #
 #  id           :bigint           not null, primary key
-#  dropzone_id  :bigint           not null
+#  operator_id  :bigint           not null
 #  seller_type  :string           not null
 #  seller_id    :bigint           not null
 #  buyer_type   :string           not null
@@ -20,7 +20,7 @@ class Order < ApplicationRecord
   include MoneyAttributes
 
   money :amount
-  belongs_to :dropzone
+  belongs_to :operator
   belongs_to :seller, polymorphic: true
   belongs_to :buyer, polymorphic: true
   belongs_to :item, polymorphic: true, optional: true
@@ -32,13 +32,13 @@ class Order < ApplicationRecord
 
   enum :state, { :pending => 0, :completed => 1, :refunded => 2, :cancelled => 3 }
 
-  scope :at_dropzone, ->(dropzone) { where(dropzone: dropzone) }
+  scope :at_operator, ->(operator) { where(operator: operator) }
 
-  # Order numbers count up per dropzone. The dropzone row is locked until the end of the transaction (every purchase
+  # Order numbers count up per operator. The operator row is locked until the end of the transaction (every purchase
   # updates it anyway), so concurrent orders get different numbers; the unique index backs this up.
   def set_order_number
-    Dropzone.where(id: dropzone_id).lock.pick(:id)
-    current_max = Order.at_dropzone(dropzone).maximum(:order_number) || 0
+    Operator.where(id: operator_id).lock.pick(:id)
+    current_max = Order.at_operator(operator).maximum(:order_number) || 0
     assign_attributes(order_number: current_max + 1)
   end
 end

@@ -35,11 +35,11 @@ class Setup::Global::Seeds::Permissions < ApplicationInteraction
       on_duplicate_key_ignore: true
     )
 
-    ::Dropzone.all.each do |dropzone|
+    ::Operator.all.each do |operator|
       compose(
-        ::Setup::Dropzones::Access::CreateDefaults,
+        ::Setup::Operators::Access::CreateDefaults,
         permissions: permissions.to_a,
-        dropzone: dropzone
+        operator: operator
       )
     end
   end

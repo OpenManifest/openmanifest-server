@@ -1,0 +1,14 @@
+mutation CreateEquipmentInspection($operator: ID, $equipment: ID, $isOk: Boolean, $definition: String) {
+  createEquipmentInspection(
+    input: { attributes: { operator: $operator, equipment: $equipment, isOk: $isOk, definition: $definition } }
+  ) {
+    equipmentInspection {
+      ...equipmentInspectionMutationEssentials
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

@@ -8,7 +8,7 @@ class Types::System::Events::Event < Types::Base::Object
   field :details, String, null: true
   field :message, String, null: true
 
-  async_field :created_by, Types::Users::DropzoneUser, null: true
+  async_field :created_by, Types::Users::Membership, null: true
   polymorphic_field :resource
   timestamp_fields
 end

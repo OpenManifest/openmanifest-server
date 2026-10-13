@@ -1,0 +1,8 @@
+fragment vehicleEssentials on Vehicle {
+  id
+  minCapacity
+  capacity
+  name
+  registration
+  kind
+}
