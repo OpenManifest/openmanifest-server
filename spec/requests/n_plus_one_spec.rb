@@ -5,21 +5,21 @@ require "rails_helper"
 # BUG-049: the manifest board and the member list run a bounded number of queries however many loads, slots and members
 # there are. Prosopite fails the request when it sees the same query shape repeated for sibling records.
 RSpec.describe "N+1 queries on the board and the member list" do
-  include_context "dropzone"
+  include_context "operator"
 
   let!(:owner_user) { create(:user) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: owner_user, user_role: dropzone.user_roles.find_by(name: "owner"), credits: 500) }
+  let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500) }
   # A member can be on one load at a time, so 5 loads of 10 slots take 50 members
   let!(:members) do
-    Array.new(50) { create(:dropzone_user, dropzone: dropzone, user_role: dropzone.user_roles.default_licensed, credits: 1000) }
+    Array.new(50) { create(:membership, operator: operator, user_role: operator.user_roles.default_licensed, credits: 1000) }
   end
   let!(:loads) do
-    Array.new(5) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+    Array.new(5) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
   end
   let!(:slots) do
     loads.each_with_index.flat_map do |manifested, index|
       members.slice(index * 10, 10).map do |member|
-        create(:slot, load: manifested, dropzone_user: member, dropzone: dropzone, jump_type: JumpType.allowed_for([member]).first)
+        create(:slot, load: manifested, membership: member, operator: operator, activity_type: ActivityType.allowed_for([member]).first)
       end
     end
   end
@@ -42,7 +42,7 @@ RSpec.describe "N+1 queries on the board and the member list" do
 
   it "loads the board, 5 loads of 10 slots, in a bounded number of queries" do
     json = nil
-    without_n_plus_one { json = client_operation("Loads", variables: { dropzone: dropzone.id, date: Date.current.iso8601 }, as: owner_user) }
+    without_n_plus_one { json = client_operation("Loads", variables: { operator: operator.id, date: Date.current.iso8601 }, as: owner_user) }
 
     expect(json[:errors]).to be_nil
     expect(json.dig(:data, :loads, :edges).size).to eq(5)
@@ -51,17 +51,17 @@ RSpec.describe "N+1 queries on the board and the member list" do
 
   it "lists 50 members in a bounded number of queries" do
     json = nil
-    without_n_plus_one { json = client_operation("DropzoneUsers", variables: { dropzoneId: dropzone.id, first: 50, licensed: nil }, as: owner_user) }
+    without_n_plus_one { json = client_operation("Memberships", variables: { operatorId: operator.id, first: 50, licensed: nil }, as: owner_user) }
 
     expect(json[:errors]).to be_nil
-    expect(json.dig(:data, :dropzoneUsers, :edges).size).to be >= 50
+    expect(json.dig(:data, :memberships, :edges).size).to be >= 50
   end
 
   # Every field the screens read from a member or a load, not just the fragments of the list queries
   describe "with every computed field selected" do
     let(:member_fields) do
-      "id credits creditsCents expiresAt hasMembership hasCredits hasExitWeight hasLicense hasRigInspection hasReserveInDate " \
-        "unseenNotifications permissions role { id name } license { id name } user { id name image } rigInspections { id }"
+      "id creditsCents expiresAt hasMembership hasCredits hasBodyMassKg hasCertificationLevel hasRigInspection hasReserveInDate " \
+        "unseenNotifications permissions role { id name } certificationLevel { id name } user { id name image } rigInspections { id }"
     end
 
     def graphql_as(user, query, variables = {})
@@ -71,23 +71,23 @@ RSpec.describe "N+1 queries on the board and the member list" do
 
     it "lists members with their computed fields" do
       json = nil
-      query = "query($dropzone: ID!) { dropzoneUsers(dropzone: $dropzone, first: 100, licensed: false) { edges { node { #{member_fields} } } } }"
-      without_n_plus_one { json = graphql_as(owner_user, query, dropzone: dropzone.id) }
+      query = "query($operator: ID!) { memberships(operator: $operator, first: 100, licensed: false) { edges { node { #{member_fields} } } } }"
+      without_n_plus_one { json = graphql_as(owner_user, query, operator: operator.id) }
 
       expect(json[:errors]).to be_nil
-      expect(json.dig(:data, :dropzoneUsers, :edges).size).to be >= 50
+      expect(json.dig(:data, :memberships, :edges).size).to be >= 50
     end
 
     # The fragments the client uses for one load, selected for every load of the day
-    it "lists loads with their slots, crew and plane" do
+    it "lists loads with their slots, crew and vehicle" do
       json = nil
       query = ClientOperations.document("Load") + <<~GQL
-        query LoadsDetailed($dropzone: ID!, $date: ISO8601Date) {
-          loads(dropzone: $dropzone, date: $date) { edges { node { ...loadDetails } } }
+        query LoadsDetailed($operator: ID!, $date: ISO8601Date) {
+          loads(operator: $operator, date: $date) { edges { node { ...loadDetails } } }
         }
       GQL
       without_n_plus_one do
-        post "/graphql", params: { query: query, variables: { dropzone: dropzone.id, date: Date.current.iso8601 }.to_json, operationName: "LoadsDetailed" },
+        post "/graphql", params: { query: query, variables: { operator: operator.id, date: Date.current.iso8601 }.to_json, operationName: "LoadsDetailed" },
                          headers: owner_user.create_new_auth_token
         json = response.parsed_body.with_indifferent_access
       end
@@ -97,44 +97,44 @@ RSpec.describe "N+1 queries on the board and the member list" do
     end
 
     # These lists used to be eager loaded by a lookahead on each resolver; the fields load their associations themselves
-    it "lists ticket types, add-ons, aircraft and roles of a dropzone" do
-      add_ons = Array.new(6) { |i| Extra.create!(dropzone: dropzone, name: "Extra #{i}", cost_cents: 500) }
-      ticket_types = Array.new(6) { |i| create(:ticket_type, dropzone: dropzone, name: "Ticket #{i}") }
+    it "lists ticket types, add-ons, vehicle and roles of an operator" do
+      add_ons = Array.new(6) { |i| Extra.create!(operator: operator, name: "Extra #{i}", cost_cents: 500) }
+      ticket_types = Array.new(6) { |i| create(:ticket_type, operator: operator, name: "Ticket #{i}") }
       ticket_types.each_with_index { |ticket, i| ticket.extras << add_ons[i] }
-      Array.new(5) { |i| create(:plane, dropzone: dropzone, name: "Plane #{i}") }
+      Array.new(5) { |i| create(:vehicle, operator: operator, name: "Vehicle #{i}") }
       query = <<~GQL
         query($id: ID!) {
-          dropzone(id: $id) {
+          operator(id: $id) {
             id
             userRoles { id name }
             roles { id name }
-            planes { id name dropzone { id } }
+            vehicles { id name operator { id } }
             extras { id name costCents ticketTypes { id } }
             ticketTypes(isPublic: null) { id name costCents extras { id name } }
           }
         }
       GQL
       json = nil
-      without_n_plus_one { json = graphql_as(owner_user, query, id: dropzone.id) }
+      without_n_plus_one { json = graphql_as(owner_user, query, id: operator.id) }
 
       expect(json[:errors]).to be_nil
-      expect(json.dig(:data, :dropzone, :ticketTypes).size).to be >= 6
-      expect(json.dig(:data, :dropzone, :extras).size).to eq(6)
+      expect(json.dig(:data, :operator, :ticketTypes).size).to be >= 6
+      expect(json.dig(:data, :operator, :extras).size).to eq(6)
     end
 
-    it "lists the members' own associations: rigs, licences, memberships and federations" do
+    it "lists the members' own associations: rigs, licences, memberships and certification_bodies" do
       query = <<~GQL
-        query($dropzone: ID!) {
-          dropzoneUsers(dropzone: $dropzone, first: 100, licensed: false) {
-            edges { node { id jumpTypes { id } user { id rigs { id name } licenses { id } dropzoneUsers { id } userFederations { id } } } }
+        query($operator: ID!) {
+          memberships(operator: $operator, first: 100, licensed: false) {
+            edges { node { id activityTypes { id } user { id rigs { id name } certificationLevels { id } memberships { id } userCertifications { id } } } }
           }
         }
       GQL
       json = nil
-      without_n_plus_one { json = graphql_as(owner_user, query, dropzone: dropzone.id) }
+      without_n_plus_one { json = graphql_as(owner_user, query, operator: operator.id) }
 
       expect(json[:errors]).to be_nil
-      expect(json.dig(:data, :dropzoneUsers, :edges).size).to be >= 50
+      expect(json.dig(:data, :memberships, :edges).size).to be >= 50
     end
   end
 end

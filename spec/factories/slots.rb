@@ -8,35 +8,35 @@
 #  ticket_type_id    :bigint
 #  load_id           :bigint
 #  rig_id            :bigint
-#  jump_type_id      :bigint
+#  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  exit_weight       :float
-#  passenger_id      :bigint
+#  body_mass_kg       :float
+#  guest_id      :bigint
 #  is_paid           :boolean
 #  transaction_id    :bigint
-#  passenger_slot_id :bigint
+#  guest_slot_id :bigint
 #  group_number      :integer          default(0), not null
-#  dropzone_user_id  :bigint
+#  membership_id  :bigint
 #
 FactoryBot.define do
   factory :slot do
     add_attribute(:load)
     transient do
-      dropzone { nil }
+      operator { nil }
     end
-    dropzone_user do
-      available_existing = dropzone.dropzone_users.where.not(
-        id: load.slots.pick(:dropzone_user_id)
+    membership do
+      available_existing = operator.memberships.where.not(
+        id: load.slots.pick(:membership_id)
       )
-      available_existing || create(:dropzone_user, dropzone: dropzone)
+      available_existing || create(:membership, operator: operator)
     end
     group_number { 0 }
-    ticket_type { create(:ticket_type, dropzone: load.plane.dropzone) }
+    ticket_type { create(:ticket_type, operator: load.vehicle.operator) }
     is_paid { false }
-    exit_weight { dropzone_user.user.exit_weight }
-    jump_type { dropzone_user.user.license.licensed_jump_types.sample.jump_type }
-    rig { dropzone_user.user.rigs.sample }
-    created_by { dropzone_user }
+    body_mass_kg { membership.user.body_mass_kg }
+    activity_type { membership.user.certification_level.permitted_activities.sample.activity_type }
+    rig { membership.user.rigs.sample }
+    created_by { membership }
   end
 end

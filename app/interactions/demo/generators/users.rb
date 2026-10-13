@@ -2,7 +2,7 @@
 
 class Demo::Generators::Users < ApplicationInteraction
   integer :gca_count, default: 3
-  integer :dzso_count, default: 3
+  integer :duty_officer_count, default: 3
   integer :jumper_count, default: 20
   integer :pilot_count, default: 2
   integer :tandem_instructor_count, default: 3
@@ -10,20 +10,20 @@ class Demo::Generators::Users < ApplicationInteraction
   integer :rig_inspector_count, default: 2
   integer :coach_count, default: 3
   steps :import_users!,
-        :assign_dzso,
+        :assign_duty_officer,
         :assign_gca,
         :assign_rig_inspectors,
-        :assign_licenses,
+        :assign_certification_levels,
         :add_credits!
 
   success do
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: access_context.dropzone,
+      resource: access_context.operator,
       action: :created,
       access_level: :system,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "[Demo] Created 1 CI, #{gca_count} GCAs, #{aff_instructor_count} AFF instructors, #{tandem_instructor_count} Tandem Instructors, #{pilot_count} pilots, #{coach_count} coaches and #{jumper_count} fun jumpers"
     )
@@ -45,8 +45,8 @@ class Demo::Generators::Users < ApplicationInteraction
   def build_ci
     {
       user_id: users.pop.id,
-      dropzone_id: access_context.dropzone.id,
-      user_role_id: access_context.dropzone.user_roles.find_by(name: :chief_instructor).id,
+      operator_id: access_context.operator.id,
+      user_role_id: access_context.operator.user_roles.find_by(name: :chief_instructor).id,
     }
   end
 
@@ -54,8 +54,8 @@ class Demo::Generators::Users < ApplicationInteraction
     (0...tandem_instructor_count).to_a.map do
       {
         user_id: users.pop.id,
-        dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :tandem_instructor).id,
+        operator_id: access_context.operator.id,
+        user_role_id: access_context.operator.user_roles.find_by(name: :tandem_instructor).id,
       }
     end
   end
@@ -65,8 +65,8 @@ class Demo::Generators::Users < ApplicationInteraction
     (0...coach_count).to_a.map do
       {
         user_id: users.pop.id,
-        dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :coach).id,
+        operator_id: access_context.operator.id,
+        user_role_id: access_context.operator.user_roles.find_by(name: :coach).id,
       }
     end
   end
@@ -76,8 +76,8 @@ class Demo::Generators::Users < ApplicationInteraction
     (0...aff_instructor_count).to_a.map do
       {
         user_id: users.pop.id,
-        dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :aff_instructor).id,
+        operator_id: access_context.operator.id,
+        user_role_id: access_context.operator.user_roles.find_by(name: :aff_instructor).id,
       }
     end
   end
@@ -87,8 +87,8 @@ class Demo::Generators::Users < ApplicationInteraction
     (0...pilot_count).to_a.map do
       {
         user_id: users.pop.id,
-        dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :pilot).id,
+        operator_id: access_context.operator.id,
+        user_role_id: access_context.operator.user_roles.find_by(name: :pilot).id,
       }
     end
   end
@@ -98,8 +98,8 @@ class Demo::Generators::Users < ApplicationInteraction
     (0...jumper_count).to_a.map do
       {
         user_id: users.pop.id,
-        dropzone_id: access_context.dropzone.id,
-        user_role_id: access_context.dropzone.user_roles.find_by(name: :fun_jumper).id,
+        operator_id: access_context.operator.id,
+        user_role_id: access_context.operator.user_roles.find_by(name: :fun_jumper).id,
       }
     end
   end
@@ -115,67 +115,67 @@ class Demo::Generators::Users < ApplicationInteraction
     ].flatten.map do |importable|
       importable.merge(created_at: DateTime.now, updated_at: DateTime.now)
     end
-    DropzoneUser.insert_all(importable)
+    Membership.insert_all(importable)
   end
 
   def add_credits!
-    access_context.dropzone.dropzone_users.each do |dz_user|
+    access_context.operator.memberships.each do |dz_user|
       compose(
         ::Transactions::CreateOrder,
         title: "Add demo credits",
         amount: Random.rand(4000..8000),
-        buyer: access_context.dropzone,
+        buyer: access_context.operator,
         seller: dz_user,
-        dropzone: access_context.dropzone,
+        operator: access_context.operator,
         access_context: ::ApplicationInteraction::AccessContext.new(dz_user)
       )
     end
   end
 
-  def assign_dzso
-    @dzso = access_context.dropzone.dropzone_users.staff.shuffle.take(dzso_count).each do |dz_user|
-      dz_user.grant! :actAsDZSO
+  def assign_duty_officer
+    @duty_officer = access_context.operator.memberships.staff.shuffle.take(duty_officer_count).each do |dz_user|
+      dz_user.grant! :actAsDutyOfficer
       dz_user
     end
   end
 
   def assign_gca
-    @gca = access_context.dropzone.dropzone_users.staff.shuffle.take(gca_count).map do |dz_user|
+    @gca = access_context.operator.memberships.staff.shuffle.take(gca_count).map do |dz_user|
       dz_user.grant! :actAsGCA
       dz_user
     end
   end
 
   def assign_pilots
-    @gca = access_context.dropzone.dropzone_users.includes(:user_role).where(user_role: { name: :pilot }).map do |dz_user|
+    @gca = access_context.operator.memberships.includes(:user_role).where(user_role: { name: :pilot }).map do |dz_user|
       dz_user.grant! :actAsPilot
       dz_user
     end
   end
 
   def assign_rig_inspectors
-    @rig_inspectors = access_context.dropzone.dropzone_users.staff.shuffle.take(rig_inspector_count).map do |dz_user|
-      dz_user.grant! :actAsRigInspector
+    @rig_inspectors = access_context.operator.memberships.staff.shuffle.take(rig_inspector_count).map do |dz_user|
+      dz_user.grant! :actAsEquipmentInspector
       dz_user
     end
   end
 
-  def assign_licenses
-    access_context.dropzone.dropzone_users.includes(:license).where(license: { id: nil }).each do |dz_user|
-      license_options = access_context.dropzone.federation.licenses.order(id: :desc)
-      license_options = license_options.limit(3).to_a.sample if %i(
+  def assign_certification_levels
+    access_context.operator.memberships.includes(:certification_level).where(certification_level: { id: nil }).each do |dz_user|
+      certification_level_options = access_context.operator.certification_bodies.first.certification_levels.reorder(rank: :desc)
+      certification_level_options = certification_level_options.limit(3).to_a.sample if %i(
         chief_instructor tandem_instructor aff_instructor
         coach
       ).include?(dz_user.user_role.name)
-      license_options = license_options.to_a.sample unless %i(
+      certification_level_options = certification_level_options.to_a.sample unless %i(
         chief_instructor tandem_instructor aff_instructor
         coach
       ).include?(dz_user.user_role.name)
       compose(
-        ::Federations::AssignUser,
+        ::Certifications::AssignUser,
         access_context: ::ApplicationInteraction::AccessContext.new(dz_user),
-        federation: access_context.dropzone.federation,
-        license: license_options,
+        certification_body: access_context.operator.certification_bodies.first,
+        certification_level: certification_level_options,
         uid: Random.rand(10000..16000).to_s,
         user: dz_user.user
       )

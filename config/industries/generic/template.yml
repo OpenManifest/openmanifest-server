@@ -1,0 +1,21 @@
+slug: generic
+name: Other
+description: Any operator that manifests people onto loads; switch on what you need
+icon: format-list-bulleted
+vehicle_kinds: [vehicle]
+modules:
+  destinations: { kinds: [site, route], scope: per_load }
+  multi_vehicle: {}
+units: { distance: km, mass: kg, temperature: c }
+call_schedule_minutes: [15]
+settings:
+  require_rig_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_reserve_in_date: false
+  allow_self_manifest: true

@@ -1,0 +1,32 @@
+# Copied into every new generic operator by Presets::Apply
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+ticket_types: []
+extras: []
+activity_types: []
+inspection_forms: {}
