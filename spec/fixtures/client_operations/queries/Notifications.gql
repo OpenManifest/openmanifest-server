@@ -35,9 +35,9 @@ query Notifications($operatorId: ID!) {
                 ...slotEssentials
               }
 
-              ... on Rig {
-                ...rigEssentials
-                rigInspections(operatorId: $operatorId) {
+              ... on Equipment {
+                ...equipmentEssentials
+                equipmentInspections(operatorId: $operatorId) {
                   id
                   createdAt
                   inspectedBy {
@@ -50,8 +50,8 @@ query Notifications($operatorId: ID!) {
                 }
               }
 
-              ... on RigInspection {
-                ...rigInspectionEssentials
+              ... on EquipmentInspection {
+                ...equipmentInspectionEssentials
               }
             }
           }

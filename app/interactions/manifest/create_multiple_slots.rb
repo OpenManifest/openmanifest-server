@@ -16,7 +16,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     hash do
       record :membership
       float :body_mass_kg
-      record :rig, default: nil
+      array :equipment_ids, default: nil do
+        integer
+      end
       string :guest_name, default: nil
       float :guest_body_mass_kg, default: nil
     end

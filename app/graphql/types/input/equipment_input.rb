@@ -2,21 +2,21 @@
 
 module Types
   module Input
-    class RigInput < Types::Base::Input
+    class EquipmentInput < Types::Base::Input
+      argument :kind_id, GraphQL::Types::ID, required: false,
+                                             description: "The kind of the item; the operator's first kind when left out on create"
       argument :name, String, required: false
       argument :make, String, required: false
       argument :model, String, required: false
       argument :serial, String, required: false
-      argument :pack_value, Int, required: false
-      argument :repack_expires_at, Int, required: false
+      argument :attributes, GraphQL::Types::JSON, required: false,
+                                                  description: "The values of the kind's attributes (canopy size in square metres); only those given change"
+      argument :service_due_at, Int, required: false
       argument :maintained_at, Int, required: false
       argument :operator_id, Int, required: false
       argument :packing_card, String, required: false
       argument :user_id, Int, required: false
-      argument :rig_type, String, required: false,
-                                  description: Rig.rig_types.keys.join(" / ")
       argument :is_public, Boolean, required: false
-      argument :canopy_size, Int, required: false
     end
   end
 end

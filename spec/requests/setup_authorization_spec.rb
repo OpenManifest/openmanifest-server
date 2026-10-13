@@ -35,8 +35,8 @@ RSpec.describe "Setup authorization" do
     end
 
     it "cannot have its form template changed through another operator's id" do
-      template = create(:form_template, operator: operator_b, definition: "original")
-      operator_b.update!(rig_inspection_template: template)
+      template = operator_b.equipment_kinds.find_by!(key: "rig").inspection_form_template
+      template.update!(definition: "original")
 
       client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_a_user)
 
@@ -62,11 +62,11 @@ RSpec.describe "Setup authorization" do
 
     it "cannot have its inspection result changed by an inspector of another operator" do
       member_b = create(:membership, operator: operator_b)
-      rig = create(:rig, user: member_b.user, operator: nil)
+      equipment = create(:equipment, user: member_b.user, operator: nil)
       template = create(:form_template, operator: operator_b)
-      inspection = RigInspection.create!(rig: rig, membership: member_b, inspected_by: owner_b, form_template: template, definition: "x", is_ok: false)
+      inspection = EquipmentInspection.create!(equipment: equipment, membership: member_b, inspected_by: owner_b, form_template: template, definition: "x", is_ok: false)
 
-      graphql("mutation($id: Int, $attributes: RigInspectionInput!) { updateEquipmentInspection(input: { id: $id, attributes: $attributes }) { errors } }",
+      graphql("mutation($id: Int, $attributes: EquipmentInspectionInput!) { updateEquipmentInspection(input: { id: $id, attributes: $attributes }) { errors } }",
               variables: { id: inspection.id, attributes: { operator: operator_a.id, isOk: true } }, as: owner_a_user)
 
       expect(inspection.reload.is_ok).to be(false)
@@ -113,24 +113,24 @@ RSpec.describe "Setup authorization" do
     end
   end
 
-  describe "archiving rigs" do
-    it "lets staff archive an operator rig of their operator but not of another" do
-      rig_a = create(:rig, operator: operator_a, user: nil)
-      rig_b = create(:rig, operator: operator_b, user: nil)
+  describe "archiving equipment" do
+    it "lets staff archive an operator equipment of their operator but not of another" do
+      equipment_a = create(:equipment, operator: operator_a, user: nil)
+      equipment_b = create(:equipment, operator: operator_b, user: nil)
 
-      client_operation("ArchiveRig", variables: { id: rig_b.id }, as: owner_a_user)
-      client_operation("ArchiveRig", variables: { id: rig_a.id }, as: owner_a_user)
+      client_operation("ArchiveEquipment", variables: { id: equipment_b.id }, as: owner_a_user)
+      client_operation("ArchiveEquipment", variables: { id: equipment_a.id }, as: owner_a_user)
 
-      expect(rig_b.reload).not_to be_discarded
-      expect(rig_a.reload).to be_discarded
+      expect(equipment_b.reload).not_to be_discarded
+      expect(equipment_a.reload).to be_discarded
     end
 
-    it "refuses a user archiving somebody else's rig" do
-      stranger_rig = create(:rig, user: create(:user), operator: nil)
+    it "refuses a user archiving somebody else's equipment" do
+      stranger_equipment = create(:equipment, user: create(:user), operator: nil)
 
-      client_operation("ArchiveRig", variables: { id: stranger_rig.id }, as: owner_a_user)
+      client_operation("ArchiveEquipment", variables: { id: stranger_equipment.id }, as: owner_a_user)
 
-      expect(stranger_rig.reload).not_to be_discarded
+      expect(stranger_equipment.reload).not_to be_discarded
     end
   end
 

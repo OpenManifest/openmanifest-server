@@ -2,7 +2,7 @@ mutation ManifestUser(
   $activityType: ID
   $extras: [ID!]
   $load: ID
-  $rig: ID
+  $equipment: [ID!]
   $ticketType: ID
   $membership: ID
   $bodyMassKg: Float
@@ -16,7 +16,7 @@ mutation ManifestUser(
         activityType: $activityType
         extras: $extras
         load: $load
-        rig: $rig
+        equipment: $equipment
         groupNumber: $groupNumber
         ticketType: $ticketType
         membership: $membership

@@ -81,8 +81,11 @@ module Vocabulary
     nil
   end
 
+  # Words that have no plural: the plural of `equipment` is `equipment`
+  UNCOUNTABLE = %w(equipment).freeze
+
   def pluralize(word, suffix)
-    return word if suffix.empty?
+    return word if suffix.empty? || UNCOUNTABLE.include?(word)
 
     return "#{word.delete_suffix('y')}ies" if word.match?(/[^aeiou]y\z/)
 

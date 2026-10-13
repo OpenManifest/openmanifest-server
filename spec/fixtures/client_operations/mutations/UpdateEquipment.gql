@@ -1,4 +1,4 @@
-#import "../fragments/rigs.fragments.gql"
+#import "../fragments/equipment.fragments.gql"
 mutation UpdateEquipment(
   $id: Int!
   $name: String
@@ -6,10 +6,11 @@ mutation UpdateEquipment(
   $model: String
   $serial: String
   $isPublic: Boolean
-  $rigType: String
-  $canopySize: Int
+  $kindId: ID
+  $attributes: JSON
+  $maintainedAt: Int
   $packingCard: String
-  $repackExpiresAt: Int
+  $serviceDueAt: Int
   $userId: Int
   $operatorId: Int
 ) {
@@ -23,11 +24,12 @@ mutation UpdateEquipment(
         isPublic: $isPublic
         model: $model
         serial: $serial
-        repackExpiresAt: $repackExpiresAt
+        serviceDueAt: $serviceDueAt
         operatorId: $operatorId
         userId: $userId
-        canopySize: $canopySize
-        rigType: $rigType
+        kindId: $kindId
+        attributes: $attributes
+        maintainedAt: $maintainedAt
       }
     }
   ) {
@@ -36,8 +38,8 @@ mutation UpdateEquipment(
       field
       message
     }
-    rig {
-      ...userRigDetailed
+    equipment {
+      ...userEquipmentDetailed
     }
   }
 }

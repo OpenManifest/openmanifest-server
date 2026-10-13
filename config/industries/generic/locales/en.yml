@@ -15,6 +15,7 @@ terms:
   certification: { one: Certification, other: Certifications }
   equipment: { one: Equipment, other: Equipment }
   inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Service due, other: Service due }
   daily_log: { one: Daily log, other: Daily logs }
   call: { one: Call, other: Calls }
   load_count: { one: Load, other: Loads }

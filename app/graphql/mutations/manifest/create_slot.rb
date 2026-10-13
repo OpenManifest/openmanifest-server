@@ -22,13 +22,13 @@ module Mutations::Manifest
           :destination,
           :load_vehicle,
           :body_mass_kg,
-          :rig,
           :load,
           :group_number,
           :guest_name,
           :guest_body_mass_kg,
         ),
-        extra_ids: attributes[:extras]&.pluck(:id)
+        extra_ids: attributes[:extras]&.pluck(:id),
+        equipment_ids: attributes[:equipment]&.pluck(:id)
       )
     end
   end

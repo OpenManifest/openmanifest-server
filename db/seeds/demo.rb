@@ -31,14 +31,21 @@ if operator.new_record?
     )
   )
 
-  operator.rig_inspection_template = FormTemplate.create(
-    name: "Rig Inspection",
-    definition: Industry.fetch("skydiving").presets.dig("inspection_forms", "equipment_inspection").to_json,
-    created_by: owner,
-    updated_by: owner,
-  )
   operator.save!
-  operator.rig_inspection_template.update(operator: operator)
+  # The rig kind of the skydiving template, with its inspection form
+  presets = Industry.fetch("skydiving").presets
+  rig_preset = presets.fetch("equipment_kinds").first
+  rig_kind = operator.equipment_kinds.create!(
+    rig_preset.slice("key", "name", "attribute_schema", "service_interval_days", "inspection_valid_days", "required_by").merge(
+      inspection_form_template: FormTemplate.create!(
+        name: "Equipment Inspection",
+        definition: presets.dig("inspection_forms", "equipment_inspection").to_json,
+        operator: operator,
+        created_by: owner,
+        updated_by: owner
+      )
+    )
+  )
 
   puts "-- Creating vehicles"
   # Create a vehicle
@@ -186,46 +193,46 @@ if operator.memberships.length < 2
     # Create a rig
     case index % 3
     when 0
-      Rig.create(
+      Equipment.create(
         make: "Mirage",
         model: "G4.1",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     when 1
-      Rig.create(
+      Equipment.create(
         make: "Vector",
         model: "V310",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     when 2
-      Rig.create(
+      Equipment.create(
         make: "Javelin",
         model: "J3FK",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     end
 
-    puts "-- Creating rig inspection for #{dz_user.user.name}'s #{dz_user.user.rigs.first.make}"
+    puts "-- Creating equipment inspection for #{dz_user.user.name}'s #{dz_user.user.equipment.first.make}"
 
-    RigInspection.create(
-      rig: dz_user.user.reload.rigs.reload.first,
-      form_template: operator.rig_inspection_template,
+    EquipmentInspection.create(
+      equipment: dz_user.user.reload.equipment.reload.first,
+      form_template: rig_kind.inspection_form_template,
       inspected_by: instructors.first.user,
       membership: dz_user,
       is_ok: true,
-      definition: operator.rig_inspection_template.definition,
+      definition: rig_kind.inspection_form_template.definition,
     )
 
     # Add funds

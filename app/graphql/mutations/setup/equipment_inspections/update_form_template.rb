@@ -1,63 +1,58 @@
 # frozen_string_literal: true
 
-module Mutations::Setup::RigInspections
-  class UpdateEquipmentInspection < Mutations::BaseMutation
+module Mutations::Setup::EquipmentInspections
+  class UpdateFormTemplate < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :rig_inspection, Types::Equipment::RigInspection, null: true
+    field :form_template, Types::Equipment::EquipmentInspectionTemplate, null: true
 
-    argument :attributes, Types::Input::RigInspectionInput, required: true
+    argument :attributes, Types::Input::FormTemplateInput, required: true
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = RigInspection.find(id)
-      # An inspection keeps its member, rig and operator; only the result and the form answers change
-      model.assign_attributes(attributes.to_h.slice(:definition, :is_ok))
+      model = FormTemplate.find(id)
 
-      model.save!
-
+      # A template never moves to another operator
+      model.update!(attributes.to_h.except(:operator_id))
       {
-        rig_inspection: model,
+        form_template: model,
         errors: nil,
         field_errors: nil,
       }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        rig_inspection: nil,
+        form_template: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => invalid
       # Failed save, return the errors to the client
       {
-        rig_inspection: nil,
+        form_template: nil,
         field_errors: nil,
         errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        rig_inspection: nil,
+        form_template: nil,
         field_errors: nil,
         errors: [error.message],
       }
     end
 
-    def authorized?(attributes: nil, id: nil)
-      # The inspection's own operator, not the one the client says (BUG-009)
-      inspection = RigInspection.find_by(id: id)
-      return [false, { errors: ["Rig inspection not found"] }] unless inspection
-
+    def authorized?(id: nil, attributes: nil)
+      # The record's own operator, not the one the client says (BUG-009)
       if context[:current_resource].can?(
-        "actAsEquipmentInspector",
-        operator_id: inspection.membership.operator_id
+        "updateFormTemplate",
+        operator_id: FormTemplate.find(id).operator_id
       )
         true
       else
         [
           false, {
             errors: [
-              "You don't have permissions to inspect rigs",
+              "You don't have permissions to update this form",
             ],
           },
         ]

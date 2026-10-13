@@ -1,6 +1,6 @@
 class Types::Input::Operator::SettingsInput < Types::Base::Input
-  argument :require_rig_inspection, Boolean, required: false,
-                                             description: 'Whether or not rig inspections are required before manifesting a jump'
+  argument :require_equipment_inspection, Boolean, required: false,
+                                                   description: 'Whether or not equipment inspections are required before manifesting a jump'
   argument :require_certification, Boolean, required: false,
                                             description: 'Should a valid certification be required to manifest a jump?'
   argument :require_credits, Boolean, required: false,
@@ -12,8 +12,8 @@ class Types::Input::Operator::SettingsInput < Types::Base::Input
   argument :allow_manifest_bypass, Boolean, required: false,
                                             description: 'Allow manifest to bypass all rules?'
 
-  argument :require_reserve_in_date, Boolean, required: false,
-                                              description: 'When this is enabled, users cannot manifest if their reserve is out of date'
+  argument :require_equipment_in_service, Boolean, required: false,
+                                                   description: 'When this is enabled, users cannot manifest if their reserve is out of date'
   argument :require_equipment, Boolean, required: false,
                                         description: 'When this is enabled, users cannot manifest if they have no equipment'
   argument :allow_double_manifesting, Boolean, required: false,

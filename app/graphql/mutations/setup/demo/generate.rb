@@ -23,7 +23,7 @@ module Mutations::Setup::Demo
           :pilot_count,
           :tandem_instructor_count,
           :aff_instructor_count,
-          :rig_inspector_count,
+          :equipment_inspector_count,
           :coach_count
         )
       )

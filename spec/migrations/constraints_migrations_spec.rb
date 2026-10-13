@@ -33,6 +33,7 @@ RSpec.describe "P6.16 constraint migrations" do
 
   def with_legacy_schema
     ActiveRecord::Migration.suppress_messages do
+      GeneraliseEquipment.new.migrate(:down)
       GeneraliseCertifications.new.migrate(:down)
       CreateCrewRoles.new.migrate(:down)
       CreateLoadVehicles.new.migrate(:down)
@@ -50,6 +51,7 @@ RSpec.describe "P6.16 constraint migrations" do
       CreateLoadVehicles.new.migrate(:up)
       CreateCrewRoles.new.migrate(:up)
       GeneraliseCertifications.new.migrate(:up)
+      GeneraliseEquipment.new.migrate(:up)
     end
     reset_models
   end

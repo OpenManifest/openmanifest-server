@@ -54,11 +54,11 @@ permissions:
       - deleteEquipment
       - readEquipment
       - undeleteEquipment
-      - createOperatorRig
-      - updateOperatorRig
-      - deleteOperatorRig
-      - readOperatorRig
-      - undeleteOperatorRig
+      - createOperatorEquipment
+      - updateOperatorEquipment
+      - deleteOperatorEquipment
+      - readOperatorEquipment
+      - undeleteOperatorEquipment
     permissions:
       - readPermissions
       - updatePermissions

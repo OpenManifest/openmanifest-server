@@ -105,6 +105,12 @@
             "lb"
           ]
         },
+        "area": {
+          "enum": [
+            "m2",
+            "ft2"
+          ]
+        },
         "temperature": {
           "enum": [
             "c",

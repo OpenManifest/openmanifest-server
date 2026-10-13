@@ -27,9 +27,9 @@ fragment operatorEssentials on Operator {
     requireCredits
     requireCertification
     requireMembership
-    requireRigInspection
+    requireEquipmentInspection
     requireEquipment
-    requireReserveInDate
+    requireEquipmentInService
   }
 }
 
@@ -54,7 +54,7 @@ fragment operatorStatisticsEssentials on Statistics {
     count
   }
   revenueCentsCount(timeRange: $timeRange)
-  rigInspectorCount
+  equipmentInspectorCount
 }
 
 fragment operatorStatistics on Operator {
@@ -71,6 +71,9 @@ fragment operatorDetailed on Operator {
   }
   requiredQualifications {
     ...qualificationEssentials
+  }
+  equipmentKinds {
+    ...equipmentKindEssentials
   }
 
   currentConditions {

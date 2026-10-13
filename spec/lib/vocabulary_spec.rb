@@ -32,6 +32,8 @@ RSpec.describe Vocabulary do
       "ExitWeight" => "BodyMassKg",
       "EXIT_WEIGHT" => "BODY_MASS_KG",
       "planes" => "vehicles",
+      "rigs" => "equipment",
+      "Rigs" => "Equipment",
       "federations" => "certification_bodies",
       "Federations" => "CertificationBodies",
       "federationId" => "certificationBodyId",

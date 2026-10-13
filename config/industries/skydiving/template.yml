@@ -13,13 +13,13 @@ modules:
   limits: { mass: true, payload: true, age: true }
   conditions: { kind: winds_aloft }
   daily_log: {}
-units: { altitude: ft, distance: km, mass: kg, temperature: c, speed: kn }
+units: { altitude: ft, area: ft2, distance: km, mass: kg, temperature: c, speed: kn }
 call_schedule_minutes: [20, 15, 10]
 daily_log: { template: apf_master_log }
 # Starting values of the operator's rules; the operator owns them afterwards (Operators::Configuration.default_settings
 # lists every key and its neutral value)
 settings:
-  require_rig_inspection: true
+  require_equipment_inspection: true
   require_certification: true
   require_credits: true
   require_membership: true
@@ -27,5 +27,5 @@ settings:
   allow_manifest_bypass: false
   allow_double_manifesting: false
   require_equipment: true
-  require_reserve_in_date: true
+  require_equipment_in_service: true
   allow_self_manifest: true

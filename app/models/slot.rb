@@ -7,7 +7,6 @@
 #  id                :bigint           not null, primary key
 #  ticket_type_id    :bigint
 #  load_id           :bigint
-#  rig_id            :bigint
 #  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
@@ -32,7 +31,6 @@ class Slot < ApplicationRecord
   belongs_to :load
   # The vehicle of the load this slot rides in, when the load has several that carry (nil: the load's only one)
   belongs_to :load_vehicle, optional: true
-  belongs_to :rig, optional: true
   belongs_to :activity_type, optional: true
   # The place this slot goes to when destinations are per slot (skydiving: its altitude); the ticket type's by default
   belongs_to :destination, optional: true
@@ -44,6 +42,9 @@ class Slot < ApplicationRecord
 
   belongs_to :guest_slot, optional: true, class_name: "Slot"
 
+  # The items the slot uses (a skydiver's rig; a diver's BCD, regulator and wetsuit)
+  has_many :slot_equipment, dependent: :destroy
+  has_many :equipment, through: :slot_equipment
   has_many :slot_extras, dependent: :destroy
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
@@ -65,7 +66,7 @@ class Slot < ApplicationRecord
   validates :activity_type, presence: true, if: -> { operator&.module?(:activities) }
   before_validation :default_destination, on: :create
   validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
-  validate :destination_of_operator, :load_vehicle_of_load
+  validate :destination_of_operator, :load_vehicle_of_load, :equipment_of_member_or_operator
   validate :load_vehicle_has_room, if: -> { load_vehicle && (new_record? || load_vehicle_id_changed?) }
   validate :available?,
            :double_manifest?,
@@ -105,15 +106,14 @@ class Slot < ApplicationRecord
     guest.present? || membership.present?
   end
 
+  # Pounds per square foot under the slot's rig; only operators with the rig kind of skydiving have one
   def wing_loading
-    return unless rig.try(:canopy_size)
     return unless body_mass_kg
+
+    rig = equipment.find { |item| item.kind.key == Skydiving::Rigs::KIND }
     weight = body_mass_kg
     weight += guest_slot.body_mass_kg || 0 if has_guest?
-
-    weight_in_lbs = weight * 2.20462
-    weight_in_lbs /= rig.canopy_size
-    weight_in_lbs
+    Skydiving::Rigs.wing_loading(rig, weight)
   end
 
   def has_guest?
@@ -134,6 +134,16 @@ class Slot < ApplicationRecord
     return if destination.nil? || destination.operator_id == operator&.id
 
     errors.add(:destination, :invalid)
+  end
+
+  # Each item is the member's own or the operator's
+  def equipment_of_member_or_operator
+    return if equipment.empty?
+
+    foreign = equipment.reject do |item|
+      item.user_id.present? ? item.user_id == membership&.user_id : item.operator_id == load&.operator_id
+    end
+    errors.add(:equipment, :invalid) if foreign.any?
   end
 
   def load_vehicle_of_load

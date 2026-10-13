@@ -61,9 +61,9 @@ roles:
     - updateEquipment
     - deleteEquipment
     - createUser
-    - readOperatorRig
-    - updateOperatorRig
-    - createOperatorRig
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
     - createPackjob
     - updatePackjob
     - deletePackjob
@@ -88,9 +88,9 @@ roles:
     - createEquipment
     - updateEquipment
     - deleteEquipment
-    - readOperatorRig
-    - updateOperatorRig
-    - createOperatorRig
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
     - readUserTransactions
     - updateWeatherConditions
     - createPackjob
@@ -115,9 +115,9 @@ roles:
     - createEquipment
     - updateEquipment
     - deleteEquipment
-    - readOperatorRig
-    - updateOperatorRig
-    - createOperatorRig
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
     - updateWeatherConditions
     - createPackjob
     - updatePackjob
@@ -147,9 +147,9 @@ roles:
     - createEquipment
     - updateEquipment
     - deleteEquipment
-    - readOperatorRig
-    - updateOperatorRig
-    - createOperatorRig
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
     - createUserSlot
     - createUserSlotWithSelf
     - deleteUserSlot
@@ -213,6 +213,38 @@ activity_types:
 - hp
 - fs
 - ws
+equipment_kinds:
+- key: rig
+  name: Rig
+  # What a rig records: its type, the canopy size in m² (shown in the operator's area unit) and the value of a pack job
+  attribute_schema:
+    rig_type:
+      label: Rig type
+      type: enum
+      values:
+      - student
+      - sport
+      - tandem
+      default: sport
+      operator_only: true
+      not_rentable:
+      - tandem
+    canopy_size_m2:
+      label: Main canopy size
+      type: decimal
+      min: 0
+      unit: area
+    pack_value:
+      label: Pack value
+      type: integer
+      min: 0
+  # A reserve is repacked every 180 days
+  service_interval_days: 180
+  # An inspection stays valid until the rig is replaced
+  inspection_valid_days:
+  required_by:
+    always: true
+  inspection_form: equipment_inspection
 inspection_forms:
   equipment_inspection:
   - label: Monthly maintenance done?

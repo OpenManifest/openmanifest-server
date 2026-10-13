@@ -13,7 +13,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
 
   field :pilot_count, Integer, null: false
 
-  field :rig_inspector_count, Integer, null: false
+  field :equipment_inspector_count, Integer, null: false
 
   field :loads_count, Integer, null: false do
     argument :time_range, Types::Input::TimeRangeInput, required: false
@@ -70,7 +70,7 @@ class Types::Admin::StatisticsType < Types::Base::Object
     object.memberships.with_acting_permission(:actAsPilot).count
   end
 
-  def rig_inspector_count
+  def equipment_inspector_count
     object.memberships.with_acting_permission(:actAsEquipmentInspector).count
   end
 

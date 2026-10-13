@@ -17,8 +17,9 @@ module Types
                                                   description: "The vehicle of the load this slot rides in (loads with several vehicles that carry)"
       argument :load, GraphQL::Types::ID, required: false,
                                           prepare: -> (value, ctx) { ::Load.find_by(id: value) }
-      argument :rig, GraphQL::Types::ID, required: false,
-                                         prepare: -> (value, ctx) { ::Rig.find_by(id: value) }
+      argument :equipment, [GraphQL::Types::ID], required: false,
+                                                 prepare: -> (value, ctx) { ::Equipment.where(id: value) },
+                                                 description: "The items the slot uses: a rig, or a BCD, regulator and wetsuit"
       argument :body_mass_kg, Float, required: false
       argument :extras, [GraphQL::Types::ID], required: false,
                                               prepare: -> (value, ctx) { ::Extra.where(id: value) }

@@ -10,7 +10,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
   let!(:user_group) do
     memberships.map do |dz_user|
       {
-        rig: dz_user.user.rigs&.first,
+        equipment: dz_user.user.equipment&.first,
         body_mass_kg: dz_user.body_mass_kg,
         membership: dz_user,
       }

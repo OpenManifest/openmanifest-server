@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-# P6.18: rig inspection and credit notifications are created and delivered (BUG-042, BUG-043), invalid Expo tokens are
+# P6.18: equipment inspection and credit notifications are created and delivered (BUG-042, BUG-043), invalid Expo tokens are
 # cleaned, a token belongs to one user, logging out clears it (BUG-018), gauges are right (BUG-051).
 RSpec.describe "Notifications and push tokens" do
   let(:operator) { create(:operator, state: "public") }
@@ -105,67 +105,67 @@ RSpec.describe "Notifications and push tokens" do
     end
   end
 
-  describe RigInspection do
-    let(:rig) { create(:rig, user: member.user, operator: nil) }
+  describe EquipmentInspection do
+    let(:equipment) { create(:equipment, user: member.user, operator: nil) }
     let(:template) { create(:form_template, operator: operator) }
     let(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
 
-    def inspect_rig(is_ok:)
-      RigInspection.create!(rig: rig, membership: member, inspected_by: inspector, form_template: template, is_ok: is_ok, definition: "[]")
+    def inspect_equipment(is_ok:)
+      EquipmentInspection.create!(equipment: equipment, membership: member, inspected_by: inspector, form_template: template, is_ok: is_ok, definition: "[]")
     end
 
-    it "tells the owner once when a rig is cleared to jump" do
-      expect { inspect_rig(is_ok: true) }.to change { Notification.where(received_by: member, notification_type: :rig_inspection_completed).count }.by(1)
+    it "tells the owner once when a equipment is cleared to jump" do
+      expect { inspect_equipment(is_ok: true) }.to change { Notification.where(received_by: member, notification_type: :equipment_inspection_completed).count }.by(1)
     end
 
     it "tells the owner when a failed inspection becomes ok, once" do
-      inspection = inspect_rig(is_ok: false)
+      inspection = inspect_equipment(is_ok: false)
 
-      expect { inspection.update!(is_ok: true) }.to change { Notification.where(notification_type: :rig_inspection_completed).count }.by(1)
+      expect { inspection.update!(is_ok: true) }.to change { Notification.where(notification_type: :equipment_inspection_completed).count }.by(1)
       expect { inspection.update!(definition: "[true]") }.not_to(change { Notification.count })
     end
 
     it "says nothing about a failed inspection" do
-      expect { inspect_rig(is_ok: false) }.not_to(change { Notification.count })
+      expect { inspect_equipment(is_ok: false) }.not_to(change { Notification.count })
     end
 
     it "enqueues the push for the owner" do
-      expect { inspect_rig(is_ok: true) }.to have_enqueued_job(NotifyJob)
+      expect { inspect_equipment(is_ok: true) }.to have_enqueued_job(NotifyJob)
     end
   end
 
-  describe RequestRigInspectionJob do
-    let(:rig) { create(:rig, user: member.user, operator: nil) }
+  describe RequestEquipmentInspectionJob do
+    let(:equipment) { create(:equipment, user: member.user, operator: nil) }
     let!(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
     let!(:second_inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
     let!(:bystander) { create(:membership, operator: operator, user_role: operator.user_roles.find_by(name: "student")) }
 
-    it "asks every rig inspector and enqueues their pushes" do
-      expect { described_class.perform_now(rig.id, member.id) }.to have_enqueued_job(NotifyJob).at_least(:twice)
+    it "asks every equipment inspector and enqueues their pushes" do
+      expect { described_class.perform_now(equipment.id, member.id) }.to have_enqueued_job(NotifyJob).at_least(:twice)
 
-      asked = Notification.where(notification_type: :rig_inspection_requested, resource: rig).map(&:received_by)
+      asked = Notification.where(notification_type: :equipment_inspection_requested, resource: equipment).map(&:received_by)
       expect(asked).to contain_exactly(inspector, second_inspector)
-      expect(Notification.where(notification_type: :rig_inspection_requested).first).to have_attributes(sent_by: member, message: "#{member.user.name} needs a rig inspection")
+      expect(Notification.where(notification_type: :equipment_inspection_requested).first).to have_attributes(sent_by: member, message: "#{member.user.name} needs an equipment inspection")
     end
 
     it "asks only once" do
-      described_class.perform_now(rig.id, member.id)
+      described_class.perform_now(equipment.id, member.id)
 
-      expect { described_class.perform_now(rig.id, member.id) }.not_to(change { Notification.count })
+      expect { described_class.perform_now(equipment.id, member.id) }.not_to(change { Notification.count })
     end
 
-    it "is discarded when the rig is gone" do
+    it "is discarded when the equipment is gone" do
       expect { described_class.perform_now(0, member.id) }.not_to raise_error
     end
 
-    it "is enqueued with ids when a member with a rig, a weight and a certification_level joins" do
-      rig
+    it "is enqueued with ids when a member with a equipment, a weight and a certification_level joins" do
+      equipment
       member.user.update!(body_mass_kg: 80)
       joiner = create(:user, body_mass_kg: 80)
-      create(:rig, user: joiner, operator: nil)
+      create(:equipment, user: joiner, operator: nil)
 
       expect { create(:membership, operator: operator, user: joiner, certification_level: CertificationBody.first.certification_levels.where.not(name: "No license").first) }.
-        to have_enqueued_job(described_class).with(joiner.rigs.first.id, kind_of(Integer))
+        to have_enqueued_job(described_class).with(joiner.equipment.first.id, kind_of(Integer))
     end
   end
 

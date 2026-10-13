@@ -28,10 +28,17 @@ module Types::Manifest
     async_field :load, Types::Manifest::Load, null: false
     async_field :load_vehicle, Types::Manifest::LoadVehicle, null: true
     async_field :destination, Types::Operator::Destination, null: true
-    async_field :rig, Types::Equipment::Rig, null: true
+    field :equipment, [Types::Equipment::Equipment], null: false, description: "The items the slot uses"
+    def equipment
+      dataloader.with(::Sources::AssociationLoader, [:equipment]).load(object).equipment
+    end
     async_field :activity_type, Types::Meta::ActivityType, null: true
     async_field :order, Types::Payments::Order, null: true
     field :wing_loading, Float, null: true
+    def wing_loading
+      dataloader.with(::Sources::AssociationLoader, [{ equipment: :kind }]).load(object)
+      object.wing_loading
+    end
 
     field :guest_name, String, null: true
     def guest_name

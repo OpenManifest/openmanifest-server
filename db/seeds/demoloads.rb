@@ -28,7 +28,7 @@ operator = Operator.find_by(name: "Demo")
       load: l,
       ticket_type: operator.ticket_types.where(allow_manifesting_self: true).order(Arel.sql("RANDOM()")).first,
       body_mass_kg: dz_users[slot].user.body_mass_kg,
-      rig_id: dz_users[slot].user.rigs.first,
+      equipment_id: dz_users[slot].user.equipment.first,
       activity_type: dz_users[slot].user.activity_types.order(Arel.sql("RANDOM()")).first,
     )
   end

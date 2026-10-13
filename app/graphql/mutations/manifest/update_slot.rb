@@ -11,7 +11,7 @@ module Mutations::Manifest
 
     # What can be edited on a slot: who jumps and on which load is not among it (a slot is moved with moveSlot, which
     # checks capacity, credits and the target's operator)
-    UPDATABLE = %i(ticket_type activity_type destination load_vehicle rig body_mass_kg group_number extras lock_version).freeze
+    UPDATABLE = %i(ticket_type activity_type destination load_vehicle equipment body_mass_kg group_number extras lock_version).freeze
 
     def resolve(attributes:, id:)
       model = Slot.find(id)

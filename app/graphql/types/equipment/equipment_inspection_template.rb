@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types::Equipment
-  class RigInspectionTemplate < Types::Base::Object
+  class EquipmentInspectionTemplate < Types::Base::Object
     graphql_name 'FormTemplate'
     field :definition, String, null: true
     field :id, GraphQL::Types::ID, null: false

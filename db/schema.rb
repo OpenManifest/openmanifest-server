@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -148,6 +148,62 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
     t.index ["discarded_at"], name: "index_destinations_on_discarded_at"
     t.index ["operator_id", "name"], name: "index_destinations_on_operator_and_name", unique: true, where: "(discarded_at IS NULL)"
     t.index ["operator_id"], name: "index_destinations_on_operator_id"
+  end
+
+  create_table "equipment", force: :cascade do |t|
+    t.string "make"
+    t.string "model"
+    t.string "serial"
+    t.datetime "service_due_at", precision: nil
+    t.datetime "maintained_at", precision: nil
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "operator_id"
+    t.boolean "is_public", default: false
+    t.string "name"
+    t.text "packing_card"
+    t.datetime "discarded_at", precision: nil
+    t.bigint "kind_id"
+    t.string "ownership", default: "personal", null: false
+    t.jsonb "properties", default: {}, null: false
+    t.index ["discarded_at"], name: "index_equipment_on_discarded_at"
+    t.index ["kind_id"], name: "index_equipment_on_kind_id"
+    t.index ["operator_id"], name: "index_equipment_on_operator_id"
+    t.index ["user_id"], name: "index_equipment_on_user_id"
+  end
+
+  create_table "equipment_inspections", force: :cascade do |t|
+    t.bigint "form_template_id", null: false
+    t.bigint "membership_id", null: false
+    t.bigint "equipment_id", null: false
+    t.boolean "is_ok", default: false, null: false
+    t.text "definition"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "inspected_by_id"
+    t.index ["equipment_id"], name: "index_equipment_inspections_on_equipment_id"
+    t.index ["form_template_id"], name: "index_equipment_inspections_on_form_template_id"
+    t.index ["inspected_by_id"], name: "index_equipment_inspections_on_inspected_by_id"
+    t.index ["membership_id"], name: "index_equipment_inspections_on_membership_id"
+  end
+
+  create_table "equipment_kinds", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.jsonb "attribute_schema", default: {}, null: false
+    t.integer "service_interval_days"
+    t.bigint "inspection_form_template_id"
+    t.integer "inspection_valid_days"
+    t.jsonb "required_by", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "discarded_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inspection_form_template_id"], name: "index_equipment_kinds_on_inspection_form_template_id"
+    t.index ["operator_id", "key"], name: "index_equipment_kinds_on_operator_and_key", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_equipment_kinds_on_operator_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -335,7 +391,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
     t.string "primary_color"
     t.string "secondary_color"
     t.boolean "is_credit_system_enabled", default: false
-    t.bigint "rig_inspection_template_id"
     t.string "image"
     t.string "time_zone", null: false
     t.integer "users_count", default: 0, null: false
@@ -350,7 +405,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
     t.jsonb "modules", default: {}, null: false
     t.string "currency", default: "AUD", null: false
     t.index ["discarded_at"], name: "index_operators_on_discarded_at"
-    t.index ["rig_inspection_template_id"], name: "index_operators_on_rig_inspection_template_id"
     t.index ["state"], name: "index_operators_on_state"
   end
 
@@ -377,11 +431,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   end
 
   create_table "packs", force: :cascade do |t|
-    t.bigint "rig_id", null: false
+    t.bigint "equipment_id", null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["rig_id"], name: "index_packs_on_rig_id"
+    t.index ["equipment_id"], name: "index_packs_on_equipment_id"
     t.index ["user_id"], name: "index_packs_on_user_id"
   end
 
@@ -419,42 +473,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
     t.index ["order_id"], name: "index_receipts_on_order_id"
   end
 
-  create_table "rig_inspections", force: :cascade do |t|
-    t.bigint "form_template_id", null: false
-    t.bigint "membership_id", null: false
-    t.bigint "rig_id", null: false
-    t.boolean "is_ok", default: false, null: false
-    t.text "definition"
+  create_table "slot_equipment", force: :cascade do |t|
+    t.bigint "slot_id", null: false
+    t.bigint "equipment_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "inspected_by_id"
-    t.index ["form_template_id"], name: "index_rig_inspections_on_form_template_id"
-    t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
-    t.index ["membership_id"], name: "index_rig_inspections_on_membership_id"
-    t.index ["rig_id"], name: "index_rig_inspections_on_rig_id"
-  end
-
-  create_table "rigs", force: :cascade do |t|
-    t.string "make"
-    t.string "model"
-    t.string "serial"
-    t.integer "pack_value"
-    t.datetime "repack_expires_at", precision: nil
-    t.datetime "maintained_at", precision: nil
-    t.bigint "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "operator_id"
-    t.integer "canopy_size"
-    t.boolean "is_public", default: false
-    t.integer "rig_type"
-    t.string "name"
-    t.text "packing_card"
-    t.datetime "discarded_at", precision: nil
-    t.index ["discarded_at"], name: "index_rigs_on_discarded_at"
-    t.index ["operator_id"], name: "index_rigs_on_operator_id"
-    t.index ["rig_type"], name: "index_rigs_on_rig_type"
-    t.index ["user_id"], name: "index_rigs_on_user_id"
+    t.index ["equipment_id"], name: "index_slot_equipment_on_equipment_id"
+    t.index ["slot_id", "equipment_id"], name: "index_slot_equipment_on_slot_id_and_equipment_id", unique: true
+    t.index ["slot_id"], name: "index_slot_equipment_on_slot_id"
   end
 
   create_table "slot_extras", force: :cascade do |t|
@@ -469,7 +495,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   create_table "slots", force: :cascade do |t|
     t.bigint "ticket_type_id"
     t.bigint "load_id"
-    t.bigint "rig_id"
     t.bigint "activity_type_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -493,7 +518,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["load_vehicle_id"], name: "index_slots_on_load_vehicle_id"
     t.index ["membership_id"], name: "index_slots_on_membership_id"
-    t.index ["rig_id"], name: "index_slots_on_rig_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["transaction_id"], name: "index_slots_on_transaction_id"
   end
@@ -850,6 +874,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
   add_foreign_key "daily_logs", "operators"
   add_foreign_key "destinations", "operators"
+  add_foreign_key "equipment", "equipment_kinds", column: "kind_id"
+  add_foreign_key "equipment", "operators"
+  add_foreign_key "equipment", "users"
+  add_foreign_key "equipment_inspections", "equipment"
+  add_foreign_key "equipment_inspections", "form_templates"
+  add_foreign_key "equipment_inspections", "memberships"
+  add_foreign_key "equipment_inspections", "memberships", column: "inspected_by_id"
+  add_foreign_key "equipment_kinds", "form_templates", column: "inspection_form_template_id"
+  add_foreign_key "equipment_kinds", "operators"
   add_foreign_key "events", "memberships"
   add_foreign_key "events", "operators"
   add_foreign_key "extras", "operators"
@@ -877,19 +910,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   add_foreign_key "operator_activity_types", "operators"
   add_foreign_key "operator_certification_bodies", "certification_bodies"
   add_foreign_key "operator_certification_bodies", "operators"
-  add_foreign_key "operators", "form_templates", column: "rig_inspection_template_id"
   add_foreign_key "orders", "operators"
-  add_foreign_key "packs", "rigs"
+  add_foreign_key "packs", "equipment"
   add_foreign_key "packs", "users"
   add_foreign_key "permitted_activities", "activity_types"
   add_foreign_key "permitted_activities", "certification_levels"
   add_foreign_key "qualifications", "certification_bodies"
-  add_foreign_key "rig_inspections", "form_templates"
-  add_foreign_key "rig_inspections", "memberships"
-  add_foreign_key "rig_inspections", "memberships", column: "inspected_by_id"
-  add_foreign_key "rig_inspections", "rigs"
-  add_foreign_key "rigs", "operators"
-  add_foreign_key "rigs", "users"
+  add_foreign_key "slot_equipment", "equipment"
+  add_foreign_key "slot_equipment", "slots"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
   add_foreign_key "slots", "activity_types"
@@ -899,7 +927,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_140000) do
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "memberships"
   add_foreign_key "slots", "memberships", column: "created_by_id"
-  add_foreign_key "slots", "rigs"
   add_foreign_key "slots", "slots", column: "guest_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"

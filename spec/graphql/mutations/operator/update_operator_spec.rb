@@ -16,14 +16,14 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
         require_certification: false,
         require_credits: false,
         require_membership: false,
-        require_rig_inspection: false
+        require_equipment_inspection: false
       )
     end
 
-    it { is_expected.to include_json(updateOperator: { operator: { id: operator.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireCertification: false, requireRigInspection: false, requireCredits: false, requireMembership: false } } }) }
+    it { is_expected.to include_json(updateOperator: { operator: { id: operator.id.to_s, name: 'dopezone', settings: { allowNegativeCredits: true, allowManifestBypass: true, requireCertification: false, requireEquipmentInspection: false, requireCredits: false, requireMembership: false } } }) }
   end
 
-  create_query(:id, :name, :allow_negative_credits, :allow_manifest_bypass, :require_certification, :require_rig_inspection, :require_credits, :require_membership) do
+  create_query(:id, :name, :allow_negative_credits, :allow_manifest_bypass, :require_certification, :require_equipment_inspection, :require_credits, :require_membership) do
     <<-GQL
     mutation {
       updateOperator(
@@ -35,7 +35,7 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
               allowNegativeCredits: #{allow_negative_credits},
               allowManifestBypass: #{allow_manifest_bypass},
               requireCertification: #{require_certification},
-              requireRigInspection: #{require_rig_inspection},
+              requireEquipmentInspection: #{require_equipment_inspection},
               requireCredits: #{require_credits},
               requireMembership: #{require_membership}
             }
@@ -47,7 +47,7 @@ RSpec.describe Mutations::Setup::Operators::UpdateOperator, type: :request do
           id
           name
           settings {
-            requireRigInspection
+            requireEquipmentInspection
             requireCertification
             requireCredits
             requireMembership

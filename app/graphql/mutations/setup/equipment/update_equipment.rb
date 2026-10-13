@@ -6,71 +6,66 @@ module Mutations::Setup::Equipment
 
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :rig, Types::Equipment::Rig, null: true
+    field :equipment, Types::Equipment::Equipment, null: true
 
-    argument :attributes, Types::Input::RigInput, required: true
+    argument :attributes, Types::Input::EquipmentInput, required: true
     argument :id, Int, required: false
 
     def resolve(attributes:, id: nil)
-      model = Rig.find(id)
+      model = Equipment.find(id)
 
-      # A rig never moves to another operator or owner
-      attrs = attributes.to_h.except(:packing_card, :operator_id, :user_id)
-      if attrs[:repack_expires_at]
-        attrs[:repack_expires_at] = Time.at(attrs[:repack_expires_at])
-      end
-
+      # An item never moves to another operator or owner
       if attributes[:packing_card]
         Support::ImageUpload.attach(model.packing_card, attributes[:packing_card], name: "packing-card")
       end
-      model.assign_attributes(attrs.to_h)
+      assign_equipment(model, attributes, kind: attributes[:kind_id] ? EquipmentKind.kept.find(attributes[:kind_id]) : nil)
       model.save!
 
       {
-        rig: model.reload,
+        equipment: model.reload,
         errors: nil,
         field_errors: nil,
       }
     rescue Support::ImageUpload::Invalid => e
-      { rig: nil, field_errors: [{ field: "packing_card", message: e.message }], errors: [e.message] }
+      { equipment: nil, field_errors: [{ field: "packing_card", message: e.message }], errors: [e.message] }
     rescue ActiveRecord::RecordInvalid => invalid
       # Failed save, return the errors to the client
       {
-        rig: nil,
+        equipment: nil,
         field_errors: invalid.record.errors.messages.map { |field, messages| { field: field, message: messages.first } },
         errors: invalid.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotSaved => error
       # Failed save, return the errors to the client
       {
-        rig: nil,
+        equipment: nil,
         field_errors: nil,
         errors: error.record.errors.full_messages,
       }
     rescue ActiveRecord::RecordNotFound => error
       {
-        rig: nil,
+        equipment: nil,
         field_errors: nil,
         errors: [error.message],
       }
     end
 
     def authorized?(id: nil, attributes: nil)
-      rig = Rig.find(id)
+      equipment = Equipment.find(id)
 
-      if rig.user_id && rig.user_id != context[:current_resource].id && !staff_of_member?(rig.user)
+      if equipment.user_id && equipment.user_id != context[:current_resource].id && !staff_of_member?(equipment.user)
         [
           false, {
             errors: [
-              "You can't update other users' rigs",
+              "You can't update other users' equipment",
             ],
           },
         ]
-      elsif rig.operator_id && !context[:current_resource].can?(:updateOperatorRig, operator_id: rig.operator_id)
+      elsif equipment.operator_id && !context[:current_resource].can?(:updateOperatorEquipment, operator_id: equipment.operator_id)
         [
           false, {
             errors: [
-              "You can't update rigs for this operator",
+              "You can't update equipment for this operator",
             ],
           },
         ]

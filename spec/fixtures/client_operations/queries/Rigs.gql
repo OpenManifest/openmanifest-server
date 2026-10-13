@@ -1,5 +1,0 @@
-query AvailableRigs($membershipId: Int!, $isTandem: Boolean, $loadId: Int) {
-  availableRigs(membership: $membershipId, isTandem: $isTandem, loadId: $loadId) {
-    ...userRigDetailed
-  }
-}

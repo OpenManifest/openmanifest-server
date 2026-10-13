@@ -33,11 +33,11 @@ module Types
     field :reload_weather_condition,    mutation: Mutations::Setup::Operators::ReloadWeatherCondition
     field :create_weather_condition,    mutation: Mutations::Setup::Operators::CreateWeatherCondition
     field :update_equipment, mutation: Mutations::Setup::Equipment::UpdateEquipment
-    field :archive_rig, mutation: Mutations::Setup::Equipment::DeleteEquipment
+    field :archive_equipment, mutation: Mutations::Setup::Equipment::DeleteEquipment
     field :create_equipment, mutation: Mutations::Setup::Equipment::CreateEquipment
-    field :update_form_template, mutation: Mutations::Setup::RigInspections::UpdateFormTemplate
-    field :update_equipment_inspection, mutation: Mutations::Setup::RigInspections::UpdateEquipmentInspection
-    field :create_equipment_inspection, mutation: Mutations::Setup::RigInspections::CreateEquipmentInspection
+    field :update_form_template, mutation: Mutations::Setup::EquipmentInspections::UpdateFormTemplate
+    field :update_equipment_inspection, mutation: Mutations::Setup::EquipmentInspections::UpdateEquipmentInspection
+    field :create_equipment_inspection, mutation: Mutations::Setup::EquipmentInspections::CreateEquipmentInspection
     field :update_extra,                mutation: Mutations::Setup::Tickets::UpdateExtra
     field :create_extra,                mutation: Mutations::Setup::Tickets::CreateExtra
     field :create_ticket_type,          mutation: Mutations::Setup::Tickets::CreateTicketType

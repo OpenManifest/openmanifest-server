@@ -14,8 +14,8 @@ fragment userDetailed on User {
   userCertifications {
     ...userCertificationEssentials
   }
-  rigs {
-    ...userRigDetailed
+  equipment {
+    ...userEquipmentDetailed
   }
 }
 

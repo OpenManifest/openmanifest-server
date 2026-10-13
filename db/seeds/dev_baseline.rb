@@ -23,8 +23,8 @@ operator ||= Setup::Operators::CreateOperator.run!(
   lat: nil, lng: nil, is_credit_system_enabled: true, primary_color: "#1D3557", secondary_color: "#E63946"
 )
 operator.update!(state: "public", settings: {
-  require_membership: false, require_rig_inspection: false,
-  require_reserve_in_date: false, require_equipment: false,
+  require_membership: false, require_equipment_inspection: false,
+  require_equipment_in_service: false, require_equipment: false,
 })
 
 vehicle = operator.vehicles.find_or_create_by!(name: "Caravan", registration: "VH-ABC", min_capacity: 2, capacity: 14)

@@ -35,8 +35,7 @@ class Membership < ApplicationRecord
   has_many :sales, dependent: :destroy, as: :seller, class_name: "Order"
   has_many :purchases, dependent: :destroy, as: :buyer, class_name: "Order"
 
-  has_many :rig_inspections, dependent: :destroy
-  has_many :approved_rigs, through: :rig_inspections, source: :rig
+  has_many :equipment_inspections, dependent: :destroy
 
   # Automatically updated by UserCertification:
   belongs_to :certification_level, optional: true
@@ -44,7 +43,7 @@ class Membership < ApplicationRecord
   has_many :activity_types, through: :permitted_activities, source: :activity_type
 
   has_many :notifications, foreign_key: :received_by_id, dependent: :destroy
-  has_many :rigs, through: :user
+  has_many :equipment, through: :user
   scope :with_acting_permission, ->(permissionName) { includes(:permissions).where(permissions: { name: permissionName }) }
   scope :staff, -> { includes(:user_role).where.not(user_role: { name: %i(tandem_guest student pilot fun_jumper) }) }
   scope :owner, -> { includes(:user_role).where(user_role: { name: :owner }) }
@@ -84,7 +83,7 @@ class Membership < ApplicationRecord
   after_initialize :set_defaults
 
   after_create :set_appsignal_gauge,
-               :request_rig_inspection
+               :request_equipment_inspection
   after_update :broadcast_subscription
   after_commit :broadcast_subscription
 
@@ -92,30 +91,30 @@ class Membership < ApplicationRecord
     attributes name: "user.name"
   end
 
-  # Get all inspected and approved rigs,
-  # plus all operator student rigs.
-  # If a load_id is provided, filter out
-  # any rigs that are currently in use
-  # on that load
+  # The items the member can use at the operator: their own that passed an inspection at the operator (still valid for
+  # the kind), plus the items the operator rents out, all in service. With a load, the items taken by somebody else on
+  # it are left out; with a kind, only items of the kind with that key.
   #
   # @param [Integer] load_id
-  # @return [Array<Rig>]
-  def available_rigs(load_id: nil)
-    query = Rig.where(id: approved_rigs.pluck(:id) + operator.student_rigs.pluck(:id))
+  # @param [String] kind the key of an equipment kind
+  # @return [ActiveRecord::Relation<Equipment>]
+  def available_equipment(load_id: nil, kind: nil)
+    kinds = operator.equipment_kinds
+    kinds = kinds.where(key: kind) if kind
+    rentable = operator.equipment.rentable.includes(:kind).select { |item| item.kind.rentable?(item.properties) }
+
+    query = Equipment.kept.in_service.where(equipment_kinds: { key: kinds.map(&:key) }).where(
+      id: user.equipment.inspected_at(operator).select(:id)
+    ).or(
+      Equipment.kept.in_service.where(equipment_kinds: { key: kinds.map(&:key) }).where(id: rentable.map(&:id))
+    )
     if load_id
-      query = query.where.not(
-        id: Slot.where(
-          load_id: load_id
-        ).where.not(
-          # We do this to allow the user to
-          # see the rig on his/her own slot,
-          # e.g don't filter it out if its taken
-          # by the current user
-          membership_id: id
-        ).pluck(:rig_id)
-      )
+      # The member sees the items on their own slot, so those are not filtered out
+      taken = SlotEquipment.joins(:slot).where(slots: { load_id: load_id }).where.not(slots: { membership_id: id })
+      query = query.where.not(id: taken.select(:equipment_id))
     end
-    query.where("repack_expires_at > ?", DateTime.now).distinct
+    # The member's own items first
+    query.distinct.order("equipment.is_public ASC", "equipment.id ASC")
   end
 
   # Slot permissions a member uses on themselves, and the staff permission that keeps them when the operator does not
@@ -221,8 +220,8 @@ class Membership < ApplicationRecord
   # Sets the default role for a Membership when initializing,
   # which defaults to UserRole::DEFAULT for users that have
   # no certification level at a body the operator accepts, and no body mass
-  # or rig defined, and to the certified default if a level
-  # exists or body mass and rig are defined
+  # or equipment defined, and to the certified default if a level
+  # exists or body mass and equipment are defined
   def set_default_role
     return unless operator
     return if user_role_id.present?
@@ -230,9 +229,9 @@ class Membership < ApplicationRecord
     # Role defaults to admin if the user has moderator role
     role ||= operator.user_roles.admin if user.is_moderator?
 
-    # Role is fun jumper if the user has a rig and has set up body mass
+    # Role is fun jumper if the user has equipment and has set up body mass
     role ||= operator.user_roles.default_licensed if certification_level
-    role ||= operator.user_roles.default_licensed if user.rigs.any? && user.body_mass_kg.present?
+    role ||= operator.user_roles.default_licensed if user.equipment.any? && user.body_mass_kg.present?
 
     # Default role is Student
     role ||= operator.user_roles.default
@@ -254,14 +253,14 @@ class Membership < ApplicationRecord
     Appsignal.set_gauge("operator.users.count", operator.memberships.count, operator: operator.name)
   end
 
-  def request_rig_inspection
-    return unless user.rigs.any?
+  def request_equipment_inspection
+    return unless user.equipment.any?
     return unless user.body_mass_kg
     return unless certification_level_id
-    return if rig_inspections.any?
-    rig = rigs.not_inspected_at(operator).first
-    return unless rig
-    RequestRigInspectionJob.perform_later(rig.id, id)
+    return if equipment_inspections.any?
+    item = equipment.not_inspected_at(operator).first
+    return unless item
+    RequestEquipmentInspectionJob.perform_later(item.id, id)
   end
 
   # Push an update to graphql subscriptions over websockets

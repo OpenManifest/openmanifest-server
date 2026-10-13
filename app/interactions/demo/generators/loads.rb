@@ -81,7 +81,7 @@ class Demo::Generators::Loads < ApplicationInteraction
         load: vehicle_load,
         created_at: date,
         users: dz_users.map do |u|
-          { membership: u, body_mass_kg: u.body_mass_kg, rig: u.rigs.sample }
+          { membership: u, body_mass_kg: u.body_mass_kg, equipment_ids: [u.equipment.sample&.id].compact }
         end
       )
       @slot_count += group_size

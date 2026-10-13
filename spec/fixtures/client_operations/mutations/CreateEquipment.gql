@@ -1,13 +1,14 @@
-#import "../fragments/rigs.fragments.gql"
+#import "../fragments/equipment.fragments.gql"
 
 mutation CreateEquipment(
   $make: String
   $name: String
   $model: String
   $serial: String
-  $rigType: String
-  $canopySize: Int
-  $repackExpiresAt: Int
+  $kindId: ID
+  $attributes: JSON
+  $maintainedAt: Int
+  $serviceDueAt: Int
   $userId: Int
   $operatorId: Int
 ) {
@@ -18,11 +19,12 @@ mutation CreateEquipment(
         make: $make
         model: $model
         serial: $serial
-        repackExpiresAt: $repackExpiresAt
+        serviceDueAt: $serviceDueAt
         operatorId: $operatorId
         userId: $userId
-        canopySize: $canopySize
-        rigType: $rigType
+        kindId: $kindId
+        attributes: $attributes
+        maintainedAt: $maintainedAt
       }
     }
   ) {
@@ -31,8 +33,8 @@ mutation CreateEquipment(
       field
       message
     }
-    rig {
-      ...userRigDetailed
+    equipment {
+      ...userEquipmentDetailed
     }
   }
 }

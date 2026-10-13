@@ -15,7 +15,7 @@ class Presets::Apply < ApplicationInteraction
         :create_ticket_types,
         :create_extras,
         :enable_activity_types,
-        :create_inspection_forms
+        :create_equipment_kinds
 
   def copy_settings
     kinds = template.vehicle_kinds
@@ -73,18 +73,9 @@ class Presets::Apply < ApplicationInteraction
     end
   end
 
-  def create_inspection_forms
-    definition = presets.dig("inspection_forms", "equipment_inspection")
-    return if definition.blank? || operator.rig_inspection_template.present?
-
-    template_record = ::FormTemplate.create!(
-      name: "Rig Inspection",
-      definition: definition.to_json,
-      operator: operator,
-      created_by: created_by,
-      updated_by: created_by
-    )
-    operator.update!(rig_inspection_template: template_record)
+  # The kinds of equipment the template keeps track of, each with the inspection form its `inspection_form:` names
+  def create_equipment_kinds
+    ::EquipmentKind.create_presets!(operator, created_by: created_by)
   end
 
   private

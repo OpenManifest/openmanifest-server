@@ -9,7 +9,7 @@ modules:
 units: { distance: km, mass: kg, temperature: c }
 call_schedule_minutes: [15]
 settings:
-  require_rig_inspection: false
+  require_equipment_inspection: false
   require_certification: false
   require_credits: false
   require_membership: false
@@ -17,5 +17,5 @@ settings:
   allow_manifest_bypass: false
   allow_double_manifesting: false
   require_equipment: false
-  require_reserve_in_date: false
+  require_equipment_in_service: false
   allow_self_manifest: true

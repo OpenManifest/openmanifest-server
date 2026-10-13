@@ -41,7 +41,7 @@ roles:
   - viewUserActivity
   aff_instructor:
   - createEquipment
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - createUser
@@ -49,12 +49,12 @@ roles:
   - deletePackjob
   - deleteSlot
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readUser
   - readUserTransactions
   - updateEquipment
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updateSlot
   - updateWeatherConditions
@@ -65,19 +65,19 @@ roles:
   - viewUserActivity
   tandem_instructor:
   - createEquipment
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - deleteEquipment
   - deletePackjob
   - deleteSlot
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readUser
   - readUserTransactions
   - updateEquipment
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updateSlot
   - updateWeatherConditions
@@ -88,7 +88,7 @@ roles:
   - viewUserActivity
   chief_instructor:
   - createEquipment
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - deleteEquipment
@@ -96,13 +96,13 @@ roles:
   - deleteSlot
   - grantPermission
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readUser
   - readUserTransactions
   - revokePermission
   - updateEquipment
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updateSlot
   - updateWeatherConditions
@@ -115,7 +115,7 @@ roles:
   - createEquipment
   - createFormTemplate
   - createLoad
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - createUserSlot
@@ -129,7 +129,7 @@ roles:
   - grantPermission
   - readFormTemplate
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readUser
   - readUserTransactions
@@ -137,7 +137,7 @@ roles:
   - updateEquipment
   - updateFormTemplate
   - updateLoad
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updateSlot
   - updateUser
@@ -154,7 +154,7 @@ roles:
   - createExtra
   - createFormTemplate
   - createLoad
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - createStudentSlot
@@ -170,7 +170,7 @@ roles:
   - deleteFormTemplate
   - deleteLoad
   - deleteOperator
-  - deleteOperatorRig
+  - deleteOperatorEquipment
   - deletePackjob
   - deleteSlot
   - deleteStudentSlot
@@ -183,7 +183,7 @@ roles:
   - readExtra
   - readFormTemplate
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readPermissions
   - readUser
@@ -192,7 +192,7 @@ roles:
   - undeleteEquipment
   - undeleteExtra
   - undeleteOperator
-  - undeleteOperatorRig
+  - undeleteOperatorEquipment
   - undeleteStudentSlot
   - undeleteTicketType
   - undeleteUser
@@ -203,7 +203,7 @@ roles:
   - updateFormTemplate
   - updateLoad
   - updateOperator
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updatePermissions
   - updateSlot
@@ -224,7 +224,7 @@ roles:
   - createExtra
   - createFormTemplate
   - createLoad
-  - createOperatorRig
+  - createOperatorEquipment
   - createPackjob
   - createSlot
   - createStudentSlot
@@ -240,7 +240,7 @@ roles:
   - deleteFormTemplate
   - deleteLoad
   - deleteOperator
-  - deleteOperatorRig
+  - deleteOperatorEquipment
   - deletePackjob
   - deleteSlot
   - deleteStudentSlot
@@ -253,7 +253,7 @@ roles:
   - readExtra
   - readFormTemplate
   - readLoad
-  - readOperatorRig
+  - readOperatorEquipment
   - readPackjob
   - readPermissions
   - readUser
@@ -262,7 +262,7 @@ roles:
   - undeleteEquipment
   - undeleteExtra
   - undeleteOperator
-  - undeleteOperatorRig
+  - undeleteOperatorEquipment
   - undeleteStudentSlot
   - undeleteTicketType
   - undeleteUser
@@ -273,7 +273,7 @@ roles:
   - updateFormTemplate
   - updateLoad
   - updateOperator
-  - updateOperatorRig
+  - updateOperatorEquipment
   - updatePackjob
   - updatePermissions
   - updateSlot
@@ -328,7 +328,7 @@ acting:
   - actAsLoadMaster
   - actAsPilot
 settings:
-  require_rig_inspection: true
+  require_equipment_inspection: true
   require_certification: true
   require_credits: true
   require_membership: true
@@ -336,7 +336,7 @@ settings:
   allow_manifest_bypass: false
   allow_double_manifesting: false
   require_equipment: true
-  require_reserve_in_date: true
+  require_equipment_in_service: true
   allow_self_manifest: true
 default_role: student
 default_certified_role: fun_jumper

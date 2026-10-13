@@ -26,8 +26,8 @@ fragment membershipDetails on Membership {
   user {
     ...userDetailed
   }
-  availableRigs {
-    ...rigEssentials
+  availableEquipment {
+    ...equipmentEssentials
   }
 }
 
@@ -35,8 +35,8 @@ fragment membershipProfile on Membership {
   ...membershipDetails
   permissions
 
-  rigInspections {
-    ...rigInspectionEssentials
+  equipmentInspections {
+    ...equipmentInspectionEssentials
   }
 
   orders {

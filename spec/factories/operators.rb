@@ -14,7 +14,7 @@
 #  primary_color              :string
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
-#  rig_inspection_template_id :bigint
+#  equipment_inspection_template_id :bigint
 #  image                      :string
 #  time_zone                  :string           default("Australia/Brisbane")
 #  users_count                :integer          default(0), not null
@@ -37,6 +37,7 @@ FactoryBot.define do
     after(:create) do |operator|
       Setup::Operators::Access::CreateDefaults.run!(operator: operator)
       CrewRole.create_presets!(operator)
+      EquipmentKind.create_presets!(operator)
     end
 
     factory :operator_with_loads do

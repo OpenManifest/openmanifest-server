@@ -376,19 +376,24 @@ RSpec.describe "Client operations: operators and access" do
     end
   end
 
-  describe "RigInspectionTemplate" do
+  def rig_kind
+    operator.equipment_kinds.find_by!(key: "rig")
+  end
+
+  describe "EquipmentInspectionTemplate" do
     it "returns the operator's template" do
-      template = create(:form_template, operator: operator, definition: '[{"label":"Canopy"}]')
-      operator.update!(rig_inspection_template: template)
+      template = rig_kind.inspection_form_template
+      template.update!(definition: '[{"label":"Canopy"}]')
 
-      json = client_operation("RigInspectionTemplate", variables: { operatorId: operator.id }, as: user)
+      json = client_operation("EquipmentInspectionTemplate", variables: { operatorId: operator.id }, as: user)
 
-      expect(json.dig(:data, :operator, :rigInspectionTemplate)).to include(id: template.id.to_s, definition: '[{"label":"Canopy"}]')
+      kinds = json.dig(:data, :operator, :equipmentKinds)
+      expect(kinds.find { |kind| kind[:key] == "rig" }[:inspectionFormTemplate]).to include(id: template.id.to_s, definition: '[{"label":"Canopy"}]')
     end
   end
 
   describe "UpdateEquipmentInspectionTemplate" do
-    let!(:template) { create(:form_template, operator: operator).tap { |form| operator.update!(rig_inspection_template: form) } }
+    let!(:template) { rig_kind.inspection_form_template }
 
     it "updates the template definition for a user who may edit it" do
       json = client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator.id, formId: template.id, definition: '[{"label":"Reserve"}]' }, as: moderator)

@@ -14,7 +14,6 @@
 #  primary_color              :string
 #  secondary_color            :string
 #  is_credit_system_enabled   :boolean          default(FALSE)
-#  rig_inspection_template_id :bigint
 #  image                      :string
 #  time_zone                  :string           default("Australia/Brisbane")
 #  users_count                :integer          default(0), not null
@@ -57,9 +56,10 @@ class Operator < ApplicationRecord
   has_many :load_masters, through: :loads
   has_many :ticket_types, -> { kept }, dependent: :destroy
   has_many :user_roles, dependent: :destroy
-  has_many :rigs, -> { kept }, dependent: :destroy
-  has_many :student_rigs, -> { kept.where(is_public: true).where.not(rig_type: :tandem) }, class_name: "Rig"
-  has_many :tandem_rigs, -> { kept.where(rig_type: :tandem) }, class_name: "Rig"
+  has_many :equipment, -> { kept }, dependent: :destroy
+  # The kinds of equipment the operator keeps track of (seeded from the industry template); declared before the form
+  # templates, which the kinds use for their inspections
+  has_many :equipment_kinds, -> { kept.ordered }, dependent: :destroy
 
   has_many :extras, -> { kept }, dependent: :destroy
   has_many :daily_logs, dependent: :destroy
@@ -70,9 +70,6 @@ class Operator < ApplicationRecord
 
   has_many :operator_certification_bodies, dependent: :destroy
   has_many :certification_bodies, through: :operator_certification_bodies
-  belongs_to :rig_inspection_template,
-             class_name: "FormTemplate",
-             optional: true
 
   has_one_base64_attached :banner
   resize_attached_image :banner, size: [1280, 720]
@@ -106,12 +103,6 @@ class Operator < ApplicationRecord
       kept.includes(:memberships).visibility(:public)
     )
   }
-
-  before_destroy do
-    template = rig_inspection_template
-    update(rig_inspection_template: nil)
-    template.destroy unless template.nil?
-  end
 
   # Today's date where the operator is (the server runs in UTC, the operator is not)
   def today

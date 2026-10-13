@@ -13,7 +13,10 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :destination, default: nil
   # The vehicle of the load the slot rides in; none: the load's (only) one
   record :load_vehicle, default: nil
-  record :rig, default: nil
+  # The items the slot uses; each is the member's own or the operator's
+  array :equipment_ids, default: nil do
+    integer
+  end
   integer :group_number, default: nil
   float :body_mass_kg
   string :guest_name, default: nil
@@ -98,12 +101,12 @@ class Manifest::CreateSlot < ApplicationInteraction
       ticket_type: ticket_type,
       group_number: group_number || load.next_group_number,
       activity_type: activity_type,
-      rig: rig,
       created_by: access_context.subject,
       body_mass_kg: body_mass_kg
     )
     @model.destination = destination if destination
     @model.load_vehicle = load_vehicle if load_vehicle
+    @model.equipment = Equipment.kept.where(id: equipment_ids) unless equipment_ids.nil?
     # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end

@@ -7,7 +7,7 @@
 #  id                :bigint           not null, primary key
 #  ticket_type_id    :bigint
 #  load_id           :bigint
-#  rig_id            :bigint
+#  equipment_id            :bigint
 #  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
@@ -36,7 +36,6 @@ FactoryBot.define do
     is_paid { false }
     body_mass_kg { membership.user.body_mass_kg }
     activity_type { membership.user.certification_level.permitted_activities.sample.activity_type }
-    rig { membership.user.rigs.sample }
     created_by { membership }
   end
 end

@@ -28,8 +28,8 @@ fragment slotEssentials on Slot {
 
 fragment slotDetails on Slot {
   ...slotEssentials
-  rig {
-    ...rigEssentials
+  equipment {
+    ...equipmentEssentials
   }
   membership {
     ...membershipEssentials
@@ -51,7 +51,7 @@ fragment slotExhaustive on Slot {
   load {
     ...loadDetails
   }
-  rig {
-    ...rigEssentials
+  equipment {
+    ...equipmentEssentials
   }
 }

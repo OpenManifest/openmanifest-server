@@ -12,7 +12,7 @@ module Types::Users
     field :nickname, String, null: true
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false
-    async_field :rigs, [Types::Equipment::Rig], null: true
+    async_field :equipment, [Types::Equipment::Equipment], null: true
     async_field :certification_levels, [Types::Meta::CertificationLevel], null: true
     async_field :memberships, [Types::Users::Membership], null: true
     async_field :user_certifications, [Types::Users::UserCertification], null: true

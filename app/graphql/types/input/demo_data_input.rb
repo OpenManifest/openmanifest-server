@@ -7,6 +7,6 @@ class Types::Input::DemoDataInput < Types::Base::Input
   argument :pilot_count, Integer, required: false
   argument :tandem_instructor_count, Integer, required: false
   argument :aff_instructor_count, Integer, required: false
-  argument :rig_inspector_count, Integer, required: false
+  argument :equipment_inspector_count, Integer, required: false
   argument :coach_count, Integer, required: false
 end

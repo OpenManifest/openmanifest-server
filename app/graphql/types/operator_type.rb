@@ -41,7 +41,10 @@ module Types
       ::Qualification.where(id: ids.uniq).order(:name)
     end
     async_field :certification_bodies, [Types::Meta::CertificationBody], null: false, description: "The certification bodies the operator accepts"
-    async_field :rig_inspection_template, Types::Equipment::RigInspectionTemplate, null: true
+    field :equipment_kinds, [Types::Equipment::EquipmentKind], null: false, description: "The kinds of equipment the operator keeps track of"
+    def equipment_kinds
+      dataloader.with(::Sources::AssociationLoader, [:equipment_kinds]).load(object).equipment_kinds
+    end
 
     field :allowed_activity_types, [Types::Meta::ActivityType], null: false do
       argument :user_id, [Int], required: true
@@ -78,8 +81,8 @@ module Types
 
     async_field :extras, [Types::Operator::Tickets::Addon], null: false
 
-    field :rigs, [Types::Equipment::Rig], null: true,
-                                          description: "Get rigs for operator"
+    field :equipment, [Types::Equipment::Equipment], null: true,
+                                                     description: "Get equipment for operator"
 
     async_field :vehicles, [Types::Operator::Vehicle], null: false
 
@@ -118,9 +121,9 @@ module Types
       context[:current_resource].at(object)
     end
 
-    def rigs
-      return [] unless current_user&.can?(:readOperatorRig)
-      object.rigs.order(rig_type: :asc)
+    def equipment
+      return [] unless current_user&.can?(:readOperatorEquipment)
+      object.equipment.order(:kind_id, :id)
     end
 
     def roles(selectable: nil)

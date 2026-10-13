@@ -24,19 +24,19 @@ class Types::Access::SessionType < Types::Base::Object
       user_role: object.user_roles.first
     )
 
-    # If the user has a rig, has set up exit weight, and
+    # If the user has equipment, has set up exit weight, and
     # has a certification level, the user should be set to fun jumper
     # if the user is anything less
-    if @current_membership.user.rigs.present? && @current_membership.certification_level.present? && @current_membership.user.body_mass_kg.present?
+    if @current_membership.user.equipment.present? && @current_membership.certification_level.present? && @current_membership.user.body_mass_kg.present?
       if @current_membership.user_role_id == object.user_roles.first.id
         @current_membership.update(user_role: object.user_roles.find_by(name: :fun_jumper))
       end
 
-      # If the user has no rigs inspected at this operator,
+      # If the user has no equipment inspected at this operator,
       # notify a staff member if no previous notifications
-      unless RigInspection.exists?(membership: @current_membership)
-        rig = @current_membership.rigs.find { |candidate| !candidate.inspected_at?(object) }
-        RequestRigInspectionJob.perform_later(rig.id, dz_user.id) if rig
+      unless EquipmentInspection.exists?(membership: @current_membership)
+        equipment = @current_membership.equipment.find { |candidate| !candidate.inspected_at?(object) }
+        RequestEquipmentInspectionJob.perform_later(equipment.id, dz_user.id) if equipment
       end
     end
 

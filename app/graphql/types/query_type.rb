@@ -27,8 +27,8 @@ module Types
     field :vehicles, resolver: Resolvers::Operator::Vehicles
     field :ticket_types,    resolver: Resolvers::Operator::TicketTypes
     field :extras,          resolver: Resolvers::Operator::TicketAddons
-    field :available_rigs,  resolver: Resolvers::Operator::AvailableRigs
-    field :activity,        resolver: Resolvers::Operator::Activity
+    field :available_equipment, resolver: Resolvers::Operator::AvailableEquipment
+    field :activity, resolver: Resolvers::Operator::Activity
 
     field :geocode, Types::Operator::GeocodedLocation, null: true,
                                                        description: "Find location by searching" do

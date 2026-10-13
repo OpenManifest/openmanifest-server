@@ -60,8 +60,8 @@ RSpec.describe "N+1 queries on the board and the member list" do
   # Every field the screens read from a member or a load, not just the fragments of the list queries
   describe "with every computed field selected" do
     let(:member_fields) do
-      "id creditsCents expiresAt hasMembership hasCredits hasBodyMassKg hasCertificationLevel hasRigInspection hasReserveInDate " \
-        "unseenNotifications permissions role { id name } certificationLevel { id name } user { id name image } rigInspections { id }"
+      "id creditsCents expiresAt hasMembership hasCredits hasBodyMassKg hasCertificationLevel hasEquipmentInspection hasEquipmentInService " \
+        "unseenNotifications permissions role { id name } certificationLevel { id name } user { id name image } equipmentInspections { id }"
     end
 
     def graphql_as(user, query, variables = {})
@@ -122,11 +122,11 @@ RSpec.describe "N+1 queries on the board and the member list" do
       expect(json.dig(:data, :operator, :extras).size).to eq(6)
     end
 
-    it "lists the members' own associations: rigs, licences, memberships and certification_bodies" do
+    it "lists the members' own associations: equipment, licences, memberships and certification_bodies" do
       query = <<~GQL
         query($operator: ID!) {
           memberships(operator: $operator, first: 100, licensed: false) {
-            edges { node { id activityTypes { id } user { id rigs { id name } certificationLevels { id } memberships { id } userCertifications { id } } } }
+            edges { node { id activityTypes { id } user { id equipment { id name } certificationLevels { id } memberships { id } userCertifications { id } } } }
           }
         }
       GQL

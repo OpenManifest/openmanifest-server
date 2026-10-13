@@ -10,9 +10,9 @@ module Types::Users
     field :unseen_notifications, Int, null: false
     field :notifications, Types::System::Notification.connection_type, null: true
     field :expires_at, Int, null: true
-    field :rig_inspections, [Types::Equipment::RigInspection], null: true
-    def rig_inspections
-      preload(:rig_inspections).rig_inspections
+    field :equipment_inspections, [Types::Equipment::EquipmentInspection], null: true
+    def equipment_inspections
+      preload(:equipment_inspections).equipment_inspections
     end
 
     field :credits_cents, Int, null: true, description: "The member's credits in cents"
@@ -20,18 +20,19 @@ module Types::Users
     field :sales, Types::Payments::Order.connection_type, null: true
 
     # TODO: Remove and move to top level query
-    field :available_rigs, [Types::Equipment::Rig], null: true,
-                                                    description: "Get user rigs that have been inspected and marked as OK + operator rigs" do
-      argument :is_tandem, Boolean, required: false
+    field :available_equipment, [Types::Equipment::Equipment], null: true,
+                                                               description: "Get user equipment that have been inspected and marked as OK + operator equipment" do
+      argument :is_tandem, Boolean, required: false, description: "Skydiving: the tandem rigs of the operator"
+      argument :kind, String, required: false, description: "Only items of the equipment kind with this key"
       argument :load_id, Integer, required: false,
-                                  description: "Filter out rigs already occupied for a load"
+                                  description: "Filter out equipment already occupied for a load"
     end
 
-    field :has_rig_inspection, Boolean, null: false
+    field :has_equipment_inspection, Boolean, null: false
     field :has_membership, Boolean, null: false
     field :has_credits, Boolean, null: false
     field :has_body_mass_kg, Boolean, null: false
-    field :has_reserve_in_date, Boolean, null: false
+    field :has_equipment_in_service, Boolean, null: false
     field :has_certification_level, Boolean, null: false
 
     async_field :role, Types::Access::UserRole, null: true, method: :user_role
@@ -66,14 +67,14 @@ module Types::Users
       end
     end
 
-    def available_rigs(load_id: nil, is_tandem: nil)
-      return object.operator.tandem_rigs if is_tandem
+    def available_equipment(load_id: nil, is_tandem: nil, kind: nil)
+      return Skydiving::Rigs.tandem(object.operator) if is_tandem
 
-      object.available_rigs(load_id: load_id)
+      object.available_equipment(load_id: load_id, kind: kind)
     end
 
-    def has_rig_inspection
-      preload(:rig_inspections).rig_inspections.any?(&:is_ok)
+    def has_equipment_inspection
+      preload(equipment_inspections: { equipment: :kind }).equipment_inspections.any? { |inspection| inspection.is_ok && inspection.current? }
     end
 
     def has_membership
@@ -90,9 +91,9 @@ module Types::Users
       !!preload(:user).user.body_mass_kg
     end
 
-    def has_reserve_in_date
-      preload(rig_inspections: :rig).rig_inspections.any? do |inspection|
-        inspection.rig && inspection.rig.repack_expires_at && inspection.rig.repack_expires_at > DateTime.now
+    def has_equipment_in_service
+      preload(equipment_inspections: { equipment: :kind }).equipment_inspections.any? do |inspection|
+        inspection.equipment&.in_service?
       end
     end
 

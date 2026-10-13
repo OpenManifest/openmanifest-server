@@ -1,8 +1,0 @@
-query OperatorRigs($operatorId: ID!) {
-  operator(id: $operatorId) {
-    id
-    rigs {
-      ...rigEssentials
-    }
-  }
-}

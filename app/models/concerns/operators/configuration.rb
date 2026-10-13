@@ -34,8 +34,8 @@ module Operators
       # @return [Hash]
       def default_settings
         {
-          # User must have a rig with a valid inspection to manifest?
-          require_rig_inspection: true,
+          # User must have equipment with a valid inspection to manifest?
+          require_equipment_inspection: true,
           # User must have a valid certification to manifest?
           require_certification: true,
           # User must have credits to manifest?
@@ -52,7 +52,7 @@ module Operators
           require_equipment: true,
 
           # Allow manifesting without reserve in date?
-          require_reserve_in_date: true,
+          require_equipment_in_service: true,
           # Members may manifest themselves; when false, only staff with the ...User... slot permissions manifest
           allow_self_manifest: true,
         }

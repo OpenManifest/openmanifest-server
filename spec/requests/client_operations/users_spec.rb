@@ -110,7 +110,7 @@ RSpec.describe "Client operations: users, permissions, certification_body and no
       profile = json.dig(:data, :membership)
       expect(profile[:id]).to eq(fun_jumper.id.to_s)
       expect(profile[:permissions]).to include("createSlot")
-      expect(profile).to include(:rigInspections)
+      expect(profile).to include(:equipmentInspections)
     end
 
     it "does not expose the push token of another user" do

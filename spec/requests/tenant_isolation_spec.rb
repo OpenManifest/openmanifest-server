@@ -85,10 +85,10 @@ RSpec.describe "Tenant isolation" do
       expect(refused?(json, :dailyLog)).to be(true)
     end
 
-    it "refuses availableRigs(membership:) for a member of B" do
-      rig = create(:rig, user: member_b.user, operator: nil)
-      create(:rig_inspection, rig: rig, membership: member_b, inspected_by: owner_b, is_ok: true)
-      expect(client_operation("AvailableRigs", variables: { membershipId: member_b.id }, as: member_user).dig(:data, :availableRigs).to_a).to be_empty
+    it "refuses availableEquipment(membership:) for a member of B" do
+      equipment = create(:equipment, user: member_b.user, operator: nil)
+      create(:equipment_inspection, equipment: equipment, membership: member_b, inspected_by: owner_b, is_ok: true)
+      expect(client_operation("AvailableEquipment", variables: { membershipId: member_b.id }, as: member_user).dig(:data, :availableEquipment).to_a).to be_empty
     end
   end
 
@@ -152,8 +152,8 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-009: client-supplied operator for authorization" do
     it "refuses updating B's form template with operatorId set to A" do
-      template = create(:form_template, operator: operator_b, definition: "original")
-      operator_b.update!(rig_inspection_template: template)
+      template = operator_b.equipment_kinds.find_by!(key: "rig").inspection_form_template
+      template.update!(definition: "original")
       client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
       expect(template.reload.definition).to eq("original")
     end

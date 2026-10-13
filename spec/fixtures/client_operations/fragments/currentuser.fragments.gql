@@ -9,8 +9,8 @@ fragment currentUserEssentials on Membership {
   hasCredits
   hasBodyMassKg
   hasMembership
-  hasReserveInDate
-  hasRigInspection
+  hasEquipmentInService
+  hasEquipmentInspection
   hasCertificationLevel
   permissions
   expiresAt
@@ -23,8 +23,8 @@ fragment currentUserEssentials on Membership {
 fragment currentUserDetailed on Membership {
   ...currentUserEssentials
 
-  rigInspections {
-    ...rigInspectionEssentials
+  equipmentInspections {
+    ...equipmentInspectionEssentials
   }
 
   orders {
@@ -34,8 +34,8 @@ fragment currentUserDetailed on Membership {
       }
     }
   }
-  availableRigs {
-    ...rigEssentials
+  availableEquipment {
+    ...equipmentEssentials
   }
   certificationLevel {
     ...certificationLevelDetails
