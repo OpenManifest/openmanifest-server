@@ -12,6 +12,8 @@
 #  allow_manifesting_self :boolean
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  participant_limits     :jsonb            not null
+#  group_limits           :jsonb            not null
 #  requires_escort        :boolean          default(FALSE)
 #  escort_capacity        :integer          default(1), not null
 #  escort_qualification_id :bigint
@@ -43,6 +45,7 @@ class TicketType < ApplicationRecord
 
   validates :escort_capacity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   validates :min_certification_rank, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
+  validate :limits_are_numbers
   validate :default_destination_of_operator, :qualification_of_accepted_body, :escort_requirements_of_operator
 
   # @return [Array<Symbol>] what the member lacks of the certification requirements: `:certification_rank`, `:qualification`
@@ -61,7 +64,28 @@ class TicketType < ApplicationRecord
     unmet
   end
 
+  PARTICIPANT_LIMITS = %w(min_age max_age min_body_mass_kg max_body_mass_kg).freeze
+  GROUP_LIMITS = %w(max_group_body_mass_kg max_group_size).freeze
+
   private
+
+  # Only the known limits, each a number of zero or more; a minimum is not above its maximum
+  def limits_are_numbers
+    { participant_limits: PARTICIPANT_LIMITS, group_limits: GROUP_LIMITS }.each do |attribute, known|
+      limits = public_send(attribute)
+      next errors.add(attribute, :invalid) unless limits.is_a?(Hash)
+
+      limits.each do |key, value|
+        errors.add(attribute, "#{key} is not a limit") unless known.include?(key)
+        errors.add(attribute, "#{key} must be a number of zero or more") unless value.nil? || (value.is_a?(Numeric) && value >= 0)
+      end
+    end
+    %w(age body_mass_kg).each do |name|
+      min = participant_limits["min_#{name}"]
+      max = participant_limits["max_#{name}"]
+      errors.add(:participant_limits, "min_#{name} is above max_#{name}") if min && max && min.is_a?(Numeric) && max.is_a?(Numeric) && min > max
+    end
+  end
 
   def escort_requirements_of_operator
     errors.add(:escort_crew_role, :invalid) if escort_crew_role && escort_crew_role.operator_id != operator_id

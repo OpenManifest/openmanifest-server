@@ -8,6 +8,7 @@ mutation UpdateUser(
   $nickname: String
   $certificationLevel: Int
   $bodyMassKg: Float
+  $dateOfBirth: ISO8601Date
 ) {
   updateUser(
     input: {
@@ -21,6 +22,7 @@ mutation UpdateUser(
         nickname: $nickname
         certificationLevel: $certificationLevel
         bodyMassKg: $bodyMassKg
+        dateOfBirth: $dateOfBirth
       }
     }
   ) {

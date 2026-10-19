@@ -28,6 +28,7 @@ module Types
     field :ticket_types,    resolver: Resolvers::Operator::TicketTypes
     field :extras,          resolver: Resolvers::Operator::TicketAddons
     field :available_equipment, resolver: Resolvers::Operator::AvailableEquipment
+    field :slot_eligibility, resolver: Resolvers::Manifest::SlotEligibility
     field :activity, resolver: Resolvers::Operator::Activity
 
     field :geocode, Types::Operator::GeocodedLocation, null: true,

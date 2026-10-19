@@ -16,6 +16,8 @@ fragment ticketTypeEssentials on TicketType {
     name
   }
   allowManifestingSelf
+  participantLimits
+  groupLimits
   minCertificationRank
   requiredQualification {
     ...qualificationEssentials

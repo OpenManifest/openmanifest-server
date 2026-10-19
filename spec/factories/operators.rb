@@ -33,6 +33,8 @@ FactoryBot.define do
     industry { "skydiving" }
     time_zone { "Australia/Brisbane" }
     certification_bodies { [CertificationBody.first] }
+    # Most specs manifest without choosing a rig; the specs of the equipment rules turn the requirement on (P7.16)
+    settings { { "require_equipment" => false } }
 
     after(:create) do |operator|
       Setup::Operators::Access::CreateDefaults.run!(operator: operator)

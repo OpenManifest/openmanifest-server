@@ -7,6 +7,7 @@ module Types
       argument :min_capacity, Int, required: false
       argument :capacity, Int, required: false
       argument :operator_id, Int, required: false
+      argument :max_payload_kg, Float, required: false
       argument :hours, Int, required: false
       argument :next_maintenance_hours, Int, required: false
       argument :registration, String, required: false

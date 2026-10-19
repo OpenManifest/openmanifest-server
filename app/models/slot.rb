@@ -70,15 +70,9 @@ class Slot < ApplicationRecord
   before_validation :default_destination, on: :create
   validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
   validate :destination_of_operator, :load_vehicle_of_load, :equipment_of_member_or_operator
-  validate :escort_of_load, :guests_within_capacity, :escort_meets_requirements
-  validate :load_vehicle_has_room, if: -> { load_vehicle && (new_record? || load_vehicle_id_changed?) }
-  validate :available?,
-           :double_manifest?,
-           :allowed_activity_type?,
-           :certified_for_ticket?,
-           :membership_in_date?,
-           :affordable?,
-           on: :create
+  validate :escort_of_load
+  # Everything the rules of Eligibility say about the slot: on create, and when what it is for changes
+  validate :eligible, if: -> { new_record? || eligibility_changed? }
 
   after_create do
     Notification.create(
@@ -156,15 +150,13 @@ class Slot < ApplicationRecord
     errors.add(:load_vehicle, :invalid) unless load_vehicle.load_id == load_id && load_vehicle.carrying?
   end
 
-  def load_vehicle_has_room
-    return if load_vehicle.available_slots >= required_slots
-
-    errors.add(:base, "No slots available in #{load_vehicle.vehicle.name}")
+  def eligibility_changed?
+    will_save_change_to_load_id? || will_save_change_to_ticket_type_id? || will_save_change_to_activity_type_id? ||
+      will_save_change_to_body_mass_kg? || will_save_change_to_load_vehicle_id? || will_save_change_to_group_number?
   end
 
-  # The seats the slot takes: its own and the guests'
-  def required_slots
-    1 + guest_slots.size
+  def eligible
+    Eligibility.failures(Eligibility::Context.new(self)).each { |result| errors.add(result.field || :base, result.message) }
   end
 
   # A guest rides on the load (and the vehicle) of its escort
@@ -174,84 +166,5 @@ class Slot < ApplicationRecord
     errors.add(:escort_slot, "must be on the same load") unless escort_slot.load_id == load_id
     errors.add(:escort_slot, "must be in the same vehicle") if load_vehicle_id && escort_slot.load_vehicle_id != load_vehicle_id
     errors.add(:guest, :blank) if guest.nil?
-  end
-
-  # An escort takes the guests its ticket type allows
-  def guests_within_capacity
-    return if guest_slots.empty?
-
-    unless ticket_type&.requires_escort?
-      errors.add(:base, "#{ticket_type&.name || 'This ticket'} does not take guests")
-      return
-    end
-    return if guest_slots.size <= ticket_type.escort_capacity
-
-    errors.add(:base, "#{ticket_type.name} takes at most #{ticket_type.escort_capacity} #{'guest'.pluralize(ticket_type.escort_capacity)} for each escort")
-  end
-
-  # The escort holds the qualification and the crew role's permission the ticket type asks for
-  def escort_meets_requirements
-    return unless new_record? && guest_slots.any? && membership && ticket_type
-    return if created_by&.can?(:createUserSlot) && operator&.allow_manifest_bypass?
-
-    unmet = ticket_type.unmet_escort_requirements(membership)
-    return if unmet.empty?
-
-    errors.add(:base, "#{membership.user.name} cannot escort guests: missing #{unmet.map { |kind| kind.to_s.humanize.downcase }.join(', ')}")
-  end
-
-  def available?
-    errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
-  end
-
-  def membership_in_date?
-    return if is_guest?
-    return if (membership.expires_at || 1.second.ago) > DateTime.current
-    return unless operator.require_membership?
-    return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
-    errors.add(:base, "#{membership.user.name}'s membership has expired")
-  end
-
-  def double_manifest?
-    return if operator.allow_double_manifesting?
-    return if is_guest?
-    # Check if the user is manifest on any loads that have
-    # not yet been dispatched
-    return unless membership.slots.where(load: operator.loads.on(operator.today).active).where.not(id: id).exists?
-    return if created_by&.can?(:createDoubleSlot) && operator.allow_manifest_bypass?
-    errors.add(:base, "Double-manifesting is not allowed")
-  end
-
-  def affordable?
-    return true if is_guest?
-    return if operator.allow_negative_credits?
-    return unless operator.require_credits?
-    return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
-    credits = membership.credits_cents || 0
-    errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
-  end
-
-  # The ticket type asks for a minimum rank or a qualification, and so may an extra
-  def certified_for_ticket?
-    return if is_guest? || membership.blank?
-    return unless operator.module?(:certifications)
-
-    unmet = ticket_type.unmet_certification_requirements(membership)
-    extras.each do |extra|
-      unmet << :qualification unless membership.user.qualified_for?(extra.required_qualification)
-    end
-    return if unmet.empty?
-    return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
-
-    errors.add(:base, "#{membership.user.name} is missing a certification: #{unmet.uniq.map { |kind| kind.to_s.humanize.downcase }.join(', ')}")
-  end
-
-  def allowed_activity_type?
-    return if activity_type.blank?
-    return true if is_guest? && ticket_type.requires_escort?
-    return if activity_type.allowed_for?(membership)
-    return unless operator.require_certification?
-    return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?
-    errors.add(:activity_type, "User cannot be manifested for #{activity_type.name} jumps")
   end
 end

@@ -149,6 +149,15 @@ class Load < ApplicationRecord
     (max_slots || capacity) - (slots_count || 0) - crew_seats
   end
 
+  # What the load weighs, in kilograms: the slots, and the crew that rides in a vehicle (the pilot; not the GCA on the
+  # ground), without the slot being asked about
+  def mass_kg(except: nil)
+    aboard = crew_assignments.includes(:crew_role, membership: :user).select { |assignment| assignment.crew_role.vehicle_scope? }
+    crew = aboard.sum { |assignment| assignment.membership.user.try(:body_mass_kg) || 0 }
+    others = ::Slot.where(load_id: id).reject { |slot| except&.persisted? && (slot.id == except.id || slot.escort_slot_id == except.id) }
+    crew + others.sum { |slot| slot.body_mass_kg.to_f }
+  end
+
   def occupied_slots
     (max_slots || capacity) - available_slots
   end

@@ -28,6 +28,11 @@ module Types::Users
                                   description: "Filter out equipment already occupied for a load"
     end
 
+    field :eligibility, Types::Manifest::MembershipEligibility, null: false,
+                                                                description: "Whether the member is ready to manifest, rule by rule (membership, credits, certification, body mass, equipment, …)" do
+      argument :load_id, GraphQL::Types::ID, required: false, description: "Also whether the load has a seat for them"
+    end
+
     field :has_equipment_inspection, Boolean, null: false
     field :has_membership, Boolean, null: false
     field :has_credits, Boolean, null: false
@@ -71,6 +76,12 @@ module Types::Users
       return Skydiving::Rigs.tandem(object.operator) if is_tandem
 
       object.available_equipment(load_id: load_id, kind: kind)
+    end
+
+    def eligibility(load_id: nil)
+      preload(:user, :operator, equipment_inspections: { equipment: :kind })
+      load = dataloader.with(::Sources::Model, ::Load).load(load_id.to_i) if load_id
+      ::Eligibility.summary(object, load: load)
     end
 
     def has_equipment_inspection

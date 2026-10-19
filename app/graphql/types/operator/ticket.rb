@@ -18,6 +18,8 @@ module Types::Operator
     field :name, String, null: true
     async_field :default_destination, Types::Operator::Destination, null: true
     field :allow_manifesting_self, Boolean, null: true
+    field :participant_limits, GraphQL::Types::JSON, null: false, description: "Who the ticket takes: min_age, max_age, min_body_mass_kg, max_body_mass_kg"
+    field :group_limits, GraphQL::Types::JSON, null: false, description: "A flight group of the ticket: max_group_body_mass_kg, max_group_size"
     field :requires_escort, Boolean, null: true, description: "A slot takes guests who ride with its member, the escort (skydiving: tandem)"
     field :escort_capacity, Int, null: false, description: "The most guests for each escort"
     async_field :escort_qualification, Types::Meta::Qualification, null: true

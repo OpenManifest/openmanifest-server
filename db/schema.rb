@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -47,6 +47,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "participant_limits", default: {}, null: false
     t.index ["slug"], name: "index_activity_types_on_slug", unique: true
   end
 
@@ -721,6 +722,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
     t.integer "escort_capacity", default: 1, null: false
     t.bigint "escort_qualification_id"
     t.bigint "escort_crew_role_id"
+    t.jsonb "participant_limits", default: {}, null: false
+    t.jsonb "group_limits", default: {}, null: false
     t.index ["default_destination_id"], name: "index_ticket_types_on_default_destination_id"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
     t.index ["escort_crew_role_id"], name: "index_ticket_types_on_escort_crew_role_id"
@@ -838,6 +841,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
     t.integer "load_count", default: 0, null: false
     t.integer "operator_count", default: 0, null: false
     t.integer "moderation_role", default: 0
+    t.date "date_of_birth"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -856,6 +860,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
     t.bigint "operator_id", null: false
     t.datetime "discarded_at", precision: nil
     t.string "kind", null: false
+    t.decimal "max_payload_kg", precision: 8, scale: 2
     t.index ["discarded_at"], name: "index_vehicles_on_discarded_at"
     t.index ["operator_id"], name: "index_vehicles_on_operator_id"
   end

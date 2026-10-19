@@ -15,6 +15,7 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  operator_id            :bigint           not null
+#  max_payload_kg         :decimal(8, 2)
 #
 class Vehicle < ApplicationRecord
   include Discard::Model

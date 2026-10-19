@@ -132,6 +132,14 @@ class Operator < ApplicationRecord
     industry_template.module?(name)
   end
 
+  # Does a ticket type or an activity of the operator take only some ages? Then members need a date of birth.
+  def age_limited?
+    return @age_limited unless @age_limited.nil?
+
+    keys = %w(min_age max_age)
+    @age_limited = [ticket_types.kept, ActivityType.all].any? { |scope| keys.any? { |key| scope.exists?(["jsonb_exists(participant_limits, ?)", key]) } }
+  end
+
   # The configuration of a module that is on, or nil
   def module_config(name)
     return nil unless module?(name)

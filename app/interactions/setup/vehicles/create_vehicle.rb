@@ -5,6 +5,7 @@ class Setup::Vehicles::CreateVehicle < ApplicationInteraction
   string :name
   string :registration
   integer :hours, default: nil
+  decimal :max_payload_kg, default: nil
   integer :min_capacity, default: 0
   integer :capacity, default: 4
 
@@ -42,6 +43,7 @@ class Setup::Vehicles::CreateVehicle < ApplicationInteraction
     @vehicle = access_context.operator.vehicles.new(
       name: name,
       registration: registration,
+      max_payload_kg: max_payload_kg,
       min_capacity: min_capacity,
       capacity: capacity
     )

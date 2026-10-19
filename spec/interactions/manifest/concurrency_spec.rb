@@ -104,7 +104,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     first = member
     second = member
     staff
-    rendezvous_after(:available?)
+    rendezvous_after(:check, Eligibility::Rules::Capacity)
 
     outcomes = concurrently(-> { manifest(vehicle_load, first) }, -> { manifest(vehicle_load, second) })
 
@@ -119,7 +119,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     jumper = member(credits: 100)
     operator.update!(settings: operator.settings.merge("allow_double_manifesting" => true))
     staff
-    rendezvous_after(:affordable?)
+    rendezvous_after(:check, Eligibility::Rules::Credits)
 
     outcomes = concurrently(-> { manifest(first_load, jumper) }, -> { manifest(second_load, jumper) })
 
@@ -132,7 +132,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     vehicle_load = create_load
     jumper = member
     staff
-    rendezvous_after(:available?)
+    rendezvous_after(:check, Eligibility::Rules::Capacity)
 
     concurrently(-> { manifest(vehicle_load, jumper) }, -> { manifest(vehicle_load, jumper) })
 
@@ -144,7 +144,7 @@ RSpec.describe "Concurrent manifesting", :concurrent do
     vehicle_load = create_load(max_slots: 3)
     groups = Array.new(2) { Array.new(2) { member } }
     staff
-    rendezvous_after(:available?)
+    rendezvous_after(:check, Eligibility::Rules::Capacity)
 
     outcomes = concurrently(-> { manifest_group(vehicle_load, groups[0]) }, -> { manifest_group(vehicle_load, groups[1]) })
 

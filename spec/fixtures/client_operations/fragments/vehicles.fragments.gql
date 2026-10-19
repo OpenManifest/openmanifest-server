@@ -4,5 +4,6 @@ fragment vehicleEssentials on Vehicle {
   capacity
   name
   registration
+  maxPayloadKg
   kind
 }

@@ -10,6 +10,7 @@ module Types::Users
     field :push_token, String, null: true, broadcastable: false
     field :body_mass_kg, String, null: true
     field :nickname, String, null: true
+    field :date_of_birth, GraphQL::Types::ISO8601Date, null: true, broadcastable: false, description: "Needed where a ticket or an activity has an age limit"
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false
     async_field :equipment, [Types::Equipment::Equipment], null: true
@@ -29,6 +30,10 @@ module Types::Users
 
     def email
       object.email if can_read_personal_data?
+    end
+
+    def date_of_birth
+      object.date_of_birth if can_read_personal_data?
     end
 
     def phone

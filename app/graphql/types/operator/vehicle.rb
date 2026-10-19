@@ -12,6 +12,7 @@ module Types::Operator
     def capacity
       object.capacity || object.min_capacity || 0
     end
+    field :max_payload_kg, Float, null: true, description: "What the vehicle may carry (the limits module)"
     field :hours, Int, null: true
     field :next_maintenance_hours, Int, null: true
     field :registration, String, null: true

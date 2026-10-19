@@ -9,6 +9,8 @@ module Types
       argument :default_destination_id, Int, required: false
       argument :allow_manifesting_self, Boolean, required: false
       argument :operator_id, Int, required: false
+      argument :participant_limits, GraphQL::Types::JSON, required: false, description: "min_age, max_age, min_body_mass_kg, max_body_mass_kg"
+      argument :group_limits, GraphQL::Types::JSON, required: false, description: "max_group_body_mass_kg, max_group_size"
       argument :requires_escort, Boolean, required: false, description: "A slot takes guests who ride with its member, the escort (skydiving: tandem)"
       argument :escort_capacity, Int, required: false, description: "The most guests for each escort"
       argument :escort_qualification_id, Int, required: false, description: "The qualification the escort must hold"

@@ -92,8 +92,10 @@ class Manifest::CreateSlot < ApplicationInteraction
     membership.lock!
   end
 
+  # The slot's own rules, and those of what was chosen for it (the equipment: present, inspected, in service)
   def validate
     errors.merge!(@model.errors) unless @model.valid?
+    Eligibility.failures(Eligibility::Context.new(@model), scopes: %i(manifest)).each { |result| errors.add(:base, result.message) }
   end
 
   def save

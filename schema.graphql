@@ -851,6 +851,42 @@ enum DestinationKind {
   site
 }
 
+"""
+What one eligibility rule says
+"""
+type EligibilityResult {
+  amountCents: Int
+
+  """
+  A failure the manifester may let through (they hold the permission and the operator allows it)
+  """
+  bypassed: Boolean!
+
+  """
+  The rule: capacity, membership, credits, double_manifest, activity,
+  certification, equipment, equipment_inspection, equipment_service, age,
+  body_mass, group, payload, escort
+  """
+  code: String!
+  expiresAt: Int
+
+  """
+  Why it fails
+  """
+  message: String
+  ok: Boolean!
+
+  """
+  A more precise code when it fails, e.g. date_of_birth_missing, escort_capacity
+  """
+  problem: String
+
+  """
+  PASS, EXPIRING (within 14 days), FAIL or NOT_REQUIRED
+  """
+  status: String!
+}
+
 type Equipment implements AnyResource {
   """
   The values of the kind's attributes; canopy size is in square metres
@@ -1567,6 +1603,16 @@ type Membership implements AnyResource & Wallet {
   The member's credits in cents
   """
   creditsCents: Int
+
+  """
+  Whether the member is ready to manifest, rule by rule (membership, credits, certification, body mass, equipment, …)
+  """
+  eligibility(
+    """
+    Also whether the load has a seat for them
+    """
+    loadId: ID
+  ): MembershipEligibility!
   equipmentInspections: [EquipmentInspection!]
   expiresAt: Int
   guid: ID!
@@ -1730,6 +1776,17 @@ type MembershipEdge {
   The item at the end of the edge.
   """
   node: Membership
+}
+
+"""
+Whether a member is ready to manifest, rule by rule
+"""
+type MembershipEligibility {
+  """
+  Every rule that applies passes
+  """
+  ready: Boolean!
+  rules: [EligibilityResult!]!
 }
 
 input MembershipInput {
@@ -2943,6 +3000,35 @@ type Query {
   qualifications(certificationBodyId: Int): [Qualification!]!
 
   """
+  The result of every eligibility rule for a slot that is about to be manifested
+  """
+  slotEligibility(
+    activityTypeId: ID
+    bodyMassKg: Float
+    equipmentIds: [ID!]
+    extraIds: [ID!]
+    groupNumber: Int
+
+    """
+    Somebody who is not a member (a booking)
+    """
+    guest: GuestInput
+
+    """
+    The guests who ride with the member, on a ticket type that requires an escort
+    """
+    guests: [GuestInput!]
+    loadId: ID!
+    loadVehicleId: ID
+
+    """
+    The member to manifest; or a guest
+    """
+    membershipId: ID
+    ticketTypeId: ID!
+  ): [EligibilityResult!]!
+
+  """
   Get ticket types for an operator
   """
   ticketTypes(allowManifestingSelf: Boolean, operator: ID!): [TicketType!]
@@ -3327,6 +3413,11 @@ type TicketType implements AnyResource & SellableItem {
   escortCrewRole: CrewRole
   escortQualification: Qualification
   extras: [Extra!]!
+
+  """
+  A flight group of the ticket: max_group_body_mass_kg, max_group_size
+  """
+  groupLimits: JSON!
   guid: ID!
   id: ID!
 
@@ -3336,6 +3427,11 @@ type TicketType implements AnyResource & SellableItem {
   minCertificationRank: Int
   name: String
   operator: Operator
+
+  """
+  Who the ticket takes: min_age, max_age, min_body_mass_kg, max_body_mass_kg
+  """
+  participantLimits: JSON!
   requiredQualification: Qualification
 
   """
@@ -3371,9 +3467,19 @@ input TicketTypeInput {
   """
   escortQualificationId: Int
   extraIds: [Int!]
+
+  """
+  max_group_body_mass_kg, max_group_size
+  """
+  groupLimits: JSON
   minCertificationRank: Int
   name: String
   operatorId: Int
+
+  """
+  min_age, max_age, min_body_mass_kg, max_body_mass_kg
+  """
+  participantLimits: JSON
   requiredQualificationId: Int
 
   """
@@ -3862,6 +3968,11 @@ type User implements AnyResource {
   bodyMassKg: String
   certificationLevels: [CertificationLevel!]
   createdAt: ISO8601DateTime!
+
+  """
+  Needed where a ticket or an activity has an age limit
+  """
+  dateOfBirth: ISO8601Date
   email: String
   equipment: [Equipment!]
   guid: ID!
@@ -3929,6 +4040,7 @@ input UserInput {
   bodyMassKg: Float
   certificationBodyNumber: String
   certificationLevel: Int
+  dateOfBirth: ISO8601Date
   email: String
   image: String
   name: String
@@ -4024,6 +4136,11 @@ type Vehicle implements AnyResource {
   aircraft, raft, bus, ...: what crew roles per vehicle apply to
   """
   kind: String
+
+  """
+  What the vehicle may carry (the limits module)
+  """
+  maxPayloadKg: Float
   minCapacity: Int
   name: String
   nextMaintenanceHours: Int
@@ -4035,6 +4152,7 @@ type Vehicle implements AnyResource {
 input VehicleInput {
   capacity: Int
   hours: Int
+  maxPayloadKg: Float
   minCapacity: Int
   name: String
   nextMaintenanceHours: Int

@@ -84,6 +84,11 @@ class EquipmentKind < ApplicationRecord
     inspection_valid_days.nil? || inspected_at > now - inspection_valid_days.days
   end
 
+  # When does an inspection made at `inspected_at` stop being valid? Never, without a validity.
+  def inspection_expires_at(inspected_at)
+    inspected_at + inspection_valid_days.days if inspection_valid_days
+  end
+
   # Checks properties against the schema.
   #
   # @return [Array(Hash, Array<String>)] the properties with defaults and numbers coerced, and the problems found
