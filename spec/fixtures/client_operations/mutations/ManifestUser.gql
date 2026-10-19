@@ -1,28 +1,26 @@
 mutation ManifestUser(
-  $jumpType: ID
+  $activityType: ID
   $extras: [ID!]
   $load: ID
-  $rig: ID
+  $equipment: [ID!]
   $ticketType: ID
-  $dropzoneUser: ID
-  $exitWeight: Float
-  $passengerName: String
+  $membership: ID
+  $bodyMassKg: Float
+  $guests: [GuestInput!]
   $groupNumber: Int
-  $passengerExitWeight: Float
 ) {
   createSlot(
     input: {
       attributes: {
-        jumpType: $jumpType
+        activityType: $activityType
         extras: $extras
         load: $load
-        rig: $rig
+        equipment: $equipment
         groupNumber: $groupNumber
         ticketType: $ticketType
-        dropzoneUser: $dropzoneUser
-        exitWeight: $exitWeight
-        passengerExitWeight: $passengerExitWeight
-        passengerName: $passengerName
+        membership: $membership
+        bodyMassKg: $bodyMassKg
+        guests: $guests
       }
     }
   ) {

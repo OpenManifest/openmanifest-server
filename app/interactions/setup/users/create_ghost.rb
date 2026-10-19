@@ -3,20 +3,20 @@
 class Setup::Users::CreateGhost < ApplicationInteraction
   string :name
   string :email
-  decimal :exit_weight
-  record :dropzone
+  decimal :body_mass_kg
+  record :operator
   record :role, class: ::UserRole
 
   string :phone, default: nil
-  string :federation_number, default: nil
-  record :license, default: nil
+  string :certification_body_number, default: nil
+  record :certification_level, default: nil
 
   allow :createUser
   steps :check_user_exists,
         :initialize_user,
-        :create_dropzone_user,
+        :create_membership,
         :invite,
-        :assign_federation,
+        :assign_certification_body,
         :record
 
   success do
@@ -26,7 +26,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
       resource: @user,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Created a new user: '#{@user.name}' (#{@user.email})"
     )
@@ -40,7 +40,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
       resource: @user&.persisted? ? @user : nil,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Failed creating user: '#{name}' (#{email}) - #{errors.full_messages.join(', ')}"
     )
@@ -59,7 +59,7 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     @user.assign_attributes(
       name: name,
       phone: phone,
-      exit_weight: exit_weight,
+      body_mass_kg: body_mass_kg,
       email: email,
       password: SecureRandom.urlsafe_base64(9)
     )
@@ -67,9 +67,9 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     errors.merge!(@user.errors) unless @user.save
   end
 
-  def create_dropzone_user
-    return unless dropzone
-    dropzone.dropzone_users.create(
+  def create_membership
+    return unless operator
+    operator.memberships.create(
       user_role: role,
       user: @user
     )
@@ -79,16 +79,16 @@ class Setup::Users::CreateGhost < ApplicationInteraction
     @user&.send_confirmation_instructions
   end
 
-  def assign_federation
-    return unless license
-    federation = Federation.includes(:licenses).find_by(licenses: { id: license.id })
-    return unless federation
+  def assign_certification_body
+    return unless certification_level
+    certification_body = CertificationBody.includes(:certification_levels).find_by(certification_levels: { id: certification_level.id })
+    return unless certification_body
     compose(
-      Federations::AssignUser,
+      Certifications::AssignUser,
       user: @user,
-      uid: federation_number,
-      license: license,
-      federation: federation,
+      uid: certification_body_number,
+      certification_level: certification_level,
+      certification_body: certification_body,
       access_context: access_context
     )
   end
