@@ -158,7 +158,17 @@
       }
     },
     "booking": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest_link": {
+          "enum": [
+            "checkin",
+            "load"
+          ],
+          "description": "How a booking reaches the manifest: `checkin` (a person is put on a load when they arrive) or `load` (the booking is for a load that is scheduled ahead)"
+        }
+      }
     }
   }
 }

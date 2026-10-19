@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_13_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -324,6 +324,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_110000) do
     t.bigint "operator_id", null: false
     t.date "load_date", null: false
     t.integer "lock_version", default: 0, null: false
+    t.datetime "departed_at"
+    t.datetime "completed_at"
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
     t.index ["operator_id", "load_date", "load_number"], name: "index_loads_on_operator_id_and_load_date_and_load_number", unique: true
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
@@ -514,6 +516,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_13_110000) do
     t.bigint "destination_id"
     t.bigint "load_vehicle_id"
     t.bigint "escort_slot_id"
+    t.boolean "prepaid", default: false, null: false
     t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["destination_id"], name: "index_slots_on_destination_id"

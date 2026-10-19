@@ -17,6 +17,9 @@ fragment loadEssentials on Load {
   name
   createdAt
   dispatchAt
+  loadDate
+  departedAt
+  completedAt
   hasCompleted
   loadNumber
   isFull

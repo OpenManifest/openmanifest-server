@@ -13,6 +13,7 @@ fragment slotEssentials on Slot {
   lockVersion
   createdAt
   bodyMassKg
+  prepaid
   guestSlots {
     id
     bodyMassKg

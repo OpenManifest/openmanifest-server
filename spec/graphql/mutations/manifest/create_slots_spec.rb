@@ -79,7 +79,7 @@ module Mutations
           expect { post_request }.not_to change { ::Membership.find(membership.id).credits }
           expect { post_request }.not_to change { ::Operator.find(operator.id).credits }
         end
-        it { expect { post_request }.to change { Order.where(seller: operator).count }.by memberships.count }
+        it { expect { post_request }.not_to change { Order.where(seller: operator).count } }
         it { expect(post_request["data"]["createSlots"]["errors"]).to be nil }
         it { expect(post_request["data"]["createSlots"]["fieldErrors"]).to be nil }
       end

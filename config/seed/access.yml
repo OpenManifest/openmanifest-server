@@ -25,6 +25,7 @@ permissions:
       - createUserSlot
       - createUserDoubleSlot
       - createUserSlotWithSelf
+      - createPrepaidSlot
       - updateUserSlot
       - deleteUserSlot
       - undeleteUserSlot

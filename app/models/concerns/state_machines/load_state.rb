@@ -39,6 +39,21 @@ module StateMachines::LoadState
         end
       end
 
+      # When the load left and when it landed: set when it happens, cleared when the load is reopened
+      before_transition any => :departed do |record|
+        record.departed_at ||= Time.current
+      end
+
+      before_transition any => :completed do |record|
+        record.departed_at ||= Time.current
+        record.completed_at = Time.current
+      end
+
+      before_transition any => :open do |record|
+        record.departed_at = nil
+        record.completed_at = nil
+      end
+
       # The jumps count when the load lands, and are taken back when a completed load is reopened (BUG-026)
       after_transition any => :completed do |record|
         record.count_jumps!(1)

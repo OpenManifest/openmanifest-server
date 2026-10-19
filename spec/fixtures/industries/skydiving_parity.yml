@@ -117,6 +117,7 @@ roles:
   - createLoad
   - createOperatorEquipment
   - createPackjob
+  - createPrepaidSlot
   - createSlot
   - createUserSlot
   - createUserSlotWithSelf
@@ -156,6 +157,7 @@ roles:
   - createLoad
   - createOperatorEquipment
   - createPackjob
+  - createPrepaidSlot
   - createSlot
   - createStudentSlot
   - createTicketType
@@ -226,6 +228,7 @@ roles:
   - createLoad
   - createOperatorEquipment
   - createPackjob
+  - createPrepaidSlot
   - createSlot
   - createStudentSlot
   - createTicketType

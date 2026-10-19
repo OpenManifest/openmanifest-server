@@ -66,7 +66,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
       it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id, membership: membership).count }.by 1 }
       it { expect { post_request }.not_to change { Membership.find(membership.id).credits } }
       it { expect { post_request }.not_to change { Operator.find(operator.id).credits } }
-      it { expect { post_request }.to change { Order.where(seller: operator).count }.by 1 }
+      it { expect { post_request }.not_to change { Order.where(seller: operator).count } }
       it { expect(post_request["data"]["createSlot"]["errors"]).to be nil }
       it { expect(post_request["data"]["createSlot"]["fieldErrors"]).to be nil }
       it { expect { post_request }.to change { Activity::Event.count } }

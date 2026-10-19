@@ -86,6 +86,7 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   def affordable?
     return unless source_slot.load.operator.is_credit_system_enabled?
+    return if source_slot.prepaid?
     # Check the cost of the current slot
     user_funds = source_slot.cost_cents + source_slot.membership.credits_cents.to_i
 

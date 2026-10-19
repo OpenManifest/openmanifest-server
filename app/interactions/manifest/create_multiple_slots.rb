@@ -83,6 +83,8 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
 
   def check_credits
     return unless operator.is_credit_system_enabled?
+    # The slots of a ticket that requires an escort are prepaid
+    return if ticket_type.requires_escort?
 
     cost = ticket_type.cost_cents.to_i + Extra.where(operator: operator, id: extra_ids).sum(:cost_cents)
     users.each do |user|

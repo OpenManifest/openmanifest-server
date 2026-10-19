@@ -1,5 +1,5 @@
-query Loads($date: ISO8601Date, $operator: ID!) {
-  loads(date: $date, operator: $operator) {
+query Loads($date: ISO8601Date, $from: ISO8601Date, $to: ISO8601Date, $operator: ID!) {
+  loads(date: $date, from: $from, to: $to, operator: $operator) {
     edges {
       node {
         ...loadEssentials

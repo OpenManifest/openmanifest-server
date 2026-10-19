@@ -169,9 +169,11 @@ RSpec.describe Manifest::CreateSlot do
       it { expect(outcome.valid?).to be true }
       it { expect(outcome.errors).to be_empty }
       it { expect(outcome.result.guest_slots.size).to eq 1 }
-      it { expect(outcome.result.order).not_to be nil }
-      it { expect(outcome.result.order.receipts.count).to eq 2 }
-      it { expect(outcome.result.order.transactions.where(status: :completed).count).to eq 4 }
+      # The guest paid for the ticket (P7.17): the slots are prepaid and nothing is taken from the instructor's wallet
+      it { expect(outcome.result).to be_prepaid }
+      it { expect(outcome.result.guest_slots).to all(be_prepaid) }
+      it { expect(outcome.result.order).to be nil }
+      it { expect { outcome }.not_to(change { membership.reload.credits }) }
     end
 
     context "when the database refuses a second slot for the same person on the load (BUG-021)" do

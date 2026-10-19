@@ -11,7 +11,8 @@ module Eligibility
         return if member.nil? || context.is_guest? || !(context.create? || context.summary?)
 
         operator = context.operator
-        return not_required("credits") if operator.allow_negative_credits? || !operator.require_credits?
+        # A prepaid slot (a tandem's, charged to the guest) takes nothing from the member's wallet
+        return not_required("credits") if operator.allow_negative_credits? || !operator.require_credits? || context.slot.prepaid?
 
         credits = member.credits_cents || 0
         # Without a ticket, the member needs some credits to be going on with

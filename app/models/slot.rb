@@ -18,6 +18,7 @@
 #  group_number      :integer          default(0), not null
 #  membership_id  :bigint
 #  destination_id :bigint
+#  prepaid        :boolean          default(FALSE), not null
 #
 class Slot < ApplicationRecord
   include DailyLogEntry::Slot

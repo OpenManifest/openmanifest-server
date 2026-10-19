@@ -152,6 +152,7 @@ roles:
     - createOperatorEquipment
     - createUserSlot
     - createUserSlotWithSelf
+    - createPrepaidSlot
     - deleteUserSlot
     - updateUserSlot
     - createPackjob

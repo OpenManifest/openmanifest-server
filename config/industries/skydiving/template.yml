@@ -29,3 +29,5 @@ settings:
   require_equipment: true
   require_equipment_in_service: true
   allow_self_manifest: true
+# How bookings reach the manifest: a jumper checks in, and is manifested on the next load
+booking: { manifest_link: checkin }

@@ -10,10 +10,15 @@ class Types::IndustryTemplateType < Types::Base::Object
   field :icon, String, null: false, description: "A MaterialCommunityIcons glyph"
   field :base, String, null: true, description: "The family (the abstract base the template extends): _aviation, _water, _ground"
   field :modules, [String], null: false
+  field :booking, Types::IndustryBookingType, null: false, description: "How bookings reach the manifest"
   field :preset_summary, GraphQL::Types::JSON, null: false, description: "How many roles, ticket types, extras and activity types the presets create"
 
   def base
     object.extends
+  end
+
+  def booking
+    { manifest_link: object.booking.fetch("manifest_link", "checkin") }
   end
 
   def modules

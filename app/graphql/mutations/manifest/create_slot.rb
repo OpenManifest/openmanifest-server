@@ -24,6 +24,7 @@ module Mutations::Manifest
           :body_mass_kg,
           :load,
           :group_number,
+          :prepaid,
         ),
         guests: attributes[:guests]&.map(&:to_h),
         extra_ids: attributes[:extras]&.pluck(:id),

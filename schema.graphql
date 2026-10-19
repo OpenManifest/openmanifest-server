@@ -1271,6 +1271,17 @@ enum Industry {
 }
 
 """
+What an industry template says about bookings (the booking plan builds on it)
+"""
+type IndustryBooking {
+  """
+  How a booking reaches the manifest: CHECKIN (put on a load when the person
+  arrives) or LOAD (made for a load scheduled ahead)
+  """
+  manifestLink: ManifestLink!
+}
+
+"""
 What an operator of an industry starts with: modules, terms, and the presets copied into it
 """
 type IndustryTemplate {
@@ -1278,6 +1289,11 @@ type IndustryTemplate {
   The family (the abstract base the template extends): _aviation, _water, _ground
   """
   base: String
+
+  """
+  How bookings reach the manifest
+  """
+  booking: IndustryBooking!
   description: String!
 
   """
@@ -1355,12 +1371,22 @@ type JoinOperatorPayload {
 
 type Load implements AnyResource {
   availableSlots: Int!
+
+  """
+  When the load landed; cleared when it is reopened
+  """
+  completedAt: ISO8601DateTime
   createdAt: ISO8601DateTime!
 
   """
   Who fills the crew roles of the load
   """
   crew: [LoadCrewAssignment!]!
+
+  """
+  When the load left
+  """
+  departedAt: ISO8601DateTime
 
   """
   The places the load visits, in order
@@ -1378,6 +1404,11 @@ type Load implements AnyResource {
   isFull: Boolean!
   isOpen: Boolean!
   isReady: Boolean!
+
+  """
+  The day the load is for, in the operator's time zone; a load can be scheduled ahead
+  """
+  loadDate: ISO8601Date!
 
   """
   Who fills the crew role with the key load_master
@@ -1486,6 +1517,11 @@ input LoadInput {
   destinationIds: [Int!]
   dispatchAt: ISO8601DateTime
   gca: ID
+
+  """
+  The day the load is for (create only); today by default, and not a day that has gone
+  """
+  loadDate: ISO8601Date
   loadMaster: ID
 
   """
@@ -1572,6 +1608,18 @@ enum LoadVehicleRole {
   Supports the load (a tug, a chase vehicle, a shuttle); has no participants
   """
   support
+}
+
+enum ManifestLink {
+  """
+  A booking becomes a slot when the person checks in
+  """
+  CHECKIN
+
+  """
+  A booking is for a load that is scheduled ahead
+  """
+  LOAD
 }
 
 type Membership implements AnyResource & Wallet {
@@ -2715,6 +2763,7 @@ enum Permission {
   createLoad
   createOperatorEquipment
   createPackjob
+  createPrepaidSlot
   createSlot
   createStudentSlot
   createTicketType
@@ -2923,10 +2972,20 @@ type Query {
     first: Int
 
     """
+    Loads for this day and the days after it
+    """
+    from: ISO8601Date
+
+    """
     Returns the last _n_ elements from the list.
     """
     last: Int
     operator: ID!
+
+    """
+    Loads for this day and the days before it
+    """
+    to: ISO8601Date
   ): LoadConnection!
 
   """
@@ -3273,6 +3332,11 @@ type Slot implements AnyResource & SellableItem {
   lockVersion: Int!
   membership: Membership
   order: Order
+
+  """
+  Paid for already: nothing is taken from the member's wallet
+  """
+  prepaid: Boolean!
   ticketType: TicketType
   title: String
   updatedAt: ISO8601DateTime!
@@ -3346,6 +3410,11 @@ input SlotInput {
   """
   lockVersion: Int
   membership: ID
+
+  """
+  Paid for already (needs createPrepaidSlot); left out, a ticket that requires an escort is prepaid and the others are not
+  """
+  prepaid: Boolean
   ticketType: ID
   userGroup: [SlotUser!]
 }

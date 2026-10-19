@@ -5,6 +5,8 @@ module Types
     class LoadInput < Types::Base::Input
       argument :name, String, required: false
       argument :max_slots, Int, required: false
+      argument :load_date, GraphQL::Types::ISO8601Date, required: false,
+                                                        description: "The day the load is for (create only); today by default, and not a day that has gone"
       argument :pilot, ID, required: false,
                            prepare: -> (value, ctx) { ::Membership.find_by(id: value) }
       argument :dispatch_at, GraphQL::Types::ISO8601DateTime, required: false,

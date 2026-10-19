@@ -14,6 +14,9 @@
 #  is_open        :boolean
 #  state          :integer
 #  load_number    :integer
+#  load_date      :date             not null
+#  departed_at    :datetime
+#  completed_at   :datetime
 #
 class Load < ApplicationRecord
   include Discard::Model
@@ -31,6 +34,14 @@ class Load < ApplicationRecord
   before_validation :apply_crew_requests
   validate :crew_known, :crew_required, :crew_permitted, if: -> { operator.present? }
   validate :vehicles_allowed, :vehicle_free, if: -> { operator.present? }
+
+  # Is the day the load is for one the caller asked for (and not the day it was made on)?
+  attr_reader :load_date_requested
+
+  def load_date=(value)
+    @load_date_requested = value.present?
+    super
+  end
 
   # Set by the interactions that change a load for somebody: the members they put on the crew must be able to fill the role
   attr_accessor :enforce_crew_permissions
@@ -50,6 +61,8 @@ class Load < ApplicationRecord
   counter_culture :operator
 
   before_validation :set_operator_and_date, on: :create
+  # A load asked for a day (a booking is for a load scheduled ahead) cannot be for a day that has gone
+  validate :load_date_not_in_past, on: :create, if: :load_date_requested
   # The column's default is 0: a load made without a limit has the seats of its vehicles
   before_validation :default_max_slots, on: :create
   before_create :set_load_number
@@ -211,6 +224,12 @@ class Load < ApplicationRecord
 
   private
 
+  def load_date_not_in_past
+    return if operator.nil? || load_date.nil? || load_date >= operator.today
+
+    errors.add(:load_date, "cannot be a day that has gone")
+  end
+
   # Operators whose loads go to places (per-load scope) cannot call a load that has no destination
   def destination_called
     return unless operator&.destinations_per_load?
@@ -323,7 +342,7 @@ class Load < ApplicationRecord
     self.operator ||= load_vehicles.first&.vehicle&.operator
     return unless operator
 
-    self.load_date ||= (created_at || Time.current).in_time_zone(operator.time_zone).to_date
+    self[:load_date] ||= (created_at || Time.current).in_time_zone(operator.time_zone).to_date
   end
 
   # Numbers count up per operator and day, archived loads included (counting the kept loads repeated a number after one

@@ -33,6 +33,8 @@ class Manifest::CreateLoad < ApplicationInteraction
   # Ignored: a new load is always open
   string :state, default: "open"
   date_time :created_at, default: -> { DateTime.current }
+  # The day the load is for; the day it is made on when left out
+  date :load_date, default: nil
 
   validate :vehicle_given
 
@@ -73,6 +75,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       name: name,
       created_at: created_at
     )
+    @load.load_date = load_date if load_date
     @load.vehicle_roles = vehicles || [{ vehicle: vehicle, role: "carrying" }]
     @load.enforce_crew_permissions = true
     @load.crew_entries = crew.map(&:symbolize_keys) if crew

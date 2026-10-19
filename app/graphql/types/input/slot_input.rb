@@ -25,6 +25,8 @@ module Types
                                               prepare: -> (value, ctx) { ::Extra.where(id: value) }
 
       argument :group_number, Int, required: false
+      argument :prepaid, Boolean, required: false,
+                                  description: "Paid for already (needs createPrepaidSlot); left out, a ticket that requires an escort is prepaid and the others are not"
       argument :user_group, [Types::Input::SlotUser], required: false
 
       argument :guests, [Types::Input::GuestInput], required: false,

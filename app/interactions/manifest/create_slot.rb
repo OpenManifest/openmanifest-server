@@ -18,6 +18,9 @@ class Manifest::CreateSlot < ApplicationInteraction
     integer
   end
   integer :group_number, default: nil
+  # Paid for already, so nothing is taken from the member's wallet; the ticket types that require an escort are (the guest
+  # paid), and giving it either way needs createPrepaidSlot
+  boolean :prepaid, default: nil
   float :body_mass_kg
   # The guests who ride with the member, the escort, on a ticket type that requires one (at most its `escort_capacity`);
   # given again for a member who is already on the load, they replace the guests there
@@ -40,7 +43,7 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   # Execution: a member needs createSlot to manifest themselves, createUserSlot to manifest somebody else (see
   # #required_permissions); everything must belong to the operator the caller acts in
-  validate :same_operator, :extras_offered_with_ticket
+  validate :same_operator, :extras_offered_with_ticket, :may_set_prepaid
 
   steps :lock_load_and_member,
         :build_slot,
@@ -116,6 +119,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_by: access_context.subject,
       body_mass_kg: body_mass_kg
     )
+    @model.prepaid = prepaid.nil? ? ticket_type.requires_escort? : prepaid
     @model.destination = destination if destination
     @model.load_vehicle = load_vehicle if load_vehicle
     @model.equipment = Equipment.kept.where(id: equipment_ids) unless equipment_ids.nil?
@@ -136,7 +140,7 @@ class Manifest::CreateSlot < ApplicationInteraction
     existing = @model.guest_slots.to_a
     guests.each_with_index do |attributes, index|
       guest_slot = existing[index] || @model.guest_slots.build(load: load, ticket_type: ticket_type, activity_type: activity_type)
-      guest_slot.assign_attributes(body_mass_kg: attributes[:body_mass_kg], load_vehicle: @model.load_vehicle)
+      guest_slot.assign_attributes(body_mass_kg: attributes[:body_mass_kg], load_vehicle: @model.load_vehicle, prepaid: @model.prepaid)
       guest_slot.destination = @model.destination if @model.destination
       guest = guest_slot.guest || Guest.new(operator: membership.operator)
       guest.assign_attributes(attributes.slice(:name, :body_mass_kg, :email, :phone, :date_of_birth, :emergency_contact))
@@ -146,8 +150,10 @@ class Manifest::CreateSlot < ApplicationInteraction
     existing.drop(guests.size).each { |surplus| @model.guest_slots.destroy(surplus) }
   end
 
-  # The order saves the new slot with it
+  # The order saves the new slot with it; a prepaid slot has none (nothing is charged), so the slot is saved on its own
   def create_order
+    return if @model.prepaid?
+
     unique_per_load do
       compose(
         Transactions::Purchase,
@@ -189,6 +195,12 @@ class Manifest::CreateSlot < ApplicationInteraction
     Slot.transaction(requires_new: true, &)
   rescue ActiveRecord::RecordNotUnique
     errors.add(:base, "Already manifested on this load")
+  end
+
+  def may_set_prepaid
+    return if prepaid.nil? || access_context&.can?(:createPrepaidSlot)
+
+    errors.add(:base, "You don't have permissions to manifest a prepaid slot (missing createPrepaidSlot)")
   end
 
   def extras_offered_with_ticket

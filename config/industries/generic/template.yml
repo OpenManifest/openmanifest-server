@@ -19,3 +19,5 @@ settings:
   require_equipment: false
   require_equipment_in_service: false
   allow_self_manifest: true
+# A booking is for a load that is scheduled ahead of the day
+booking: { manifest_link: load }

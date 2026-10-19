@@ -17,6 +17,7 @@ module Types::Manifest
       object.body_mass_kg.to_i
     end
     field :group_number, Integer, null: false
+    field :prepaid, Boolean, null: false, description: "Paid for already: nothing is taken from the member's wallet"
 
     async_field :membership, Types::Users::Membership, null: true
     field :cost_cents, Int, null: false
