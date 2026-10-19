@@ -1,0 +1,31 @@
+slug: skydiving
+extends: _aviation
+name: Dropzone
+description: Aircraft, jumpers, licences, rigs and the master log
+icon: parachute
+vehicle_kinds: [aircraft]
+modules:
+  destinations: { kinds: [altitude], scope: per_slot }
+  activities: {}
+  certifications: { required_by_default: true }
+  equipment: { rentals: true, personal: true }
+  escorts: { ratio: "1:1" }
+  limits: { mass: true, payload: true, age: true }
+  conditions: { kind: winds_aloft }
+  daily_log: {}
+units: { altitude: ft, area: ft2, distance: km, mass: kg, temperature: c, speed: kn }
+call_schedule_minutes: [20, 15, 10]
+daily_log: { template: apf_master_log }
+# Starting values of the operator's rules; the operator owns them afterwards (Operators::Configuration.default_settings
+# lists every key and its neutral value)
+settings:
+  require_equipment_inspection: true
+  require_certification: true
+  require_credits: true
+  require_membership: true
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: true
+  require_equipment_in_service: true
+  allow_self_manifest: true

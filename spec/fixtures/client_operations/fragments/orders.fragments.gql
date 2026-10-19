@@ -8,21 +8,21 @@ fragment orderEssentials on Order {
   createdAt
 
   buyer {
-    ... on DropzoneUser {
-      ...dropzoneUserDetails
+    ... on Membership {
+      ...membershipDetails
     }
-    ... on Dropzone {
+    ... on Operator {
       id
       name
       banner
     }
   }
   seller {
-    ... on DropzoneUser {
-      ...dropzoneUserDetails
+    ... on Membership {
+      ...membershipDetails
     }
-    ... on Dropzone {
-      ...dropzoneEssentials
+    ... on Operator {
+      ...operatorEssentials
     }
   }
   item {

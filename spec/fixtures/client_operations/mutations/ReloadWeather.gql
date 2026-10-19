@@ -7,20 +7,8 @@ mutation ReloadWeather($id: Int!) {
     }
 
     weatherCondition {
-      createdAt
-      exitSpotMiles
-      id
-      jumpRun
-      offsetDirection
-      offsetMiles
-      temperature
+      ...weatherConditionEssentials
       updatedAt
-      winds {
-        altitude
-        direction
-        speed
-        temperature
-      } 
     }
   }
 }

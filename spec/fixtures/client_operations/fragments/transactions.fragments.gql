@@ -6,27 +6,27 @@ fragment transactionEssentials on Transaction {
   createdAt
   message
   sender {
-    ... on DropzoneUser {
+    ... on Membership {
       id
       user {
         id
         name
       }
     }
-    ... on Dropzone {
+    ... on Operator {
       id
       name
     }
   }
   receiver {
-    ... on DropzoneUser {
+    ... on Membership {
       id
       user {
         id
         name
       }
     }
-    ... on Dropzone {
+    ... on Operator {
       id
       name
     }
