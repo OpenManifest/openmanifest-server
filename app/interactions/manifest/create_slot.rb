@@ -6,15 +6,32 @@ class Manifest::CreateSlot < ApplicationInteraction
   attr_accessor :model
 
   record :load
-  record :dropzone_user
+  record :membership
   record :ticket_type
-  record :jump_type
-  record :rig, default: nil
+  record :activity_type
+  # Where the slot goes (per-slot destinations); the ticket type's destination when left out
+  record :destination, default: nil
+  # The vehicle of the load the slot rides in; none: the load's (only) one
+  record :load_vehicle, default: nil
+  # The items the slot uses; each is the member's own or the operator's
+  array :equipment_ids, default: nil do
+    integer
+  end
   integer :group_number, default: nil
-  float :exit_weight
-  string :passenger_name, default: nil
+  float :body_mass_kg
+  # The guests who ride with the member, the escort, on a ticket type that requires one (at most its `escort_capacity`);
+  # given again for a member who is already on the load, they replace the guests there
+  array :guests, default: nil do
+    hash do
+      string :name, default: nil
+      float :body_mass_kg, default: nil
+      string :email, default: nil
+      string :phone, default: nil
+      date :date_of_birth, default: nil
+      string :emergency_contact, default: nil
+    end
+  end
   date_time :created_at, default: -> { DateTime.current }
-  float :passenger_exit_weight, default: nil
   # Set when the member is manifested as part of a group that includes the person manifesting
   boolean :group_includes_self, default: false
   array :extra_ids, default: nil do
@@ -22,12 +39,12 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   # Execution: a member needs createSlot to manifest themselves, createUserSlot to manifest somebody else (see
-  # #required_permissions); everything must belong to the dropzone the caller acts in
-  validate :same_dropzone, :extras_offered_with_ticket
+  # #required_permissions); everything must belong to the operator the caller acts in
+  validate :same_operator, :extras_offered_with_ticket
 
   steps :lock_load_and_member,
         :build_slot,
-        :set_tandem_passenger,
+        :set_guests,
         :validate,
         :create_order,
         :save,
@@ -44,9 +61,9 @@ class Manifest::CreateSlot < ApplicationInteraction
       action: :created,
       access_level: :user,
       created_at: created_at,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} manifested #{dropzone_user.user.name} on load ##{load.load_number}"
+      message: "#{access_context.user.name} manifested #{membership.user.name} on load ##{load.load_number}"
     )
   end
 
@@ -60,9 +77,9 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_at: created_at,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to manifest #{dropzone_user.user.name} on load ##{load.load_number}",
+      message: "#{access_context.user.name} failed to manifest #{membership.user.name} on load ##{load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -71,11 +88,14 @@ class Manifest::CreateSlot < ApplicationInteraction
   # Lock order: the load, then the member (CreateMultipleSlots locks the load and then all members by id).
   def lock_load_and_member
     load.lock!
-    dropzone_user.lock!
+    load_vehicle&.lock!
+    membership.lock!
   end
 
+  # The slot's own rules, and those of what was chosen for it (the equipment: present, inspected, in service)
   def validate
     errors.merge!(@model.errors) unless @model.valid?
+    Eligibility.failures(Eligibility::Context.new(@model), scopes: %i(manifest)).each { |result| errors.add(:base, result.message) }
   end
 
   def save
@@ -84,46 +104,46 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   def build_slot
     @model = load.slots.find_or_initialize_by(
-      dropzone_user: dropzone_user,
+      membership: membership,
     )
 
     @model.assign_attributes(
       created_at: created_at,
-      dropzone_user: dropzone_user,
+      membership: membership,
       ticket_type: ticket_type,
       group_number: group_number || load.next_group_number,
-      jump_type: jump_type,
-      rig: rig,
+      activity_type: activity_type,
       created_by: access_context.subject,
-      exit_weight: exit_weight
+      body_mass_kg: body_mass_kg
     )
+    @model.destination = destination if destination
+    @model.load_vehicle = load_vehicle if load_vehicle
+    @model.equipment = Equipment.kept.where(id: equipment_ids) unless equipment_ids.nil?
     # The add-ons are part of the slot's cost (Slot#cost), so they are set before the credit check and the order
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end
 
-  def set_tandem_passenger
-    return unless @model.ticket_type.is_tandem? && passenger_name
+  # The guests of the escort: the slots of the guests there already take the new values in order, more are added, the
+  # surplus goes. The guests' slots are saved with the escort's.
+  def set_guests
+    return if guests.nil?
 
-    if @model.passenger_slot.present?
-      @model.passenger_slot.passenger.update(
-        name: passenger_name,
-        exit_weight: passenger_exit_weight
-      )
-    else
-      passenger = Passenger.find_or_create_by(
-        name: passenger_name,
-        exit_weight: passenger_exit_weight,
-        dropzone: dropzone_user.dropzone
-      )
-
-      @model.passenger_slot = Slot.create(
-        load: load,
-        passenger: passenger,
-        exit_weight: passenger_exit_weight,
-        ticket_type: @model.ticket_type,
-        jump_type: @model.jump_type
-      )
+    unless ticket_type.requires_escort?
+      errors.add(:guests, "#{ticket_type.name} does not take guests") if guests.any?
+      return
     end
+
+    existing = @model.guest_slots.to_a
+    guests.each_with_index do |attributes, index|
+      guest_slot = existing[index] || @model.guest_slots.build(load: load, ticket_type: ticket_type, activity_type: activity_type)
+      guest_slot.assign_attributes(body_mass_kg: attributes[:body_mass_kg], load_vehicle: @model.load_vehicle)
+      guest_slot.destination = @model.destination if @model.destination
+      guest = guest_slot.guest || Guest.new(operator: membership.operator)
+      guest.assign_attributes(attributes.slice(:name, :body_mass_kg, :email, :phone, :date_of_birth, :emergency_contact))
+      guest.save! if guest.persisted?
+      guest_slot.guest = guest
+    end
+    existing.drop(guests.size).each { |surplus| @model.guest_slots.destroy(surplus) }
   end
 
   # The order saves the new slot with it
@@ -131,8 +151,8 @@ class Manifest::CreateSlot < ApplicationInteraction
     unique_per_load do
       compose(
         Transactions::Purchase,
-        buyer: dropzone_user,
-        seller: access_context.dropzone,
+        buyer: membership,
+        seller: access_context.operator,
         purchasable: model,
         access_context: access_context
       )
@@ -146,7 +166,14 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   # The permission to manifest this member: createSlot for yourself, createUserSlot for somebody else (BUG-006)
   def required_permissions
-    return { createSlot: "You don't have permissions to manifest (missing createSlot)" } if manifesting_self?
+    if manifesting_self?
+      message = if access_context.subject.manifest_desk_only?(:createSlot)
+                  Membership::MANIFEST_DESK_MESSAGE
+                else
+                  "You don't have permissions to manifest (missing createSlot)"
+                end
+      return { createSlot: message }
+    end
     if group_includes_self && access_context&.can?(:createUserSlotWithSelf)
       return { createUserSlotWithSelf: "You don't have permissions to manifest a group (missing createUserSlotWithSelf)" }
     end
@@ -172,13 +199,13 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
 
   def manifesting_self?
-    access_context&.subject.present? && dropzone_user.id == access_context.subject.id
+    access_context&.subject.present? && membership.id == access_context.subject.id
   end
 
-  # The load, the member and the ticket type must belong to the dropzone the caller acts in
-  def same_dropzone
-    dropzone_id = access_context&.dropzone&.id
-    belongs = [load.plane.dropzone_id, dropzone_user.dropzone_id, ticket_type.dropzone_id].all?(dropzone_id)
-    errors.add(:base, "The load, the jumper and the ticket must belong to the same dropzone") unless belongs
+  # The load, the member and the ticket type must belong to the operator the caller acts in
+  def same_operator
+    operator_id = access_context&.operator&.id
+    belongs = [load.operator_id, membership.operator_id, ticket_type.operator_id].all?(operator_id)
+    errors.add(:base, "The load, the jumper and the ticket must belong to the same operator") unless belongs
   end
 end

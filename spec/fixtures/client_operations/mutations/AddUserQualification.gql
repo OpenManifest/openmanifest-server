@@ -1,0 +1,14 @@
+mutation AddUserQualification($qualificationId: ID!, $number: String, $expiresAt: ISO8601DateTime) {
+  addUserQualification(
+    input: { qualificationId: $qualificationId, number: $number, expiresAt: $expiresAt }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    userQualification {
+      ...userQualificationEssentials
+    }
+  }
+}

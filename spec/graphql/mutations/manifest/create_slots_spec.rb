@@ -4,15 +4,15 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Mutations::Manifest::CreateSlots, type: :request do
-    let(:dropzone) { create(:dropzone, credits: 50) }
-    let(:plane) { create(:plane, dropzone: dropzone, max_slots: 10) }
-    let(:ticket_type) { create(:ticket_type, dropzone: dropzone) }
-    let(:gca) { create(:dropzone_user, dropzone: dropzone) }
-    let(:pilot) { create(:dropzone_user, dropzone: dropzone) }
-    let(:plane_load) { create(:load, plane: plane, pilot: pilot, gca: gca) }
-    let(:dropzone_users) { create_list(:dropzone_user, 3, dropzone: dropzone, credits: 200) }
-    let(:dropzone_user) do
-      u = dropzone_users.first
+    let(:operator) { create(:operator, credits: 50) }
+    let(:vehicle) { create(:vehicle, operator: operator, capacity: 10) }
+    let(:ticket_type) { create(:ticket_type, operator: operator) }
+    let(:gca) { create(:membership, operator: operator) }
+    let(:pilot) { create(:membership, operator: operator) }
+    let(:vehicle_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
+    let(:memberships) { create_list(:membership, 3, operator: operator, credits: 200) }
+    let(:membership) do
+      u = memberships.first
       u.grant! :createUserSlot
       u
     end
@@ -23,80 +23,80 @@ module Mutations
           post "/graphql",
                params: {
                  query: query(
-                   jump_type: JumpType.allowed_for(dropzone_users).sample,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
+                   vehicle_load: vehicle_load,
+                   user_group: memberships.map { |user| { id: user.id, body_mass_kg: user.user.body_mass_kg } }
                  ),
                },
-               headers: dropzone_user.user.create_new_auth_token
+               headers: membership.user.create_new_auth_token
           JSON.parse(response.body)
         end
 
-        it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by dropzone_users.count }
+        it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by memberships.count }
 
         it "expects credits to update" do
           post_request
-          dropzone_users.each do |user|
+          memberships.each do |user|
             expect(user.reload.credits).to eq 200 - ticket_type.cost
           end
         end
         it "expects orders to update" do
           post_request
-          dropzone_users.each do |user|
+          memberships.each do |user|
             expect(user.reload.purchases.count).to eq 1
           end
         end
-        it { expect { post_request }.to change { ::Dropzone.find(dropzone.id).credits }.by ticket_type.cost * dropzone_users.count }
-        it { expect { post_request }.to change { ::Dropzone.find(dropzone.id).sales.count }.by dropzone_users.count }
+        it { expect { post_request }.to change { ::Operator.find(operator.id).credits }.by ticket_type.cost * memberships.count }
+        it { expect { post_request }.to change { ::Operator.find(operator.id).sales.count }.by memberships.count }
         it { expect(post_request["data"]["createSlots"]["errors"]).to be nil }
       end
 
       context "successfully with tandem" do
-        let!(:ticket_type) { create(:ticket_type, is_tandem: true, dropzone: dropzone) }
+        let!(:ticket_type) { create(:ticket_type, requires_escort: true, operator: operator) }
         let(:post_request) do
           post "/graphql",
                params: {
                  query: query(
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   jump_type: JumpType.allowed_for(dropzone_users).sample,
-                   user_group: dropzone_users.map do |user|
+                   vehicle_load: vehicle_load,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
+                   user_group: memberships.map do |user|
                      {
-                       id: user.id, exit_weight: user.user.exit_weight, passenger_name: Faker::Name.first_name,
-                       passenger_exit_weight: 80,
+                       id: user.id, body_mass_kg: user.user.body_mass_kg, guest_name: Faker::Name.first_name,
+                       guest_body_mass_kg: 80,
                      }
                    end
                  ),
                },
-               headers: dropzone_user.user.create_new_auth_token
+               headers: membership.user.create_new_auth_token
           JSON.parse(response.body)
         end
 
-        it { expect { post_request }.to change { Slot.where(load_id: plane_load.id).count }.by dropzone_users.count * 2 }
+        it { expect { post_request }.to change { Slot.where(load_id: vehicle_load.id).count }.by memberships.count * 2 }
         it do
-          expect { post_request }.to change { ::Slot.where(load_id: plane_load.id, dropzone_user: dropzone_user).count }.by 1
-          expect { post_request }.not_to change { ::DropzoneUser.find(dropzone_user.id).credits }
-          expect { post_request }.not_to change { ::Dropzone.find(dropzone.id).credits }
+          expect { post_request }.to change { ::Slot.where(load_id: vehicle_load.id, membership: membership).count }.by 1
+          expect { post_request }.not_to change { ::Membership.find(membership.id).credits }
+          expect { post_request }.not_to change { ::Operator.find(operator.id).credits }
         end
-        it { expect { post_request }.to change { Order.where(seller: dropzone).count }.by dropzone_users.count }
+        it { expect { post_request }.to change { Order.where(seller: operator).count }.by memberships.count }
         it { expect(post_request["data"]["createSlots"]["errors"]).to be nil }
         it { expect(post_request["data"]["createSlots"]["fieldErrors"]).to be nil }
       end
 
       context "with errors" do
         before do
-          dropzone_users.sample.update(credits: 0)
+          memberships.sample.update(credits: 0)
           post "/graphql",
                params: {
                  query: query(
                    ticket_type: ticket_type,
-                   plane_load: plane_load,
-                   jump_type: JumpType.allowed_for(dropzone_users).sample,
-                   user_group: dropzone_users.map { |user| { id: user.id, exit_weight: user.user.exit_weight } }
+                   vehicle_load: vehicle_load,
+                   activity_type: ActivityType.allowed_for(memberships).sample,
+                   user_group: memberships.map { |user| { id: user.id, body_mass_kg: user.user.body_mass_kg } }
                  ),
                },
-               headers: dropzone_user.user.create_new_auth_token
+               headers: membership.user.create_new_auth_token
         end
 
         let(:json) do
@@ -109,22 +109,21 @@ module Mutations
       end
     end
 
-    def query(user_group:, ticket_type:, plane_load:, jump_type:)
+    def query(user_group:, ticket_type:, vehicle_load:, activity_type:)
       <<~GQL
         mutation {
           createSlots(
             input: {
               attributes: {
                 ticketType: #{ticket_type.id}
-                jumpType: #{jump_type.id}
-                load: #{plane_load.id}
+                activityType: #{activity_type.id}
+                load: #{vehicle_load.id}
                 userGroup: [
                   #{user_group.map do |u|
                     "{
                       id: #{u[:id]},
-                      exitWeight: #{u[:exit_weight]},
-                      passengerName: #{u[:passenger_name] ? '"%s"' % u[:passenger_name] : 'null'},
-                      passengerExitWeight: #{u[:passenger_exit_weight] || 'null'}
+                      bodyMassKg: #{u[:body_mass_kg]},
+                      guests: #{u[:guest_name] ? '[{ name: "%s", bodyMassKg: %s }]' % [u[:guest_name], u[:guest_body_mass_kg] || 'null'] : 'null'}
                     },"
                   end.join("\n")}
                 ]
@@ -140,38 +139,38 @@ module Mutations
               id
               slots {
                 id
-                dropzoneUser {
+                membership {
                   id
                   user {
                     id
                     name
                   }
                 }
-                cost
+                costCents
                 order {
                   id
                   buyer {
-                    ...on DropzoneUser {
+                    ...on Membership {
                       id
                       user {
                         id
                         name
                       }
                     }
-                    ...on Dropzone {
+                    ...on Operator {
                       id
                       name
                     }
                   }
                   seller {
-                    ...on DropzoneUser {
+                    ...on Membership {
                       id
                       user {
                         id
                         name
                       }
                     }
-                    ...on Dropzone {
+                    ...on Operator {
                       id
                       name
                     }
@@ -183,27 +182,27 @@ module Mutations
                       transactionType
                       status
                       sender {
-                        ...on DropzoneUser {
+                        ...on Membership {
                           id
                           user {
                             id
                             name
                           }
                         }
-                        ...on Dropzone {
+                        ...on Operator {
                           id
                           name
                         }
                       }
                       receiver {
-                        ...on DropzoneUser {
+                        ...on Membership {
                           id
                           user {
                             id
                             name
                           }
                         }
-                        ...on Dropzone {
+                        ...on Operator {
                           id
                           name
                         }
