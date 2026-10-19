@@ -33,6 +33,12 @@ module Types::Users
       argument :load_id, GraphQL::Types::ID, required: false, description: "Also whether the load has a seat for them"
     end
 
+    field :last_slot, Types::Manifest::Slot, null: true,
+                                             description: "The slot the member last flew at this operator: their most recent one on a load that has left or landed"
+    def last_slot
+      dataloader.with(::Sources::LastSlot).load(object.id)
+    end
+
     field :has_equipment_inspection, Boolean, null: false
     field :has_membership, Boolean, null: false
     field :has_credits, Boolean, null: false

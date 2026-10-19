@@ -52,6 +52,16 @@ module StateMachines::LoadState
       before_transition any => :open do |record|
         record.departed_at = nil
         record.completed_at = nil
+        record.called_at = nil
+      end
+
+      # When the load was called, and the call taken back (the load is opened again, or cancelled)
+      before_transition any => :boarding do |record|
+        record.called_at = Time.current
+      end
+
+      before_transition boarding: %i(open cancelled) do |record|
+        record.called_at = nil
       end
 
       # The jumps count when the load lands, and are taken back when a completed load is reopened (BUG-026)

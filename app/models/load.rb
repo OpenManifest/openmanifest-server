@@ -17,6 +17,7 @@
 #  load_date      :date             not null
 #  departed_at    :datetime
 #  completed_at   :datetime
+#  called_at      :datetime
 #
 class Load < ApplicationRecord
   include Discard::Model

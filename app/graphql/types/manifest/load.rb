@@ -9,6 +9,7 @@ module Types::Manifest
     field :has_completed, Boolean, null: true
     field :load_date, GraphQL::Types::ISO8601Date, null: false, description: "The day the load is for, in the operator's time zone; a load can be scheduled ahead"
     field :departed_at, GraphQL::Types::ISO8601DateTime, null: true, description: "When the load left"
+    field :called_at, GraphQL::Types::ISO8601DateTime, null: true, description: "When the load was called; cleared when the call is cancelled"
     field :completed_at, GraphQL::Types::ISO8601DateTime, null: true, description: "When the load landed; cleared when it is reopened"
     field :weight, Integer, null: false
     def weight
