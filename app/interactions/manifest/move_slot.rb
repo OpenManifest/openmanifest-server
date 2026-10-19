@@ -8,8 +8,10 @@ class Manifest::MoveSlot < ApplicationInteraction
   record :source_slot, class: Slot
   record :target_slot, class: Slot, default: nil
   record :target_load, class: Load, default: nil
+  # The vehicle of the target load the slot rides in (loads with several vehicles that carry)
+  record :target_load_vehicle, class: LoadVehicle, default: nil
 
-  validate :same_dropzone
+  validate :same_operator
 
   steps :lock_rows,
         :open_with_room,
@@ -31,9 +33,9 @@ class Manifest::MoveSlot < ApplicationInteraction
       action: :created,
       access_level: :user,
       created_at: DateTime.current,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} moved #{source_slot.dropzone_user.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
+      message: "#{access_context.user.name} moved #{source_slot.membership.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
     )
   end
 
@@ -47,9 +49,9 @@ class Manifest::MoveSlot < ApplicationInteraction
       created_at: DateTime.current,
       action: :created,
       access_level: :admin,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to move #{source_slot.dropzone_user&.user&.name || 'a passenger'} from load ##{source_slot.load.load_number}",
+      message: "#{access_context.user.name} failed to move #{source_slot.membership&.user&.name || 'a guest'} from load ##{source_slot.load.load_number}",
       details: errors.full_messages.join(", ")
     )
   end
@@ -58,15 +60,19 @@ class Manifest::MoveSlot < ApplicationInteraction
   # BUG-023). Lock order: the loads by id, then the member.
   def lock_rows
     [source_slot.load, destination_load].compact.uniq.sort_by(&:id).each(&:lock!)
+    target_load_vehicle&.lock!
     source_slot.reload
-    source_slot.dropzone_user&.lock!
+    source_slot.membership&.lock!
   end
 
   def move_slot
+    # A slot that goes to another load leaves the vehicle it rode in; one that stays on its load changes vehicle only when asked
+    vehicle_change = target_load_vehicle || destination_load != source_slot.load ? { load_vehicle: target_load_vehicle } : {}
     source_slot.assign_attributes(
+      **vehicle_change,
       load: destination_load,
       ticket_type: target_slot&.ticket_type || source_slot.ticket_type,
-      jump_type: target_slot&.jump_type || source_slot.jump_type,
+      activity_type: target_slot&.activity_type || source_slot.activity_type,
       group_number: target_slot&.group_number || source_slot.group_number
     )
   end
@@ -79,9 +85,10 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affordable?
-    return unless source_slot.load.plane.dropzone.is_credit_system_enabled?
+    return unless source_slot.load.operator.is_credit_system_enabled?
+    return if source_slot.prepaid?
     # Check the cost of the current slot
-    user_funds = source_slot.cost_cents + source_slot.dropzone_user.credits_cents.to_i
+    user_funds = source_slot.cost_cents + source_slot.membership.credits_cents.to_i
 
     # Check if the user has enough credits
     # to manifest for this jump (taking into consideration the cost)
@@ -94,7 +101,18 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def save
-    errors.merge!(source_slot.errors) unless source_slot.save
+    return errors.merge!(source_slot.errors) unless source_slot.save
+
+    move_guests
+  end
+
+  # The guests ride with their escort
+  def move_guests
+    source_slot.guest_slots.each do |guest_slot|
+      next if guest_slot.update(load: source_slot.load, load_vehicle: source_slot.load_vehicle)
+
+      errors.merge!(guest_slot.errors)
+    end
   end
 
   def update_order
@@ -110,8 +128,8 @@ class Manifest::MoveSlot < ApplicationInteraction
     # Create a new order
     compose(
       Transactions::Purchase,
-      buyer: source_slot.dropzone_user,
-      seller: access_context.dropzone,
+      buyer: source_slot.membership,
+      seller: access_context.operator,
       purchasable: source_slot,
       access_context: access_context
     )
@@ -123,33 +141,44 @@ class Manifest::MoveSlot < ApplicationInteraction
 
   # Moving someone else's slot needs updateUserSlot, your own updateSlot (BUG-007)
   def required_permissions
-    own = access_context&.subject.present? && access_context.subject == source_slot.dropzone_user
-    return { updateSlot: "You don't have permissions to move your slot (missing updateSlot)" } if own
+    own = access_context&.subject.present? && access_context.subject == source_slot.membership
+    if own
+      message = if access_context.subject.manifest_desk_only?(:updateSlot)
+                  Membership::MANIFEST_DESK_MESSAGE
+                else
+                  "You don't have permissions to move your slot (missing updateSlot)"
+                end
+      return { updateSlot: message }
+    end
 
     { updateUserSlot: "You don't have permissions to move other users (missing updateUserSlot)" }
   end
 
-  # The target must be open and have room for the slot (and its passenger): slot validations only run on create (BUG-092)
+  # The target must be open and have room for the slot (and its guest): slot validations only run on create (BUG-092)
   def open_with_room
+    if target_load_vehicle && target_load_vehicle.load_id != destination_load.id
+      errors.add(:base, "That vehicle is not on load ##{destination_load.load_number}")
+      return
+    end
     return if destination_load == source_slot.load
 
-    unless destination_load.open? || destination_load.boarding_call?
+    unless destination_load.open? || destination_load.boarding?
       errors.add(:base, "Load ##{destination_load.load_number} is not open")
       return
     end
 
-    capacity = destination_load.max_slots || destination_load.plane.max_slots
-    needed = source_slot.has_passenger? ? 2 : 1
+    capacity = destination_load.max_slots || destination_load.capacity
+    needed = 1 + source_slot.guest_slots.count
     errors.add(:base, "No slots available on load ##{destination_load.load_number}") if capacity - destination_load.slots.count < needed
   end
 
   private
 
-  # Both loads must belong to the dropzone the caller acts in
-  def same_dropzone
-    dropzone_id = access_context&.dropzone&.id
+  # Both loads must belong to the operator the caller acts in
+  def same_operator
+    operator_id = access_context&.operator&.id
     loads = [source_slot.load, destination_load].compact
-    errors.add(:base, "The slot and the load must belong to the same dropzone") unless loads.present? && loads.all? { |load| load.plane.dropzone_id == dropzone_id }
+    errors.add(:base, "The slot and the load must belong to the same operator") unless loads.present? && loads.all? { |load| load.operator_id == operator_id }
   end
 
   def destination_load

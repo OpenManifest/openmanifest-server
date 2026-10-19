@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Fills a weather condition with the winds of its dropzone's location (an external service, 5 second timeout)
+# Fills a weather condition with the winds of its operator's location (an external service, 5 second timeout)
 class FetchWindsJob < ApplicationJob
   queue_as :default
 
@@ -12,10 +12,10 @@ class FetchWindsJob < ApplicationJob
 
   def perform(weather_condition_id)
     condition = WeatherCondition.find(weather_condition_id)
-    dropzone = condition.dropzone
-    return unless dropzone.lat.present? && dropzone.lng.present?
+    operator = condition.operator
+    return unless operator.lat.present? && operator.lng.present?
 
-    condition.from_coordinates(dropzone.lat, dropzone.lng)
+    condition.from_coordinates(operator.lat, operator.lng)
     condition.save!
   end
 end
