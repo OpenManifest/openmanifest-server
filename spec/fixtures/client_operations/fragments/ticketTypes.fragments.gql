@@ -5,7 +5,16 @@ fragment ticketTypeEssentials on TicketType {
     ...destinationEssentials
   }
   costCents
-  isTandem
+  requiresEscort
+  escortCapacity
+  escortQualification {
+    ...qualificationEssentials
+  }
+  escortCrewRole {
+    id
+    key
+    name
+  }
   allowManifestingSelf
   minCertificationRank
   requiredQualification {

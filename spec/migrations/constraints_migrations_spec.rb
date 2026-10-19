@@ -11,6 +11,7 @@ require Rails.root.join("db/migrate/20261011140000_rename_dropzone_to_operator")
 require Rails.root.join("db/migrate/20261011150000_rename_aviation_names_to_generic")
 require Rails.root.join("db/migrate/20261012110000_create_load_vehicles")
 require Rails.root.join("db/migrate/20261012120000_create_crew_roles")
+require Rails.root.join("db/migrate/20261013100000_generalise_escorts")
 
 # The data steps of the P6.16 migrations, run against rows that the unique indexes would not let exist: the example's
 # transaction drops the index (PostgreSQL DDL is transactional) and rolls everything back at the end.
@@ -33,6 +34,7 @@ RSpec.describe "P6.16 constraint migrations" do
 
   def with_legacy_schema
     ActiveRecord::Migration.suppress_messages do
+      GeneraliseEscorts.new.migrate(:down)
       GeneraliseEquipment.new.migrate(:down)
       GeneraliseCertifications.new.migrate(:down)
       CreateCrewRoles.new.migrate(:down)
@@ -52,6 +54,7 @@ RSpec.describe "P6.16 constraint migrations" do
       CreateCrewRoles.new.migrate(:up)
       GeneraliseCertifications.new.migrate(:up)
       GeneraliseEquipment.new.migrate(:up)
+      GeneraliseEscorts.new.migrate(:up)
     end
     reset_models
   end

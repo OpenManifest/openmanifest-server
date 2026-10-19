@@ -48,7 +48,7 @@ class Manifest::DeleteSlot < ApplicationInteraction
   end
 
   def remove_guest_slot
-    slot.guest_slot.destroy if slot.has_guest?
+    slot.guest_slots.destroy_all
   end
 
   # A slot without an order (a tandem guest's, or one that was never paid) has nothing to refund

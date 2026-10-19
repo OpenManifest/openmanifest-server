@@ -152,7 +152,7 @@ RSpec.describe Manifest::CreateSlot do
     end
 
     context "with a tandem guest" do
-      let(:tandem_ticket) { create(:ticket_type, operator: operator, is_tandem: true) }
+      let(:tandem_ticket) { create(:ticket_type, operator: operator, requires_escort: true) }
       let(:outcome) do
         Manifest::CreateSlot.run(
           access_context: access_context,
@@ -161,15 +161,14 @@ RSpec.describe Manifest::CreateSlot do
           activity_type: ActivityType.allowed_for([membership]).first,
           load: vehicle_load,
           body_mass_kg: membership.body_mass_kg,
-          guest_body_mass_kg: membership.body_mass_kg,
-          guest_name: Faker::Name.first_name
+          guests: [{ name: Faker::Name.first_name, body_mass_kg: membership.body_mass_kg }]
         )
       end
 
       it { expect(outcome.result).to be_a Slot }
       it { expect(outcome.valid?).to be true }
       it { expect(outcome.errors).to be_empty }
-      it { expect(outcome.result.guest_slot).not_to be nil }
+      it { expect(outcome.result.guest_slots.size).to eq 1 }
       it { expect(outcome.result.order).not_to be nil }
       it { expect(outcome.result.order.receipts.count).to eq 2 }
       it { expect(outcome.result.order.transactions.where(status: :completed).count).to eq 4 }
@@ -213,7 +212,7 @@ RSpec.describe Manifest::CreateSlot do
 
     it "does not constrain guest slots, which have no member" do
       guest = Guest.create!(name: "Pat", body_mass_kg: 70, operator: operator)
-      ticket = create(:ticket_type, operator: operator, is_tandem: true)
+      ticket = create(:ticket_type, operator: operator, requires_escort: true)
       slots = Array.new(2) { Slot.create!(load: vehicle_load, guest: guest, ticket_type: ticket, activity_type: ActivityType.first, body_mass_kg: 70) }
 
       expect(slots.map(&:membership_id)).to eq([nil, nil])

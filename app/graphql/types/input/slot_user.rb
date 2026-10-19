@@ -7,8 +7,7 @@ module Types
       argument :body_mass_kg, Float, required: true
       argument :equipment, [GraphQL::Types::ID], required: false,
                                                  prepare: -> (value, ctx) { ::Equipment.where(id: value) }
-      argument :guest_name, String, required: false
-      argument :guest_body_mass_kg, Float, required: false
+      argument :guests, [Types::Input::GuestInput], required: false
     end
   end
 end

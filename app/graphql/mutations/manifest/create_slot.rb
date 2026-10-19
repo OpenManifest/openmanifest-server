@@ -24,9 +24,8 @@ module Mutations::Manifest
           :body_mass_kg,
           :load,
           :group_number,
-          :guest_name,
-          :guest_body_mass_kg,
         ),
+        guests: attributes[:guests]&.map(&:to_h),
         extra_ids: attributes[:extras]&.pluck(:id),
         equipment_ids: attributes[:equipment]&.pluck(:id)
       )

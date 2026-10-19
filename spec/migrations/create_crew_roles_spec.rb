@@ -2,6 +2,7 @@
 
 require "rails_helper"
 require Rails.root.join("db/migrate/20261012120000_create_crew_roles")
+require Rails.root.join("db/migrate/20261013100000_generalise_escorts")
 
 # P7.10: pilot, GCA and load master move from columns of loads to crew roles and assignments. The example goes back to
 # the old schema inside its transaction, and forward again.
@@ -14,6 +15,21 @@ RSpec.describe CreateCrewRoles do
 
   def quietly(&block) = ActiveRecord::Migration.suppress_messages(&block)
 
+  # A ticket type's escort role (P7.15) refers to the crew roles: it goes first
+  def go_down
+    quietly do
+      GeneraliseEscorts.new.migrate(:down)
+      described_class.new.migrate(:down)
+    end
+  end
+
+  def go_up
+    quietly do
+      described_class.new.migrate(:up)
+      GeneraliseEscorts.new.migrate(:up)
+    end
+  end
+
   def reset_models = [Load, CrewRole, LoadCrewAssignment, Operator].each(&:reset_column_information)
 
   after { reset_models }
@@ -21,7 +37,7 @@ RSpec.describe CreateCrewRoles do
   it "goes back: the crew returns to the columns of the load" do
     record = create(:load, vehicle: vehicle, pilot: pilot, gca: gca)
 
-    quietly { described_class.new.migrate(:down) }
+    go_down
 
     row = connection.select_one("SELECT pilot_id, gca_id, load_master_id FROM loads WHERE id = #{record.id}")
     expect(row).to eq("pilot_id" => pilot.id, "gca_id" => gca.id, "load_master_id" => nil)
@@ -30,10 +46,10 @@ RSpec.describe CreateCrewRoles do
 
   it "goes forward: a dropzone gets the three roles, and its loads their crew" do
     record = create(:load, vehicle: vehicle, pilot: pilot, gca: gca)
-    quietly { described_class.new.migrate(:down) }
+    go_down
     reset_models
 
-    quietly { described_class.new.migrate(:up) }
+    go_up
     reset_models
 
     roles = connection.select_rows("SELECT key, scope, required FROM crew_roles WHERE operator_id = #{operator.id} ORDER BY position")
@@ -52,10 +68,10 @@ RSpec.describe CreateCrewRoles do
     skipper = boats.memberships.owner.first
     boat = boats.vehicles.create!(name: "Boat", capacity: 6, kind: "vehicle")
     record = Load.create!(operator: boats, vehicle: boat)
-    quietly { described_class.new.migrate(:down) }
+    go_down
     connection.execute("UPDATE loads SET gca_id = #{skipper.id} WHERE id = #{record.id}")
 
-    quietly { described_class.new.migrate(:up) }
+    go_up
     reset_models
 
     keys = connection.select_values("SELECT key FROM crew_roles WHERE operator_id = #{boats.id}")

@@ -46,7 +46,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
     end
 
     context "successfully with tandem" do
-      let!(:ticket_type) { create(:ticket_type, is_tandem: true, operator: operator) }
+      let!(:ticket_type) { create(:ticket_type, requires_escort: true, operator: operator) }
       let(:post_request) do
         post "/graphql",
              params: {
@@ -55,8 +55,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
                  vehicle_load: vehicle_load,
                  membership: membership,
                  body_mass_kg: membership.user.body_mass_kg,
-                 guest_name: '"Eric"',
-                 guest_body_mass_kg: 60.0
+                 guests: '[{ name: "Eric", bodyMassKg: 60.0 }]'
                ),
              },
              headers: membership.user.create_new_auth_token
@@ -98,7 +97,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
     end
   end
 
-  def query(membership:, ticket_type:, vehicle_load:, body_mass_kg:, guest_name: nil, guest_body_mass_kg: nil)
+  def query(membership:, ticket_type:, vehicle_load:, body_mass_kg:, guests: nil)
     <<~GQL
       mutation {
         createSlot(
@@ -109,8 +108,7 @@ RSpec.describe Mutations::Manifest::CreateSlot, type: :request do
               activityType: #{ActivityType.allowed_for([membership]).sample.id}
               load: "#{vehicle_load.id}"
               bodyMassKg: #{body_mass_kg}
-              guestBodyMassKg: #{guest_body_mass_kg || 'null'}
-              guestName: #{guest_name || 'null'}
+              guests: #{guests || 'null'}
             }
           }
         ) {

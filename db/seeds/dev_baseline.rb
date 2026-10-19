@@ -32,7 +32,7 @@ ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_ce
                                                   default_destination: Destination.altitude_for(operator, 14_000),
                                                   allow_manifesting_self: true, currency: "AUD")
 operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, default_destination: Destination.altitude_for(operator, 14_000),
-                                         allow_manifesting_self: false, is_tandem: true, currency: "AUD")
+                                         allow_manifesting_self: false, requires_escort: true, currency: "AUD")
 roles = operator.user_roles.index_by(&:name)
 apf = CertificationBody.find_by(slug: "apf") || CertificationBody.first
 level = apf.certification_levels.where.not(name: "No license").first

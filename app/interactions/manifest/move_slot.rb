@@ -100,7 +100,18 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def save
-    errors.merge!(source_slot.errors) unless source_slot.save
+    return errors.merge!(source_slot.errors) unless source_slot.save
+
+    move_guests
+  end
+
+  # The guests ride with their escort
+  def move_guests
+    source_slot.guest_slots.each do |guest_slot|
+      next if guest_slot.update(load: source_slot.load, load_vehicle: source_slot.load_vehicle)
+
+      errors.merge!(guest_slot.errors)
+    end
   end
 
   def update_order
@@ -156,7 +167,7 @@ class Manifest::MoveSlot < ApplicationInteraction
     end
 
     capacity = destination_load.max_slots || destination_load.capacity
-    needed = source_slot.has_guest? ? 2 : 1
+    needed = 1 + source_slot.guest_slots.count
     errors.add(:base, "No slots available on load ##{destination_load.load_number}") if capacity - destination_load.slots.count < needed
   end
 

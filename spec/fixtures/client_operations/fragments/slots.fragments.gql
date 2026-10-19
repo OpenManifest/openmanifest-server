@@ -1,10 +1,25 @@
+fragment guestEssentials on Guest {
+  id
+  name
+  bodyMassKg
+  email
+  phone
+  dateOfBirth
+  emergencyContact
+}
+
 fragment slotEssentials on Slot {
   id
   lockVersion
   createdAt
   bodyMassKg
-  guestName
-  guestBodyMassKg
+  guestSlots {
+    id
+    bodyMassKg
+    guest {
+      ...guestEssentials
+    }
+  }
   wingLoading
   groupNumber
   costCents

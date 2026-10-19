@@ -85,7 +85,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
     end
 
     context "with a tandem guest" do
-      let!(:tandem_ticket) { create(:ticket_type, operator: operator, is_tandem: true) }
+      let!(:tandem_ticket) { create(:ticket_type, operator: operator, requires_escort: true) }
       let!(:outcome) do
         Manifest::CreateMultipleSlots.run(
           access_context: access_context,
@@ -93,10 +93,7 @@ RSpec.describe Manifest::CreateMultipleSlots do
           activity_type: activity_type,
           load: vehicle_load,
           users: user_group.take(2).map do |group|
-            group.merge(
-              guest_body_mass_kg: 50,
-              guest_name: Faker::Name.first_name
-            )
+            group.merge(guests: [{ body_mass_kg: 50, name: Faker::Name.first_name }])
           end
         )
       end

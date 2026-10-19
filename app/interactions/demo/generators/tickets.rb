@@ -25,7 +25,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
       cost: 38,
       default_destination: destination(14_000),
       allow_manifesting_self: true,
-      is_tandem: false
+      requires_escort: false
     )
   end
 
@@ -36,7 +36,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
       cost: 25,
       default_destination: destination(4000),
       allow_manifesting_self: true,
-      is_tandem: false
+      requires_escort: false
     )
   end
 
@@ -47,7 +47,7 @@ class Demo::Generators::Tickets < ApplicationInteraction
       cost: 299,
       default_destination: destination(14_000),
       allow_manifesting_self: false,
-      is_tandem: true
+      requires_escort: true
     )
   end
 

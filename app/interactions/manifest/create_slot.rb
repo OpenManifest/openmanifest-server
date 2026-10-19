@@ -19,9 +19,19 @@ class Manifest::CreateSlot < ApplicationInteraction
   end
   integer :group_number, default: nil
   float :body_mass_kg
-  string :guest_name, default: nil
+  # The guests who ride with the member, the escort, on a ticket type that requires one (at most its `escort_capacity`);
+  # given again for a member who is already on the load, they replace the guests there
+  array :guests, default: nil do
+    hash do
+      string :name, default: nil
+      float :body_mass_kg, default: nil
+      string :email, default: nil
+      string :phone, default: nil
+      date :date_of_birth, default: nil
+      string :emergency_contact, default: nil
+    end
+  end
   date_time :created_at, default: -> { DateTime.current }
-  float :guest_body_mass_kg, default: nil
   # Set when the member is manifested as part of a group that includes the person manifesting
   boolean :group_includes_self, default: false
   array :extra_ids, default: nil do
@@ -34,7 +44,7 @@ class Manifest::CreateSlot < ApplicationInteraction
 
   steps :lock_load_and_member,
         :build_slot,
-        :set_tandem_guest,
+        :set_guests,
         :validate,
         :create_order,
         :save,
@@ -111,29 +121,27 @@ class Manifest::CreateSlot < ApplicationInteraction
     @model.extras = Extra.where(id: extra_ids) unless extra_ids.nil?
   end
 
-  def set_tandem_guest
-    return unless @model.ticket_type.is_tandem? && guest_name
+  # The guests of the escort: the slots of the guests there already take the new values in order, more are added, the
+  # surplus goes. The guests' slots are saved with the escort's.
+  def set_guests
+    return if guests.nil?
 
-    if @model.guest_slot.present?
-      @model.guest_slot.guest.update(
-        name: guest_name,
-        body_mass_kg: guest_body_mass_kg
-      )
-    else
-      guest = Guest.find_or_create_by(
-        name: guest_name,
-        body_mass_kg: guest_body_mass_kg,
-        operator: membership.operator
-      )
-
-      @model.guest_slot = Slot.create(
-        load: load,
-        guest: guest,
-        body_mass_kg: guest_body_mass_kg,
-        ticket_type: @model.ticket_type,
-        activity_type: @model.activity_type
-      )
+    unless ticket_type.requires_escort?
+      errors.add(:guests, "#{ticket_type.name} does not take guests") if guests.any?
+      return
     end
+
+    existing = @model.guest_slots.to_a
+    guests.each_with_index do |attributes, index|
+      guest_slot = existing[index] || @model.guest_slots.build(load: load, ticket_type: ticket_type, activity_type: activity_type)
+      guest_slot.assign_attributes(body_mass_kg: attributes[:body_mass_kg], load_vehicle: @model.load_vehicle)
+      guest_slot.destination = @model.destination if @model.destination
+      guest = guest_slot.guest || Guest.new(operator: membership.operator)
+      guest.assign_attributes(attributes.slice(:name, :body_mass_kg, :email, :phone, :date_of_birth, :emergency_contact))
+      guest.save! if guest.persisted?
+      guest_slot.guest = guest
+    end
+    existing.drop(guests.size).each { |surplus| @model.guest_slots.destroy(surplus) }
   end
 
   # The order saves the new slot with it

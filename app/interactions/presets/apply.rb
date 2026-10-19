@@ -48,7 +48,7 @@ class Presets::Apply < ApplicationInteraction
       ticket = operator.ticket_types.find_or_initialize_by(name: attrs.fetch("name"))
       next if ticket.persisted?
 
-      ticket.assign_attributes(attrs.slice("cost_cents", "allow_manifesting_self", "is_tandem", "currency"))
+      ticket.assign_attributes(attrs.slice("cost_cents", "allow_manifesting_self", "requires_escort", "currency"))
       ticket.default_destination = operator.destinations.find_by!(name: attrs["destination"]) if attrs["destination"]
       ticket.save!
     end

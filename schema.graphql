@@ -1190,6 +1190,25 @@ type GrantPermissionPayload {
   membership: Membership
 }
 
+type Guest {
+  bodyMassKg: Float
+  dateOfBirth: ISO8601Date
+  email: String
+  emergencyContact: String
+  id: ID!
+  name: String
+  phone: String
+}
+
+input GuestInput {
+  bodyMassKg: Float
+  dateOfBirth: ISO8601Date
+  email: String
+  emergencyContact: String
+  name: String
+  phone: String
+}
+
 """
 An ISO 8601-encoded date
 """
@@ -3144,10 +3163,23 @@ type Slot implements AnyResource & SellableItem {
   The items the slot uses
   """
   equipment: [Equipment!]!
+
+  """
+  The slot of the escort, when this is a guest's
+  """
+  escortSlot: Slot
   extras: [Extra!]
   groupNumber: Int!
-  guestBodyMassKg: Float
-  guestName: String
+
+  """
+  Who rides in this slot, when it is a guest's
+  """
+  guest: Guest
+
+  """
+  The slots of the guests who ride with this slot's member, the escort
+  """
+  guestSlots: [Slot!]!
   guid: ID!
   id: ID!
   load: Load!
@@ -3211,8 +3243,11 @@ input SlotInput {
   equipment: [ID!]
   extras: [ID!]
   groupNumber: Int
-  guestBodyMassKg: Float
-  guestName: String
+
+  """
+  The guests who ride with the member, on a ticket type that requires an escort
+  """
+  guests: [GuestInput!]
   load: ID
 
   """
@@ -3232,8 +3267,7 @@ input SlotInput {
 input SlotUser {
   bodyMassKg: Float!
   equipment: [ID!]
-  guestBodyMassKg: Float
-  guestName: String
+  guests: [GuestInput!]
   id: Int!
 }
 
@@ -3285,10 +3319,16 @@ type TicketType implements AnyResource & SellableItem {
   createdAt: ISO8601DateTime!
   currency: String
   defaultDestination: Destination
+
+  """
+  The most guests for each escort
+  """
+  escortCapacity: Int!
+  escortCrewRole: CrewRole
+  escortQualification: Qualification
   extras: [Extra!]!
   guid: ID!
   id: ID!
-  isTandem: Boolean
 
   """
   The lowest rank of certification level that may buy this ticket
@@ -3297,6 +3337,11 @@ type TicketType implements AnyResource & SellableItem {
   name: String
   operator: Operator
   requiredQualification: Qualification
+
+  """
+  A slot takes guests who ride with its member, the escort (skydiving: tandem)
+  """
+  requiresEscort: Boolean
   title: String
   updatedAt: ISO8601DateTime!
 }
@@ -3310,12 +3355,31 @@ input TicketTypeInput {
   costCents: Int
   currency: String
   defaultDestinationId: Int
+
+  """
+  The most guests for each escort
+  """
+  escortCapacity: Int
+
+  """
+  The crew role whose permission the escort must have
+  """
+  escortCrewRoleId: Int
+
+  """
+  The qualification the escort must hold
+  """
+  escortQualificationId: Int
   extraIds: [Int!]
-  isTandem: Boolean
   minCertificationRank: Int
   name: String
   operatorId: Int
   requiredQualificationId: Int
+
+  """
+  A slot takes guests who ride with its member, the escort (skydiving: tandem)
+  """
+  requiresEscort: Boolean
 }
 
 input TimeRangeInput {

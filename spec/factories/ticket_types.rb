@@ -12,7 +12,7 @@
 #  allow_manifesting_self :boolean
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  is_tandem              :boolean          default(FALSE)
+#  requires_escort        :boolean          default(FALSE)
 #
 FactoryBot.define do
   factory :ticket_type do

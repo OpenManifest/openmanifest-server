@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -260,6 +260,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
     t.bigint "operator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email"
+    t.string "phone"
+    t.date "date_of_birth"
+    t.string "emergency_contact"
     t.index ["operator_id"], name: "index_guests_on_operator_id"
   end
 
@@ -502,18 +506,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
     t.bigint "guest_id"
     t.boolean "is_paid"
     t.bigint "transaction_id"
-    t.bigint "guest_slot_id"
     t.integer "group_number", default: 0, null: false
     t.bigint "membership_id"
     t.bigint "created_by_id"
     t.integer "lock_version", default: 0, null: false
     t.bigint "destination_id"
     t.bigint "load_vehicle_id"
+    t.bigint "escort_slot_id"
     t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
     t.index ["destination_id"], name: "index_slots_on_destination_id"
+    t.index ["escort_slot_id"], name: "index_slots_on_escort_slot_id"
     t.index ["guest_id"], name: "index_slots_on_guest_id"
-    t.index ["guest_slot_id"], name: "index_slots_on_guest_slot_id"
     t.index ["load_id", "membership_id"], name: "index_slots_on_load_id_and_membership_id", unique: true, where: "(membership_id IS NOT NULL)"
     t.index ["load_id"], name: "index_slots_on_load_id"
     t.index ["load_vehicle_id"], name: "index_slots_on_load_vehicle_id"
@@ -708,14 +712,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
     t.boolean "allow_manifesting_self"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_tandem", default: false
+    t.boolean "requires_escort", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
     t.bigint "default_destination_id"
     t.integer "min_certification_rank"
     t.bigint "required_qualification_id"
+    t.integer "escort_capacity", default: 1, null: false
+    t.bigint "escort_qualification_id"
+    t.bigint "escort_crew_role_id"
     t.index ["default_destination_id"], name: "index_ticket_types_on_default_destination_id"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
+    t.index ["escort_crew_role_id"], name: "index_ticket_types_on_escort_crew_role_id"
+    t.index ["escort_qualification_id"], name: "index_ticket_types_on_escort_qualification_id"
     t.index ["operator_id"], name: "index_ticket_types_on_operator_id"
     t.index ["required_qualification_id"], name: "index_ticket_types_on_required_qualification_id"
   end
@@ -927,7 +936,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
   add_foreign_key "slots", "loads"
   add_foreign_key "slots", "memberships"
   add_foreign_key "slots", "memberships", column: "created_by_id"
-  add_foreign_key "slots", "slots", column: "guest_slot_id"
+  add_foreign_key "slots", "slots", column: "escort_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
@@ -940,8 +949,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_12_150000) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
+  add_foreign_key "ticket_types", "crew_roles", column: "escort_crew_role_id"
   add_foreign_key "ticket_types", "destinations", column: "default_destination_id"
   add_foreign_key "ticket_types", "operators"
+  add_foreign_key "ticket_types", "qualifications", column: "escort_qualification_id"
   add_foreign_key "ticket_types", "qualifications", column: "required_qualification_id"
   add_foreign_key "transactions", "receipts"
   add_foreign_key "user_certifications", "certification_bodies"

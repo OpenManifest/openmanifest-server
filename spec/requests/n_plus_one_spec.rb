@@ -96,6 +96,35 @@ RSpec.describe "N+1 queries on the board and the member list" do
       expect(json.dig(:data, :loads, :edges, 0, :node, :slots).size).to eq(10)
     end
 
+    # The guests of an escort are slots of their own, with a guest each
+    it "lists the guests of the escorts of every load" do
+      ticket = create(:ticket_type, operator: operator, name: "Try dive", requires_escort: true, escort_capacity: 2)
+      loads.each_with_index do |manifested, index|
+        escort = slots[index * 10]
+        escort.update_columns(ticket_type_id: ticket.id)
+        2.times do |position|
+          Slot.create!(load: manifested, escort_slot: escort, guest: Guest.create!(operator: operator, name: "Guest #{index}-#{position}", body_mass_kg: 70),
+                       ticket_type: ticket, activity_type: escort.activity_type, body_mass_kg: 70)
+        end
+      end
+      json = nil
+      query = ClientOperations.document("Load") + <<~GQL
+        query LoadsDetailed($operator: ID!, $date: ISO8601Date) {
+          loads(operator: $operator, date: $date) { edges { node { ...loadDetails } } }
+        }
+      GQL
+      without_n_plus_one do
+        post "/graphql", params: { query: query, variables: { operator: operator.id, date: Date.current.iso8601 }.to_json, operationName: "LoadsDetailed" },
+                         headers: owner_user.create_new_auth_token
+        json = response.parsed_body.with_indifferent_access
+      end
+
+      expect(json[:errors]).to be_nil
+      escorts = json.dig(:data, :loads, :edges).flat_map { |edge| edge.dig(:node, :slots) }.select { |slot| slot[:guestSlots].present? }
+      expect(escorts.size).to eq(5)
+      expect(escorts.flat_map { |slot| slot[:guestSlots].map { |guest_slot| guest_slot.dig(:guest, :name) } }).to match_array(Array.new(5) { |index| ["Guest #{index}-0", "Guest #{index}-1"] }.flatten)
+    end
+
     # These lists used to be eager loaded by a lookahead on each resolver; the fields load their associations themselves
     it "lists ticket types, add-ons, vehicle and roles of an operator" do
       add_ons = Array.new(6) { |i| Extra.create!(operator: operator, name: "Extra #{i}", cost_cents: 500) }

@@ -14,7 +14,7 @@
 #  guest_id      :bigint
 #  is_paid           :boolean
 #  transaction_id    :bigint
-#  guest_slot_id :bigint
+#  escort_slot_id :bigint
 #  group_number      :integer          default(0), not null
 #  membership_id  :bigint
 #  destination_id :bigint
@@ -40,7 +40,10 @@ class Slot < ApplicationRecord
   has_many :receipts, through: :order
   has_many :transactions, through: :receipts
 
-  belongs_to :guest_slot, optional: true, class_name: "Slot"
+  # A slot of a ticket type that requires an escort has the slots of its guests (`guest_slots`, up to the ticket's
+  # `escort_capacity`); a guest's slot points back to its escort (P7.15). Guests ride on the same load and vehicle.
+  belongs_to :escort_slot, optional: true, class_name: "Slot", inverse_of: :guest_slots
+  has_many :guest_slots, class_name: "Slot", foreign_key: :escort_slot_id, inverse_of: :escort_slot, dependent: :destroy
 
   # The items the slot uses (a skydiver's rig; a diver's BCD, regulator and wetsuit)
   has_many :slot_equipment, dependent: :destroy
@@ -67,6 +70,7 @@ class Slot < ApplicationRecord
   before_validation :default_destination, on: :create
   validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
   validate :destination_of_operator, :load_vehicle_of_load, :equipment_of_member_or_operator
+  validate :escort_of_load, :guests_within_capacity, :escort_meets_requirements
   validate :load_vehicle_has_room, if: -> { load_vehicle && (new_record? || load_vehicle_id_changed?) }
   validate :available?,
            :double_manifest?,
@@ -112,12 +116,12 @@ class Slot < ApplicationRecord
 
     rig = equipment.find { |item| item.kind.key == Skydiving::Rigs::KIND }
     weight = body_mass_kg
-    weight += guest_slot.body_mass_kg || 0 if has_guest?
+    weight += guest_slots.sum { |guest_slot| guest_slot.body_mass_kg || 0 }
     Skydiving::Rigs.wing_loading(rig, weight)
   end
 
   def has_guest?
-    guest_slot.present?
+    guest_slots.any?
   end
 
   def is_guest?
@@ -158,9 +162,42 @@ class Slot < ApplicationRecord
     errors.add(:base, "No slots available in #{load_vehicle.vehicle.name}")
   end
 
+  # The seats the slot takes: its own and the guests'
   def required_slots
-    return 2 if has_guest?
-    1
+    1 + guest_slots.size
+  end
+
+  # A guest rides on the load (and the vehicle) of its escort
+  def escort_of_load
+    return if escort_slot.nil?
+
+    errors.add(:escort_slot, "must be on the same load") unless escort_slot.load_id == load_id
+    errors.add(:escort_slot, "must be in the same vehicle") if load_vehicle_id && escort_slot.load_vehicle_id != load_vehicle_id
+    errors.add(:guest, :blank) if guest.nil?
+  end
+
+  # An escort takes the guests its ticket type allows
+  def guests_within_capacity
+    return if guest_slots.empty?
+
+    unless ticket_type&.requires_escort?
+      errors.add(:base, "#{ticket_type&.name || 'This ticket'} does not take guests")
+      return
+    end
+    return if guest_slots.size <= ticket_type.escort_capacity
+
+    errors.add(:base, "#{ticket_type.name} takes at most #{ticket_type.escort_capacity} #{'guest'.pluralize(ticket_type.escort_capacity)} for each escort")
+  end
+
+  # The escort holds the qualification and the crew role's permission the ticket type asks for
+  def escort_meets_requirements
+    return unless new_record? && guest_slots.any? && membership && ticket_type
+    return if created_by&.can?(:createUserSlot) && operator&.allow_manifest_bypass?
+
+    unmet = ticket_type.unmet_escort_requirements(membership)
+    return if unmet.empty?
+
+    errors.add(:base, "#{membership.user.name} cannot escort guests: missing #{unmet.map { |kind| kind.to_s.humanize.downcase }.join(', ')}")
   end
 
   def available?
@@ -211,7 +248,7 @@ class Slot < ApplicationRecord
 
   def allowed_activity_type?
     return if activity_type.blank?
-    return true if is_guest? && ticket_type.is_tandem?
+    return true if is_guest? && ticket_type.requires_escort?
     return if activity_type.allowed_for?(membership)
     return unless operator.require_certification?
     return if created_by&.can?(:createUserSlot) && operator.allow_manifest_bypass?

@@ -10,7 +10,7 @@ class Transactions::Purchase < ApplicationInteraction
   steps :create_order,
         :create_transactions,
         :update_credits,
-        :refund_if_tandem,
+        :refund_if_escort_required,
         :save
 
   # Create events
@@ -58,8 +58,8 @@ class Transactions::Purchase < ApplicationInteraction
     @order
   end
 
-  def refund_if_tandem
-    return unless is_tandem?
+  def refund_if_escort_required
+    return unless requires_escort?
     compose(
       Transactions::Refund,
       order: @order,
@@ -109,12 +109,12 @@ class Transactions::Purchase < ApplicationInteraction
 
   protected
 
-  def is_tandem?
+  def requires_escort?
     case purchasable
     when Slot
-      purchasable.ticket_type.is_tandem?
+      purchasable.ticket_type.requires_escort?
     when TicketType
-      purchasable.is_tandem?
+      purchasable.requires_escort?
     else
       false
     end

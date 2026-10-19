@@ -74,7 +74,7 @@ if operator.new_record?
     name: "Height",
     default_destination: Destination.altitude_for(operator, 14_000),
     allow_manifesting_self: true,
-    is_tandem: false,
+    requires_escort: false,
     currency: "AUD"
   )
 
@@ -85,7 +85,7 @@ if operator.new_record?
     name: "Hop n Pop",
     default_destination: Destination.altitude_for(operator, 4500),
     allow_manifesting_self: true,
-    is_tandem: true,
+    requires_escort: true,
     currency: "AUD"
   )
 
@@ -96,7 +96,7 @@ if operator.new_record?
     name: "Tandem",
     default_destination: Destination.altitude_for(operator, 14_000),
     allow_manifesting_self: false,
-    is_tandem: true,
+    requires_escort: true,
     currency: "AUD"
   )
 

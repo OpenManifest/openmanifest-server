@@ -53,7 +53,7 @@ module Mutations
       end
 
       context "successfully with tandem" do
-        let!(:ticket_type) { create(:ticket_type, is_tandem: true, operator: operator) }
+        let!(:ticket_type) { create(:ticket_type, requires_escort: true, operator: operator) }
         let(:post_request) do
           post "/graphql",
                params: {
@@ -123,8 +123,7 @@ module Mutations
                     "{
                       id: #{u[:id]},
                       bodyMassKg: #{u[:body_mass_kg]},
-                      guestName: #{u[:guest_name] ? '"%s"' % u[:guest_name] : 'null'},
-                      guestBodyMassKg: #{u[:guest_body_mass_kg] || 'null'}
+                      guests: #{u[:guest_name] ? '[{ name: "%s", bodyMassKg: %s }]' % [u[:guest_name], u[:guest_body_mass_kg] || 'null'] : 'null'}
                     },"
                   end.join("\n")}
                 ]

@@ -36,18 +36,15 @@ module Types::Manifest
     async_field :order, Types::Payments::Order, null: true
     field :wing_loading, Float, null: true
     def wing_loading
-      dataloader.with(::Sources::AssociationLoader, [{ equipment: :kind }]).load(object)
+      dataloader.with(::Sources::AssociationLoader, [{ equipment: :kind }, :guest_slots]).load(object)
       object.wing_loading
     end
 
-    field :guest_name, String, null: true
-    def guest_name
-      object.guest_slot&.guest&.name
-    end
-
-    field :guest_body_mass_kg, Float, null: true
-    def guest_body_mass_kg
-      object.guest_slot&.body_mass_kg
+    async_field :guest, Types::Manifest::Guest, null: true, description: "Who rides in this slot, when it is a guest's"
+    async_field :escort_slot, Types::Manifest::Slot, null: true, description: "The slot of the escort, when this is a guest's"
+    field :guest_slots, [Types::Manifest::Slot], null: false, description: "The slots of the guests who ride with this slot's member, the escort"
+    def guest_slots
+      dataloader.with(::Sources::AssociationLoader, [{ guest_slots: :guest }]).load(object).guest_slots.sort_by(&:id)
     end
 
     field :extras, [Types::Operator::Tickets::Addon], null: true

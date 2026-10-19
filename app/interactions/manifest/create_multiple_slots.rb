@@ -19,8 +19,16 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
       array :equipment_ids, default: nil do
         integer
       end
-      string :guest_name, default: nil
-      float :guest_body_mass_kg, default: nil
+      array :guests, default: nil do
+        hash do
+          string :name, default: nil
+          float :body_mass_kg, default: nil
+          string :email, default: nil
+          string :phone, default: nil
+          date :date_of_birth, default: nil
+          string :emergency_contact, default: nil
+        end
+      end
     end
   end
 
@@ -67,7 +75,7 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   def check_available_slots
     # Check how many users we're manifesting, and return
     # an error if there aren't enough slots on this load
-    slots_expected = users.sum { |user| user[:guest_name] ? 2 : 1 }
+    slots_expected = users.sum { |user| 1 + user[:guests].to_a.size }
 
     return unless slots_expected > vehicle_load.reload.available_slots
     errors.add(:base, "Only #{vehicle_load.available_slots} slots available")

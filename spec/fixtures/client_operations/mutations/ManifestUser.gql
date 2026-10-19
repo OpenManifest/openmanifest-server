@@ -6,9 +6,8 @@ mutation ManifestUser(
   $ticketType: ID
   $membership: ID
   $bodyMassKg: Float
-  $guestName: String
+  $guests: [GuestInput!]
   $groupNumber: Int
-  $guestBodyMassKg: Float
 ) {
   createSlot(
     input: {
@@ -21,8 +20,7 @@ mutation ManifestUser(
         ticketType: $ticketType
         membership: $membership
         bodyMassKg: $bodyMassKg
-        guestBodyMassKg: $guestBodyMassKg
-        guestName: $guestName
+        guests: $guests
       }
     }
   ) {

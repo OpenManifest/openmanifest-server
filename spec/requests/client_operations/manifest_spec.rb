@@ -9,7 +9,7 @@ RSpec.describe "Client operations: manifest" do
   let!(:owner) { create(:membership, operator: operator, user: owner_user, user_role: operator.user_roles.find_by(name: "owner"), credits: 500).tap { |member| %i(actAsGCA actAsLoadMaster).each { |permission| member.grant!(permission) } } }
   let!(:pilot) { create(:membership, operator: operator).tap { |member| member.grant!(:actAsPilot) } }
   let!(:ticket_type) { create(:ticket_type, operator: operator, name: "Height", cost: 40) }
-  let!(:tandem_ticket) { create(:ticket_type, operator: operator, name: "Tandem", cost: 200).tap { |t| t.update!(is_tandem: true, allow_manifesting_self: false) } }
+  let!(:tandem_ticket) { create(:ticket_type, operator: operator, name: "Tandem", cost: 200).tap { |t| t.update!(requires_escort: true, allow_manifesting_self: false) } }
   let(:load_variables) { { name: "Load A", vehicle: vehicle.id, pilot: pilot.id, gca: owner.id, maxSlots: 10 } }
   let!(:manifest_load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, name: "Existing", max_slots: 10) }
 
@@ -325,11 +325,11 @@ RSpec.describe "Client operations: manifest" do
     it "manifests a tandem instructor with a guest" do
       instructor.update!(credits: 500)
 
-      json = client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guestName: "Pat Guest", guestBodyMassKg: 70), as: owner_user)
+      json = client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guests: [{ name: "Pat Guest", bodyMassKg: 70 }]), as: owner_user)
 
       expect(json.dig(:data, :createSlot, :errors)).to be_nil
-      expect(json.dig(:data, :createSlot, :slot, :ticketType, :isTandem)).to be(true)
-      expect(json.dig(:data, :createSlot, :slot, :guestName)).to eq("Pat Guest")
+      expect(json.dig(:data, :createSlot, :slot, :ticketType, :requiresEscort)).to be(true)
+      expect(json.dig(:data, :createSlot, :slot, :guestSlots, 0, :guest, :name)).to eq("Pat Guest")
       expect(manifest_load.slots.count).to eq(2)
     end
 
@@ -618,7 +618,7 @@ RSpec.describe "Client operations: manifest" do
 
     it "lands a load that has a tandem guest" do
       instructor.update!(credits: 500)
-      client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guestName: "Pat", guestBodyMassKg: 70), as: owner_user)
+      client_operation("ManifestUser", variables: slot_variables(instructor, ticketType: tandem_ticket.id, guests: [{ name: "Pat", bodyMassKg: 70 }]), as: owner_user)
 
       json = client_operation("FinalizeLoad", variables: { id: manifest_load.id, state: "completed" }, as: owner_user)
 

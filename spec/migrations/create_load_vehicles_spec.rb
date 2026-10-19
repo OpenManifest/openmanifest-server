@@ -18,6 +18,7 @@ RSpec.describe CreateLoadVehicles do
   # The crew roles of P7.10 name the vehicles of a load: they go first
   def go_down
     quietly do
+      GeneraliseEscorts.new.migrate(:down)
       CreateCrewRoles.new.migrate(:down)
       described_class.new.migrate(:down)
     end
@@ -27,6 +28,7 @@ RSpec.describe CreateLoadVehicles do
     quietly do
       described_class.new.migrate(:up)
       CreateCrewRoles.new.migrate(:up)
+      GeneraliseEscorts.new.migrate(:up)
     end
   end
 

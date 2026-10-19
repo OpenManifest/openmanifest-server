@@ -27,8 +27,8 @@ module Types
       argument :group_number, Int, required: false
       argument :user_group, [Types::Input::SlotUser], required: false
 
-      argument :guest_name, String, required: false
-      argument :guest_body_mass_kg, Float, required: false
+      argument :guests, [Types::Input::GuestInput], required: false,
+                                                    description: "The guests who ride with the member, on a ticket type that requires an escort"
       argument :lock_version, Int, required: false,
                                    description: "The lockVersion of the slot as the client last saw it; an older one is refused with CONFLICT"
     end
