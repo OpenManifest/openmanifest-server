@@ -1,0 +1,40 @@
+#import "../fragments/equipment.fragments.gql"
+
+mutation CreateEquipment(
+  $make: String
+  $name: String
+  $model: String
+  $serial: String
+  $kindId: ID
+  $attributes: JSON
+  $maintainedAt: Int
+  $serviceDueAt: Int
+  $userId: Int
+  $operatorId: Int
+) {
+  createEquipment(
+    input: {
+      attributes: {
+        name: $name
+        make: $make
+        model: $model
+        serial: $serial
+        serviceDueAt: $serviceDueAt
+        operatorId: $operatorId
+        userId: $userId
+        kindId: $kindId
+        attributes: $attributes
+        maintainedAt: $maintainedAt
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    equipment {
+      ...userEquipmentDetailed
+    }
+  }
+}
