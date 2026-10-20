@@ -4323,7 +4323,7 @@ Fixes: none
 ---
 
 ### U3.1 — Add Android emulator flows with Maestro
-Status: todo
+Status: blocked (Android CI: Maestro and uiautomator see none of the app's views on the emulator although the app runs; 18 runs, client PR #274)
 Repo: client
 Depends on: U2.8
 Branch: modernise/u3-1-android-ui
