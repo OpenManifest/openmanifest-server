@@ -6,14 +6,14 @@ module Types
       argument :name, String, required: true
       argument :email, String, required: true
       argument :phone, String, required: false
-      argument :exit_weight, Float, required: true
-      argument :dropzone, Integer, required: true,
-                                   prepare: -> (value, ctx) { ::Dropzone.find_by(id: value) }
+      argument :body_mass_kg, Float, required: true
+      argument :operator, Integer, required: true,
+                                   prepare: -> (value, ctx) { ::Operator.find_by(id: value) }
       argument :role, Integer, required: true,
                                prepare: -> (value, ctx) { ::UserRole.find_by(id: value) }
-      argument :license, Integer, required: false,
-                                  prepare: -> (value, ctx) { ::License.find_by(id: value) }
-      argument :federation_number, String, required: false
+      argument :certification_level, Integer, required: false,
+                                              prepare: -> (value, ctx) { ::CertificationLevel.find_by(id: value) }
+      argument :certification_body_number, String, required: false
     end
   end
 end

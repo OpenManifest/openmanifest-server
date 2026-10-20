@@ -96,7 +96,9 @@ document the task links, before changing anything.
 2. Start services and boot the apps as described in [`reference/CLOUD_ENV.md` §4](reference/CLOUD_ENV.md#4-per-session-commands).
    If the setup script version required by the task (CLOUD_ENV §1) is not installed, set the task to
    `owner-check (install setup script version X)` and stop.
-3. Work on **exactly one task per session**.
+3. Work through the queue autonomously: after finishing a task (PR opened, status updated), pick the next task by the
+   rules below and continue until no task qualifies or a stop condition is hit. Each task still gets its own branch,
+   commits and PR, and the acceptance criteria are checked per task; never combine tasks.
 
 ### Picking the task
 
@@ -239,26 +241,17 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
-| 1 | Finish Phase 3 | P3.3 | Unblocked by D4; removes dead login code before anything else touches it. |
-| 2 | UI safety net | U0.1, U0.2 | Playwright and CI first, so every later refactor is checked in a browser on every PR. |
-| 3 | Office operation | UB.1, UB.2 | Owner request (D-UI11): run everything from the office. Small, independent. |
-| 4 | Phase 7 stage A: rename | P7.1, P7.2, P7.3, P7.4, P7.5, P7.6 | Mechanical renames touch every file; done early so all later work uses the final names. |
-| 5 | Phase 7: templates and modules | P7.7 | Terminology and modules come from templates; the UI foundations and navigation read them. |
-| 6 | UI foundations | U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9, U0.10 | Tokens, theme, lint, i18n with operator terms (replaces P7.18), test utilities. Checkpoint U0.10. |
-| 7 | App shell | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Role- and module-aware navigation (takes P7.22's navigation step). Checkpoint U1.6. |
-| 8 | Components | U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7, U2.8 | The `app/ui` layer every later screen, in any phase, is built with. Checkpoint U2.8. |
-| 9 | Phase 7 stage B: generic model | P7.8, P7.9, P7.10, P7.11, P7.12, P7.13, P7.14, P7.15, P7.16, P7.17, UB.3 | Destinations, vehicles, crew, calls, units and currency, certifications, equipment, escorts, eligibility, booking seam. Old screens get the smallest change; new setup screens use `app/ui`. |
-| 10 | Manifest UI | U3.1, U3.2, U3.3, U3.4, U3.5, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
-| 11 | Member UI | U4.1, U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
-| 12 | People and setup | U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
-| 13 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
-| 14 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
-| 15 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
-| 16 | Release | P8.1, P8.2, P8.3, P8.4, P8.5, P8.6, P8.7, P8.8, P8.9 | Versioning, deploy and stores; most tasks wait for D1 and D2, and the queue moves on while they do. |
-| 17 | Commerce foundation | C1.1, C1.2, C1.3, C2.1, C2.2, C2.3, C2.4, C2.5, C2.6, C2.7, C2.8, C2.9, C2.10, C2.11 | Money, ledger, Stripe, platform fee, checkout, coupons. Shared by booking and the webshop. |
-| 18 | Booking | B1.1, B1.2, B1.3, B1.4, B1.5, B1.6, B1.7, B1.8, B2.1, B2.2, B2.3, B2.4, B2.5, B3.1, B3.2, B3.3, B3.4 | Operators' highest-value sales; if a booking task is blocked, the queue continues with the webshop. |
-| 19 | Webshop | S1.1, S1.2, S1.3, S1.4, S2.1, S2.2, S2.3, S3.1, S3.2, S3.3, S4.1, S4.2, S4.3, S4.4 | Catalogue, stock, checkout, virtual products, fulfilment, reports. |
-| 20 | Waiting for decisions | P6.7, P6.14 | Picked when D8 and D3 are decided. |
+| 4 | Manifest UI | U3.1, U3.6, U3.7, U3.8, U3.9, U3.10 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
+| 5 | Member UI | U4.1, U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
+| 6 | People and setup | U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
+| 7 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
+| 8 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
+| 9 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
+| 10 | Release | P8.1, P8.2, P8.3, P8.4, P8.5, P8.6, P8.7, P8.8, P8.9 | Versioning, deploy and stores; most tasks wait for D1 and D2, and the queue moves on while they do. |
+| 11 | Commerce foundation | C1.1, C1.2, C1.3, C2.1, C2.2, C2.3, C2.4, C2.5, C2.6, C2.7, C2.8, C2.9, C2.10, C2.11 | Money, ledger, Stripe, platform fee, checkout, coupons. Shared by booking and the webshop. |
+| 12 | Booking | B1.1, B1.2, B1.3, B1.4, B1.5, B1.6, B1.7, B1.8, B2.1, B2.2, B2.3, B2.4, B2.5, B3.1, B3.2, B3.3, B3.4 | Operators' highest-value sales; if a booking task is blocked, the queue continues with the webshop. |
+| 13 | Webshop | S1.1, S1.2, S1.3, S1.4, S2.1, S2.2, S2.3, S3.1, S3.2, S3.3, S4.1, S4.2, S4.3, S4.4 | Catalogue, stock, checkout, virtual products, fulfilment, reports. |
+| 14 | Waiting for decisions | P6.7, P6.14 | Picked when D8 and D3 are decided. |
 
 What the merge of the plans changed (2026-10-11), so nothing is built twice:
 
@@ -1664,7 +1657,7 @@ Size: S
 Fixes: none
 
 ### P3.3 — Remove or replace Facebook login
-Status: todo
+Status: done
 Repo: both
 Depends on: P3.2
 Branch: modernise/p3-3-facebook-login
@@ -2183,7 +2176,7 @@ Repo: both
 Depends on: P3.1, P3.2, P3.4, P3.5, P3.6, P3.7, P3.8, P3.9, P3.10, P3.11, P3.12, P3.13, P3.14, P3.15, P3.16, P3.17, P3.18, P3.19, P3.20, P3.21
 Branch: modernise/p3-22-verify
 Goal: The upgraded client is proven in the VM and, by the owner, on real devices.
-Context: Phase gate. P3.3 is excluded from the dependencies because it waits on D4. If D4 is still open, record it.
+Context: Phase gate. P3.3 (Facebook login removal, D4 option a) is done; add it to the dependencies when the verification is run.
 BUG-016 (client advisories) should be largely resolved.
 Steps:
   1. Run client checks, `check:graphql`, web export, web smoke test, `npx expo-doctor`, and
@@ -3592,7 +3585,7 @@ device checks for that batch, and U6.5 collects them as the gate before producti
 ---
 
 ### UB.1 — Let a dropzone switch off self-manifesting
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/ub-1-self-manifest-setting
@@ -3641,7 +3634,7 @@ Size: M
 Fixes: none
 
 ### UB.2 — Let staff manage a member's equipment from the office
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/ub-2-office-equipment
@@ -3672,7 +3665,7 @@ Size: M
 Fixes: none
 
 ### UB.3 — Expose the last slot and the call time
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.17
 Branch: modernise/ub-3-last-slot-call-time
@@ -3696,7 +3689,7 @@ Size: S
 Fixes: none
 
 ### U0.1 — Replace the web smoke script with a Playwright Test suite
-Status: todo
+Status: done
 Repo: client
 Depends on: none
 Branch: modernise/u0-1-playwright
@@ -3735,7 +3728,7 @@ Size: L
 Fixes: none
 
 ### U0.2 — Run the UI smoke suite in CI and add the full-suite workflow
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.1
 Branch: modernise/u0-2-ui-ci
@@ -3766,7 +3759,7 @@ Size: M
 Fixes: none
 
 ### U0.3 — Add design tokens and the contrast function
-Status: todo
+Status: done
 Repo: client
 Depends on: none
 Branch: modernise/u0-3-tokens
@@ -3803,7 +3796,7 @@ Size: M
 Fixes: none
 
 ### U0.4 — Generate the app theme from tokens; default brand and system fonts
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.3, U0.1
 Branch: modernise/u0-4-theme
@@ -3836,7 +3829,7 @@ Size: L
 Fixes: none
 
 ### U0.5 — Add the UI lint guardrails and the debt counter
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.4
 Branch: modernise/u0-5-ui-lint
@@ -3862,7 +3855,7 @@ Size: S
 Fixes: none
 
 ### U0.6 — Add i18n with the operator's terminology
-Status: todo
+Status: done
 Repo: client
 Depends on: P7.7
 Branch: modernise/u0-6-i18n
@@ -3900,7 +3893,7 @@ Size: M
 Fixes: none
 
 ### U0.7 — Upgrade Testing Library and add shared test utilities
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.4, U0.6
 Branch: modernise/u0-7-testing-library
@@ -3925,7 +3918,7 @@ Size: M
 Fixes: none
 
 ### U0.8 — Spike headless primitives for overlays on web
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.4, U0.1
 Branch: modernise/u0-8-primitives-spike
@@ -3950,7 +3943,7 @@ Size: M
 Fixes: none
 
 ### U0.9 — Apply the logged quick fixes
-Status: todo
+Status: done
 Repo: both
 Depends on: none
 Branch: modernise/u0-9-quick-fixes
@@ -3967,6 +3960,9 @@ Acceptance criteria (cloud VM):
   - Client checks, web export; backend rspec and rubocop.
 Acceptance criteria (owner, real device):
   - none
+Notes (done): `components/UserAvatar.web.old.tsx` was not dead (an MUI avatar imported by `popover/Menu.web.tsx` and
+`autocomplete/MembershipAutocomplete.web.tsx`), so it stays; `LocationPicker.oldios.tsx` was deleted. 88 `console.log/debug`
+calls removed with the debug-only code behind them (`api/crud/factory.tsx`); the bug is BUG-102.
 Out of scope: the visual quick fixes (WeatherBoard artwork, chart hatch, profile empty state, dark tab tint): they are
 rebuilt in U1–U5.
 Risk / rollback: revert.
@@ -3974,7 +3970,7 @@ Size: S
 Fixes: the new BUG ID
 
 ### U0.10 — Checkpoint U0
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.1, U0.2, U0.3, U0.4, U0.5, U0.6, U0.7, U0.8, U0.9
 Branch: modernise/u0-10-checkpoint
@@ -3998,7 +3994,7 @@ Fixes: none
 ---
 
 ### U1.1 — Compute navigation destinations from permissions and modules before render
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.10
 Branch: modernise/u1-1-destinations
@@ -4027,7 +4023,7 @@ Size: M
 Fixes: BUG-100
 
 ### U1.2 — Build the responsive shell: tabs, rail and sidebar
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.1
 Branch: modernise/u1-2-shell
@@ -4056,7 +4052,7 @@ Size: L
 Fixes: none
 
 ### U1.3 — Replace the drawer with Account and More
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.2
 Branch: modernise/u1-3-account
@@ -4080,7 +4076,7 @@ Size: M
 Fixes: none
 
 ### U1.4 — Replace the app bar with a screen header
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.2
 Branch: modernise/u1-4-header
@@ -4105,7 +4101,7 @@ Size: M
 Fixes: none
 
 ### U1.5 — Register the User stack once and redirect old paths
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.2
 Branch: modernise/u1-5-user-stack
@@ -4127,7 +4123,7 @@ Size: M
 Fixes: none
 
 ### U1.6 — Checkpoint U1
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.1, U1.2, U1.3, U1.4, U1.5
 Branch: modernise/u1-6-checkpoint
@@ -4149,7 +4145,7 @@ Fixes: none
 ---
 
 ### U2.1 — Build the base components
-Status: todo
+Status: done
 Repo: client
 Depends on: U0.10
 Branch: modernise/u2-1-base-components
@@ -4173,7 +4169,7 @@ Size: M
 Fixes: none
 
 ### U2.2 — Build the form components
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.1
 Branch: modernise/u2-2-form-components
@@ -4197,13 +4193,15 @@ Size: L
 Fixes: none
 
 ### U2.3 — Build the overlay components
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.1, U0.8
 Branch: modernise/u2-3-overlays
 Goal: One `Sheet`/`Dialog` API (bottom sheet on compact native, dialog or side panel elsewhere), `Menu`, `Popover`,
 `Tooltip`, `Banner`, `Toast` (replacing the notifications provider's snackbar visuals).
-Context: `layout/DialogOrSheet*.tsx` (P5.4), `@gorhom/bottom-sheet` 5.2.x, `providers/notifications`; U0.8 decision.
+Context: `layout/DialogOrSheet*.tsx` (P5.4), `@gorhom/bottom-sheet` 5.2.x, `providers/notifications`; U0.8 decision:
+**go** for `@rn-primitives` on the web (installed; the spike route `/__spike`, `app/screens/dev/SpikeScreen.tsx`, `e2e/spike.spec.ts` and the
+package entries stay until this task removes the route; rules for the select in `client:docs/ui/spike-rn-primitives.md`).
 Steps:
   1. `Overlay` API: `presentation: 'auto' | 'sheet' | 'dialog' | 'panel'`, title, footer slot (pinned), focus trap and
      Esc on web, returns focus on close.
@@ -4219,7 +4217,7 @@ Size: L
 Fixes: none
 
 ### U2.4 — Build the display components
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.1
 Branch: modernise/u2-4-display
@@ -4239,7 +4237,7 @@ Size: M
 Fixes: none
 
 ### U2.5 — Add the component gallery
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.2, U2.3, U2.4
 Branch: modernise/u2-5-gallery
@@ -4260,7 +4258,7 @@ Size: M
 Fixes: none
 
 ### U2.6 — Re-base inputs and layout wrappers on app/ui
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.2, U2.3
 Branch: modernise/u2-6-inputs
@@ -4282,7 +4280,7 @@ Size: L
 Fixes: none
 
 ### U2.7 — Convert the forms
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.6, U0.6
 Branch: modernise/u2-7-forms
@@ -4303,7 +4301,7 @@ Size: L
 Fixes: none
 
 ### U2.8 — Checkpoint U2
-Status: todo
+Status: done
 Repo: client
 Depends on: U2.1, U2.2, U2.3, U2.4, U2.5, U2.6, U2.7
 Branch: modernise/u2-8-checkpoint
@@ -4325,7 +4323,7 @@ Fixes: none
 ---
 
 ### U3.1 — Add Android emulator flows with Maestro
-Status: todo
+Status: blocked (Android CI: Maestro and uiautomator see none of the app's views on the emulator although the app runs; 18 runs, client PR #274)
 Repo: client
 Depends on: U2.8
 Branch: modernise/u3-1-android-ui
@@ -4354,7 +4352,7 @@ Size: L
 Fixes: none
 
 ### U3.2 — Add the board data layer and the newBoard flag
-Status: todo
+Status: done
 Repo: client
 Depends on: U1.6, U2.8, P7.17, UB.3
 Branch: modernise/u3-2-board-data
@@ -4380,7 +4378,7 @@ Size: M
 Fixes: none
 
 ### U3.3 — Build the load card and the board layouts
-Status: todo
+Status: done
 Repo: client
 Depends on: U3.2
 Branch: modernise/u3-3-board
@@ -4412,7 +4410,7 @@ Size: L
 Fixes: none
 
 ### U3.4 — Make the next load action one tap
-Status: todo
+Status: done
 Repo: client
 Depends on: U3.3
 Branch: modernise/u3-4-load-actions
@@ -4439,7 +4437,7 @@ Size: M
 Fixes: none
 
 ### U3.5 — Build the new load screen
-Status: todo
+Status: done
 Repo: client
 Depends on: U3.4
 Branch: modernise/u3-5-load-screen
@@ -5034,7 +5032,7 @@ Rules for every Phase 7 task (from D5, D7, D9 and D11):
   kinds, accepted certification bodies) are built on `app/ui` per "Client UI work".
 
 ### P7.1 — Add the vocabulary map, the old-terms check and the rename codemod
-Status: todo
+Status: done
 Repo: both
 Depends on: U0.2
 Branch: modernise/p7-1-vocabulary
@@ -5065,7 +5063,7 @@ Size: M
 Fixes: none
 
 ### P7.2 — Drop legacy columns and deprecated API fields
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.1
 Branch: modernise/p7-2-drop-legacy
@@ -5091,7 +5089,7 @@ Size: M
 Fixes: none
 
 ### P7.3 — Rename the tenant in the backend: Dropzone → Operator, DropzoneUser → Membership
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.2
 Branch: modernise/p7-3-operator-backend
@@ -5123,7 +5121,7 @@ Size: L
 Fixes: none
 
 ### P7.4 — Rename the tenant in the client
-Status: todo
+Status: done
 Repo: client
 Depends on: P7.3
 Branch: modernise/p7-4-operator-client
@@ -5150,7 +5148,7 @@ Size: L
 Fixes: none
 
 ### P7.5 — Rename vehicles, guests, activity types and the daily log in the backend
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.4
 Branch: modernise/p7-5-vehicle-backend
@@ -5184,7 +5182,7 @@ Size: L
 Fixes: none
 
 ### P7.6 — Rename vehicles, guests, activity types and the daily log in the client
-Status: todo
+Status: done
 Repo: client
 Depends on: P7.5
 Branch: modernise/p7-6-vehicle-client
@@ -5208,7 +5206,7 @@ Size: L
 Fixes: none
 
 ### P7.7 — Add industry templates with inheritance, modules and the presets engine
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.6
 Branch: modernise/p7-7-industry-templates
@@ -5252,13 +5250,17 @@ Acceptance criteria (cloud VM):
   - Rspec and rubocop green; `bin/check-industry-branches` exits 0; `bin/rails db:reset` works.
 Acceptance criteria (owner, real device):
   - none
+Notes (done): `createOperator` now requires `industry` and `time_zone` (and `federation` only for industries with the
+certifications module), so the client's create-operator wizard fails against this API until P7.23 adds the industry step.
+`Operator.timezone` and the Brisbane fallback are gone; `slots.activity_type` is required only when the operator has
+the `activities` module. `UserRole.default_licensed` keeps its name until the certification rename in stage B.
 Out of scope: client wizard (P7.23); other templates (P7.24–P7.30).
 Risk / rollback: revert.
 Size: L
 Fixes: none
 
 ### P7.8 — Add destinations
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.7
 Branch: modernise/p7-8-destinations
@@ -5292,7 +5294,7 @@ Size: L
 Fixes: none
 
 ### P7.9 — Allow several vehicles on one load
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.8
 Branch: modernise/p7-9-multi-vehicle
@@ -5323,7 +5325,7 @@ Size: L
 Fixes: none
 
 ### P7.10 — Generalise load crew
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.9
 Branch: modernise/p7-10-crew-roles
@@ -5354,7 +5356,7 @@ Size: L
 Fixes: none
 
 ### P7.11 — Make the call schedule configurable
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.10
 Branch: modernise/p7-11-call-schedule
@@ -5377,7 +5379,7 @@ Size: S
 Fixes: none
 
 ### P7.12 — Store SI units and display the operator's units
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.11
 Branch: modernise/p7-12-units
@@ -5407,7 +5409,7 @@ Size: M
 Fixes: none
 
 ### P7.13 — Generalise certifications
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.12
 Branch: modernise/p7-13-certifications
@@ -5445,7 +5447,7 @@ Size: L
 Fixes: none
 
 ### P7.14 — Generalise equipment
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.13
 Branch: modernise/p7-14-equipment
@@ -5484,7 +5486,7 @@ Size: L
 Fixes: none
 
 ### P7.15 — Generalise escorts and guests
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.14
 Branch: modernise/p7-15-escorts
@@ -5512,7 +5514,7 @@ Size: M
 Fixes: none
 
 ### P7.16 — Add participant limits and move eligibility into module rules
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.15
 Branch: modernise/p7-16-eligibility
@@ -5550,7 +5552,7 @@ Size: L
 Fixes: none
 
 ### P7.17 — Add the manifest-side booking seam
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.16
 Branch: modernise/p7-17-booking-seam
