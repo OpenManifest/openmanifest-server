@@ -13,7 +13,9 @@ module Eligibility
         operator = context.operator
         return not_required("double_manifest") if operator.allow_double_manifesting?
 
-        other = member.slots.where(load: operator.loads.on(operator.today).active).where.not(id: context.slot.id)
+        # A load that left (or landed) without ever being called is not `active` by its call, but it is not ahead of them either
+        waiting = operator.loads.on(operator.today).active.where.not(state: %i(departed completed cancelled))
+        other = member.slots.where(load: waiting).where.not(id: context.slot.id)
         return pass("double_manifest") unless other.exists?
 
         fail_with("double_manifest", "Double-manifesting is not allowed")

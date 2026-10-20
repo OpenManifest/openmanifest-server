@@ -114,6 +114,14 @@ RSpec.describe Eligibility do
 
       expect(results(slot_for)["double_manifest"]).to have_attributes(ok: false, message: "Double-manifesting is not allowed")
     end
+
+    it "passes for a member whose other load of the day has left, even if it was never called" do
+      other_load = create(:load, vehicle: vehicle, gca: gca, pilot: pilot)
+      create(:slot, load: other_load, membership: membership, operator: operator, activity_type: activity)
+      other_load.update_columns(state: Load.states[:completed], departed_at: 1.hour.ago, completed_at: 30.minutes.ago)
+
+      expect(results(slot_for)["double_manifest"]).to have_attributes(ok: true)
+    end
   end
 
   describe "modules" do
