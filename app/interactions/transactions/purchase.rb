@@ -2,15 +2,15 @@
 
 class Transactions::Purchase < ApplicationInteraction
   record :purchasable, class: "ApplicationRecord", default: nil
-  object :buyer, class: [::Dropzone, ::DropzoneUser]
-  object :seller, class: [::Dropzone, ::DropzoneUser]
+  object :buyer, class: [::Operator, ::Membership]
+  object :seller, class: [::Operator, ::Membership]
 
   validates :buyer, :seller, presence: true
 
   steps :create_order,
         :create_transactions,
         :update_credits,
-        :refund_if_tandem,
+        :refund_if_escort_required,
         :save
 
   # Create events
@@ -21,7 +21,7 @@ class Transactions::Purchase < ApplicationInteraction
       access_context: access_context,
       resource: @order,
       action: :created,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{name_of(:buyer, buyer)} purchased #{item_name}"
     )
@@ -34,7 +34,7 @@ class Transactions::Purchase < ApplicationInteraction
       level: :error,
       access_context: access_context,
       action: :confirmed,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{name_of(:buyer, buyer)} failed to purchase #{item_name}",
       details: errors.full_messages.join(", ")
@@ -44,7 +44,7 @@ class Transactions::Purchase < ApplicationInteraction
   def create_order
     @order = Order.create(
       title: order_title,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       item: purchasable,
       seller: seller,
       buyer: buyer,
@@ -58,8 +58,8 @@ class Transactions::Purchase < ApplicationInteraction
     @order
   end
 
-  def refund_if_tandem
-    return unless is_tandem?
+  def refund_if_escort_required
+    return unless requires_escort?
     compose(
       Transactions::Refund,
       order: @order,
@@ -109,12 +109,12 @@ class Transactions::Purchase < ApplicationInteraction
 
   protected
 
-  def is_tandem?
+  def requires_escort?
     case purchasable
     when Slot
-      purchasable.ticket_type.is_tandem?
+      purchasable.ticket_type.requires_escort?
     when TicketType
-      purchasable.is_tandem?
+      purchasable.requires_escort?
     else
       false
     end
@@ -138,7 +138,7 @@ class Transactions::Purchase < ApplicationInteraction
       "Slot on Load #{purchasable.load.load_number}"
     when TicketType
       "#{purchasable.name} ticket"
-    when DropzoneUser
+    when Membership
       "Funds added to account"
     when Pack
       "packjob"
@@ -155,7 +155,7 @@ class Transactions::Purchase < ApplicationInteraction
       ] + (purchasable.extras || []).map(&:name)).join(" + ")
     when TicketType
       "a #{purchasable.name} ticket"
-    when DropzoneUser
+    when Membership
       "an account update"
     when Pack
       "packjob"
@@ -166,10 +166,10 @@ class Transactions::Purchase < ApplicationInteraction
 
   def name_of(buyer_or_seller, entity)
     case entity
-    when Dropzone
+    when Operator
     when User
       buyer.name
-    when DropzoneUser
+    when Membership
       buyer.user.name
     else
       errors.add(buyer_or_seller, "not a valid #{buyer_or_seller}")

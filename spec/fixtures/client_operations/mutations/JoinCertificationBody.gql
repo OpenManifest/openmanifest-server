@@ -1,0 +1,26 @@
+mutation JoinCertificationBody(
+  $certificationBody: ID!
+  $uid: String
+  $number: String
+  $certificationLevel: ID
+) {
+  joinCertificationBody(
+    input: {
+      attributes: {
+        certificationBody: $certificationBody
+        uid: $uid
+        number: $number
+        certificationLevel: $certificationLevel
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    userCertification {
+      ...userCertificationEssentials
+    }
+  }
+}
