@@ -38,11 +38,10 @@ RSpec.describe "Client operations: the member's screens" do
       expect(me).to include(id: fun_jumper.id.to_s, creditsCents: 26_000)
       expect(me.dig(:eligibility, :rules)).to all(include(:code, :ok, :status))
       loads = json.dig(:data, :loads, :edges).pluck(:node)
-      expect(loads.map { |node| node[:id] }).to eq([manifest_load.id.to_s])
+      expect(loads.pluck(:id)).to eq([manifest_load.id.to_s])
       expect(loads.first[:slots].map { |node| node.dig(:membership, :id) }).to eq([fun_jumper.id.to_s])
       expect(loads.first[:slots].first[:id]).to eq(slot.id.to_s)
     end
-
   end
 
   describe "SelfBooking" do
