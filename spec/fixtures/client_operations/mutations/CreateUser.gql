@@ -2,23 +2,23 @@ mutation CreateGhost(
   $name: String!
   $phone: String
   $email: String!
-  $federationNumber: String
+  $certificationBodyNumber: String
   $role: Int!
-  $license: Int
-  $dropzone: Int!
-  $exitWeight: Float!
+  $certificationLevel: Int
+  $operator: Int!
+  $bodyMassKg: Float!
 ) {
   createGhost(
     input: {
       attributes: {
         role: $role
-        federationNumber: $federationNumber
+        certificationBodyNumber: $certificationBodyNumber
         name: $name
         phone: $phone
         email: $email
-        dropzone: $dropzone
-        license: $license
-        exitWeight: $exitWeight
+        operator: $operator
+        certificationLevel: $certificationLevel
+        bodyMassKg: $bodyMassKg
       }
     }
   ) {
