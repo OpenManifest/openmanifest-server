@@ -13,7 +13,7 @@ end
 
 RSpec.configure { |config| config.include ClientOperationHelper, type: :request }
 
-# Reading `dropzone { currentConditions }` creates a weather record that calls the winds service (BUG-045).
+# Reading `operator { currentConditions }` creates a weather record that calls the winds service (BUG-045).
 # Stub it so request specs never touch the network.
 RSpec.configure do |config|
   config.before(:each, type: :request) do
