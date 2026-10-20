@@ -533,6 +533,26 @@ RSpec.describe "Client operations: manifest" do
       expect(slot.reload.load).to eq(second_load)
     end
 
+    it "leaves the member's credit as it was after a move and a take-off (BUG-104)" do
+      client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
+      expect(fun_jumper.reload.credits).to eq(260)
+
+      client_operation("DeleteSlot", variables: { id: slot.id }, as: owner_user)
+
+      expect(fun_jumper.reload.credits).to eq(300)
+    end
+
+    it "keeps the credit right across two moves and a cancelled load (BUG-104)" do
+      third_load = create(:load, vehicle: vehicle, pilot: pilot, gca: owner)
+      client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
+      client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: third_load.id }, as: owner_user)
+      expect(fun_jumper.reload.credits).to eq(260)
+
+      client_operation("UpdateLoad", variables: { id: third_load.id, attributes: { state: "cancelled" } }, as: owner_user)
+
+      expect(fun_jumper.reload.credits).to eq(300)
+    end
+
     it "moves next to a target slot, into its load and group" do
       other = create(:membership, operator: operator, credits: 300)
       target = Slot.find(client_operation("ManifestUser", variables: slot_variables(other, load: second_load.id), as: owner_user).dig(:data, :createSlot, :slot, :id))

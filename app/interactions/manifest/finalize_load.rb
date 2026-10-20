@@ -37,8 +37,8 @@ class Manifest::FinalizeLoad < ApplicationInteraction
 
   def finalize_orders
     # Guest slots have no order of their own: their jumper's order covers them
-    load.slots.includes(order: :receipts).each do |slot|
-      receipt = slot.order&.receipts&.first
+    load.slots.each do |slot|
+      receipt = slot.current_order&.receipts&.first
       next unless receipt
 
       compose(

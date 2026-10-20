@@ -38,6 +38,12 @@ class Slot < ApplicationRecord
   has_one :operator, through: :load
 
   has_one :order, as: :item, required: false
+
+  # The order that still stands for the slot. A slot that was moved has the refunded order of its first load before it,
+  # and `order` may be that one: refunding it again charges the member (BUG-104)
+  def current_order
+    Order.where(item: self).where.not(state: %i(refunded cancelled)).order(:id).last
+  end
   has_many :receipts, through: :order
   has_many :transactions, through: :receipts
 

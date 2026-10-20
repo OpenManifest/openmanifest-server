@@ -53,17 +53,17 @@ class Manifest::DeleteSlot < ApplicationInteraction
 
   # A slot without an order (a tandem guest's, or one that was never paid) has nothing to refund
   def refund_transactions
-    return unless slot.order
+    return unless slot.current_order
 
     compose(
       ::Transactions::Refund,
-      order: slot.order,
+      order: slot.current_order,
       access_context: access_context
     )
   end
 
   def cancel_order
-    slot.order&.update(state: :cancelled)
+    slot.current_order&.update(state: :cancelled)
   end
 
   def delete_slot

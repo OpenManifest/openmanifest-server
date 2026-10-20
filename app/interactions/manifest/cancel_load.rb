@@ -40,11 +40,12 @@ class Manifest::CancelLoad < ApplicationInteraction
   def refund_orders
     load.slots.each do |slot|
       # Guest slots have no order of their own
-      next unless slot.order
+      order = slot.current_order
+      next unless order
 
       compose(
         ::Transactions::Refund,
-        order: slot.order,
+        order: order,
         access_context: access_context,
       )
     end

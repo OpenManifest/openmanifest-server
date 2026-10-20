@@ -116,12 +116,13 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def update_order
-    return unless source_slot.order
+    order = source_slot.current_order
+    return unless order
 
-    # Refund the original order
+    # Refund the order that stands: the slot may have been moved before (BUG-104)
     compose(
       Transactions::Refund,
-      order: source_slot.order,
+      order: order,
       access_context: access_context
     )
 

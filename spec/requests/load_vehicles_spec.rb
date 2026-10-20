@@ -114,6 +114,15 @@ RSpec.describe "Load vehicles" do
         })
       end
 
+      it "moves a jumper to the other vehicle of the load with the client's MoveSlot" do
+        slot_id = manifest(big_row).dig(:data, :createSlot, :slot, :id)
+
+        json = client_operation("MoveSlot", variables: { sourceSlot: slot_id.to_i, targetLoad: load.id, targetLoadVehicle: small_row.id }, as: owner_user)
+
+        expect(json.dig(:data, :moveSlot, :errors)).to be_nil
+        expect(Slot.find(slot_id).load_vehicle).to eq(small_row)
+      end
+
       it "puts a jumper in a vehicle and counts them there" do
         json = manifest(small_row)
 
