@@ -128,4 +128,76 @@ RSpec.describe "Client operations: the member's screens" do
       expect(json.dig(:data, :membership)).to be_nil
     end
   end
+
+  # U4.4: the Inbox, its badge and reading a notification
+  describe "Inbox" do
+    let!(:boarding) { Notification.create!(received_by: fun_jumper, notification_type: :boarding, resource: manifest_load, message: "Load 1 is boarding") }
+
+    def inbox(as: user, **variables)
+      client_operation("Inbox", variables: { operatorId: operator.id, first: 30 }.merge(variables), as: as)
+    end
+
+    it "gives the member's notifications newest first, with what each is about and whether it is read" do
+      boarding.update_columns(created_at: 1.hour.ago)
+      slot = manifest!
+
+      json = inbox
+
+      expect(json[:errors]).to be_nil
+      me = json.dig(:data, :operator, :currentUser)
+      nodes = me.dig(:notifications, :edges).pluck(:node)
+      expect(me[:unseenNotifications]).to eq(nodes.size)
+      expect(nodes.last).to include(id: boarding.id.to_s, notificationType: "boarding", isSeen: false, message: "Load 1 is boarding")
+      expect(nodes.last[:resource]).to include(__typename: "Load", id: manifest_load.id.to_s, loadNumber: manifest_load.load_number)
+      booked = nodes.find { |node| node[:notificationType] == "user_manifested" }
+      expect(booked[:resource]).to include(__typename: "Slot", id: slot.id.to_s)
+      expect(booked.dig(:resource, :load, :id)).to eq(manifest_load.id.to_s)
+    end
+
+    it "pages the notifications" do
+      Notification.create!(received_by: fun_jumper, notification_type: :boarding, resource: manifest_load, message: "Load 1 is boarding again")
+      page = inbox(first: 1).dig(:data, :operator, :currentUser, :notifications)
+
+      expect(page[:edges].size).to eq(1)
+      expect(page.dig(:pageInfo, :hasNextPage)).to be(true)
+    end
+
+    it "is empty for a member without notifications" do
+      expect(inbox(as: staff_user).dig(:data, :operator, :currentUser, :notifications, :edges)).to eq([])
+    end
+  end
+
+  describe "UnseenNotifications" do
+    it "counts what the member has not read, and counts again once it is read" do
+      one = Notification.create!(received_by: fun_jumper, notification_type: :boarding, resource: manifest_load, message: "Load 1 is boarding")
+      Notification.create!(received_by: fun_jumper, notification_type: :user_manifested, resource: manifest_load, message: "You were manifested")
+
+      count = -> { client_operation("UnseenNotifications", variables: { operatorId: operator.id }, as: user).dig(:data, :operator, :currentUser, :unseenNotifications) }
+
+      expect(count.call).to eq(2)
+      one.update!(is_seen: true)
+      expect(count.call).to eq(1)
+    end
+  end
+
+  describe "MarkNotificationSeen" do
+    let!(:boarding) { Notification.create!(received_by: fun_jumper, notification_type: :boarding, resource: manifest_load, message: "Load 1 is boarding") }
+
+    it "marks the member's own notification as read" do
+      json = client_operation("MarkNotificationSeen", variables: { id: boarding.id }, as: user)
+
+      expect(json[:errors]).to be_nil
+      expect(json.dig(:data, :updateNotification, :notification)).to include(id: boarding.id.to_s, isSeen: true)
+      expect(boarding.reload.is_seen).to be(true)
+    end
+
+    it "does not let another member mark it" do
+      other = create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.default_licensed)
+
+      json = client_operation("MarkNotificationSeen", variables: { id: boarding.id }, as: other.user)
+
+      expect(json.dig(:data, :updateNotification, :notification)).to be_nil
+      expect(boarding.reload.is_seen).to be(false)
+    end
+  end
 end
