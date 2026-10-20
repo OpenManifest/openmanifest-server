@@ -3,30 +3,30 @@
 require "active_interaction"
 
 class Access::GrantPermission < ApplicationInteraction
-  record :dropzone_user
+  record :membership
   record :permission
 
   steps :can_grant?,
         :grant_permission,
-        :dropzone_user
+        :membership
 
   # Create events
   success do
     compose(
       ::Activity::CreateEvent,
       access_context: access_context,
-      resource: dropzone_user,
+      resource: membership,
       access_level: :user,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} granted permission `#{permission.name}` to #{dropzone_user.user.name}"
+      message: "#{access_context.user.name} granted permission `#{permission.name}` to #{membership.user.name}"
     )
     Notification.create(
-      received_by: dropzone_user,
+      received_by: membership,
       message: "#{access_context.user.name} gave you access to `#{permission.name}`",
       notification_type: :permission_granted,
-      resource: dropzone_user,
+      resource: membership,
       sent_by: access_context.subject
     )
   end
@@ -36,9 +36,9 @@ class Access::GrantPermission < ApplicationInteraction
   end
 
   def grant_permission
-    dropzone_user.user_permissions.find_or_create_by(
+    membership.user_permissions.find_or_create_by(
       permission: permission
     )
-    dropzone_user.user_permissions.reload
+    membership.user_permissions.reload
   end
 end
