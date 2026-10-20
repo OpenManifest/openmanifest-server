@@ -146,6 +146,10 @@ nohup bin/rails s -b 0.0.0.0 -p 5000 > /tmp/rails.log 2>&1 &
 curl -s -o /dev/null -w "%{http_code}\n" http://local.openmanifest.org:5000/graphql   # expect 200
 ```
 
+For the UI test suites start the server with `MAX_DEVICES_PER_USER=1000`: they sign in dozens of times as the same seed users, and
+with the default of 10 devices the oldest token, the one in the stored Playwright session, is removed and every later test
+ends on the login screen. Reset the seed (`bin/rails db:reset db:seed:dev_baseline`) before a full run.
+
 Login for seeded data (after P0.5): `owner@example.com` / `Password1!`.
 
 ### Client
@@ -159,19 +163,21 @@ npx jest --ci                                  # after P0.6: yarn check:testing
 EXPO_ENV=local npx expo export --platform web  # Metro (since P3.7) -> dist/ ; ~1 min. Before P3.7 (SDK 47-49): `npx expo export:web` -> web-build/ (webpack, ~5 min)
 ```
 
-Serving the web build and running the smoke script (both added by P0.8):
+Serving the web build and running the UI tests (Playwright Test, since U0.1; the old `scripts/web-smoke.mjs` is gone):
 
 ```bash
 python3 scripts/serve-web-build.py dist 19006 &           # SPA server with index.html fallback (web-build before P3.7)
-TZ=Australia/Brisbane node scripts/web-smoke.mjs --base http://localhost:19006 --out /tmp/smoke   # logs in as owner@example.com, screenshots 360x640 and 1280x800
+PW_CHROMIUM=/opt/pw-browsers/chromium yarn test:ui:smoke  # tier 2: 390x844 and 1440x900, light; add --grep @manifest to run one area
+PW_CHROMIUM=/opt/pw-browsers/chromium yarn test:ui:full   # tier 3 (checkpoint and verify tasks only)
 ```
 
-Run the smoke test with `TZ=Australia/Brisbane`: the board asks for loads for the *device's* date (BUG-068) while the
-seeded dropzone lives in Brisbane, so a browser in UTC sees "No loads so far today" for several hours of every day and
-the smoke test fails at the load step.
+`PW_CHROMIUM` points Playwright at the VM's Chromium (`/opt/pw-browsers`) because the pinned Playwright wants a newer
+build than the one installed. The config sets the timezone to `Australia/Brisbane`: the board asks for loads for the
+*device's* date (BUG-068) while the seeded dropzone lives in Brisbane, so a browser in UTC sees "No loads so far today"
+for several hours of every day. Tests log in once per role in a global setup (`e2e/.auth/`, git-ignored).
 
 Headless Chromium must bypass the agent proxy for the API host, otherwise the websocket gets 403:
-`--proxy-bypass-list=local.openmanifest.org,localhost` (the smoke script passes it).
+`--proxy-bypass-list=local.openmanifest.org,localhost` (`playwright.config.ts` passes it).
 
 ### Docker fallback for Ruby (only if `cache.ruby-lang.org` is not allowlisted)
 
