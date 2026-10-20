@@ -242,7 +242,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
 | 4 | Manifest UI | U3.1 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
-| 5 | Member UI | U4.2, U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
+| 5 | Member UI | U4.3, U4.4, U4.5 | Today, self-booking, Wallet, Inbox. Checkpoint U4.5. |
 | 6 | People and setup | U5.1, U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
 | 7 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
 | 8 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
@@ -4617,7 +4617,7 @@ Size: L
 Fixes: none
 
 ### U4.2 — Let members book themselves from Today and the board
-Status: todo
+Status: done
 Repo: client
 Depends on: U4.1
 Branch: modernise/u4-2-self-booking
