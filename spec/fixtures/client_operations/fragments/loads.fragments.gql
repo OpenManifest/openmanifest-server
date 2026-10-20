@@ -1,12 +1,26 @@
 #import "./slot.gql"
 
+fragment loadVehicleEssentials on LoadVehicle {
+  id
+  role
+  position
+  capacity
+  slotsCount
+  vehicle {
+    ...vehicleEssentials
+  }
+}
+
 fragment loadEssentials on Load {
   id
   lockVersion
   name
   createdAt
   dispatchAt
-  hasLanded
+  loadDate
+  departedAt
+  completedAt
+  hasCompleted
   loadNumber
   isFull
   state
@@ -19,17 +33,26 @@ fragment loadEssentials on Load {
 
 fragment loadDetails on Load {
   ...loadEssentials
-  plane {
-    ...planeEssentials
+  vehicle {
+    ...vehicleEssentials
+  }
+  vehicles {
+    ...loadVehicleEssentials
+  }
+  crew {
+    ...loadCrewEssentials
   }
   gca {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   pilot {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
   }
   loadMaster {
-    ...dropzoneUserEssentials
+    ...membershipEssentials
+  }
+  destinations {
+    ...destinationEssentials
   }
   slots {
     ...slotDetails
