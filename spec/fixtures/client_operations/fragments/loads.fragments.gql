@@ -17,6 +17,7 @@ fragment loadEssentials on Load {
   name
   createdAt
   dispatchAt
+  calledAt
   loadDate
   departedAt
   completedAt
@@ -29,6 +30,23 @@ fragment loadEssentials on Load {
   maxSlots
   availableSlots
   occupiedSlots
+}
+
+# What a card of the board shows: the load with its vehicles, crew and destinations, without its slots
+fragment loadCard on Load {
+  ...loadEssentials
+  vehicle {
+    ...vehicleEssentials
+  }
+  vehicles {
+    ...loadVehicleEssentials
+  }
+  crew {
+    ...loadCrewEssentials
+  }
+  destinations {
+    ...destinationEssentials
+  }
 }
 
 fragment loadDetails on Load {

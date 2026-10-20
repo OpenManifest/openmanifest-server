@@ -94,6 +94,45 @@ RSpec.describe "Eligibility over GraphQL", type: :request do
     end
   end
 
+  # The load screen asks it for everyone on the load at once (U3.5)
+  describe "LoadEligibility" do
+    def on_load(member)
+      create(:slot, load: manifest_load, membership: member, operator: operator, ticket_type: ticket, activity_type: ActivityType.allowed_for([member]).first)
+    end
+
+    it "gives the rules of each member on the load" do
+      operator.update!(settings: operator.settings.merge("require_equipment_inspection" => false, "require_equipment_in_service" => false))
+      slot = on_load(jumper)
+
+      json = client_operation("LoadEligibility", variables: { id: manifest_load.id }, as: owner_user)
+
+      expect(json[:errors]).to be_nil
+      entry = json.dig(:data, :load, :slots).find { |row| row[:id] == slot.id.to_s }
+      expect(entry.dig(:membership, :id)).to eq(jumper.id.to_s)
+      expect(entry.dig(:membership, :eligibility, :ready)).to be(true)
+      expect(entry.dig(:membership, :eligibility, :rules).pluck(:code)).to include("membership", "credits")
+    end
+
+    it "says what stops a member" do
+      on_load(jumper)
+      jumper.update_column(:expires_at, 1.day.ago)
+
+      json = client_operation("LoadEligibility", variables: { id: manifest_load.id }, as: owner_user)
+
+      eligibility = json.dig(:data, :load, :slots, 0, :membership, :eligibility)
+      expect(eligibility[:ready]).to be(false)
+      expect(eligibility[:rules].find { |rule| rule[:code] == "membership" }).to include(status: "FAIL")
+    end
+
+    it "refuses a caller who is not a member of the operator" do
+      on_load(jumper)
+
+      json = client_operation("LoadEligibility", variables: { id: manifest_load.id }, as: create(:user))
+
+      expect(json.dig(:data, :load)).to be_nil
+    end
+  end
+
   describe "Membership.eligibility" do
     let(:query) do
       "query($operator: ID!, $load: ID) { memberships(operator: $operator, first: 100, licensed: false) { edges { node { id eligibility(loadId: $load) { ready rules { code ok status message problem expiresAt amountCents } } } } } }"
