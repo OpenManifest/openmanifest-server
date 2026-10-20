@@ -7,46 +7,58 @@
 #  id                :bigint           not null, primary key
 #  ticket_type_id    :bigint
 #  load_id           :bigint
-#  rig_id            :bigint
-#  jump_type_id      :bigint
+#  activity_type_id      :bigint
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
-#  exit_weight       :float
-#  passenger_id      :bigint
+#  body_mass_kg       :float
+#  guest_id      :bigint
 #  is_paid           :boolean
 #  transaction_id    :bigint
-#  passenger_slot_id :bigint
+#  escort_slot_id :bigint
 #  group_number      :integer          default(0), not null
-#  dropzone_user_id  :bigint
+#  membership_id  :bigint
+#  destination_id :bigint
+#  prepaid        :boolean          default(FALSE), not null
 #
 class Slot < ApplicationRecord
-  include MasterLogEntry::Slot
+  include DailyLogEntry::Slot
 
-  delegate :user, to: :dropzone_user, allow_nil: true
+  delegate :user, to: :membership, allow_nil: true
 
-  belongs_to :dropzone_user, optional: true
-  belongs_to :created_by, class_name: "DropzoneUser", optional: true
-  belongs_to :passenger, optional: true
+  belongs_to :membership, optional: true
+  belongs_to :created_by, class_name: "Membership", optional: true
+  belongs_to :guest, optional: true
   belongs_to :ticket_type
   belongs_to :load
-  belongs_to :rig, optional: true
-  belongs_to :jump_type
-  has_one :dropzone, through: :load
+  # The vehicle of the load this slot rides in, when the load has several that carry (nil: the load's only one)
+  belongs_to :load_vehicle, optional: true
+  belongs_to :activity_type, optional: true
+  # The place this slot goes to when destinations are per slot (skydiving: its altitude); the ticket type's by default
+  belongs_to :destination, optional: true
+  has_one :operator, through: :load
 
   has_one :order, as: :item, required: false
   has_many :receipts, through: :order
   has_many :transactions, through: :receipts
 
-  belongs_to :passenger_slot, optional: true, class_name: "Slot"
+  # A slot of a ticket type that requires an escort has the slots of its guests (`guest_slots`, up to the ticket's
+  # `escort_capacity`); a guest's slot points back to its escort (P7.15). Guests ride on the same load and vehicle.
+  belongs_to :escort_slot, optional: true, class_name: "Slot", inverse_of: :guest_slots
+  has_many :guest_slots, class_name: "Slot", foreign_key: :escort_slot_id, inverse_of: :escort_slot, dependent: :destroy
 
+  # The items the slot uses (a skydiver's rig; a diver's BCD, regulator and wetsuit)
+  has_many :slot_equipment, dependent: :destroy
+  has_many :equipment, through: :slot_equipment
   has_many :slot_extras, dependent: :destroy
   has_many :extras, through: :slot_extras
   has_many :notifications, as: :resource
   scope :ready, -> {
-                  where.not(dropzone_user: nil).or(where.not(passenger: nil)).where.not(ticket_type: nil, load: nil, jump_type: nil)
+                  where.not(membership: nil).or(where.not(guest: nil)).where.not(ticket_type: nil, load: nil, activity_type: nil)
                 }
 
-  counter_culture %i(load plane dropzone), column_name: :slots_count
+  counter_culture %i(load operator), column_name: :slots_count
+  # The slots of each vehicle of a load with several (P7.9)
+  counter_culture :load_vehicle
   # The load's counters: every slot counts in slots_count, only the ready ones in ready_slots_count. The second counter
   # needs its own column_name, without it counter_culture also increments slots_count (BUG-019).
   counter_culture :load
@@ -54,16 +66,18 @@ class Slot < ApplicationRecord
                   column_name: proc { |slot| slot.ready? ? "ready_slots_count" : nil },
                   column_names: -> { { Slot.ready => "ready_slots_count" } }
 
-  validate :available?,
-           :double_manifest?,
-           :allowed_jump_type?,
-           :membership_in_date?,
-           :affordable?,
-           on: :create
+  # Only industries with the activities module (skydiving: jump types) have slots with an activity
+  validates :activity_type, presence: true, if: -> { operator&.module?(:activities) }
+  before_validation :default_destination, on: :create
+  validates :destination, presence: true, if: -> { operator&.destinations_per_slot? }
+  validate :destination_of_operator, :load_vehicle_of_load, :equipment_of_member_or_operator
+  validate :escort_of_load
+  # Everything the rules of Eligibility say about the slot: on create, and when what it is for changes
+  validate :eligible, if: -> { new_record? || eligibility_changed? }
 
   after_create do
     Notification.create(
-      received_by: dropzone_user,
+      received_by: membership,
       notification_type: :user_manifested,
       message: "You have been manifested on Load ##{load.load_number}",
       resource: self
@@ -72,7 +86,7 @@ class Slot < ApplicationRecord
 
   before_destroy do
     Notification.create(
-      received_by: dropzone_user,
+      received_by: membership,
       notification_type: :user_manifested,
       message: "You're no longer manifested on Load ##{load.load_number}",
       resource: self
@@ -84,80 +98,74 @@ class Slot < ApplicationRecord
     extras.sum { |extra| extra.cost_cents || 0 } + (ticket_type.cost_cents || 0)
   end
 
-  # The same in whole units, for older clients
-  def cost
-    cost_cents / 100.0
-  end
-
   def ready?
     return false if ticket_type.blank?
     return false if load.blank?
-    return false if jump_type.blank?
-    passenger.present? || dropzone_user.present?
+    return false if activity_type.blank?
+    guest.present? || membership.present?
   end
 
+  # Pounds per square foot under the slot's rig; only operators with the rig kind of skydiving have one
   def wing_loading
-    return unless rig.try(:canopy_size)
-    return unless exit_weight
-    weight = exit_weight
-    weight += passenger_slot.exit_weight || 0 if has_passenger?
+    return unless body_mass_kg
 
-    weight_in_lbs = weight * 2.20462
-    weight_in_lbs /= rig.canopy_size
-    weight_in_lbs
+    rig = equipment.find { |item| item.kind.key == Skydiving::Rigs::KIND }
+    weight = body_mass_kg
+    weight += guest_slots.sum { |guest_slot| guest_slot.body_mass_kg || 0 }
+    Skydiving::Rigs.wing_loading(rig, weight)
   end
 
-  def has_passenger?
-    passenger_slot.present?
+  def has_guest?
+    guest_slots.any?
   end
 
-  def is_passenger?
-    passenger.present?
+  def is_guest?
+    guest.present?
   end
 
   private
 
-  def required_slots
-    return 2 if has_passenger?
-    1
+  def default_destination
+    self.destination ||= ticket_type&.default_destination if operator&.destinations_per_slot?
   end
 
-  def available?
-    errors.add(:base, "No slots available on this load") if load.available_slots < required_slots
+  def destination_of_operator
+    return if destination.nil? || destination.operator_id == operator&.id
+
+    errors.add(:destination, :invalid)
   end
 
-  def membership_in_date?
-    return if is_passenger?
-    return if (dropzone_user.expires_at || 1.second.ago) > DateTime.current
-    return unless dropzone.require_membership?
-    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
-    errors.add(:base, "#{dropzone_user.user.name}'s membership has expired")
+  # Each item is the member's own or the operator's
+  def equipment_of_member_or_operator
+    return if equipment.empty?
+
+    foreign = equipment.reject do |item|
+      item.user_id.present? ? item.user_id == membership&.user_id : item.operator_id == load&.operator_id
+    end
+    errors.add(:equipment, :invalid) if foreign.any?
   end
 
-  def double_manifest?
-    return if dropzone.allow_double_manifesting?
-    return if is_passenger?
-    # Check if the user is manifest on any loads that have
-    # not yet been dispatched
-    return unless dropzone_user.slots.where(load: dropzone.loads.on(dropzone.today).active).where.not(id: id).exists?
-    return if created_by&.can?(:createDoubleSlot) && dropzone.allow_manifest_bypass?
-    errors.add(:base, "Double-manifesting is not allowed")
+  def load_vehicle_of_load
+    return if load_vehicle.nil?
+
+    errors.add(:load_vehicle, :invalid) unless load_vehicle.load_id == load_id && load_vehicle.carrying?
   end
 
-  def affordable?
-    return true if is_passenger?
-    return if dropzone.allow_negative_credits?
-    return unless dropzone.require_credits?
-    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
-    credits = dropzone_user.credits_cents || 0
-    errors.add(:base, "Not enough credits to manifest for this jump") if cost_cents > credits
+  def eligibility_changed?
+    will_save_change_to_load_id? || will_save_change_to_ticket_type_id? || will_save_change_to_activity_type_id? ||
+      will_save_change_to_body_mass_kg? || will_save_change_to_load_vehicle_id? || will_save_change_to_group_number?
   end
 
-  def allowed_jump_type?
-    return true if is_passenger? && ticket_type.is_tandem?
-    return if jump_type.allowed_for?(dropzone_user)
-    return unless dropzone.require_license?
-    return if created_by&.can?(:createUserSlot) && dropzone.allow_manifest_bypass?
-    errors.add(:jump_type, "User cannot be manifested for #{jump_type.name} jumps")
+  def eligible
+    Eligibility.failures(Eligibility::Context.new(self)).each { |result| errors.add(result.field || :base, result.message) }
+  end
+
+  # A guest rides on the load (and the vehicle) of its escort
+  def escort_of_load
+    return if escort_slot.nil?
+
+    errors.add(:escort_slot, "must be on the same load") unless escort_slot.load_id == load_id
+    errors.add(:escort_slot, "must be in the same vehicle") if load_vehicle_id && escort_slot.load_vehicle_id != load_vehicle_id
+    errors.add(:guest, :blank) if guest.nil?
   end
 end
