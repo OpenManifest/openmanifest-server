@@ -19,10 +19,10 @@ unambiguously exhibits it; **likely** = clear from code but not executed; **susp
 | Severity | Count |
 |---|---|
 | critical | 7 |
-| high | 31 |
-| medium | 44 |
-| low | 19 |
-| **total** | **101** |
+| high | 32 |
+| medium | 46 |
+| low | 22 |
+| **total** | **107** |
 
 ## Android / mobile layout: shared root causes
 
@@ -150,3 +150,5 @@ in headless Chromium at 360×640 and 1280×800. They group into these root cause
 | BUG-103 | medium | confirmed | manifesting | backend | `app/models/eligibility/rules/double_manifest.rb` | FIXED in U3.7: The double-manifest rule counted every load of the day that has no call time (`active` is `dispatch_at: nil`), so a load that departed or landed without ever being called (departing straight from open, which U3.4 allows) still blocked its people from the next load: "Double-manifesting is not allowed" for someone who had flown. | Spec `spec/models/eligibility_spec.rb` ("passes for a member whose other load of the day has left, even if it was never called"). | The rule leaves out loads that departed, completed or were cancelled. |
 | BUG-104 | high | confirmed | payments / manifesting | backend | `app/models/slot.rb` (`order`), `app/interactions/manifest/delete_slot.rb`, `move_slot.rb`, `cancel_load.rb`, `finalize_load.rb` | FIXED in U3.9: Moving a slot refunds its order and creates a new one, but `slot.order` (a `has_one`) could still return the first, already refunded order. Taking the slot off afterwards (or moving it again, or cancelling its load) "refunded" the refunded order, which charges the member a second time: after create, move and take-off the member was out the price of the jump. Finalizing the load confirmed the old order's receipt. | Specs `spec/requests/client_operations/manifest_spec.rb` ("leaves the member's credit as it was after a move and a take-off", "keeps the credit right across two moves and a cancelled load"). | `Slot#current_order` is the order that still stands (not refunded or cancelled); the four interactions use it. |
 | BUG-105 | low | confirmed | manifesting | backend | `app/interactions/manifest/move_slot.rb` (`affected_loads`) | FIXED in U4.5: `moveSlot` answered with the destination load twice: after the move `source_slot.load` is the destination, so the load the slot left was never in the answer and a client that relies on the answer shows the person on both loads until it asks again. | Spec `spec/requests/client_operations/manifest_spec.rb` ("answers with the load the slot left and the load it went to"). | The load the slot leaves is kept before the move and returned with the destination. |
+| BUG-106 | low | confirmed | equipment | client | `app/screens/authenticated/user/equipment/EquipmentCard.tsx` (`onPickImage`, removed) | FIXED in U5.2: uploading a packing card from a member's rig did not wait for the image picker, so it sent `data:image/jpeg;base64,[object Promise]` and a picture never arrived; the equipment page offered "Add rig" only to staff with `updateUser`, not to the member themselves. | Read the removed code: `const result = pickImage();` then `packingCard: \`data:image/jpeg;base64,${result}\``. | `useEquipmentActions().uploadCard` (`app/features/profile/useProfile.ts`) awaits the picker; the equipment page uses the profile's abilities (own with `createEquipment`, staff with `updateUser`). |
+| BUG-107 | low | confirmed | users / equipment | client | `app/forms/equipment_inspection/useForm.tsx:105-160`, `app/forms/user/useForm.tsx:123` | After an inspection is saved, the form reads and writes the `MembershipProfile` query with the operator's id as the membership id and with variables the query does not take (`operatorId`, `membershipId`), and the user form refetches `MembershipProfile` with `{ membershipId }` instead of `{ id }`: those cache updates and refetches reach no query. Screens stay right only because the mutations answer with the normalized membership (U5.2's profile also asks again when it comes back into view). | Read the code; `MembershipProfile($id: ID!)`. | Drop the hand-written cache writes and refetch `Profile`/`MembershipProfile` with `{ id }` (or rely on the normalized answers). |

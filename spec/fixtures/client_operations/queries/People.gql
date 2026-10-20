@@ -1,0 +1,39 @@
+#import "../fragments/memberships.fragments.gql"
+#import "../fragments/eligibility.fragments.gql"
+
+# The people of the operator for People: who they are, their role and licence, whether they are ready to fly (on no
+# load in particular), their credit and when they last flew. Everyone, with a licence or not (`licensed: false`).
+query People($operatorId: ID!, $search: String, $first: Int, $after: String) {
+  memberships(
+    operator: $operatorId
+    licensed: false
+    search: $search
+    first: $first
+    after: $after
+  ) {
+    edges {
+      cursor
+      node {
+        ...membershipEssentials
+        creditsCents
+        eligibility {
+          ready
+          rules {
+            ...eligibilityResultEssentials
+          }
+        }
+        lastSlot {
+          id
+          load {
+            id
+            loadDate
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

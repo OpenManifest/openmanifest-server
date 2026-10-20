@@ -242,7 +242,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
 | 4 | Manifest UI | U3.1 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
-| 6 | People and setup | U5.2, U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
+| 6 | People and setup | U5.3, U5.4, U5.5, U5.6, U5.7, U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
 | 7 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
 | 8 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
 | 9 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
@@ -4725,7 +4725,7 @@ Size: L
 Fixes: none
 
 ### U5.2 — Redesign the member profile
-Status: todo
+Status: done
 Repo: client
 Depends on: U5.1, UB.2
 Branch: modernise/u5-2-profile
@@ -7330,3 +7330,4 @@ Bugs not in any task's `Fixes:` line, with the reason.
 |---|---|---|
 | BUG-085 | Suspected only (client#127, maps not loading on web/Android); cannot be confirmed without valid `GOOGLE_MAPS_*` keys, which the VM does not have. | Owner checks maps in P3.22. If confirmed, the executor adds a task after P5.10 (replace `react-native-maps` web shim / configure keys via EAS secrets) with `Fixes: BUG-085`. |
 | BUG-100 | Cold loads of permission-gated tab URLs (`/users`, `/user/<id>`) end on `/`. The fix needs a decision: always register the tabs and show a no-access state, or hold the navigator until permissions are loaded. | The executor adds a task after P4.8 (when the session store makes permissions available before navigation mounts); until then the smoke test only deep-links ungated routes. |
+| BUG-107 | Found in U5.2 in the shared user and inspection forms, outside that task; harmless while the mutations answer with the normalized membership and the profile asks again when it comes back into view. | The next task that changes `app/forms/user` or `app/forms/equipment_inspection` (U6.1 at the latest). |
