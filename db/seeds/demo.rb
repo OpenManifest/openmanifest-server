@@ -2,99 +2,108 @@
 
 require "open-uri"
 
-# Create a dropzone with this user
-dropzone = Dropzone.find_or_initialize_by(
+# Create an operator with this user
+operator = Operator.find_or_initialize_by(
   name: "Demo",
 )
 
-if dropzone.new_record?
+if operator.new_record?
   # Create a fake user
   owner = User.create_fake
-  dropzone.federation = Federation.first
-  dropzone.is_public = true
-  dropzone.primary_color = "#1D3557"
-  dropzone.secondary_color = "#E63946"
-  dropzone.is_credit_system_enabled = true
+  operator.certification_bodies = [CertificationBody.first]
+  operator.industry = "skydiving"
+  operator.time_zone = "Australia/Brisbane"
+  operator.is_public = true
+  operator.primary_color = "#1D3557"
+  operator.secondary_color = "#E63946"
+  operator.is_credit_system_enabled = true
 
-  dropzone.image = "data:image/jpg;base64,#{Base64.encode64(open('https://picsum.photos/800/600').read)}"
-  dropzone.save!
+  operator.image = "data:image/jpg;base64,#{Base64.encode64(open('https://picsum.photos/800/600').read)}"
+  operator.save!
 
   ## Make current user owner
-  DropzoneUser.create(
-    dropzone: dropzone,
+  Membership.create(
+    operator: operator,
     user: owner,
     user_role: UserRole.find_by(
-      dropzone_id: dropzone.id,
+      operator_id: operator.id,
       name: "owner"
     )
   )
 
-  dropzone.rig_inspection_template = FormTemplate.create(
-    name: "Rig Inspection",
-    definition: RigInspection.default_form.to_json,
-    created_by: owner,
-    updated_by: owner,
+  operator.save!
+  # The rig kind of the skydiving template, with its inspection form
+  presets = Industry.fetch("skydiving").presets
+  rig_preset = presets.fetch("equipment_kinds").first
+  rig_kind = operator.equipment_kinds.create!(
+    rig_preset.slice("key", "name", "attribute_schema", "service_interval_days", "inspection_valid_days", "required_by").merge(
+      inspection_form_template: FormTemplate.create!(
+        name: "Equipment Inspection",
+        definition: presets.dig("inspection_forms", "equipment_inspection").to_json,
+        operator: operator,
+        created_by: owner,
+        updated_by: owner
+      )
+    )
   )
-  dropzone.save!
-  dropzone.rig_inspection_template.update(dropzone: dropzone)
 
-  puts "-- Creating planes"
-  # Create a plane
-  Plane.create(
-    dropzone: dropzone,
+  puts "-- Creating vehicles"
+  # Create a vehicle
+  Vehicle.create(
+    operator: operator,
     name: "C182",
-    min_slots: 2,
-    max_slots: 4,
+    min_capacity: 2,
+    capacity: 4,
     registration: "DKL-493",
   )
 
-  # Create a plane
-  Plane.create(
-    dropzone: dropzone,
+  # Create a vehicle
+  Vehicle.create(
+    operator: operator,
     name: "Caravan",
-    min_slots: 10,
-    max_slots: 16,
+    min_capacity: 10,
+    capacity: 16,
     registration: "DKZ-203",
   )
 
   puts "--Creating ticket type: Height"
   # Create default ticket types
   height = TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 45,
     name: "Height",
-    altitude: 14000,
+    default_destination: Destination.altitude_for(operator, 14_000),
     allow_manifesting_self: true,
-    is_tandem: false,
+    requires_escort: false,
     currency: "AUD"
   )
 
   puts "--Creating ticket type: Hop n Pop"
   TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 25,
     name: "Hop n Pop",
-    altitude: 4500,
+    default_destination: Destination.altitude_for(operator, 4500),
     allow_manifesting_self: true,
-    is_tandem: true,
+    requires_escort: true,
     currency: "AUD"
   )
 
   puts "--Creating ticket type: Tandem"
   tandem = TicketType.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 199,
     name: "Tandem",
-    altitude: 14000,
+    default_destination: Destination.altitude_for(operator, 14_000),
     allow_manifesting_self: false,
-    is_tandem: true,
+    requires_escort: true,
     currency: "AUD"
   )
 
   # Create default ticket addons
   puts "--Creating ticket addon: Outside camera"
   outside_cam = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 100,
     name: "Outside camera"
   )
@@ -102,7 +111,7 @@ if dropzone.new_record?
   # Create default ticket addons
   puts "--Creating ticket addon: Handycam"
   handy_cam = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 50,
     name: "Handycam"
   )
@@ -110,7 +119,7 @@ if dropzone.new_record?
   # Create default ticket addons
   puts "--Creating ticket addon: Coach"
   coach = Extra.create(
-    dropzone: dropzone,
+    operator: operator,
     cost: 90,
     name: "Coach"
   )
@@ -131,7 +140,7 @@ if dropzone.new_record?
   )
 end
 
-if dropzone.dropzone_users.length < 2
+if operator.memberships.length < 2
   # Create 5 instructors
   instructors = (1..5).to_a.map do |index|
     # Create default ticket addons
@@ -139,11 +148,11 @@ if dropzone.dropzone_users.length < 2
     u = User.create_fake
 
     puts "-- User [#{role}]: #{u.name}"
-    DropzoneUser.create(
+    Membership.create(
       user: u,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: role
       )
     )
@@ -154,11 +163,11 @@ if dropzone.dropzone_users.length < 2
     u = User.create_fake
 
     puts "-- User [pilot]: #{u.name}"
-    DropzoneUser.create(
+    Membership.create(
       user: u,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: "pilot"
       )
     )
@@ -166,72 +175,71 @@ if dropzone.dropzone_users.length < 2
 
   # Create 30 jumpers
   (1..30).to_a.each do |index|
-    dz_user = DropzoneUser.create(
+    dz_user = Membership.create(
       user: User.create_fake,
-      dropzone: dropzone,
+      operator: operator,
       user_role: UserRole.find_by(
-        dropzone: dropzone,
+        operator: operator,
         name: "fun_jumper"
       )
     )
 
-    # Pick a random license
-    dz_user.user.update(
-      license: License.order(Arel.sql("RANDOM()")).first
-    )
+    # Pick a random certification level
+    level = CertificationLevel.order(Arel.sql("RANDOM()")).first
+    UserCertification.create!(user: dz_user.user, certification_body: level.certification_body, certification_level: level)
 
-    puts "-- Created user [#{dz_user.user_role.name}]: #{dz_user.user.name} (License #{dz_user.user.license.name})"
+    puts "-- Created user [#{dz_user.user_role.name}]: #{dz_user.user.name} (#{level.name})"
 
     # Create a rig
     case index % 3
     when 0
-      Rig.create(
+      Equipment.create(
         make: "Mirage",
         model: "G4.1",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     when 1
-      Rig.create(
+      Equipment.create(
         make: "Vector",
         model: "V310",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     when 2
-      Rig.create(
+      Equipment.create(
         make: "Javelin",
         model: "J3FK",
         serial: ((Random.rand * 20000) + 10000).to_i.to_s,
-        pack_value: 10,
-        canopy_size: [120, 150, 170, 190].sample,
-        repack_expires_at: DateTime.now + ((Random.rand * 360) + 90).days,
+        kind: rig_kind,
+        properties: { rig_type: "sport", pack_value: 10, canopy_size_m2: ([120, 150, 170, 190].sample * 0.09290304).round(4) },
+        service_due_at: DateTime.now + ((Random.rand * 360) + 90).days,
         user: dz_user.user,
       )
     end
 
-    puts "-- Creating rig inspection for #{dz_user.user.name}'s #{dz_user.user.rigs.first.make}"
+    puts "-- Creating equipment inspection for #{dz_user.user.name}'s #{dz_user.user.equipment.first.make}"
 
-    RigInspection.create(
-      rig: dz_user.user.reload.rigs.reload.first,
-      form_template: dropzone.rig_inspection_template,
+    EquipmentInspection.create(
+      equipment: dz_user.user.reload.equipment.reload.first,
+      form_template: rig_kind.inspection_form_template,
       inspected_by: instructors.first.user,
-      dropzone_user: dz_user,
+      membership: dz_user,
       is_ok: true,
-      definition: dropzone.rig_inspection_template.definition,
+      definition: rig_kind.inspection_form_template.definition,
     )
 
     # Add funds
     puts "-- Adding funds to account"
     (0..(Random.rand * 10).to_i).to_a.each do
       Transaction.create(
-        dropzone_user: dz_user,
+        membership: dz_user,
         status: :deposit,
         amount: ((Random.rand * 500) + 100).to_i,
       )
