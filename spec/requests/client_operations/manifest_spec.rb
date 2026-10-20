@@ -297,6 +297,14 @@ RSpec.describe "Client operations: manifest" do
       expect(fun_jumper.reload.credits).to eq(260)
     end
 
+    it "puts the member on the destination chosen for them" do
+      hop = Destination.altitude_for(operator, 4000)
+
+      slot = manifest!(fun_jumper, destination: hop.id)
+
+      expect(slot.destination).to eq(hop)
+    end
+
     it "lets a jumper manifest themselves" do
       json = client_operation("ManifestUser", variables: slot_variables(fun_jumper), as: user)
 

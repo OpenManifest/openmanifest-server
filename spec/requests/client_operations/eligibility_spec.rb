@@ -133,6 +133,53 @@ RSpec.describe "Eligibility over GraphQL", type: :request do
     end
   end
 
+  # The member picker (U3.7): who can go on this load, and what each flew last time
+  describe "MemberPicker" do
+    def picker(**variables)
+      client_operation("MemberPicker", variables: { operatorId: operator.id, loadId: manifest_load.id, first: 50 }.merge(variables), as: owner_user)
+    end
+
+    def node_for(json, member) = json.dig(:data, :memberships, :edges).pluck(:node).find { |node| node[:id] == member.id.to_s }
+
+    it "says for each member whether they are ready for this load, and what stops them" do
+      operator.update!(settings: operator.settings.merge("require_equipment_inspection" => false, "require_equipment_in_service" => false))
+      jumper
+      stopped = create(:membership, operator: operator, user: create(:user, body_mass_kg: 70), credits: 100)
+      stopped.update_column(:expires_at, 1.day.ago)
+
+      json = picker
+
+      expect(json[:errors]).to be_nil
+      expect(node_for(json, jumper).dig(:eligibility, :ready)).to be(true)
+      expect(node_for(json, stopped).dig(:eligibility, :ready)).to be(false)
+      expect(node_for(json, stopped).dig(:eligibility, :rules).find { |rule| rule[:code] == "membership" }).to include(status: "FAIL")
+    end
+
+    it "gives the last slot of a member who has flown, and none for one who has not" do
+      flown = create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, max_slots: 10)
+      create(:slot, load: flown, membership: jumper, operator: operator, ticket_type: ticket, activity_type: activity)
+      flown.update_columns(state: Load.states[:completed], departed_at: 1.hour.ago, completed_at: 30.minutes.ago)
+      fresh = create(:membership, operator: operator, user: create(:user, body_mass_kg: 70), credits: 100)
+
+      json = picker
+
+      last = node_for(json, jumper)[:lastSlot]
+      expect(last.dig(:ticketType, :id)).to eq(ticket.id.to_s)
+      expect(last.dig(:activityType, :id)).to eq(activity.id.to_s)
+      expect(last.dig(:load, :id)).to eq(flown.id.to_s)
+      expect(node_for(json, fresh)[:lastSlot]).to be_nil
+    end
+
+    it "narrows the members by what is typed" do
+      jumper
+      jumper_user.update!(name: "Zed Zebra")
+
+      names = picker(search: "Zebra").dig(:data, :memberships, :edges).pluck(:node).map { |node| node.dig(:user, :name) }
+
+      expect(names).to eq(["Zed Zebra"])
+    end
+  end
+
   describe "Membership.eligibility" do
     let(:query) do
       "query($operator: ID!, $load: ID) { memberships(operator: $operator, first: 100, licensed: false) { edges { node { id eligibility(loadId: $load) { ready rules { code ok status message problem expiresAt amountCents } } } } } }"

@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe "Client operation harness" do
-  it "knows all 85 client operations" do
-    expect(ClientOperations.operations.keys.size).to eq(85)
+  it "knows all 86 client operations" do
+    expect(ClientOperations.operations.keys.size).to eq(86)
   end
 
   ClientOperations.operations.keys.sort.each do |name|
