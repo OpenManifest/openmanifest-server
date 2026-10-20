@@ -1,0 +1,31 @@
+fragment equipmentInspectionEssentials on EquipmentInspection {
+  id
+  isOk
+  definition
+  inspectedBy {
+    ...membershipEssentials
+  }
+  equipment {
+    ...equipmentEssentials
+  }
+}
+fragment equipmentInspectionDetailed on EquipmentInspection {
+  ...equipmentInspectionEssentials
+  equipment {
+    ...userEquipmentDetailed
+  }
+}
+
+fragment equipmentInspectionMutationEssentials on EquipmentInspection {
+  ...equipmentInspectionDetailed
+  formTemplate {
+    id
+    definition
+  }
+  membership {
+    ...membershipEssentials
+    equipmentInspections {
+      ...equipmentInspectionEssentials
+    }
+  }
+}

@@ -205,7 +205,7 @@ erDiagram
     string name
     float cost
     string currency
-    integer altitude "feet"
+    bigint default_destination_id FK
     boolean allow_manifesting_self
     boolean is_tandem
   }

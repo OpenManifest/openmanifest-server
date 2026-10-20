@@ -25,30 +25,30 @@
 #  image                  :string
 #  phone                  :string
 #  email                  :string
-#  exit_weight            :float
-#  license_id             :bigint
+#  body_mass_kg            :float
+#  certification_level_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  push_token             :string
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
-#  jump_count             :integer          default(0), not null
-#  dropzone_count         :integer          default(0), not null
-#  plane_count            :integer          default(0), not null
+#  load_count             :integer          default(0), not null
+#  operator_count         :integer          default(0), not null
+#  vehicle_count            :integer          default(0), not null
 #
 require "rails_helper"
 
 RSpec.describe User do
-  let!(:dropzone) do
-    # Create a dropzone
+  let!(:operator) do
+    # Create an operator
     create(
-      :dropzone,
+      :operator,
       name: "rspec",
     )
   end
 
-  let(:dropzone_user) do
+  let(:membership) do
     user = User.new(
       name: "rspec",
       nickname: "test",
@@ -58,31 +58,31 @@ RSpec.describe User do
     )
     user.save!
 
-    create(:dropzone_user,
-           dropzone: dropzone,
+    create(:membership,
+           operator: operator,
            user: user,)
   end
 
   describe "can?" do
     it "has some permissions" do
-      expect(dropzone_user.permissions).to be_empty
-      expect(dropzone_user.role_permissions).not_to be_empty
-      expect(dropzone_user.all_permissions).not_to be_empty
+      expect(membership.permissions).to be_empty
+      expect(membership.role_permissions).not_to be_empty
+      expect(membership.all_permissions).not_to be_empty
     end
 
     it "returns false if user lacks permission" do
-      expect(dropzone_user.can?("updateDropzone")).to eq false
+      expect(membership.can?("updateOperator")).to eq false
     end
 
     it "returns true if user has permission" do
-      expect(dropzone_user.can?("createPackjob")).to eq false
-      dropzone_user.grant!(:createPackjob)
-      expect(dropzone_user.can?("createPackjob")).to eq true
+      expect(membership.can?("createPackjob")).to eq false
+      membership.grant!(:createPackjob)
+      expect(membership.can?("createPackjob")).to eq true
     end
 
     it "returns true for all permissions in a users role" do
-      dropzone_user.user_role.permissions.each do |permission|
-        expect(dropzone_user.can?(permission.name)).to eq true
+      membership.user_role.permissions.each do |permission|
+        expect(membership.can?(permission.name)).to eq true
       end
     end
 

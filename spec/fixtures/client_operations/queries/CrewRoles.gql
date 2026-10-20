@@ -1,0 +1,8 @@
+query CrewRoles($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+    crewRoles {
+      ...crewRoleEssentials
+    }
+  }
+}
