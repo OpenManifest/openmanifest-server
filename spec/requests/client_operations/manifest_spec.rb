@@ -505,6 +505,16 @@ RSpec.describe "Client operations: manifest" do
       expect(slot.reload.load).to eq(second_load)
     end
 
+    # BUG-105: the answer named the destination twice, so a client had to ask again for the load the slot left
+    it "answers with the load the slot left and the load it went to" do
+      json = client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
+
+      loads = json.dig(:data, :moveSlot, :loads)
+      expect(loads.pluck(:id)).to eq([manifest_load.id.to_s, second_load.id.to_s])
+      expect(loads.first[:slots]).to be_empty
+      expect(loads.last[:slots].pluck(:id)).to eq([slot.id.to_s])
+    end
+
     it "keeps the slot when the target load is full" do
       second_load.update!(max_slots: 1)
       other = create(:membership, operator: operator, credits: 300)

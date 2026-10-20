@@ -59,6 +59,8 @@ class Manifest::MoveSlot < ApplicationInteraction
   # Capacity and credits are checked against rows nobody else can change until this transaction ends (BUG-020,
   # BUG-023). Lock order: the loads by id, then the member.
   def lock_rows
+    # The load the slot leaves: once it is moved, `source_slot.load` is the destination (BUG-105)
+    @origin_load = source_slot.load
     [source_slot.load, destination_load].compact.uniq.sort_by(&:id).each(&:lock!)
     target_load_vehicle&.lock!
     source_slot.reload
@@ -137,7 +139,7 @@ class Manifest::MoveSlot < ApplicationInteraction
   end
 
   def affected_loads
-    [source_slot.load.reload, destination_load.reload]
+    [@origin_load.reload, destination_load.reload].uniq
   end
 
   # Moving someone else's slot needs updateUserSlot, your own updateSlot (BUG-007)
