@@ -1,0 +1,13 @@
+query Operators($state: [OperatorState!]) {
+  operators(state: $state) {
+    edges {
+      node {
+        ...operatorEssentials
+        # null when the caller has not joined the operator (see JoinOperator)
+        currentUser {
+          id
+        }
+      }
+    }
+  }
+}
