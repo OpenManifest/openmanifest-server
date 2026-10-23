@@ -185,6 +185,19 @@ RSpec.describe "Client operations: operators and access" do
     end
   end
 
+  describe "Industries" do
+    it "lists the templates an operator can be made from, with their modules" do
+      json = client_operation("Industries", as: user)
+
+      expect(json[:errors]).to be_nil
+      industries = json.dig(:data, :industries)
+      expect(industries.pluck(:slug)).to match_array(Industry.slugs.map(&:upcase))
+      skydiving = industries.find { |industry| industry[:slug] == "SKYDIVING" }
+      expect(skydiving).to include(name: Industry.fetch("skydiving").name, icon: Industry.fetch("skydiving").icon)
+      expect(skydiving[:modules]).to include("destinations", "certifications", "equipment", "conditions")
+    end
+  end
+
   describe "UpdateOperator" do
     it "sets the call schedule, which the operator then reports" do
       json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, settings: { callScheduleMinutes: [25, 5] } } }, as: moderator)
@@ -238,6 +251,30 @@ RSpec.describe "Client operations: operators and access" do
       expect(json.dig(:data, :updateOperator, :operator)).to be_nil
       expect(json.dig(:data, :updateOperator, :errors).join).to include("call schedule")
     end
+    # The Rules page (U5.3) sends every setting back with its change, the call schedule and units, and only the modules
+    # that changed; a later update without settings keeps them
+    it "saves the rules page, and switches a module of the template off and on again" do
+      settings = {
+        allowSelfManifest: false, allowDoubleManifesting: false, requireCredits: true, allowNegativeCredits: false,
+        requireMembership: true, requireCertification: true, requireEquipment: true, requireEquipmentInspection: true,
+        requireEquipmentInService: true, allowManifestBypass: false, callScheduleMinutes: [], units: { altitude: "m" },
+      }
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, currency: "AUD", settings: settings, modules: { conditions: false } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :errors)).to be_nil
+      saved = json.dig(:data, :updateOperator, :operator)
+      expect(saved.dig(:settings, :allowSelfManifest)).to be(false)
+      expect(saved[:callScheduleMinutes]).to eq([])
+      expect(saved[:units]).to include("altitude" => "m")
+      expect(saved[:modules].keys).to include("destinations")
+      expect(saved[:modules].keys).not_to include("conditions")
+
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, modules: { conditions: true } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :operator, :modules).keys).to include("conditions")
+      expect(operator.reload).to have_attributes(allow_self_manifest?: false, call_schedule_minutes: [])
+    end
+
     it "updates the operator for a user who may edit it" do
       json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: "Renamed", primaryColor: "#445566" } }, as: moderator)
 
