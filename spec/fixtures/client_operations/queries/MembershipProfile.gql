@@ -1,0 +1,6 @@
+#import "../fragments/memberships.fragments.gql"
+query MembershipProfile($id: ID!) {
+  membership(id: $id) {
+    ...membershipProfile
+  }
+}
