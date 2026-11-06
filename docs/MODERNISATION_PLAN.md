@@ -242,7 +242,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
 | 4 | Manifest UI | U3.1 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
-| 6 | People and setup | U5.8, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
+| 6 | People and setup | U5.8b, U5.9 | People, profile, Setup and Rules, permissions, conditions, reports. Checkpoints U5.4, U5.9. |
 | 7 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
 | 8 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
 | 9 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
@@ -4861,7 +4861,7 @@ Size: M
 Fixes: none
 
 ### U5.8 — Convert the remaining screens
-Status: todo
+Status: done
 Repo: client
 Depends on: U5.4
 Branch: modernise/u5-8-remaining
@@ -4882,11 +4882,42 @@ Out of scope: new reports.
 Risk / rollback: revert.
 Size: L
 Fixes: none
+Split: by step 2; U5.8 converted Reports, Platform, Money and the daily log (BUG-118, BUG-119 found and fixed);
+the unauthenticated screens, operator select and the wizards are U5.8b.
+
+### U5.8b — Convert the unauthenticated screens and the wizards
+Status: todo
+Repo: client
+Depends on: U5.8
+Branch: modernise/u5-8b-unauthenticated
+Goal: Login, sign-up, password recovery and change, account confirmation, dropzone (operator) select and the operator
+wizard meet the definition of done (split from U5.8 by its step 2: U5.8 converted Reports, Platform, Money and the
+daily log).
+Context: `screens/unauthenticated/login/*` (`LoginScreen`, `form/LoginForm.tsx`, `useForm.ts`, `AppleButton*.tsx`),
+`screens/unauthenticated/signup`, `screens/limbo/operator_select/*` (`OperatorsScreen`, `OperatorCard`),
+`screens/wizards/*` (`operator_wizard` with its steps, `Location.tsx` / `Location.web.tsx` on react-native-maps,
+`confirm_user`, `recover_password`, `change_password`, `fields.tsx`) and the wizard frame they share,
+`components/carousel_wizard/*` (`Wizard`, `HookFormWizard`, `Step`, `Buttons`, `Dots`, `WizardFrame`). UI debt left
+there at the end of U5.8 (`yarn ui:debt`): operator_wizard 3 Paper imports, 17 colour literals, 2 raw touchables,
+4 numeric font sizes, 15 literal strings; login 3/4/1/0/5; operator_select 2/2/1/1/3; confirm_user 1/1/0/2/6;
+change_password 1/0/0/2/6; recover_password 1/0/0/1/4.
+Steps:
+  1. Convert the wizard frame (`components/carousel_wizard`) to `app/ui`, then each screen on it; keep the test ids the
+     specs use (`wizard-next-primary-action`, `login-primary-action`, `signup-primary-action`).
+  2. Add the directories to `client:eslint/ui-converted.js`.
+Acceptance criteria (cloud VM):
+  - Client checks; tier 2 `@login @setup`.
+Acceptance criteria (owner, real device):
+  - none
+Out of scope: new sign-in methods.
+Risk / rollback: revert.
+Size: L
+Fixes: none
 
 ### U5.9 — Checkpoint U5b
 Status: todo
 Repo: client
-Depends on: U5.5, U5.6, U5.7, U5.8
+Depends on: U5.5, U5.6, U5.7, U5.8, U5.8b
 Branch: modernise/u5-9-checkpoint
 Goal: Tier 3 passes for the whole app; axe has no serious or critical violations left (the baseline file is empty).
 Context: Client UI work (test tiers); design plan §7.

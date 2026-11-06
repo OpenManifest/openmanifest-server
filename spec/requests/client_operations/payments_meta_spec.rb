@@ -205,6 +205,19 @@ RSpec.describe "Client operations: payments, activity and meta" do
       expect(json.dig(:data, :operator, :orders, :edges).size).to eq(1)
     end
 
+    it "gives Money each order's amount, state and both parties with their names, and pages" do
+      client_operation("CreateOrder", variables: order_variables(buyer: operator, seller: fun_jumper), as: owner_user)
+
+      json = client_operation("OperatorTransactions", variables: { operatorId: operator.id, first: 1 }, as: owner_user)
+      orders = json.dig(:data, :operator, :orders)
+      order = orders.dig(:edges, 0, :node)
+
+      expect(order).to include(:id, :state, :amountCents, :orderNumber, :createdAt)
+      expect(order.dig(:buyer, :__typename)).to eq("Operator")
+      expect(order.dig(:seller, :user, :name)).to eq(fun_jumper.user.name)
+      expect(orders[:pageInfo]).to include(:hasNextPage, :endCursor)
+    end
+
     it "returns no orders to a jumper without transaction rights" do
       client_operation("CreateOrder", variables: order_variables(buyer: operator, seller: fun_jumper), as: owner_user)
 
