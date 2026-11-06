@@ -1,0 +1,12 @@
+mutation CreateDestination($attributes: DestinationInput!) {
+  createDestination(input: { attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    destination {
+      ...destinationEssentials
+    }
+  }
+}

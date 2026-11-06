@@ -1,0 +1,5 @@
+query CertificationLevels($certificationBodyId: Int) {
+  certificationLevels(certificationBodyId: $certificationBodyId) {
+    ...certificationLevelDetails
+  }
+}

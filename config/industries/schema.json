@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openmanifest.org/schemas/industry-template.json",
+  "title": "Industry template (config/industries/<slug>/template.yml)",
+  "description": "Validates the template.yml of a template or of an abstract base. The resolved (extended) template of a selectable industry must also have slug, name, description, icon and modules (checked by Industry).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^_?[a-z][a-z0-9_]*$"
+    },
+    "extends": {
+      "type": "string",
+      "pattern": "^_?[a-z][a-z0-9_]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "icon": {
+      "type": "string",
+      "minLength": 1,
+      "description": "MaterialCommunityIcons glyph"
+    },
+    "vehicle_kinds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+$"
+      },
+      "uniqueItems": true
+    },
+    "crew_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "uniqueItems": true
+    },
+    "modules": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "destinations",
+          "activities",
+          "certifications",
+          "equipment",
+          "escorts",
+          "limits",
+          "crew",
+          "multi_vehicle",
+          "flight_times",
+          "conditions",
+          "daily_log"
+        ]
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "object"
+          }
+        ]
+      },
+      "description": "Module name to false (off), true / a string / an object (on, with its configuration). `locked: true` in the configuration keeps an operator from turning the module off."
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "altitude": {
+          "enum": [
+            "m",
+            "ft"
+          ]
+        },
+        "depth": {
+          "enum": [
+            "m",
+            "ft"
+          ]
+        },
+        "distance": {
+          "enum": [
+            "m",
+            "km",
+            "nmi",
+            "mi"
+          ]
+        },
+        "mass": {
+          "enum": [
+            "kg",
+            "lb"
+          ]
+        },
+        "area": {
+          "enum": [
+            "m2",
+            "ft2"
+          ]
+        },
+        "temperature": {
+          "enum": [
+            "c",
+            "f"
+          ]
+        },
+        "speed": {
+          "enum": [
+            "kn",
+            "kmh",
+            "mph"
+          ]
+        }
+      }
+    },
+    "call_schedule_minutes": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "uniqueItems": true
+    },
+    "daily_log": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "enum": [
+            "apf_master_log",
+            "flight_log",
+            "passenger_list"
+          ]
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "boolean",
+          "string",
+          "number"
+        ]
+      }
+    },
+    "booking": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest_link": {
+          "enum": [
+            "checkin",
+            "load"
+          ],
+          "description": "How a booking reaches the manifest: `checkin` (a person is put on a load when they arrive) or `load` (the booking is for a load that is scheduled ahead)"
+        }
+      }
+    }
+  }
+}

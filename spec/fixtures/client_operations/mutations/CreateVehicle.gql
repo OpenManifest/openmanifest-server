@@ -1,0 +1,19 @@
+mutation CreateVehicle($attributes: VehicleInput!) {
+  createVehicle(input: { attributes: $attributes }) {
+    vehicle {
+      ...vehicleEssentials
+
+      operator {
+        id
+        vehicles {
+          ...vehicleEssentials
+        }
+      }
+    }
+    fieldErrors {
+      field
+      message
+    }
+    errors
+  }
+}

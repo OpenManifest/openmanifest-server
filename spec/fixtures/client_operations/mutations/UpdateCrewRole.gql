@@ -1,0 +1,12 @@
+mutation UpdateCrewRole($id: Int!, $attributes: CrewRoleInput!) {
+  updateCrewRole(input: { id: $id, attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    crewRole {
+      ...crewRoleEssentials
+    }
+  }
+}

@@ -9,7 +9,9 @@ mutation UpdateTicketType($id: Int!, $attributes: TicketTypeInput!) {
       ...ticketTypeEssentials
       id
       name
-      altitude
+      defaultDestination {
+        ...destinationEssentials
+      }
       costCents
       allowManifestingSelf
       extras {
@@ -18,8 +20,8 @@ mutation UpdateTicketType($id: Int!, $attributes: TicketTypeInput!) {
         costCents
       }
 
-      dropzone {
-        ...dropzoneEssentials
+      operator {
+        ...operatorEssentials
 
         ticketTypes {
           ...ticketTypeEssentials

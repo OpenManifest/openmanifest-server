@@ -1,0 +1,10 @@
+# Marks a notification as read
+mutation MarkNotificationSeen($id: Int!) {
+  updateNotification(input: { id: $id, attributes: { isSeen: true } }) {
+    errors
+    notification {
+      id
+      isSeen
+    }
+  }
+}

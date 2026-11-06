@@ -2,16 +2,16 @@
 #import "./transactions.fragments.gql"
 #import "./users.fragments.gql"
 
-fragment currentUserEssentials on DropzoneUser {
+fragment currentUserEssentials on Membership {
   id
   walletId
   creditsCents
   hasCredits
-  hasExitWeight
+  hasBodyMassKg
   hasMembership
-  hasReserveInDate
-  hasRigInspection
-  hasLicense
+  hasEquipmentInService
+  hasEquipmentInspection
+  hasCertificationLevel
   permissions
   expiresAt
 
@@ -20,11 +20,11 @@ fragment currentUserEssentials on DropzoneUser {
   }
 }
 
-fragment currentUserDetailed on DropzoneUser {
+fragment currentUserDetailed on Membership {
   ...currentUserEssentials
 
-  rigInspections {
-    ...rigInspectionEssentials
+  equipmentInspections {
+    ...equipmentInspectionEssentials
   }
 
   orders {
@@ -34,11 +34,11 @@ fragment currentUserDetailed on DropzoneUser {
       }
     }
   }
-  availableRigs {
-    ...rigEssentials
+  availableEquipment {
+    ...equipmentEssentials
   }
-  license {
-    ...licenseDetails
+  certificationLevel {
+    ...certificationLevelDetails
   }
 
   user {
