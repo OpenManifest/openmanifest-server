@@ -146,9 +146,11 @@ nohup bin/rails s -b 0.0.0.0 -p 5000 > /tmp/rails.log 2>&1 &
 curl -s -o /dev/null -w "%{http_code}\n" http://local.openmanifest.org:5000/graphql   # expect 200
 ```
 
-For the UI test suites start the server with `MAX_DEVICES_PER_USER=1000`: they sign in dozens of times as the same seed users, and
-with the default of 10 devices the oldest token, the one in the stored Playwright session, is removed and every later test
-ends on the login screen. Reset the seed (`bin/rails db:reset db:seed:dev_baseline`) before a full run.
+For the UI test suites start the server with `MAX_DEVICES_PER_USER=10000`: they sign in many times as the same seed users (the
+API helpers sign in as the owner for every call), and once a user has more devices than the limit the oldest token, the one in
+the stored Playwright session, is removed and every later test ends on the login screen. A full run (`yarn test:ui:full`, 11
+projects) signs the owner in about 200 times per project, so the 1000 used before U5.4 ran out in the fifth project. Reset the
+seed (`bin/rails db:reset db:seed:dev_baseline`, which also drops the tokens) before a full run.
 
 Login for seeded data (after P0.5): `owner@example.com` / `Password1!`.
 
