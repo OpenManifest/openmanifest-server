@@ -1,5 +1,0 @@
-query AvailableRigs($dropzoneUserId: Int!, $isTandem: Boolean, $loadId: Int) {
-  availableRigs(dropzoneUser: $dropzoneUserId, isTandem: $isTandem, loadId: $loadId) {
-    ...userRigDetailed
-  }
-}

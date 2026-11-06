@@ -5,15 +5,15 @@ require "rails_helper"
 # BUG-022: load numbers were today's count of kept loads plus one, so archiving a load repeated a number. BUG-050: the
 # database now refuses duplicates.
 RSpec.describe Load, "numbering" do
-  let(:dropzone) { create(:dropzone, time_zone: "Australia/Brisbane") }
-  let(:plane) { create(:plane, dropzone: dropzone) }
+  let(:operator) { create(:operator, time_zone: "Australia/Brisbane") }
+  let(:vehicle) { create(:vehicle, operator: operator) }
 
   def new_load(**attrs)
-    create(:load, plane: plane, **attrs)
+    create(:load, vehicle: vehicle, **attrs)
   end
 
-  it "belongs to the dropzone of its plane" do
-    expect(new_load.dropzone).to eq(dropzone)
+  it "belongs to the operator of its vehicle" do
+    expect(new_load.operator).to eq(operator)
   end
 
   it "numbers the loads of a day one after the other" do
@@ -34,14 +34,14 @@ RSpec.describe Load, "numbering" do
     expect(new_load.load_number).to eq(3)
   end
 
-  it "counts per dropzone" do
-    other = create(:plane, dropzone: create(:dropzone))
+  it "counts per operator" do
+    other = create(:vehicle, operator: create(:operator))
     new_load
 
-    expect(create(:load, plane: other).load_number).to eq(1)
+    expect(create(:load, vehicle: other).load_number).to eq(1)
   end
 
-  it "counts per day in the dropzone's time zone" do
+  it "counts per day in the operator's time zone" do
     yesterday = new_load(created_at: 1.day.ago)
     today = new_load
 
@@ -49,7 +49,7 @@ RSpec.describe Load, "numbering" do
     expect(yesterday.load_date).to eq(1.day.ago.in_time_zone("Australia/Brisbane").to_date)
   end
 
-  it "takes the day from the dropzone's time zone, not UTC" do
+  it "takes the day from the operator's time zone, not UTC" do
     # 15:30 UTC is 01:30 the next day in Brisbane (UTC+10)
     late = new_load(created_at: Time.utc(2026, 10, 8, 15, 30))
 
@@ -63,27 +63,27 @@ RSpec.describe Load, "numbering" do
     expect { second.update_columns(load_number: first.load_number) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it "refuses a load without a dropzone in the database" do
-    expect { new_load.update_columns(dropzone_id: nil) }.to raise_error(ActiveRecord::NotNullViolation)
+  it "refuses a load without an operator in the database" do
+    expect { new_load.update_columns(operator_id: nil) }.to raise_error(ActiveRecord::NotNullViolation)
   end
 
   describe "orders" do
-    it "numbers the orders of a dropzone one after the other, per dropzone" do
-      seller = dropzone
-      buyer = create(:dropzone_user, dropzone: dropzone)
-      other_buyer = create(:dropzone_user, dropzone: create(:dropzone))
+    it "numbers the orders of an operator one after the other, per operator" do
+      seller = operator
+      buyer = create(:membership, operator: operator)
+      other_buyer = create(:membership, operator: create(:operator))
 
-      numbers = Array.new(2) { create(:order, dropzone: dropzone, seller: seller, buyer: buyer).order_number }
-      other = create(:order, dropzone: other_buyer.dropzone, seller: other_buyer.dropzone, buyer: other_buyer).order_number
+      numbers = Array.new(2) { create(:order, operator: operator, seller: seller, buyer: buyer).order_number }
+      other = create(:order, operator: other_buyer.operator, seller: other_buyer.operator, buyer: other_buyer).order_number
 
       expect(numbers).to eq([1, 2])
       expect(other).to eq(1)
     end
 
     it "refuses a duplicate number in the database" do
-      buyer = create(:dropzone_user, dropzone: dropzone)
-      first = create(:order, dropzone: dropzone, seller: dropzone, buyer: buyer)
-      second = create(:order, dropzone: dropzone, seller: dropzone, buyer: buyer)
+      buyer = create(:membership, operator: operator)
+      first = create(:order, operator: operator, seller: operator, buyer: buyer)
+      second = create(:order, operator: operator, seller: operator, buyer: buyer)
 
       expect { second.update_columns(order_number: first.order_number) }.to raise_error(ActiveRecord::RecordNotUnique)
     end
@@ -97,18 +97,18 @@ RSpec.describe Load, "numbering" do
     end
 
     it "gives loads created at the same time different numbers" do
-      plane
-      other_plane = create(:plane, dropzone: dropzone)
+      vehicle
+      other_vehicle = create(:vehicle, operator: operator)
 
-      loads = in_threads(4) { create(:load, plane: [plane, other_plane].sample) }
+      loads = in_threads(4) { create(:load, vehicle: [vehicle, other_vehicle].sample) }
 
       expect(loads.map(&:load_number).sort).to eq([1, 2, 3, 4])
     end
 
     it "gives orders created at the same time different numbers" do
-      buyer = create(:dropzone_user, dropzone: dropzone)
+      buyer = create(:membership, operator: operator)
 
-      orders = in_threads(4) { Order.create!(dropzone: Dropzone.find(dropzone.id), seller: Dropzone.find(dropzone.id), buyer: DropzoneUser.find(buyer.id)) }
+      orders = in_threads(4) { Order.create!(operator: Operator.find(operator.id), seller: Operator.find(operator.id), buyer: Membership.find(buyer.id)) }
 
       expect(orders.map(&:order_number).sort).to eq([1, 2, 3, 4])
     end

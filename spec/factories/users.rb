@@ -25,17 +25,17 @@
 #  image                  :string
 #  phone                  :string
 #  email                  :string
-#  exit_weight            :float
-#  license_id             :bigint
+#  body_mass_kg            :float
+#  certification_level_id             :bigint
 #  tokens                 :text
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  push_token             :string
 #  unconfirmed_email      :string
 #  time_zone              :string           default("Australia/Brisbane")
-#  jump_count             :integer          default(0), not null
-#  dropzone_count         :integer          default(0), not null
-#  plane_count            :integer          default(0), not null
+#  load_count             :integer          default(0), not null
+#  operator_count         :integer          default(0), not null
+#  vehicle_count            :integer          default(0), not null
 #
 FactoryBot.define do
   factory :user do
@@ -43,8 +43,7 @@ FactoryBot.define do
     nickname { nil }
     phone { Faker::PhoneNumber.cell_phone }
     email { Faker::Internet.email }
-    exit_weight { Faker::Number.between(from: 60, to: 120) }
-    license { License.all.sample }
+    body_mass_kg { Faker::Number.between(from: 60, to: 120) }
     provider { "email" }
     password { Faker::Internet.password(min_length: 10, max_length: 20) }
     confirmed_at { DateTime.now }
@@ -55,14 +54,14 @@ FactoryBot.define do
     end
   end
 
-  factory :user_with_license, parent: :user do
+  factory :user_with_certification_level, parent: :user do
     transient do
-      federation { Federation.first }
-      license { Federation.first.licenses.sample }
+      certification_body { CertificationBody.first }
+      certification_level { CertificationBody.first.certification_levels.sample }
     end
 
     after(:create) do |user, evaluator|
-      create(:user_federation, federation: evaluator.federation, license: evaluator.license, user: user)
+      create(:user_certification, certification_body: evaluator.certification_body, certification_level: evaluator.certification_level, user: user)
     end
   end
 end

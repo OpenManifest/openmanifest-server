@@ -1,0 +1,5 @@
+# Terms the _aviation family shares
+terms:
+  vehicle: { one: Aircraft, other: Aircraft }
+  crew:
+    pilot: { one: Pilot, other: Pilots }

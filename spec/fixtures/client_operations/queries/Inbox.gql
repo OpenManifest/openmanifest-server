@@ -1,0 +1,67 @@
+# The member's notifications, newest first, with what each is about so that a row can open it
+query Inbox($operatorId: ID!, $first: Int) {
+  operator(id: $operatorId) {
+    id
+    currentUser {
+      id
+      unseenNotifications
+      notifications(first: $first) {
+        edges {
+          node {
+            id
+            message
+            notificationType
+            isSeen
+            createdAt
+            sentBy {
+              id
+              user {
+                id
+                name
+              }
+            }
+            resource {
+              __typename
+              ... on Load {
+                id
+                loadNumber
+              }
+              ... on Slot {
+                id
+                load {
+                  id
+                  loadNumber
+                }
+              }
+              ... on Equipment {
+                id
+                name
+                owner {
+                  id
+                }
+              }
+              ... on EquipmentInspection {
+                id
+                equipment {
+                  id
+                  name
+                  owner {
+                    id
+                  }
+                }
+              }
+              ... on Transaction {
+                id
+                amountCents
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}
