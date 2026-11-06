@@ -1,0 +1,5 @@
+query AvailableEquipment($membershipId: Int!, $isTandem: Boolean, $loadId: Int, $kind: String) {
+  availableEquipment(membership: $membershipId, isTandem: $isTandem, loadId: $loadId, kind: $kind) {
+    ...userEquipmentDetailed
+  }
+}

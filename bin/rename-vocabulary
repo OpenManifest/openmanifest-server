@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Applies the renames of a group of config/vocabulary.yml to the tracked files (contents and file names, outside the
+# allowed paths). Review the diff afterwards: comments, grammar and ambiguous words need a human.
+# Usage: bin/rename-vocabulary --group tenant [--group vehicle]... [--dry-run]
+require "optparse"
+require "fileutils"
+require_relative "../lib/vocabulary/tree"
+
+options = { groups: [] }
+OptionParser.new do |opts|
+  opts.on("--group GROUP") { |group| options[:groups] << group }
+  opts.on("--dry-run") { options[:dry_run] = true }
+end.parse!
+abort "Pass at least one --group (#{Vocabulary.config.fetch('groups').keys.join(', ')})" if options[:groups].empty?
+
+root = File.expand_path("..", __dir__)
+entries = Vocabulary.entries(options[:groups])
+tree = Vocabulary::Tree.new(root: root)
+changed = []
+moved = []
+
+tree.paths.each do |path|
+  next if tree.allowed?(path)
+
+  if tree.text?(path)
+    before = tree.read(path)
+    after = Vocabulary.rewrite(before, entries)
+    unless after == before
+      File.write(File.join(root, path), after) unless options[:dry_run]
+      changed << path
+    end
+  end
+
+  renamed = path.split("/").map { |segment| Vocabulary.rewrite(segment, entries) }.join("/")
+  moved << [path, renamed] unless renamed == path
+end
+
+moved.each do |from, to|
+  next if options[:dry_run]
+
+  FileUtils.mkdir_p(File.dirname(File.join(root, to)))
+  system("git", "-C", root, "mv", from, to, exception: true)
+end
+
+puts "#{options[:dry_run] ? 'Would change' : 'Changed'} #{changed.size} files and move #{moved.size}:"
+changed.each { |path| puts "  M #{path}" }
+moved.each { |from, to| puts "  R #{from} -> #{to}" }

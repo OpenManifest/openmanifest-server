@@ -1,0 +1,14 @@
+# Abstract base: what ground templates share (not selectable)
+slug: _ground
+name: Ground
+description: Operators that take people out in vehicles on land
+icon: bus
+vehicle_kinds: [bus]
+crew_roles: [driver]
+modules:
+  crew: {}
+  multi_vehicle: {}
+  destinations: { kinds: [route], scope: per_load }
+units: { distance: km, mass: kg, temperature: c }
+call_schedule_minutes: [30, 15, 5]
+daily_log: { template: passenger_list }

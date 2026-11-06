@@ -1,0 +1,8 @@
+query Industries {
+  industries {
+    slug
+    name
+    icon
+    modules
+  }
+}

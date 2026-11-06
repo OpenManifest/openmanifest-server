@@ -12,10 +12,10 @@ module Mutations::Users
       mutate(
         ::Setup::Users::CreateGhost,
         :user,
-        license: attributes[:license],
+        certification_level: attributes[:certification_level],
         role: attributes[:role],
-        dropzone: attributes[:dropzone],
-        exit_weight: attributes[:exit_weight],
+        operator: attributes[:operator],
+        body_mass_kg: attributes[:body_mass_kg],
         email: attributes[:email],
         phone: attributes[:phone],
         name: attributes[:name],

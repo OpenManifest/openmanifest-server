@@ -1,0 +1,55 @@
+fragment equipmentKindEssentials on EquipmentKind {
+  id
+  key
+  name
+  attributeSchema
+  serviceIntervalDays
+  inspectionValidDays
+  requiredBy
+  position
+  inspectionFormTemplate {
+    id
+    name
+    definition
+  }
+}
+
+fragment equipmentEssentials on Equipment {
+  id
+  name
+  make
+  model
+  serial
+  ownership
+  attributes
+  serviceDueAt
+  maintainedAt
+  inService
+  packingCard
+  isPublic
+  # Aliased: other types in a union (a destination) have a `kind` of another type
+  equipmentKind: kind {
+    id
+    key
+    name
+  }
+
+  owner {
+    id
+    name
+  }
+  operator {
+    id
+  }
+}
+
+fragment userEquipmentDetailed on Equipment {
+  ...equipmentEssentials
+
+  owner {
+    id
+    equipment {
+      ...equipmentEssentials
+    }
+  }
+}

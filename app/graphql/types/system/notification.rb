@@ -8,8 +8,8 @@ module Types::System
     field :notification_type, Types::System::NotificationType, null: true
 
     polymorphic_field :resource, Types::Interfaces::Polymorphic, null: true
-    async_field :received_by, Types::Users::DropzoneUser, null: false
-    async_field :sent_by, Types::Users::DropzoneUser, null: true
+    async_field :received_by, Types::Users::Membership, null: false
+    async_field :sent_by, Types::Users::Membership, null: true
     timestamp_fields
   end
 end

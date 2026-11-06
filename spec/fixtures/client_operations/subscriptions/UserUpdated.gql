@@ -1,7 +1,7 @@
 subscription UserUpdated($id: ID!) {
-  userUpdated(dropzoneUserId: $id) {
-    dropzoneUser {
-      ...dropzoneUserDetails
+  userUpdated(membershipId: $id) {
+    membership {
+      ...membershipDetails
     }
   }
 }
