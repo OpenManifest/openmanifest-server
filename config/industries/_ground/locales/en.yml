@@ -1,0 +1,5 @@
+# Terms the _ground family shares
+terms:
+  vehicle: { one: Bus, other: Buses }
+  crew:
+    driver: { one: Driver, other: Drivers }

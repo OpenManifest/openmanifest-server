@@ -2,8 +2,8 @@
 
 module Mutations::Users
   class SignUp < GraphqlDevise::Mutations::Register
-    argument :exit_weight, Float, required: true
-    argument :license_id, Int, required: false
+    argument :body_mass_kg, Float, required: true
+    argument :certification_level_id, Int, required: false
     argument :name, String, required: true
     argument :phone, String, required: true
     argument :push_token, String, required: false
@@ -26,10 +26,12 @@ module Mutations::Users
       # confirming (BUG-012)
       return claim_pending_account(email, confirm_url) if ::Users::ClaimGhost.pending_account(email)
 
+      level = ::CertificationLevel.find_by(id: attrs.delete(:certification_level_id))
       original_payload = super do |resource|
         # The caller is this user from here on, like after the gem's login: it lets the payload show their own email,
         # phone and push token (Types::Users::User only reveals those to the user themselves and to staff)
         context[:current_resource] = resource if context[:current_resource].nil?
+        join_certification_body(resource, level) if level
       end
 
       original_payload.merge(
@@ -63,6 +65,16 @@ module Mutations::Users
     end
 
     private
+
+    # The level chosen while signing up is a certification of the new user at the level's body (no operator yet to log it for)
+    def join_certification_body(user, level)
+      ::Certifications::AssignUser.run(
+        user: user,
+        certification_body: level.certification_body,
+        certification_level: level,
+        access_context: ::ApplicationInteraction::AccessContext.new(nil, user: user, operator: nil)
+      )
+    end
 
     # The answer looks like a sign-up that needs confirming: no credentials, and nothing about the account
     def claim_pending_account(email, confirm_url)

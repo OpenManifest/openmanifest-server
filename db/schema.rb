@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_13_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "activity_types", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "participant_limits", default: {}, null: false
+    t.index ["slug"], name: "index_activity_types_on_slug", unique: true
   end
 
   create_table "admins", force: :cascade do |t|
@@ -77,53 +86,125 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["user_id"], name: "index_authentication_providers_on_user_id"
   end
 
-  create_table "dropzone_users", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "dropzone_id", null: false
-    t.float "credits"
-    t.datetime "expires_at", precision: nil
+  create_table "certification_bodies", force: :cascade do |t|
+    t.string "name"
+    t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_role_id", null: false
-    t.integer "jump_count", default: 0, null: false
-    t.datetime "discarded_at", precision: nil
-    t.bigint "license_id"
-    t.bigint "credits_cents"
-    t.index ["discarded_at"], name: "index_dropzone_users_on_discarded_at"
-    t.index ["dropzone_id"], name: "index_dropzone_users_on_dropzone_id"
-    t.index ["license_id"], name: "index_dropzone_users_on_license_id"
-    t.index ["user_id", "dropzone_id"], name: "index_dropzone_users_on_user_id_and_dropzone_id", unique: true
-    t.index ["user_id"], name: "index_dropzone_users_on_user_id"
-    t.index ["user_role_id"], name: "index_dropzone_users_on_user_role_id"
+    t.string "industry"
+    t.string "verification_provider"
+    t.index ["slug"], name: "index_certification_bodies_on_slug", unique: true
   end
 
-  create_table "dropzones", force: :cascade do |t|
+  create_table "certification_levels", force: :cascade do |t|
     t.string "name"
-    t.bigint "federation_id"
-    t.float "lat"
-    t.float "lng"
+    t.bigint "certification_body_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_public"
-    t.string "primary_color"
-    t.string "secondary_color"
-    t.boolean "is_credit_system_enabled", default: false
-    t.bigint "rig_inspection_template_id"
-    t.string "image"
-    t.string "time_zone", default: "Australia/Brisbane"
-    t.integer "users_count", default: 0, null: false
-    t.integer "slots_count", default: 0, null: false
-    t.integer "loads_count", default: 0, null: false
-    t.integer "credits"
-    t.boolean "request_publication", default: false
+    t.integer "rank", default: 0, null: false
+    t.string "equivalence_key"
+    t.index ["certification_body_id"], name: "index_certification_levels_on_certification_body_id"
+    t.index ["name", "certification_body_id"], name: "index_certification_levels_on_name_and_certification_body_id", unique: true
+  end
+
+  create_table "crew_roles", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.string "scope", default: "load", null: false
+    t.boolean "required", default: false, null: false
+    t.boolean "occupies_slot", default: false, null: false
+    t.string "permission"
+    t.jsonb "vehicle_kinds", default: [], null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "key"], name: "index_crew_roles_on_operator_and_key", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_crew_roles_on_operator_id"
+  end
+
+  create_table "daily_logs", force: :cascade do |t|
+    t.bigint "duty_officer_id"
+    t.bigint "operator_id", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.date "date"
+    t.index ["duty_officer_id"], name: "index_daily_logs_on_duty_officer_id"
+    t.index ["operator_id"], name: "index_daily_logs_on_operator_id"
+  end
+
+  create_table "destinations", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "kind", default: "altitude", null: false
+    t.string "name", null: false
+    t.decimal "altitude_m", precision: 10, scale: 2
+    t.jsonb "location", default: {}, null: false
+    t.jsonb "stops", default: [], null: false
+    t.integer "min_certification_rank"
+    t.datetime "discarded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discarded_at"], name: "index_destinations_on_discarded_at"
+    t.index ["operator_id", "name"], name: "index_destinations_on_operator_and_name", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_destinations_on_operator_id"
+  end
+
+  create_table "equipment", force: :cascade do |t|
+    t.string "make"
+    t.string "model"
+    t.string "serial"
+    t.datetime "service_due_at", precision: nil
+    t.datetime "maintained_at", precision: nil
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "operator_id"
+    t.boolean "is_public", default: false
+    t.string "name"
+    t.text "packing_card"
     t.datetime "discarded_at", precision: nil
-    t.string "state", default: "private"
-    t.jsonb "settings", default: {}
-    t.bigint "credits_cents"
-    t.index ["discarded_at"], name: "index_dropzones_on_discarded_at"
-    t.index ["federation_id"], name: "index_dropzones_on_federation_id"
-    t.index ["rig_inspection_template_id"], name: "index_dropzones_on_rig_inspection_template_id"
-    t.index ["state"], name: "index_dropzones_on_state"
+    t.bigint "kind_id"
+    t.string "ownership", default: "personal", null: false
+    t.jsonb "properties", default: {}, null: false
+    t.index ["discarded_at"], name: "index_equipment_on_discarded_at"
+    t.index ["kind_id"], name: "index_equipment_on_kind_id"
+    t.index ["operator_id"], name: "index_equipment_on_operator_id"
+    t.index ["user_id"], name: "index_equipment_on_user_id"
+  end
+
+  create_table "equipment_inspections", force: :cascade do |t|
+    t.bigint "form_template_id", null: false
+    t.bigint "membership_id", null: false
+    t.bigint "equipment_id", null: false
+    t.boolean "is_ok", default: false, null: false
+    t.text "definition"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "inspected_by_id"
+    t.index ["equipment_id"], name: "index_equipment_inspections_on_equipment_id"
+    t.index ["form_template_id"], name: "index_equipment_inspections_on_form_template_id"
+    t.index ["inspected_by_id"], name: "index_equipment_inspections_on_inspected_by_id"
+    t.index ["membership_id"], name: "index_equipment_inspections_on_membership_id"
+  end
+
+  create_table "equipment_kinds", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.jsonb "attribute_schema", default: {}, null: false
+    t.integer "service_interval_days"
+    t.bigint "inspection_form_template_id"
+    t.integer "inspection_valid_days"
+    t.jsonb "required_by", default: {}, null: false
+    t.integer "position", default: 0, null: false
+    t.datetime "discarded_at", precision: nil
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inspection_form_template_id"], name: "index_equipment_kinds_on_inspection_form_template_id"
+    t.index ["operator_id", "key"], name: "index_equipment_kinds_on_operator_and_key", unique: true, where: "(discarded_at IS NULL)"
+    t.index ["operator_id"], name: "index_equipment_kinds_on_operator_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -132,8 +213,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.integer "action"
     t.integer "level"
     t.integer "access_level"
-    t.bigint "dropzone_user_id"
-    t.bigint "dropzone_id"
+    t.bigint "membership_id"
+    t.bigint "operator_id"
     t.text "message"
     t.text "details", default: ""
     t.datetime "created_at", null: false
@@ -141,114 +222,135 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["access_level"], name: "index_events_on_access_level"
     t.index ["action"], name: "index_event_actions"
     t.index ["action"], name: "index_events_on_action"
-    t.index ["dropzone_id", "created_at"], name: "index_events_on_dropzone_id_and_created_at"
-    t.index ["dropzone_id"], name: "index_events_on_dropzone_id"
-    t.index ["dropzone_user_id"], name: "index_events_on_dropzone_user_id"
     t.index ["level"], name: "index_events_on_level"
+    t.index ["membership_id"], name: "index_events_on_membership_id"
+    t.index ["operator_id", "created_at"], name: "index_events_on_operator_id_and_created_at"
+    t.index ["operator_id"], name: "index_events_on_operator_id"
     t.index ["resource_type", "resource_id"], name: "index_events_on_resource"
   end
 
   create_table "extras", force: :cascade do |t|
-    t.float "cost"
     t.string "name"
-    t.bigint "dropzone_id", null: false
+    t.bigint "operator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_deleted", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
+    t.bigint "required_qualification_id"
     t.index ["discarded_at"], name: "index_extras_on_discarded_at"
-    t.index ["dropzone_id"], name: "index_extras_on_dropzone_id"
-  end
-
-  create_table "federations", force: :cascade do |t|
-    t.string "name"
-    t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["slug"], name: "index_federations_on_slug", unique: true
+    t.index ["operator_id"], name: "index_extras_on_operator_id"
+    t.index ["required_qualification_id"], name: "index_extras_on_required_qualification_id"
   end
 
   create_table "form_templates", force: :cascade do |t|
     t.string "name"
     t.text "definition"
-    t.bigint "dropzone_id"
+    t.bigint "operator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "created_by_id"
     t.bigint "updated_by_id"
     t.index ["created_by_id"], name: "index_form_templates_on_created_by_id"
-    t.index ["dropzone_id"], name: "index_form_templates_on_dropzone_id"
+    t.index ["operator_id"], name: "index_form_templates_on_operator_id"
     t.index ["updated_by_id"], name: "index_form_templates_on_updated_by_id"
   end
 
-  create_table "jump_types", force: :cascade do |t|
+  create_table "guests", force: :cascade do |t|
     t.string "name"
-    t.string "slug"
+    t.float "body_mass_kg"
+    t.bigint "operator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["slug"], name: "index_jump_types_on_slug", unique: true
+    t.string "email"
+    t.string "phone"
+    t.date "date_of_birth"
+    t.string "emergency_contact"
+    t.index ["operator_id"], name: "index_guests_on_operator_id"
   end
 
-  create_table "licensed_jump_types", force: :cascade do |t|
-    t.bigint "license_id", null: false
-    t.bigint "jump_type_id", null: false
+  create_table "load_crew_assignments", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "load_vehicle_id"
+    t.bigint "crew_role_id", null: false
+    t.bigint "membership_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["jump_type_id"], name: "index_licensed_jump_types_on_jump_type_id"
-    t.index ["license_id", "jump_type_id"], name: "index_licensed_jump_types_on_license_id_and_jump_type_id", unique: true
-    t.index ["license_id"], name: "index_licensed_jump_types_on_license_id"
+    t.index ["crew_role_id"], name: "index_load_crew_assignments_on_crew_role_id"
+    t.index ["load_id", "crew_role_id"], name: "index_crew_assignments_per_load", unique: true, where: "(load_vehicle_id IS NULL)"
+    t.index ["load_id", "load_vehicle_id", "crew_role_id"], name: "index_crew_assignments_per_vehicle", unique: true, where: "(load_vehicle_id IS NOT NULL)"
+    t.index ["load_id"], name: "index_load_crew_assignments_on_load_id"
+    t.index ["load_vehicle_id"], name: "index_load_crew_assignments_on_load_vehicle_id"
+    t.index ["membership_id"], name: "index_load_crew_assignments_on_membership_id"
   end
 
-  create_table "licenses", force: :cascade do |t|
-    t.string "name"
-    t.bigint "federation_id", null: false
+  create_table "load_destinations", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "destination_id", null: false
+    t.integer "position", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_licenses_on_federation_id"
-    t.index ["name", "federation_id"], name: "index_licenses_on_name_and_federation_id", unique: true
+    t.index ["destination_id"], name: "index_load_destinations_on_destination_id"
+    t.index ["load_id", "position"], name: "index_load_destinations_on_load_and_position", unique: true
+    t.index ["load_id"], name: "index_load_destinations_on_load_id"
+  end
+
+  create_table "load_vehicles", force: :cascade do |t|
+    t.bigint "load_id", null: false
+    t.bigint "vehicle_id", null: false
+    t.string "role", default: "carrying", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "slots_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["load_id", "position"], name: "index_load_vehicles_on_load_and_position"
+    t.index ["load_id", "vehicle_id"], name: "index_load_vehicles_on_load_and_vehicle", unique: true
+    t.index ["load_id"], name: "index_load_vehicles_on_load_id"
+    t.index ["vehicle_id"], name: "index_load_vehicles_on_vehicle_id"
   end
 
   create_table "loads", force: :cascade do |t|
     t.datetime "dispatch_at", precision: nil
-    t.boolean "has_landed"
-    t.bigint "plane_id", null: false
+    t.boolean "has_completed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
     t.integer "max_slots", default: 0
     t.boolean "is_open"
-    t.bigint "gca_id"
-    t.bigint "load_master_id"
-    t.bigint "pilot_id"
     t.integer "state"
     t.integer "load_number"
     t.datetime "discarded_at", precision: nil
     t.bigint "slots_count", default: 0
     t.bigint "ready_slots_count", default: 0
-    t.bigint "dropzone_id", null: false
+    t.bigint "operator_id", null: false
     t.date "load_date", null: false
     t.integer "lock_version", default: 0, null: false
+    t.datetime "departed_at"
+    t.datetime "completed_at"
+    t.datetime "called_at"
     t.index ["discarded_at"], name: "index_loads_on_discarded_at"
-    t.index ["dropzone_id", "load_date", "load_number"], name: "index_loads_on_dropzone_id_and_load_date_and_load_number", unique: true
-    t.index ["gca_id"], name: "index_loads_on_gca_id"
-    t.index ["load_master_id"], name: "index_loads_on_load_master_id"
-    t.index ["pilot_id"], name: "index_loads_on_pilot_id"
-    t.index ["plane_id"], name: "index_loads_on_plane_id"
+    t.index ["operator_id", "load_date", "load_number"], name: "index_loads_on_operator_id_and_load_date_and_load_number", unique: true
     t.index ["ready_slots_count"], name: "index_loads_on_ready_slots_count"
     t.index ["slots_count"], name: "index_loads_on_slots_count"
     t.index ["state"], name: "index_loads_on_state"
   end
 
-  create_table "master_logs", force: :cascade do |t|
-    t.bigint "dzso_id"
-    t.bigint "dropzone_id", null: false
-    t.text "notes"
+  create_table "memberships", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.datetime "expires_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.date "date"
-    t.index ["dropzone_id"], name: "index_master_logs_on_dropzone_id"
-    t.index ["dzso_id"], name: "index_master_logs_on_dzso_id"
+    t.bigint "user_role_id", null: false
+    t.integer "load_count", default: 0, null: false
+    t.datetime "discarded_at", precision: nil
+    t.bigint "certification_level_id"
+    t.bigint "credits_cents"
+    t.index ["certification_level_id"], name: "index_memberships_on_certification_level_id"
+    t.index ["discarded_at"], name: "index_memberships_on_discarded_at"
+    t.index ["operator_id"], name: "index_memberships_on_operator_id"
+    t.index ["user_id", "operator_id"], name: "index_memberships_on_user_id_and_operator_id", unique: true
+    t.index ["user_id"], name: "index_memberships_on_user_id"
+    t.index ["user_role_id"], name: "index_memberships_on_user_role_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -267,8 +369,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
   end
 
+  create_table "operator_activity_types", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "activity_type_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["activity_type_id"], name: "index_operator_activity_types_on_activity_type_id"
+    t.index ["operator_id", "activity_type_id"], name: "index_operator_activity_types_uniqueness", unique: true
+    t.index ["operator_id"], name: "index_operator_activity_types_on_operator_id"
+  end
+
+  create_table "operator_certification_bodies", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "certification_body_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["certification_body_id"], name: "index_operator_certification_bodies_on_certification_body_id"
+    t.index ["operator_id", "certification_body_id"], name: "index_operator_certification_bodies_uniqueness", unique: true
+    t.index ["operator_id"], name: "index_operator_certification_bodies_on_operator_id"
+  end
+
+  create_table "operators", force: :cascade do |t|
+    t.string "name"
+    t.float "lat"
+    t.float "lng"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_public"
+    t.string "primary_color"
+    t.string "secondary_color"
+    t.boolean "is_credit_system_enabled", default: false
+    t.string "image"
+    t.string "time_zone", null: false
+    t.integer "users_count", default: 0, null: false
+    t.integer "slots_count", default: 0, null: false
+    t.integer "loads_count", default: 0, null: false
+    t.boolean "request_publication", default: false
+    t.datetime "discarded_at", precision: nil
+    t.string "state", default: "private"
+    t.jsonb "settings", default: {}
+    t.bigint "credits_cents"
+    t.string "industry", null: false
+    t.jsonb "modules", default: {}, null: false
+    t.string "currency", default: "AUD", null: false
+    t.index ["discarded_at"], name: "index_operators_on_discarded_at"
+    t.index ["state"], name: "index_operators_on_state"
+  end
+
   create_table "orders", force: :cascade do |t|
-    t.bigint "dropzone_id", null: false
+    t.bigint "operator_id", null: false
     t.string "seller_type", null: false
     t.bigint "seller_id", null: false
     t.string "buyer_type", null: false
@@ -279,33 +428,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "state"
-    t.float "amount"
     t.string "title"
     t.bigint "amount_cents"
     t.index ["buyer_type", "buyer_id"], name: "index_orders_on_buyer"
-    t.index ["dropzone_id", "order_number"], name: "index_orders_on_dropzone_id_and_order_number", unique: true
-    t.index ["dropzone_id"], name: "index_orders_on_dropzone_id"
     t.index ["item_type", "item_id"], name: "index_orders_on_item"
+    t.index ["operator_id", "order_number"], name: "index_orders_on_operator_id_and_order_number", unique: true
+    t.index ["operator_id"], name: "index_orders_on_operator_id"
     t.index ["seller_type", "seller_id"], name: "index_orders_on_seller"
     t.index ["state"], name: "index_orders_on_state"
   end
 
   create_table "packs", force: :cascade do |t|
-    t.bigint "rig_id", null: false
+    t.bigint "equipment_id", null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["rig_id"], name: "index_packs_on_rig_id"
+    t.index ["equipment_id"], name: "index_packs_on_equipment_id"
     t.index ["user_id"], name: "index_packs_on_user_id"
-  end
-
-  create_table "passengers", force: :cascade do |t|
-    t.string "name"
-    t.float "exit_weight"
-    t.bigint "dropzone_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["dropzone_id"], name: "index_passengers_on_dropzone_id"
   end
 
   create_table "permissions", force: :cascade do |t|
@@ -315,29 +454,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["name"], name: "index_permissions_on_name", unique: true
   end
 
-  create_table "planes", force: :cascade do |t|
-    t.string "name"
-    t.integer "min_slots"
-    t.integer "max_slots"
-    t.integer "hours"
-    t.integer "next_maintenance_hours"
-    t.string "registration"
+  create_table "permitted_activities", force: :cascade do |t|
+    t.bigint "certification_level_id", null: false
+    t.bigint "activity_type_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "dropzone_id", null: false
-    t.boolean "is_deleted", default: false
-    t.datetime "discarded_at", precision: nil
-    t.index ["discarded_at"], name: "index_planes_on_discarded_at"
-    t.index ["dropzone_id"], name: "index_planes_on_dropzone_id"
+    t.index ["activity_type_id"], name: "index_permitted_activities_on_activity_type_id"
+    t.index ["certification_level_id", "activity_type_id"], name: "idx_on_certification_level_id_activity_type_id_2973f01282", unique: true
+    t.index ["certification_level_id"], name: "index_permitted_activities_on_certification_level_id"
   end
 
   create_table "qualifications", force: :cascade do |t|
     t.string "name"
     t.string "slug"
-    t.bigint "federation_id", null: false
+    t.bigint "certification_body_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_qualifications_on_federation_id"
+    t.index ["certification_body_id"], name: "index_qualifications_on_certification_body_id"
   end
 
   create_table "receipts", force: :cascade do |t|
@@ -348,42 +481,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["order_id"], name: "index_receipts_on_order_id"
   end
 
-  create_table "rig_inspections", force: :cascade do |t|
-    t.bigint "form_template_id", null: false
-    t.bigint "dropzone_user_id", null: false
-    t.bigint "rig_id", null: false
-    t.boolean "is_ok", default: false, null: false
-    t.text "definition"
+  create_table "slot_equipment", force: :cascade do |t|
+    t.bigint "slot_id", null: false
+    t.bigint "equipment_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "inspected_by_id"
-    t.index ["dropzone_user_id"], name: "index_rig_inspections_on_dropzone_user_id"
-    t.index ["form_template_id"], name: "index_rig_inspections_on_form_template_id"
-    t.index ["inspected_by_id"], name: "index_rig_inspections_on_inspected_by_id"
-    t.index ["rig_id"], name: "index_rig_inspections_on_rig_id"
-  end
-
-  create_table "rigs", force: :cascade do |t|
-    t.string "make"
-    t.string "model"
-    t.string "serial"
-    t.integer "pack_value"
-    t.datetime "repack_expires_at", precision: nil
-    t.datetime "maintained_at", precision: nil
-    t.bigint "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "dropzone_id"
-    t.integer "canopy_size"
-    t.boolean "is_public", default: false
-    t.integer "rig_type"
-    t.string "name"
-    t.text "packing_card"
-    t.datetime "discarded_at", precision: nil
-    t.index ["discarded_at"], name: "index_rigs_on_discarded_at"
-    t.index ["dropzone_id"], name: "index_rigs_on_dropzone_id"
-    t.index ["rig_type"], name: "index_rigs_on_rig_type"
-    t.index ["user_id"], name: "index_rigs_on_user_id"
+    t.index ["equipment_id"], name: "index_slot_equipment_on_equipment_id"
+    t.index ["slot_id", "equipment_id"], name: "index_slot_equipment_on_slot_id_and_equipment_id", unique: true
+    t.index ["slot_id"], name: "index_slot_equipment_on_slot_id"
   end
 
   create_table "slot_extras", force: :cascade do |t|
@@ -398,27 +503,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   create_table "slots", force: :cascade do |t|
     t.bigint "ticket_type_id"
     t.bigint "load_id"
-    t.bigint "rig_id"
-    t.bigint "jump_type_id"
+    t.bigint "activity_type_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.float "exit_weight"
-    t.bigint "passenger_id"
+    t.float "body_mass_kg"
+    t.bigint "guest_id"
     t.boolean "is_paid"
     t.bigint "transaction_id"
-    t.bigint "passenger_slot_id"
     t.integer "group_number", default: 0, null: false
-    t.bigint "dropzone_user_id"
+    t.bigint "membership_id"
     t.bigint "created_by_id"
     t.integer "lock_version", default: 0, null: false
+    t.bigint "destination_id"
+    t.bigint "load_vehicle_id"
+    t.bigint "escort_slot_id"
+    t.boolean "prepaid", default: false, null: false
+    t.index ["activity_type_id"], name: "index_slots_on_activity_type_id"
     t.index ["created_by_id"], name: "index_slots_on_created_by_id"
-    t.index ["dropzone_user_id"], name: "index_slots_on_dropzone_user_id"
-    t.index ["jump_type_id"], name: "index_slots_on_jump_type_id"
-    t.index ["load_id", "dropzone_user_id"], name: "index_slots_on_load_id_and_dropzone_user_id", unique: true, where: "(dropzone_user_id IS NOT NULL)"
+    t.index ["destination_id"], name: "index_slots_on_destination_id"
+    t.index ["escort_slot_id"], name: "index_slots_on_escort_slot_id"
+    t.index ["guest_id"], name: "index_slots_on_guest_id"
+    t.index ["load_id", "membership_id"], name: "index_slots_on_load_id_and_membership_id", unique: true, where: "(membership_id IS NOT NULL)"
     t.index ["load_id"], name: "index_slots_on_load_id"
-    t.index ["passenger_id"], name: "index_slots_on_passenger_id"
-    t.index ["passenger_slot_id"], name: "index_slots_on_passenger_slot_id"
-    t.index ["rig_id"], name: "index_slots_on_rig_id"
+    t.index ["load_vehicle_id"], name: "index_slots_on_load_vehicle_id"
+    t.index ["membership_id"], name: "index_slots_on_membership_id"
     t.index ["ticket_type_id"], name: "index_slots_on_ticket_type_id"
     t.index ["transaction_id"], name: "index_slots_on_transaction_id"
   end
@@ -603,25 +711,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   end
 
   create_table "ticket_types", force: :cascade do |t|
-    t.float "cost"
     t.string "currency"
     t.string "name"
-    t.bigint "dropzone_id", null: false
-    t.integer "altitude"
+    t.bigint "operator_id", null: false
     t.boolean "allow_manifesting_self"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "is_tandem", default: false
-    t.boolean "is_deleted", default: false
+    t.boolean "requires_escort", default: false
     t.datetime "discarded_at", precision: nil
     t.bigint "cost_cents"
+    t.bigint "default_destination_id"
+    t.integer "min_certification_rank"
+    t.bigint "required_qualification_id"
+    t.integer "escort_capacity", default: 1, null: false
+    t.bigint "escort_qualification_id"
+    t.bigint "escort_crew_role_id"
+    t.jsonb "participant_limits", default: {}, null: false
+    t.jsonb "group_limits", default: {}, null: false
+    t.index ["default_destination_id"], name: "index_ticket_types_on_default_destination_id"
     t.index ["discarded_at"], name: "index_ticket_types_on_discarded_at"
-    t.index ["dropzone_id"], name: "index_ticket_types_on_dropzone_id"
+    t.index ["escort_crew_role_id"], name: "index_ticket_types_on_escort_crew_role_id"
+    t.index ["escort_qualification_id"], name: "index_ticket_types_on_escort_qualification_id"
+    t.index ["operator_id"], name: "index_ticket_types_on_operator_id"
+    t.index ["required_qualification_id"], name: "index_ticket_types_on_required_qualification_id"
   end
 
   create_table "transactions", force: :cascade do |t|
     t.integer "status"
-    t.float "amount"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "message"
@@ -639,38 +755,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.index ["transaction_type"], name: "index_transactions_on_transaction_type"
   end
 
-  create_table "user_federation_qualifications", force: :cascade do |t|
-    t.bigint "user_federation_id", null: false
-    t.bigint "qualification_id", null: false
-    t.datetime "expires_at", precision: nil
-    t.string "uid"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["qualification_id"], name: "index_user_federation_qualifications_on_qualification_id"
-    t.index ["user_federation_id"], name: "index_user_federation_qualifications_on_user_federation_id"
-  end
-
-  create_table "user_federations", force: :cascade do |t|
+  create_table "user_certifications", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "federation_id", null: false
-    t.bigint "license_id"
+    t.bigint "certification_body_id", null: false
+    t.bigint "certification_level_id"
     t.string "uid"
-    t.string "license_number"
+    t.string "number"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["federation_id"], name: "index_user_federations_on_federation_id"
-    t.index ["license_id"], name: "index_user_federations_on_license_id"
-    t.index ["user_id"], name: "index_user_federations_on_user_id"
+    t.datetime "verified_at"
+    t.bigint "verified_by_id"
+    t.index ["certification_body_id"], name: "index_user_certifications_on_certification_body_id"
+    t.index ["certification_level_id"], name: "index_user_certifications_on_certification_level_id"
+    t.index ["user_id"], name: "index_user_certifications_on_user_id"
+    t.index ["verified_by_id"], name: "index_user_certifications_on_verified_by_id"
   end
 
   create_table "user_permissions", force: :cascade do |t|
     t.bigint "permission_id", null: false
-    t.bigint "dropzone_user_id", null: false
+    t.bigint "membership_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["dropzone_user_id", "permission_id"], name: "index_user_permissions_on_dropzone_user_id_and_permission_id", unique: true
-    t.index ["dropzone_user_id"], name: "index_user_permissions_on_dropzone_user_id"
+    t.index ["membership_id", "permission_id"], name: "index_user_permissions_on_membership_id_and_permission_id", unique: true
+    t.index ["membership_id"], name: "index_user_permissions_on_membership_id"
     t.index ["permission_id"], name: "index_user_permissions_on_permission_id"
+  end
+
+  create_table "user_qualifications", force: :cascade do |t|
+    t.bigint "user_certification_id", null: false
+    t.bigint "qualification_id", null: false
+    t.datetime "expires_at", precision: nil
+    t.string "number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
+    t.index ["qualification_id"], name: "index_user_qualifications_on_qualification_id"
+    t.index ["user_certification_id"], name: "index_user_qualifications_on_user_certification_id"
   end
 
   create_table "user_role_permissions", force: :cascade do |t|
@@ -687,9 +807,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "dropzone_id", null: false
-    t.index ["dropzone_id"], name: "index_user_roles_on_dropzone_id"
-    t.index ["name", "dropzone_id"], name: "index_user_roles_on_name_and_dropzone_id", unique: true
+    t.bigint "operator_id", null: false
+    t.boolean "is_default", default: false, null: false
+    t.boolean "is_default_certified", default: false, null: false
+    t.index ["name", "operator_id"], name: "index_user_roles_on_name_and_operator_id", unique: true
+    t.index ["operator_id"], name: "index_user_roles_on_operator_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -713,88 +835,117 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
     t.string "image"
     t.string "phone"
     t.string "email"
-    t.float "exit_weight"
-    t.bigint "license_id"
+    t.float "body_mass_kg"
     t.text "tokens"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "push_token"
     t.string "unconfirmed_email"
     t.string "time_zone", default: "Australia/Brisbane"
-    t.integer "jump_count", default: 0, null: false
-    t.integer "dropzone_count", default: 0, null: false
-    t.integer "plane_count", default: 0, null: false
-    t.string "apf_number"
+    t.integer "load_count", default: 0, null: false
+    t.integer "operator_count", default: 0, null: false
     t.integer "moderation_role", default: 0
+    t.date "date_of_birth"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["license_id"], name: "index_users_on_license_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["uid", "provider"], name: "index_users_on_uid_and_provider", unique: true
   end
 
+  create_table "vehicles", force: :cascade do |t|
+    t.string "name"
+    t.integer "min_capacity"
+    t.integer "capacity"
+    t.integer "hours"
+    t.integer "next_maintenance_hours"
+    t.string "registration"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "operator_id", null: false
+    t.datetime "discarded_at", precision: nil
+    t.string "kind", null: false
+    t.decimal "max_payload_kg", precision: 8, scale: 2
+    t.index ["discarded_at"], name: "index_vehicles_on_discarded_at"
+    t.index ["operator_id"], name: "index_vehicles_on_operator_id"
+  end
+
   create_table "weather_conditions", force: :cascade do |t|
     t.text "winds"
-    t.integer "temperature"
+    t.decimal "temperature_c", precision: 5, scale: 1
     t.integer "jump_run"
-    t.decimal "exit_spot_miles", precision: 6, scale: 2
-    t.decimal "offset_miles", precision: 6, scale: 2
+    t.decimal "exit_spot_m", precision: 10, scale: 2
+    t.decimal "offset_m", precision: 10, scale: 2
     t.integer "offset_direction"
-    t.bigint "dropzone_id", null: false
+    t.bigint "operator_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.date "date", null: false
-    t.index ["dropzone_id", "date"], name: "index_weather_conditions_on_dropzone_id_and_date", unique: true
-    t.index ["dropzone_id"], name: "index_weather_conditions_on_dropzone_id"
+    t.index ["operator_id", "date"], name: "index_weather_conditions_on_operator_id_and_date", unique: true
+    t.index ["operator_id"], name: "index_weather_conditions_on_operator_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "authentication_providers", "users"
-  add_foreign_key "dropzone_users", "dropzones"
-  add_foreign_key "dropzone_users", "licenses"
-  add_foreign_key "dropzone_users", "user_roles"
-  add_foreign_key "dropzone_users", "users"
-  add_foreign_key "dropzones", "form_templates", column: "rig_inspection_template_id"
-  add_foreign_key "events", "dropzone_users"
-  add_foreign_key "events", "dropzones"
-  add_foreign_key "extras", "dropzones"
-  add_foreign_key "form_templates", "dropzone_users", column: "created_by_id"
-  add_foreign_key "form_templates", "dropzone_users", column: "updated_by_id"
-  add_foreign_key "form_templates", "dropzones"
-  add_foreign_key "licensed_jump_types", "jump_types"
-  add_foreign_key "licensed_jump_types", "licenses"
-  add_foreign_key "licenses", "federations"
-  add_foreign_key "loads", "dropzone_users", column: "gca_id"
-  add_foreign_key "loads", "dropzone_users", column: "load_master_id"
-  add_foreign_key "loads", "dropzone_users", column: "pilot_id"
-  add_foreign_key "loads", "dropzones"
-  add_foreign_key "loads", "planes"
-  add_foreign_key "master_logs", "dropzone_users", column: "dzso_id"
-  add_foreign_key "master_logs", "dropzones"
-  add_foreign_key "notifications", "dropzone_users", column: "received_by_id"
-  add_foreign_key "notifications", "dropzone_users", column: "sent_by_id"
-  add_foreign_key "orders", "dropzones"
-  add_foreign_key "packs", "rigs"
+  add_foreign_key "certification_levels", "certification_bodies"
+  add_foreign_key "crew_roles", "operators"
+  add_foreign_key "daily_logs", "memberships", column: "duty_officer_id"
+  add_foreign_key "daily_logs", "operators"
+  add_foreign_key "destinations", "operators"
+  add_foreign_key "equipment", "equipment_kinds", column: "kind_id"
+  add_foreign_key "equipment", "operators"
+  add_foreign_key "equipment", "users"
+  add_foreign_key "equipment_inspections", "equipment"
+  add_foreign_key "equipment_inspections", "form_templates"
+  add_foreign_key "equipment_inspections", "memberships"
+  add_foreign_key "equipment_inspections", "memberships", column: "inspected_by_id"
+  add_foreign_key "equipment_kinds", "form_templates", column: "inspection_form_template_id"
+  add_foreign_key "equipment_kinds", "operators"
+  add_foreign_key "events", "memberships"
+  add_foreign_key "events", "operators"
+  add_foreign_key "extras", "operators"
+  add_foreign_key "extras", "qualifications", column: "required_qualification_id"
+  add_foreign_key "form_templates", "memberships", column: "created_by_id"
+  add_foreign_key "form_templates", "memberships", column: "updated_by_id"
+  add_foreign_key "form_templates", "operators"
+  add_foreign_key "guests", "operators"
+  add_foreign_key "load_crew_assignments", "crew_roles"
+  add_foreign_key "load_crew_assignments", "load_vehicles"
+  add_foreign_key "load_crew_assignments", "loads"
+  add_foreign_key "load_crew_assignments", "memberships"
+  add_foreign_key "load_destinations", "destinations"
+  add_foreign_key "load_destinations", "loads"
+  add_foreign_key "load_vehicles", "loads"
+  add_foreign_key "load_vehicles", "vehicles"
+  add_foreign_key "loads", "operators"
+  add_foreign_key "memberships", "certification_levels"
+  add_foreign_key "memberships", "operators"
+  add_foreign_key "memberships", "user_roles"
+  add_foreign_key "memberships", "users"
+  add_foreign_key "notifications", "memberships", column: "received_by_id"
+  add_foreign_key "notifications", "memberships", column: "sent_by_id"
+  add_foreign_key "operator_activity_types", "activity_types"
+  add_foreign_key "operator_activity_types", "operators"
+  add_foreign_key "operator_certification_bodies", "certification_bodies"
+  add_foreign_key "operator_certification_bodies", "operators"
+  add_foreign_key "orders", "operators"
+  add_foreign_key "packs", "equipment"
   add_foreign_key "packs", "users"
-  add_foreign_key "passengers", "dropzones"
-  add_foreign_key "planes", "dropzones"
-  add_foreign_key "qualifications", "federations"
-  add_foreign_key "rig_inspections", "dropzone_users"
-  add_foreign_key "rig_inspections", "dropzone_users", column: "inspected_by_id"
-  add_foreign_key "rig_inspections", "form_templates"
-  add_foreign_key "rig_inspections", "rigs"
-  add_foreign_key "rigs", "dropzones"
-  add_foreign_key "rigs", "users"
+  add_foreign_key "permitted_activities", "activity_types"
+  add_foreign_key "permitted_activities", "certification_levels"
+  add_foreign_key "qualifications", "certification_bodies"
+  add_foreign_key "slot_equipment", "equipment"
+  add_foreign_key "slot_equipment", "slots"
   add_foreign_key "slot_extras", "extras"
   add_foreign_key "slot_extras", "slots"
-  add_foreign_key "slots", "dropzone_users"
-  add_foreign_key "slots", "dropzone_users", column: "created_by_id"
-  add_foreign_key "slots", "jump_types"
+  add_foreign_key "slots", "activity_types"
+  add_foreign_key "slots", "destinations"
+  add_foreign_key "slots", "guests"
+  add_foreign_key "slots", "load_vehicles"
   add_foreign_key "slots", "loads"
-  add_foreign_key "slots", "passengers"
-  add_foreign_key "slots", "rigs"
-  add_foreign_key "slots", "slots", column: "passenger_slot_id"
+  add_foreign_key "slots", "memberships"
+  add_foreign_key "slots", "memberships", column: "created_by_id"
+  add_foreign_key "slots", "slots", column: "escort_slot_id"
   add_foreign_key "slots", "ticket_types"
   add_foreign_key "slots", "transactions"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
@@ -807,18 +958,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_11_120000) do
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "ticket_type_extras", "extras"
   add_foreign_key "ticket_type_extras", "ticket_types"
-  add_foreign_key "ticket_types", "dropzones"
+  add_foreign_key "ticket_types", "crew_roles", column: "escort_crew_role_id"
+  add_foreign_key "ticket_types", "destinations", column: "default_destination_id"
+  add_foreign_key "ticket_types", "operators"
+  add_foreign_key "ticket_types", "qualifications", column: "escort_qualification_id"
+  add_foreign_key "ticket_types", "qualifications", column: "required_qualification_id"
   add_foreign_key "transactions", "receipts"
-  add_foreign_key "user_federation_qualifications", "qualifications"
-  add_foreign_key "user_federation_qualifications", "user_federations"
-  add_foreign_key "user_federations", "federations"
-  add_foreign_key "user_federations", "licenses"
-  add_foreign_key "user_federations", "users"
-  add_foreign_key "user_permissions", "dropzone_users"
+  add_foreign_key "user_certifications", "certification_bodies"
+  add_foreign_key "user_certifications", "certification_levels"
+  add_foreign_key "user_certifications", "users"
+  add_foreign_key "user_certifications", "users", column: "verified_by_id"
+  add_foreign_key "user_permissions", "memberships"
   add_foreign_key "user_permissions", "permissions"
+  add_foreign_key "user_qualifications", "qualifications"
+  add_foreign_key "user_qualifications", "user_certifications"
   add_foreign_key "user_role_permissions", "permissions"
   add_foreign_key "user_role_permissions", "user_roles"
-  add_foreign_key "user_roles", "dropzones"
-  add_foreign_key "users", "licenses"
-  add_foreign_key "weather_conditions", "dropzones"
+  add_foreign_key "user_roles", "operators"
+  add_foreign_key "vehicles", "operators"
+  add_foreign_key "weather_conditions", "operators"
 end

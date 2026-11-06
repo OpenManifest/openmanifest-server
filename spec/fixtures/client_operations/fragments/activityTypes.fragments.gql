@@ -1,0 +1,4 @@
+fragment activityTypeEssentials on ActivityType {
+  id
+  name
+}

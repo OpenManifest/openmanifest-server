@@ -1,0 +1,13 @@
+# Abstract base: what water templates share (not selectable)
+slug: _water
+name: Water
+description: Operators that take people out on boats
+icon: ferry
+vehicle_kinds: [boat]
+crew_roles: [skipper]
+modules:
+  crew: {}
+  destinations: { kinds: [site], scope: per_load }
+units: { depth: m, distance: km, mass: kg, temperature: c, speed: kn }
+call_schedule_minutes: [60, 30, 15]
+daily_log: { template: passenger_list }

@@ -1,0 +1,13 @@
+# Abstract base: what aviation templates share (not selectable)
+slug: _aviation
+name: Aviation
+description: Operators that fly people in aircraft
+icon: airplane
+vehicle_kinds: [aircraft]
+crew_roles: [pilot]
+modules:
+  limits: { mass: true, payload: true }
+  crew: {}
+units: { altitude: ft, distance: km, mass: kg, temperature: c, speed: kn }
+call_schedule_minutes: [20, 15, 10]
+daily_log: { template: flight_log }

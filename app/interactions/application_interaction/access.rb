@@ -26,8 +26,8 @@ module ApplicationInteraction::Access
     # Permissions can be defined as a list of symbols or strings,
     # or a hash of permission slugs to error messages.
     # For example:
-    # allow :updateDropzone
-    # allow updateDropzone: 'You dont have permissions to update this dropzone'
+    # allow :updateOperator
+    # allow updateOperator: 'You dont have permissions to update this operator'
     #
     # @param [Array<Symbol, String, Hash>] permissions
     # @return [void]

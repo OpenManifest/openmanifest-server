@@ -2,14 +2,14 @@
 mutation CreateOrder(
   $buyer: ID!
   $seller: ID!
-  $dropzone: ID!
+  $operator: ID!
   $title: String
   $amountCents: Int!
 ) {
   createOrder(
     input: {
       attributes: {
-        dropzone: $dropzone
+        operator: $operator
         title: $title
         buyer: $buyer
         seller: $seller

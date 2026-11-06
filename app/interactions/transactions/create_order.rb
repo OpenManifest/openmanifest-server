@@ -5,12 +5,12 @@ class Transactions::CreateOrder < Transactions::Purchase
   integer :amount_cents
   string :title, default: nil
   integer :purchasable, default: nil
-  object :buyer, class: [::Dropzone, ::DropzoneUser]
-  object :seller, class: [::Dropzone, ::DropzoneUser]
-  record :dropzone
+  object :buyer, class: [::Operator, ::Membership]
+  object :seller, class: [::Operator, ::Membership]
+  record :operator
 
-  validates :amount_cents, :buyer, :seller, :dropzone, presence: true
-  validate :parties_belong_to_dropzone
+  validates :amount_cents, :buyer, :seller, :operator, presence: true
+  validate :parties_belong_to_operator
 
   steps :check_balance,
         :create_order,
@@ -27,7 +27,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       access_context: access_context,
       resource: @order,
       action: :created,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Order ##{@order.id} created with a total value of #{Money.new(amount_cents)}"
     )
@@ -39,10 +39,10 @@ class Transactions::CreateOrder < Transactions::Purchase
       access_level: :system,
       level: :error,
       access_context: access_context,
-      # An event needs a resource: the failed order (if it got that far), else the dropzone
-      resource: @order || dropzone,
+      # An event needs a resource: the failed order (if it got that far), else the operator
+      resource: @order || operator,
       action: :confirmed,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Failed to create order of value #{Money.new(amount_cents)}",
       details: errors.full_messages.join(", ")
@@ -51,7 +51,7 @@ class Transactions::CreateOrder < Transactions::Purchase
   def create_order
     @order = Order.new(
       title: title,
-      dropzone: dropzone,
+      operator: operator,
       seller: seller,
       buyer: buyer,
       amount_cents: total_cents,
@@ -79,7 +79,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       "Slot on Load #{purchasable.load.load_number}"
     when TicketType
       "#{purchasable.name} ticket"
-    when DropzoneUser
+    when Membership
       "Funds added to account"
     when Pack
       "packjob"
@@ -92,24 +92,24 @@ class Transactions::CreateOrder < Transactions::Purchase
     (amount_cents.negative? ? "Withdrawal" : "Deposit").to_s
   end
 
-  # A member cannot pay more than they have, unless the dropzone allows negative credits. A step rather than a
+  # A member cannot pay more than they have, unless the operator allows negative credits. A step rather than a
   # validation: validations run again after the interaction, when the balance has already changed.
   def check_balance
-    return unless buyer.is_a?(::DropzoneUser) && amount_cents.to_i.positive?
-    return if dropzone&.allow_negative_credits? || (buyer.credits_cents || 0) >= amount_cents
+    return unless buyer.is_a?(::Membership) && amount_cents.to_i.positive?
+    return if operator&.allow_negative_credits? || (buyer.credits_cents || 0) >= amount_cents
 
     errors.add(:amount, "Not enough credits")
   end
 
   private
 
-  # Whoever calls this interaction: credits only move between a dropzone and its own members
-  def parties_belong_to_dropzone
-    return if dropzone.blank?
+  # Whoever calls this interaction: credits only move between an operator and its own members
+  def parties_belong_to_operator
+    return if operator.blank?
 
     [buyer, seller].each do |party|
-      belongs = party.is_a?(::Dropzone) ? party.id == dropzone.id : party.try(:dropzone_id) == dropzone.id
-      errors.add(:base, "The buyer and the seller must be the dropzone or its members") unless belongs
+      belongs = party.is_a?(::Operator) ? party.id == operator.id : party.try(:operator_id) == operator.id
+      errors.add(:base, "The buyer and the seller must be the operator or its members") unless belongs
     end
   end
 end

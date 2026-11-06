@@ -1,0 +1,12 @@
+mutation CreateCrewRole($attributes: CrewRoleInput!) {
+  createCrewRole(input: { attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    crewRole {
+      ...crewRoleEssentials
+    }
+  }
+}
