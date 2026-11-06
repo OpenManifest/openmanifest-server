@@ -12,7 +12,7 @@ module Mutations::Manifest
       mutate(
         ::Manifest::DeleteLoad,
         :load,
-        access_context: access_context_for(load_by_id(id).dropzone),
+        access_context: access_context_for(load_by_id(id).operator),
         load: load_by_id(id)
       )
     end

@@ -16,7 +16,7 @@ class Manifest::DeleteLoad < ApplicationInteraction
       access_level: :user,
       resource: load,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} archived load ##{load.load_number}"
     )
@@ -29,7 +29,7 @@ class Manifest::DeleteLoad < ApplicationInteraction
       access_context: access_context,
       resource: load,
       action: :deleted,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "#{access_context.user.name} could not archive load ##{load.load_number}",
       details: errors.full_messages.join(", ")

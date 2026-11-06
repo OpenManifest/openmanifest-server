@@ -1,0 +1,13 @@
+fragment certificationLevelEssentials on CertificationLevel {
+  id
+  name
+  rank
+  equivalenceKey
+}
+
+fragment certificationLevelDetails on CertificationLevel {
+  ...certificationLevelEssentials
+  certificationBody {
+    ...certificationBodyEssentials
+  }
+}

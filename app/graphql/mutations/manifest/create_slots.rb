@@ -13,23 +13,23 @@ module Mutations::Manifest
         Manifest::CreateMultipleSlots,
         :load,
         access_context: access_context_for(
-          attributes[:load].dropzone
+          attributes[:load].operator
         ),
         ticket_type: attributes[:ticket_type],
-        jump_type: attributes[:jump_type],
+        activity_type: attributes[:activity_type],
         group_number: attributes[:group_number],
         extra_ids: attributes[:extras]&.pluck(:id),
         load: attributes[:load],
-        users: attributes[:user_group].map { |h| h.to_h.except(:id).merge(dropzone_user: DropzoneUser.find_by(id: h[:id])) }
+        users: attributes[:user_group].map { |h| h.to_h.except(:id, :equipment).merge(membership: Membership.find_by(id: h[:id]), equipment_ids: h[:equipment]&.pluck(:id)) }
       )
     end
 
     # Manifesting yourself needs createSlot; a group with other people needs createUserSlot, or createUserSlotWithSelf
     # when you are one of its members (BUG-062: this compared membership ids with the user id).
     def authorized?(attributes: nil)
-      dropzone = attributes[:load].plane.dropzone
-      membership = DropzoneUser.membership(dropzone, context[:current_resource])
-      return refuse("You are not a member of this dropzone") unless membership
+      operator = attributes[:load].operator
+      membership = Membership.of(operator, context[:current_resource])
+      return refuse("You are not a member of this operator") unless membership
 
       ids = attributes[:user_group].to_a.map { |member| member[:id].to_i }
       contains_self = ids.include?(membership.id)
@@ -42,7 +42,10 @@ module Mutations::Manifest
                 end
       return true if allowed
 
-      refuse(if contains_others
+      desk_only = contains_self && membership.manifest_desk_only?(contains_others ? :createUserSlotWithSelf : :createSlot)
+      refuse(if desk_only
+               Membership::MANIFEST_DESK_MESSAGE
+             elsif contains_others
                "You don't have permissions to manifest other people"
              else
                "You don't have permissions to manifest"

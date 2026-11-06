@@ -1,15 +1,15 @@
 fragment weatherConditionEssentials on WeatherCondition {
   id
   jumpRun
-  temperature
+  temperatureC
   offsetDirection
-  offsetMiles
+  offsetM
   createdAt
-  exitSpotMiles
+  exitSpotM
   winds {
-    temperature
-    altitude
-    speed
+    temperatureC
+    altitudeM
+    speedMps
     direction
   }
 }
