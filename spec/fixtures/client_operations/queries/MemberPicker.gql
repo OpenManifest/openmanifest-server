@@ -1,0 +1,33 @@
+#import "../fragments/memberships.fragments.gql"
+#import "../fragments/eligibility.fragments.gql"
+#import "../fragments/slots.fragments.gql"
+
+# The members to pick from for a load: who they are, whether they are ready to fly on it, and what they flew last time
+query MemberPicker($operatorId: ID!, $loadId: ID!, $search: String, $first: Int, $after: String) {
+  memberships(operator: $operatorId, licensed: false, search: $search, first: $first, after: $after) {
+    edges {
+      cursor
+      node {
+        ...membershipEssentials
+        creditsCents
+        eligibility(loadId: $loadId) {
+          ready
+          rules {
+            ...eligibilityResultEssentials
+          }
+        }
+        lastSlot {
+          ...slotDetails
+          load {
+            id
+            loadDate
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}

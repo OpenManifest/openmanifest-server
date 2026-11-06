@@ -1,0 +1,12 @@
+mutation UpdateDailyLog($date: ISO8601Date!, $operator: ID!, $attributes: DailyLogInput!) {
+  updateDailyLog(input: { operator: $operator, date: $date, attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    dailyLog {
+      ...dailyLogEntry
+    }
+  }
+}

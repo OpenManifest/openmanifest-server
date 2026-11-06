@@ -1,0 +1,90 @@
+# Global catalogue, seeded once by Setup::Global::Seeds (activity types, certification bodies, levels and what they permit)
+activity_types:
+- name: Angle/Tracking
+  slug: angle
+- name: Freefly
+  slug: freefly
+- name: Camera
+  slug: cam
+- name: Hop 'n Pop
+  slug: hnp
+- name: High Pull
+  slug: hp
+- name: Flat
+  slug: fs
+- name: Wingsuit
+  slug: ws
+certification_bodies:
+  apf:
+    name: APF
+    slug: apf
+    verification_provider: apf
+    certification_levels:
+    - name: No license
+      rank: 0
+      equivalence_key: none
+      permitted_activities:
+    - name: Student
+      rank: 10
+      equivalence_key: student
+      permitted_activities:
+      - fs
+    - name: Certificate A
+      rank: 20
+      equivalence_key: a
+      permitted_activities:
+      - fs
+      - hp
+      - hnp
+    - name: Certificate B
+      rank: 30
+      equivalence_key: b
+      permitted_activities:
+      - fs
+      - hnp
+      - hp
+      - angle
+      - freefly
+    - name: Certificate C
+      rank: 40
+      equivalence_key: c
+      permitted_activities:
+      - fs
+      - hnp
+      - hp
+      - angle
+      - freefly
+      - cam
+    - name: Certificate D
+      rank: 50
+      equivalence_key: d
+      permitted_activities:
+      - fs
+      - hnp
+      - hp
+      - angle
+      - freefly
+      - cam
+      - ws
+    - name: Certificate E
+      rank: 60
+      equivalence_key: e
+      permitted_activities:
+      - fs
+      - hnp
+      - hp
+      - angle
+      - freefly
+      - cam
+      - ws
+    - name: Certificate F
+      rank: 70
+      equivalence_key: f
+      permitted_activities:
+      - fs
+      - hnp
+      - hp
+      - angle
+      - freefly
+      - cam
+      - ws

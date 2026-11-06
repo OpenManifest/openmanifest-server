@@ -1,5 +1,0 @@
-query MasterLog($dropzoneId: ID!, $date: ISO8601Date!)  {
-  masterLog(dropzone: $dropzoneId, date: $date) {
-    ...masterLogEntry
-  }
-}

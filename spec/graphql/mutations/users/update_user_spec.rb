@@ -4,9 +4,9 @@ require "rails_helper"
 
 module Mutations
   RSpec.describe Mutations::Users::UpdateUser, type: :request do
-    include_context("federation_sync")
-    let!(:dropzone) { create(:dropzone, credits: 50) }
-    let!(:dropzone_user) { create(:dropzone_user, dropzone: dropzone, credits: 50) }
+    include_context("certification_body_sync")
+    let!(:operator) { create(:operator, credits: 50) }
+    let!(:membership) { create(:membership, operator: operator, credits: 50) }
 
     let!(:apf_response) do
       []
@@ -15,21 +15,21 @@ module Mutations
     before do
       stub_request(:get, /www.apf.com.au\/apf\/api\/student/).
         to_return(body: apf_response.to_json, headers: { "Content-Type" => "application/json" })
-      dropzone_user.grant! :createUser
+      membership.grant! :createUser
     end
 
     describe ".resolve" do
       context "successfully" do
-        let!(:license) { dropzone.federation.licenses.where.not(id: dropzone_user&.license&.id).to_a.sample }
+        let!(:certification_level) { operator.certification_bodies.first.certification_levels.where.not(id: membership&.certification_level&.id).to_a.sample }
         let(:query_str) do
           query(
-            id: dropzone_user.user.id,
+            id: membership.user.id,
             name: "rspec",
             phone: "123123123",
             email: "some@rspec.com",
-            federation_number: "321321",
-            license_id: license.reload.id,
-            exit_weight: 50,
+            certification_body_number: "321321",
+            certification_level_id: certification_level.reload.id,
+            body_mass_kg: 50,
           )
         end
         let(:post_request) do
@@ -37,7 +37,7 @@ module Mutations
                params: {
                  query: query_str,
                },
-               headers: dropzone_user.user.create_new_auth_token
+               headers: membership.user.create_new_auth_token
         end
 
         let(:json) do
@@ -47,26 +47,26 @@ module Mutations
         it { expect(post_request).to eq 200 }
         it do
           post_request
-          expect(dropzone_user.reload.license.id).to eq license.reload.id
-          expect(json[:data][:updateUser][:dropzoneUser][:user][:dropzoneUsers].find do |d|
-                   d[:id].to_i == dropzone_user.id
-                 end[:license][:id].to_i).to eq license.reload.id
+          expect(membership.reload.certification_level.id).to eq certification_level.reload.id
+          expect(json[:data][:updateUser][:membership][:user][:memberships].find do |d|
+                   d[:id].to_i == membership.id
+                 end[:certificationLevel][:id].to_i).to eq certification_level.reload.id
         end
       end
     end
 
-    def query(id:, name:, email:, phone:, exit_weight:, license_id:, federation_number:)
+    def query(id:, name:, email:, phone:, body_mass_kg:, certification_level_id:, certification_body_number:)
       <<~GQL
         mutation {
           updateUser(
             input: {
-              dropzoneUser: #{dropzone_user.id},
+              membership: #{membership.id},
               attributes: {
                 name: "#{name}",
                 email: "#{email}",
                 phone: "#{phone}",
-                exitWeight: #{exit_weight},
-                license: #{license_id},
+                bodyMassKg: #{body_mass_kg},
+                certificationLevel: #{certification_level_id},
               }
             }
           ) {
@@ -75,15 +75,15 @@ module Mutations
               field
               message
             }
-            dropzoneUser {
+            membership {
               id
               user {
                 id
                 name
                 phone
-                dropzoneUsers {
+                memberships {
                   id
-                  license {
+                  certificationLevel {
                     id
                     name
                   }
