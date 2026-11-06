@@ -1,0 +1,29 @@
+mutation SaveConditions(
+  $id: Int!
+  $operatorId: Int!
+  $winds: String
+  $temperatureC: Float
+  $jumpRun: Int
+) {
+  createWeatherCondition(
+    input: {
+      id: $id
+      attributes: {
+        operatorId: $operatorId
+        winds: $winds
+        temperatureC: $temperatureC
+        jumpRun: $jumpRun
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    weatherCondition {
+      ...weatherConditionEssentials
+      updatedAt
+    }
+  }
+}
