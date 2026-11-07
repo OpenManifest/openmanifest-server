@@ -52,6 +52,16 @@ RSpec.describe "Client operations: operators and access" do
   end
 
   describe "Operator" do
+    it "returns the template's icon and illustrations and the operator's vehicle kinds (P7.22)" do
+      json = client_operation("Operator", variables: { operatorId: operator.id }, as: user)
+
+      expect(json.dig(:data, :operator, :template)).to include(
+        slug: operator.industry.upcase, icon: operator.industry_template.icon,
+        illustrations: operator.industry_template.illustrations
+      )
+      expect(json.dig(:data, :operator, :vehicleKinds)).to eq(operator.vehicle_kinds)
+    end
+
     it "returns the extensive operator with the caller's membership and settings" do
       json = client_operation("Operator", variables: { operatorId: operator.id }, as: user)
 

@@ -14,6 +14,13 @@ fragment operatorEssentials on Operator {
   timeZone
   terminology
   industry
+  template {
+    slug
+    name
+    icon
+    illustrations
+  }
+  vehicleKinds
   modules
   callScheduleMinutes
   currency

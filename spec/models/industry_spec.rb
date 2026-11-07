@@ -45,6 +45,11 @@ RSpec.describe Industry do
       end
     end
 
+    it "shows the skydiving illustrations only for the skydiving template (D10)" do
+      expect(described_class.fetch("skydiving").illustrations).to eq("skydiving")
+      expect(described_class.fetch("generic").illustrations).to eq("neutral")
+    end
+
     it "raises for an unknown template" do
       expect { described_class.fetch("nope") }.to raise_error(KeyError)
     end
