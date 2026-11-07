@@ -271,7 +271,7 @@ RSpec.describe Eligibility do
   end
 
   describe "equipment, chosen with the slot" do
-    let(:rig_kind) { operator.equipment_kinds.find_by!(key: "rig") }
+    let(:parachute_kind) { operator.equipment_kinds.find_by!(key: Skydiving::Parachutes::KIND) }
 
     before { operator.update!(settings: operator.settings.merge("require_equipment" => true)) }
 
@@ -282,20 +282,20 @@ RSpec.describe Eligibility do
     end
 
     it "wants the member's own item inspected" do
-      rig = create(:equipment, user: user, operator: nil, kind: rig_kind)
+      parachute = create(:equipment, user: user, operator: nil, kind: parachute_kind)
       slot = slot_for
-      slot.equipment = [rig]
+      slot.equipment = [parachute]
 
       expect(codes_of(slot)["equipment"]).to be_ok
       expect(codes_of(slot)["equipment_inspection"]).to have_attributes(ok: false, problem: "equipment_not_inspected")
 
-      create(:equipment_inspection, is_ok: true, equipment: rig, membership: membership, inspected_by: gca)
+      create(:equipment_inspection, is_ok: true, equipment: parachute, membership: membership, inspected_by: gca)
 
       expect(codes_of(slot)["equipment_inspection"]).to be_ok
     end
 
     it "asks no inspection of the operator's own item" do
-      rental = create(:equipment, operator: operator, user: nil, is_public: true, rig_type: "student")
+      rental = create(:equipment, operator: operator, user: nil, is_public: true, parachute_type: "student")
       slot = slot_for
       slot.equipment = [rental]
 
@@ -303,7 +303,7 @@ RSpec.describe Eligibility do
     end
 
     it "fails an item that is due for service" do
-      rental = create(:equipment, operator: operator, user: nil, is_public: true, rig_type: "student", service_due_at: 1.day.ago)
+      rental = create(:equipment, operator: operator, user: nil, is_public: true, parachute_type: "student", service_due_at: 1.day.ago)
       slot = slot_for
       slot.equipment = [rental]
 
@@ -319,7 +319,7 @@ RSpec.describe Eligibility do
                                          load: vehicle_load, body_mass_kg: 80)
 
       expect(outcome).not_to be_valid
-      expect(outcome.errors.full_messages.join).to match(/Needs rig to manifest/)
+      expect(outcome.errors.full_messages.join).to match(/Needs #{parachute_kind.name.downcase} to manifest/)
     end
   end
 
@@ -370,8 +370,8 @@ RSpec.describe Eligibility do
 
     it "reads the equipment from the member's inspections" do
       operator.update!(settings: operator.settings.merge("require_equipment_inspection" => true))
-      rig = create(:equipment, user: user, operator: nil)
-      create(:equipment_inspection, is_ok: true, equipment: rig, membership: membership, inspected_by: gca)
+      parachute = create(:equipment, user: user, operator: nil)
+      create(:equipment_inspection, is_ok: true, equipment: parachute, membership: membership, inspected_by: gca)
       rules = described_class.summary(Membership.find(membership.id))[:rules].index_by(&:code)
 
       expect(rules["equipment_inspection"]).to be_ok

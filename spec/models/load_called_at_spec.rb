@@ -62,7 +62,7 @@ RSpec.describe "Load#called_at" do
     expect(load.reload.called_at).to be_within(2.seconds).of(15.minutes.from_now)
   end
 
-  it "is cleared when a landed load is reopened" do
+  it "is cleared when a completed load is reopened" do
     load.update!(dispatch_at: 10.minutes.from_now)
     load.call!
     load.complete!

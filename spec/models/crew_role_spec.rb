@@ -5,12 +5,12 @@ require "rails_helper"
 # P7.10: crew roles are data of the operator; loads are validated from them
 RSpec.describe CrewRole do
   let(:owner) { create(:user) }
-  let(:dropzone) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
+  let(:skydiving) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
   let(:rafting) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "generic", name: "Rafts", time_zone: "Australia/Brisbane") }
 
   describe "presets" do
-    it "gives a dropzone a pilot per vehicle, a GCA and a load master per load" do
-      roles = dropzone.crew_roles.ordered.map { |role| role.slice(:key, :scope, :required, :permission, :occupies_slot).symbolize_keys }
+    it "gives a skydiving operator a pilot per vehicle, a GCA and a load master per load" do
+      roles = skydiving.crew_roles.ordered.map { |role| role.slice(:key, :scope, :required, :permission, :occupies_slot).symbolize_keys }
 
       expect(roles).to eq(
         [
@@ -23,7 +23,7 @@ RSpec.describe CrewRole do
 
     it "gives a generic operator none, and does not add them twice" do
       expect(rafting.crew_roles).to be_empty
-      expect { Presets::Apply.run!(operator: dropzone) }.not_to(change { dropzone.crew_roles.count })
+      expect { Presets::Apply.run!(operator: skydiving) }.not_to(change { skydiving.crew_roles.count })
     end
   end
 
@@ -33,7 +33,7 @@ RSpec.describe CrewRole do
 
       expect(rafting.crew_roles.new(key: "Guide!", name: "x")).not_to be_valid
       expect(rafting.crew_roles.new(key: "guide", name: "Second")).not_to be_valid
-      expect(dropzone.crew_roles.new(key: "guide", name: "Guide")).to be_valid
+      expect(skydiving.crew_roles.new(key: "guide", name: "Guide")).to be_valid
       rafting.crew_roles.find_by!(key: "guide").discard
       expect(rafting.crew_roles.new(key: "guide", name: "Guide")).to be_valid
     end
@@ -44,30 +44,30 @@ RSpec.describe CrewRole do
     end
   end
 
-  describe "a load of a dropzone" do
-    let(:vehicle) { create(:vehicle, operator: dropzone, capacity: 8, min_capacity: 1) }
-    let(:pilot) { create(:membership, operator: dropzone).tap { |member| member.grant!(:actAsPilot) } }
-    let(:gca) { create(:membership, operator: dropzone).tap { |member| member.grant!(:actAsGCA) } }
+  describe "a load of a skydiving operator" do
+    let(:vehicle) { create(:vehicle, operator: skydiving, capacity: 8, min_capacity: 1) }
+    let(:pilot) { create(:membership, operator: skydiving).tap { |member| member.grant!(:actAsPilot) } }
+    let(:gca) { create(:membership, operator: skydiving).tap { |member| member.grant!(:actAsGCA) } }
 
     it "needs a GCA and a pilot" do
-      record = Load.new(operator: dropzone, vehicle: vehicle)
+      record = Load.new(operator: skydiving, vehicle: vehicle)
 
       expect(record).not_to be_valid
       expect(record.errors.full_messages).to contain_exactly("Every load needs a Pilot", "Every load needs a GCA")
     end
 
     it "takes them through pilot= and gca= and reads them back, before and after saving" do
-      record = Load.new(operator: dropzone, vehicle: vehicle, pilot: pilot, gca: gca)
+      record = Load.new(operator: skydiving, vehicle: vehicle, pilot: pilot, gca: gca)
 
       expect(record.pilot).to eq(pilot)
       expect(record.save).to be(true)
       expect(record.reload).to have_attributes(pilot: pilot, gca: gca, load_master: nil)
-      expect(record.crew_assignments.find_by!(crew_role: dropzone.crew_roles.find_by!(key: "pilot")).load_vehicle.vehicle).to eq(vehicle)
+      expect(record.crew_assignments.find_by!(crew_role: skydiving.crew_roles.find_by!(key: "pilot")).load_vehicle.vehicle).to eq(vehicle)
     end
 
     it "changes the pilot by assigning another" do
-      record = create(:load, vehicle: vehicle, operator: dropzone, pilot: pilot, gca: gca)
-      other = create(:membership, operator: dropzone)
+      record = create(:load, vehicle: vehicle, operator: skydiving, pilot: pilot, gca: gca)
+      other = create(:membership, operator: skydiving)
 
       record.update!(pilot: other)
 
@@ -76,7 +76,7 @@ RSpec.describe CrewRole do
     end
 
     it "can leave the load master out, and is ready when everything is filled" do
-      record = create(:load, vehicle: vehicle, operator: dropzone, pilot: pilot, gca: gca)
+      record = create(:load, vehicle: vehicle, operator: skydiving, pilot: pilot, gca: gca)
 
       expect(record.ready?).to be(false)
       record.update!(load_master: gca)
@@ -87,12 +87,12 @@ RSpec.describe CrewRole do
     it "refuses a member of another operator" do
       stranger = create(:membership, operator: create(:operator))
 
-      expect(Load.new(operator: dropzone, vehicle: vehicle, pilot: stranger, gca: gca)).not_to be_valid
+      expect(Load.new(operator: skydiving, vehicle: vehicle, pilot: stranger, gca: gca)).not_to be_valid
     end
 
     it "checks the permission of the role when an interaction puts somebody on the crew" do
-      member = create(:membership, operator: dropzone)
-      record = Load.new(operator: dropzone, vehicle: vehicle, pilot: member, gca: gca)
+      member = create(:membership, operator: skydiving)
+      record = Load.new(operator: skydiving, vehicle: vehicle, pilot: member, gca: gca)
       record.enforce_crew_permissions = true
 
       expect(record).not_to be_valid

@@ -22,7 +22,7 @@
 #  operator_id    :bigint
 #  user_id        :bigint
 #
-# An item an operator or a member keeps: a skydiving rig, a regulator, a life jacket. Its kind (EquipmentKind) says what
+# An item an operator or a member keeps: a skydiving parachute, a regulator, a life jacket. Its kind (EquipmentKind) says what
 # `properties` it records and how it is inspected; `service_due_at` is when it next needs service (a reserve repack).
 class Equipment < ApplicationRecord
   include Discard::Model

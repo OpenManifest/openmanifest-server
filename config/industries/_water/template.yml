@@ -10,4 +10,4 @@ modules:
   destinations: { kinds: [site], scope: per_load }
 units: { depth: m, distance: km, mass: kg, temperature: c, speed: kn }
 call_schedule_minutes: [60, 30, 15]
-daily_log: { template: passenger_list }
+daily_log: { template: guest_list }

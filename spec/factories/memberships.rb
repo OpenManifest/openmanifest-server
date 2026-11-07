@@ -25,7 +25,7 @@ FactoryBot.define do
     user_role do
       operator.user_roles.reload.order(:id).third
     end
-    certification_level { CertificationBody.first.certification_levels.where.not(name: 'No license').sample }
+    certification_level { CertificationBody.first.certification_levels.where.not(rank: 0).sample }
 
     after(:create) do |dz_user, evaluator|
       create(:user_certification, certification_body: evaluator.certification_body, certification_level: dz_user.certification_level, user: dz_user.user)

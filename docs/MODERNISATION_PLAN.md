@@ -5825,7 +5825,7 @@ Steps:
      ("Recreational fishing licence", with expiry) required by the adult ticket and waivable per ticket (some
      jurisdictions cover charter passengers under the operator's licence: a ticket setting, not a hard rule); rod and
      tackle equipment kinds.
-  3. Daily log template `passenger_list`: names, contact, emergency contact per load, exportable as CSV.
+  3. Daily log template `guest_list`: names, contact, emergency contact per load, exportable as CSV.
   4. Web smoke: a whale-watching load with adults and a child, completed, passenger list exported; a fishing load where
      a passenger without a licence is blocked and then allowed on a licence-included ticket.
 Acceptance criteria (cloud VM):

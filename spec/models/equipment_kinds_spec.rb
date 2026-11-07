@@ -269,12 +269,12 @@ RSpec.describe "Equipment kinds" do
     end
   end
 
-  describe Skydiving::Rigs do
+  describe Skydiving::Parachutes do
     it "finds the student and tandem rigs of an operator" do
-      student = create(:equipment, operator: operator, rig_type: "student")
-      tandem = create(:equipment, operator: operator, rig_type: "tandem")
-      create(:equipment, operator: operator, rig_type: "sport")
-      create(:equipment, operator: create(:operator), rig_type: "student")
+      student = create(:equipment, operator: operator, parachute_type: "student")
+      tandem = create(:equipment, operator: operator, parachute_type: "tandem")
+      create(:equipment, operator: operator, parachute_type: "sport")
+      create(:equipment, operator: create(:operator), parachute_type: "student")
 
       expect(described_class.student(operator)).to eq([student])
       expect(described_class.tandem(operator)).to eq([tandem])
@@ -293,9 +293,9 @@ RSpec.describe "Equipment kinds" do
   describe "available equipment" do
     it "offers the rentable items of the operator for a kind, in service, to a member" do
       member = create(:membership, operator: operator)
-      student = create(:equipment, operator: operator, rig_type: "student", is_public: true)
-      create(:equipment, operator: operator, rig_type: "tandem", is_public: true)
-      create(:equipment, operator: operator, rig_type: "student", is_public: true, service_due_at: 1.day.ago)
+      student = create(:equipment, operator: operator, parachute_type: "student", is_public: true)
+      create(:equipment, operator: operator, parachute_type: "tandem", is_public: true)
+      create(:equipment, operator: operator, parachute_type: "student", is_public: true, service_due_at: 1.day.ago)
       pfd = Equipment.create!(kind: kind(key: "pfd", name: "PFD"), operator: operator, properties: {}, is_public: true)
 
       expect(member.available_equipment(kind: "rig")).to contain_exactly(student)

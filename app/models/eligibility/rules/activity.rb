@@ -12,7 +12,7 @@ module Eligibility
         activity = context.activity_type
         return if activity.nil? || context.membership.nil?
         return unless context.create?
-        # A tandem passenger flies without a licence
+        # A tandem student flies without a licence
         return if context.is_guest? && context.ticket_type&.requires_escort?
         return not_required("activity") unless context.operator.require_certification?
         return pass("activity") if activity.allowed_for?(context.membership)

@@ -42,6 +42,47 @@ allow:
   - app/api/reflection.tsx
   - app/api/openmanifest.graphql
   - app/api/openmanifest.json
+  # Enforced from P7.20 (CI runs both checks with --enforce). Every entry below has its reason on the line above it.
+  # The aviation templates call their vehicles aircraft (`vehicle_kinds: [aircraft]` is data, the kind's key)
+  - config/industries/_aviation/**
+  # Client: the one constant that holds that key (AVIATION_VEHICLE_KIND)
+  - app/features/aviation/**
+  # Backend: the APF provider names the Australian Parachute Federation
+  - app/interactions/certifications/providers/apf.rb
+  # Backend: the demo seed builds a skydiving operator with its rigs (as db/seeds/dev_baseline.rb does)
+  - db/seeds/demo.rb
+  # Backend: built files of the old web client, whose file names say LICENSE
+  - public/asset-manifest.json
+  - public/precache-manifest.*.js
+  # Client: third-party licence notices in the static pages
+  - public/404.html
+  - build/web/404.html
+  # The tools' own examples of old terms
+  - scripts/lib/vocabulary.js
+  # Backend specs of the skydiving template's data: the rig kind, its `rig_type` attribute and the APF levels
+  - spec/factories/equipment.rb
+  - spec/models/equipment_kinds_spec.rb
+  - spec/requests/equipment_kinds_requests_spec.rb
+  - spec/models/certifications_spec.rb
+  # Client test data of the seeded skydiving operator (its rig kind, "Dropzone" name and template words)
+  - app/__fixtures__/**
+  - app/__tests__/manifest/__mocks__/**
+  # Client tests of the skydiving parachute kind's attribute schema (`rig_type`)
+  - app/forms/equipment/__tests__/attributes.test.ts
+  # Client tests of the skydiving template's terminology ("Dropzone", "Aircraft", "Landed") and their fixture
+  - app/i18n/fixtures/skydiving.json
+  - app/i18n/__tests__/i18n.test.tsx
+  - app/i18n/__tests__/useOperatorTerms.test.tsx
+  - app/test-utils/__tests__/render.test.tsx
+  # Client: the old addresses (`/configuration/rigs`, `/rig-inspection/`) that still lead to the new screens
+  - app/navigation/legacyPaths.ts
+  - app/navigation/__tests__/legacyPaths.test.ts
+  # Playwright: the seeded operators the specs log in to ("Demo Dropzone") and the words of its screens (e2e/support/seed.ts)
+  - e2e/support/**
+  - e2e/maestro/**
+  # Playwright: the skydiving words a generic operator must not show (@generic, @terms)
+  - e2e/generic.spec.ts
+  - e2e/terms.spec.ts
 
 groups:
   tenant:

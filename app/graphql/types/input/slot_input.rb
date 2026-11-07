@@ -19,7 +19,7 @@ module Types
                                           prepare: -> (value, ctx) { ::Load.find_by(id: value) }
       argument :equipment, [GraphQL::Types::ID], required: false,
                                                  prepare: -> (value, ctx) { ::Equipment.where(id: value) },
-                                                 description: "The items the slot uses: a rig, or a BCD, regulator and wetsuit"
+                                                 description: "The items the slot uses: a parachute, or a BCD, regulator and wetsuit"
       argument :body_mass_kg, Float, required: false
       argument :extras, [GraphQL::Types::ID], required: false,
                                               prepare: -> (value, ctx) { ::Extra.where(id: value) }

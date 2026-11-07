@@ -22,7 +22,7 @@ module Types::Users
     # TODO: Remove and move to top level query
     field :available_equipment, [Types::Equipment::Equipment], null: true,
                                                                description: "Get user equipment that have been inspected and marked as OK + operator equipment" do
-      argument :is_tandem, Boolean, required: false, description: "Skydiving: the tandem rigs of the operator"
+      argument :is_tandem, Boolean, required: false, description: "Skydiving: the tandem parachutes of the operator"
       argument :kind, String, required: false, description: "Only items of the equipment kind with this key"
       argument :load_id, Integer, required: false,
                                   description: "Filter out equipment already occupied for a load"
@@ -34,7 +34,7 @@ module Types::Users
     end
 
     field :last_slot, Types::Manifest::Slot, null: true,
-                                             description: "The slot the member last flew at this operator: their most recent one on a load that has left or landed"
+                                             description: "The slot the member last flew at this operator: their most recent one on a load that has left or been completed"
     def last_slot
       dataloader.with(::Sources::LastSlot).load(object.id)
     end
@@ -79,7 +79,7 @@ module Types::Users
     end
 
     def available_equipment(load_id: nil, is_tandem: nil, kind: nil)
-      return Skydiving::Rigs.tandem(object.operator) if is_tandem
+      return Skydiving::Parachutes.tandem(object.operator) if is_tandem
 
       object.available_equipment(load_id: load_id, kind: kind)
     end

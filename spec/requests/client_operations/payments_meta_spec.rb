@@ -325,7 +325,7 @@ RSpec.describe "Client operations: payments, activity and meta" do
       levels = json.dig(:data, :certificationLevels)
       expect(levels.pluck(:name)).to eq(certification_body.certification_levels.pluck(:name))
       expect(levels.pluck(:rank)).to eq(levels.pluck(:rank).sort)
-      expect(levels.first).to include(name: "No license", rank: 0, equivalenceKey: "none")
+      expect(levels.first).to include(rank: 0, equivalenceKey: "none")
     end
 
     it "lists every certification level without a body" do

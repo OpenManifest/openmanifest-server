@@ -18,7 +18,7 @@
 #  inspection_form_template_id :bigint
 #  operator_id                 :bigint           not null
 #
-# A kind of equipment an operator keeps track of (a skydiving rig, a wetsuit, a life jacket), seeded from the industry
+# A kind of equipment an operator keeps track of (a skydiving parachute, a wetsuit, a life jacket), seeded from the industry
 # template's presets. The attribute schema says what an item of the kind records; `required_by` which slots need an
 # item of the kind; the inspection form and how long an inspection stays valid belong to the kind too.
 #
@@ -31,7 +31,7 @@
 #   min, max  bounds of an integer or decimal
 #   unit      the quantity (see Units) of a number the operator shows in its own unit; stored SI
 #   operator_only  only equipment of the operator has it (the screens leave it out for a member's own)
-#   not_rentable  values with which an item of the operator is not rented out (tandem rigs)
+#   not_rentable  values with which an item of the operator is not rented out (tandem parachutes)
 #
 # required_by: { "always" => true } or { "ticket_type_ids" => [...], "activity_type_ids" => [...] }
 class EquipmentKind < ApplicationRecord

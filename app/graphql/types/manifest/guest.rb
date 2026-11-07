@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types::Manifest
-  # Somebody who rides with an escort (skydiving: the tandem passenger)
+  # Somebody who rides with an escort (skydiving: the tandem student)
   class Guest < Types::Base::Object
     field :id, GraphQL::Types::ID, null: false
     field :name, String, null: true

@@ -16,7 +16,7 @@ modules:
   daily_log: {}
 units: { altitude: ft, area: ft2, distance: km, mass: kg, temperature: c, speed: kn }
 call_schedule_minutes: [20, 15, 10]
-daily_log: { template: apf_master_log }
+daily_log: { template: apf_log }
 # Starting values of the operator's rules; the operator owns them afterwards (Operators::Configuration.default_settings
 # lists every key and its neutral value)
 settings:

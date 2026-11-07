@@ -12,7 +12,7 @@
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
 #
-# An organisation that certifies people (a federation, a training agency): it issues levels that rank against each other
+# An organisation that certifies people (a national association, a training agency): it issues levels that rank against each other
 # and qualifications. Operators accept one or several; a body may have no levels (qualifications only).
 class CertificationBody < ApplicationRecord
   include Config::Yaml::CertificationBodies

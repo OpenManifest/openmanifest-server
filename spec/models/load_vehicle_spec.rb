@@ -12,7 +12,7 @@ RSpec.describe LoadVehicle do
   let(:small) { create(:vehicle, operator: operator, capacity: 3, min_capacity: 1) }
   let(:tug) { create(:vehicle, operator: operator, capacity: 1, kind: "tug") }
 
-  # The crew a dropzone's load needs: a GCA, and a pilot for each vehicle that carries
+  # The crew a skydiving operator's load needs: a GCA, and a pilot for each vehicle that carries
   def build_load(entries)
     Load.new(operator: operator).tap do |record|
       record.vehicle_roles = entries
@@ -40,7 +40,7 @@ RSpec.describe LoadVehicle do
       expect(build_load([{ vehicle: tug, role: "support" }])).not_to be_valid
     end
 
-    it "keeps an aircraft on several loads of its queue, even when they are called" do
+    it "keeps a vehicle on several loads of its queue, even when they are called" do
       first = create(:load, vehicle: big, dispatch_at: 10.minutes.from_now)
       second = create(:load, vehicle: big, dispatch_at: 40.minutes.from_now)
 
@@ -94,7 +94,7 @@ RSpec.describe LoadVehicle do
         expect(second.errors.full_messages).to include("A vehicle is on another load that is called or on its way")
       end
 
-      it "can be called when the other load has landed" do
+      it "can be called when the other load is completed" do
         first.depart
         first.complete
         second = create(:load, vehicle: big, dispatch_at: 30.minutes.from_now)

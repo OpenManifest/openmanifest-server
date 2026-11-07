@@ -39,7 +39,7 @@ module StateMachines::LoadState
         end
       end
 
-      # When the load left and when it landed: set when it happens, cleared when the load is reopened
+      # When the load left and when it was completed: set when it happens, cleared when the load is reopened
       before_transition any => :departed do |record|
         record.departed_at ||= Time.current
       end

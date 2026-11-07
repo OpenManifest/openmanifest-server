@@ -543,7 +543,7 @@ RSpec.describe "Client operations: manifest" do
       expect(slot.reload.load).to eq(second_load)
     end
 
-    it "leaves the member's credit as it was after a move and a take-off (BUG-104)" do
+    it "leaves the member's credit as it was after a move and a removal (BUG-104)" do
       client_operation("MoveSlot", variables: { sourceSlot: slot.id, targetLoad: second_load.id }, as: owner_user)
       expect(fun_jumper.reload.credits).to eq(260)
 

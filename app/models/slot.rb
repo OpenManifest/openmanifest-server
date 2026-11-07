@@ -52,7 +52,7 @@ class Slot < ApplicationRecord
   belongs_to :escort_slot, optional: true, class_name: "Slot", inverse_of: :guest_slots
   has_many :guest_slots, class_name: "Slot", foreign_key: :escort_slot_id, inverse_of: :escort_slot, dependent: :destroy
 
-  # The items the slot uses (a skydiver's rig; a diver's BCD, regulator and wetsuit)
+  # The items the slot uses (a skydiver's parachute; a diver's BCD, regulator and wetsuit)
   has_many :slot_equipment, dependent: :destroy
   has_many :equipment, through: :slot_equipment
   has_many :slot_extras, dependent: :destroy
@@ -111,14 +111,14 @@ class Slot < ApplicationRecord
     guest.present? || membership.present?
   end
 
-  # Pounds per square foot under the slot's rig; only operators with the rig kind of skydiving have one
+  # Pounds per square foot under the slot's parachute; only operators with the parachute kind of skydiving have one
   def wing_loading
     return unless body_mass_kg
 
-    rig = equipment.find { |item| item.kind.key == Skydiving::Rigs::KIND }
+    parachute = equipment.find { |item| item.kind.key == Skydiving::Parachutes::KIND }
     weight = body_mass_kg
     weight += guest_slots.sum { |guest_slot| guest_slot.body_mass_kg || 0 }
-    Skydiving::Rigs.wing_loading(rig, weight)
+    Skydiving::Parachutes.wing_loading(parachute, weight)
   end
 
   def has_guest?

@@ -31,7 +31,7 @@ RSpec.describe "Last slot and call time over GraphQL", type: :request do
   let(:query) { "query($id: ID!) { membership(id: $id) { id lastSlot { id bodyMassKg ticketType { id name } activityType { id } } } }" }
 
   describe "Membership.lastSlot" do
-    it "is the slot on the most recent load that left or landed" do
+    it "is the slot on the most recent load that left or was completed" do
       older = load_in(:completed, load_date: operator.today)
       older.update_columns(completed_at: 2.hours.ago, departed_at: 2.hours.ago)
       newer = load_in(:departed, load_date: operator.today)
@@ -60,9 +60,9 @@ RSpec.describe "Last slot and call time over GraphQL", type: :request do
 
     it "is looked up for a whole list in a bounded number of queries" do
       members = Array.new(8) { create(:membership, operator: operator, credits: 500) }
-      landed = load_in(:completed, load_date: operator.today)
-      landed.update_columns(completed_at: 1.hour.ago, departed_at: 1.hour.ago)
-      members.each { |each_member| fly(each_member, landed, body_mass_kg: 70) }
+      completed_load = load_in(:completed, load_date: operator.today)
+      completed_load.update_columns(completed_at: 1.hour.ago, departed_at: 1.hour.ago)
+      members.each { |each_member| fly(each_member, completed_load, body_mass_kg: 70) }
       list = "query($operator: ID!) { memberships(operator: $operator, first: 50, licensed: false) { edges { node { id lastSlot { id ticketType { id name } activityType { id } } } } } }"
       Prosopite.raise = true
       Prosopite.min_n_queries = 4

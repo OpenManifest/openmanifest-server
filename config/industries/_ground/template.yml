@@ -11,4 +11,4 @@ modules:
   destinations: { kinds: [route], scope: per_load }
 units: { distance: km, mass: kg, temperature: c }
 call_schedule_minutes: [30, 15, 5]
-daily_log: { template: passenger_list }
+daily_log: { template: guest_list }

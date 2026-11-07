@@ -54,9 +54,9 @@ RSpec.describe "Eligibility over GraphQL", type: :request do
       operator.update!(settings: operator.settings.merge("require_equipment" => true))
 
       expect(result_for(eligibility, "equipment")).to include(ok: false, problem: "equipment_missing")
-      rig = create(:equipment, operator: operator, user: nil, is_public: true, rig_type: "student")
+      parachute = create(:equipment, operator: operator, user: nil, is_public: true, parachute_type: "student")
 
-      expect(result_for(eligibility(equipmentIds: [rig.id]), "equipment")).to include(ok: true)
+      expect(result_for(eligibility(equipmentIds: [parachute.id]), "equipment")).to include(ok: true)
     end
 
     it "looks at the guests of an escort" do

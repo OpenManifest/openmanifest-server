@@ -35,7 +35,7 @@ RSpec.describe "Setup authorization" do
     end
 
     it "cannot have its form template changed through another operator's id" do
-      template = operator_b.equipment_kinds.find_by!(key: "rig").inspection_form_template
+      template = operator_b.equipment_kinds.find_by!(key: Skydiving::Parachutes::KIND).inspection_form_template
       template.update!(definition: "original")
 
       client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_a_user)

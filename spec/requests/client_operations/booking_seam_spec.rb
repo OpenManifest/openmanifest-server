@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-# P7.17: what a booking needs of the manifest. A load can be scheduled for a day ahead and keeps when it left and landed; a
+# P7.17: what a booking needs of the manifest. A load can be scheduled for a day ahead and keeps when it left and was completed; a
 # slot can be paid already; the template says how bookings reach the manifest.
 RSpec.describe "Booking seam", type: :request do
   include_context "operator"
@@ -62,7 +62,7 @@ RSpec.describe "Booking seam", type: :request do
     end
   end
 
-  describe "when a load left and landed" do
+  describe "when a load left and was completed" do
     let!(:load) { create(:load, vehicle: vehicle, pilot: pilot, gca: owner, load_master: owner, max_slots: 8) }
 
     it "keeps neither while the load is open" do
@@ -77,7 +77,7 @@ RSpec.describe "Booking seam", type: :request do
       end
     end
 
-    it "keeps when it landed, and left when it landed straight away" do
+    it "keeps when it was completed, and left when it was completed straight away" do
       freeze_time do
         load.complete!
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # The slot each member last flew, for all the members of a list in one query: their most recent slot on a load that has
-# left or landed (UB.3). A member who has not flown has none.
+# left or been completed (UB.3). A member who has not flown has none.
 class Sources::LastSlot < GraphQL::Dataloader::Source
   def fetch(membership_ids)
     slots = ::Slot.joins(:load).

@@ -152,7 +152,7 @@ RSpec.describe "Tenant isolation" do
 
   describe "BUG-009: client-supplied operator for authorization" do
     it "refuses updating B's form template with operatorId set to A" do
-      template = operator_b.equipment_kinds.find_by!(key: "rig").inspection_form_template
+      template = operator_b.equipment_kinds.find_by!(key: Skydiving::Parachutes::KIND).inspection_form_template
       template.update!(definition: "original")
       client_operation("UpdateEquipmentInspectionTemplate", variables: { operatorId: operator_a.id, formId: template.id, definition: "hijacked" }, as: owner_user)
       expect(template.reload.definition).to eq("original")

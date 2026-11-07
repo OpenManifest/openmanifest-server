@@ -239,7 +239,7 @@ class Load < ApplicationRecord
     errors.add(:destinations, "must include at least one place before the load is called")
   end
 
-  # One vehicle that carries swapped for another keeps its crew (the pilot of the aircraft that was changed)
+  # One vehicle that carries swapped for another keeps its crew (the pilot of the aeroplane that was changed)
   def move_crew_to_replacement(kept)
     removed = load_vehicles.select { |row| row.marked_for_destruction? && row.carrying? }
     added = kept.select { |row| row.new_record? && row.carrying? }
@@ -323,7 +323,7 @@ class Load < ApplicationRecord
 
   # A vehicle goes with one load at a time: not on another load that is called or on its way, unless that load is more
   # than `settings.vehicle_turnaround_minutes` away (0, the default: whatever the time). Only with the multi_vehicle
-  # module: a dropzone's aircraft keeps its queue of loads.
+  # module: a skydiving operator's aeroplane keeps its queue of loads.
   def vehicle_free
     return unless operator.module?(:multi_vehicle) && (boarding? || departed?)
 

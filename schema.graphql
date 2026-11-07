@@ -1388,7 +1388,7 @@ type Load implements AnyResource {
   calledAt: ISO8601DateTime
 
   """
-  When the load landed; cleared when it is reopened
+  When the load was completed; cleared when it is reopened
   """
   completedAt: ISO8601DateTime
   createdAt: ISO8601DateTime!
@@ -1645,7 +1645,7 @@ type Membership implements AnyResource & Wallet {
   """
   availableEquipment(
     """
-    Skydiving: the tandem rigs of the operator
+    Skydiving: the tandem parachutes of the operator
     """
     isTandem: Boolean
 
@@ -1688,7 +1688,7 @@ type Membership implements AnyResource & Wallet {
   id: ID!
 
   """
-  The slot the member last flew at this operator: their most recent one on a load that has left or landed
+  The slot the member last flew at this operator: their most recent one on a load that has left or been completed
   """
   lastSlot: Slot
   notifications(
@@ -2917,7 +2917,7 @@ type Query {
   """
   availableEquipment(
     """
-    Skydiving: the tandem rigs of the operator
+    Skydiving: the tandem parachutes of the operator
     """
     isTandem: Boolean
 
@@ -3418,7 +3418,7 @@ input SlotInput {
   destination: ID
 
   """
-  The items the slot uses: a rig, or a BCD, regulator and wetsuit
+  The items the slot uses: a parachute, or a BCD, regulator and wetsuit
   """
   equipment: [ID!]
   extras: [ID!]
@@ -4232,7 +4232,7 @@ type Vehicle implements AnyResource {
   id: ID!
 
   """
-  aircraft, raft, bus, ...: what crew roles per vehicle apply to
+  aeroplane, raft, bus, ...: what crew roles per vehicle apply to
   """
   kind: String
 

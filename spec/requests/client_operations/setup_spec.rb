@@ -343,7 +343,7 @@ RSpec.describe "Client operations: setup" do
     def create_equipment_with_card(card)
       query = "mutation($attributes: EquipmentInput!) { createEquipment(input: { attributes: $attributes }) { errors fieldErrors { field message } equipment { id } } }"
       post "/graphql",
-           params: { query: query, variables: { attributes: { make: "Vector", model: "v310", serial: "1", kindId: operator.equipment_kinds.find_by!(key: "rig").id.to_s, attributes: { rig_type: "sport", canopy_size_m2: 12 }, userId: user.id, packingCard: card } }.to_json },
+           params: { query: query, variables: { attributes: { make: "Vector", model: "v310", serial: "1", kindId: operator.equipment_kinds.find_by!(key: Skydiving::Parachutes::KIND).id.to_s, attributes: { parachute_type: "sport", canopy_size_m2: 12 }, userId: user.id, packingCard: card } }.to_json },
            headers: user.create_new_auth_token
       response.parsed_body.with_indifferent_access
     end
@@ -413,7 +413,7 @@ RSpec.describe "Client operations: setup" do
 
   describe "CreateEquipmentInspection" do
     let!(:equipment) { create(:equipment, user: user, operator: nil) }
-    let!(:template) { operator.equipment_kinds.find_by!(key: "rig").inspection_form_template }
+    let!(:template) { operator.equipment_kinds.find_by!(key: Skydiving::Parachutes::KIND).inspection_form_template }
 
     before { owner.grant!("actAsEquipmentInspector") }
 

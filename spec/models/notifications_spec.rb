@@ -164,7 +164,7 @@ RSpec.describe "Notifications and push tokens" do
       joiner = create(:user, body_mass_kg: 80)
       create(:equipment, user: joiner, operator: nil)
 
-      expect { create(:membership, operator: operator, user: joiner, certification_level: CertificationBody.first.certification_levels.where.not(name: "No license").first) }.
+      expect { create(:membership, operator: operator, user: joiner, certification_level: CertificationBody.first.certification_levels.where.not(rank: 0).first) }.
         to have_enqueued_job(described_class).with(joiner.equipment.first.id, kind_of(Integer))
     end
   end

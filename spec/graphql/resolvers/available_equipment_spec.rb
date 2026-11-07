@@ -6,16 +6,16 @@ module Mutations
   RSpec.describe Resolvers::Operators, type: :request do
     include_context "operator"
     let!(:student) { create(:membership, credits: 100, operator: operator, user: create(:user), user_role: operator.user_roles.default_licensed) }
-    let!(:tandem_equipment) { create(:equipment, rig_type: :tandem, operator: operator) }
-    let!(:student_equipment) { create(:equipment, rig_type: :student, is_public: true, operator: operator) }
-    let!(:private_operator_equipment) { create(:equipment, rig_type: :sport, is_public: false, operator: operator) }
-    let!(:occupied_student_equipment) { create(:equipment, rig_type: :student, is_public: true, operator: operator) }
+    let!(:tandem_equipment) { create(:equipment, parachute_type: :tandem, operator: operator) }
+    let!(:student_equipment) { create(:equipment, parachute_type: :student, is_public: true, operator: operator) }
+    let!(:private_operator_equipment) { create(:equipment, parachute_type: :sport, is_public: false, operator: operator) }
+    let!(:occupied_student_equipment) { create(:equipment, parachute_type: :student, is_public: true, operator: operator) }
 
     let!(:load) { create(:load, vehicle: vehicle, created_at: 30.minutes.ago) }
     let!(:slot) { create(:slot, load: load, operator: operator, membership: student, equipment: [occupied_student_equipment], activity_type: ActivityType.find_by(slug: :fs)) }
 
-    let!(:uninspected_equipment) { create(:equipment, rig_type: :sport, user: user) }
-    let!(:inspected_equipment) { create(:equipment, rig_type: :sport, user: user) }
+    let!(:uninspected_equipment) { create(:equipment, parachute_type: :sport, user: user) }
+    let!(:inspected_equipment) { create(:equipment, parachute_type: :sport, user: user) }
     let!(:equipment_inspection) { create(:equipment_inspection, is_ok: true, equipment: inspected_equipment, membership: fun_jumper, inspected_by: instructor) }
 
     describe "Can select own equipment or student equipment" do

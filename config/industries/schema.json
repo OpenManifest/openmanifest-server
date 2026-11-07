@@ -147,9 +147,9 @@
       "properties": {
         "template": {
           "enum": [
-            "apf_master_log",
+            "apf_log",
             "flight_log",
-            "passenger_list"
+            "guest_list"
           ]
         }
       }

@@ -10,7 +10,7 @@
 #  equipment_id :bigint           not null
 #  slot_id      :bigint           not null
 #
-# An item a slot uses: a skydiver's rig, a diver's BCD, regulator and wetsuit
+# An item a slot uses: a skydiver's parachute, a diver's BCD, regulator and wetsuit
 class SlotEquipment < ApplicationRecord
   self.table_name = "slot_equipment"
 
