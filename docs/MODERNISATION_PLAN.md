@@ -242,7 +242,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 | # | Stage | Tasks, in order | Why here |
 |---|---|---|---|
 | 4 | Manifest UI | U3.1 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
-| 7 | Phase 7 stage C: module-aware UI and terminology | P7.22, P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
+| 7 | Phase 7 stage C: module-aware UI and terminology | P7.20, P7.21 | Isolate skydiving features, then enforce translated strings and the vocabulary check, then server copy. |
 | 8 | UI hardening | U6.1, U6.2, U6.3, U6.4, U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
 | 9 | Phase 7 stage D: onboarding and templates | P7.23, P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
 | 10 | Release | P8.1, P8.2, P8.3, P8.4, P8.5, P8.6, P8.7, P8.8, P8.9 | Versioning, deploy and stores; most tasks wait for D1 and D2, and the queue moves on while they do. |
@@ -5713,7 +5713,7 @@ Size: M
 Fixes: none
 
 ### P7.22 — Make navigation module-aware, replace airplane icons and isolate skydiving features
-Status: todo
+Status: done
 Repo: client
 Depends on: U5.9
 Branch: modernise/p7-22-module-aware-ui
