@@ -1,12 +1,12 @@
-# The permissions of one user, optionally at one dropzone. An instance belongs to a single request (or cable message):
+# The permissions of one user, optionally at one operator. An instance belongs to a single request (or cable message):
 # never keep one in a constant, a class variable or anything else that outlives it.
 class AccessContext::CurrentUser
   attr_reader :user,
-              :dropzone
+              :operator
 
   # Sets up an access context for a user
   # to check permissions against that user
-  # for a specific dropzone
+  # for a specific operator
   #
   # @param [User] user
   def self.for(user)
@@ -17,50 +17,50 @@ class AccessContext::CurrentUser
     @user = user
   end
 
-  # Resolve all dropzones this user has access
-  # to by checking any dropzones this user is
-  # a Staff role at, or any dropzones that are
+  # Resolve all operators this user has access
+  # to by checking any operators this user is
+  # a Staff role at, or any operators that are
   # publicly available
   #
-  # @return [Dropzones]
-  def dropzones
-    Dropzone.for(user)
+  # @return [Operators]
+  def operators
+    Operator.for(user)
   end
 
-  # Sets the dropzone this access context is for
+  # Sets the operator this access context is for
   #
   # @return [AccessContext::User]
-  def at_dropzone(dropzone)
-    resolved = if dropzone.is_a?(Dropzone)
-                 dropzone
-               elsif dropzone.is_a?(String) || dropzone.is_a?(Integer)
-                 Dropzone.find_by(id: dropzone)
+  def at_operator(operator)
+    resolved = if operator.is_a?(Operator)
+                 operator
+               elsif operator.is_a?(String) || operator.is_a?(Integer)
+                 Operator.find_by(id: operator)
                else
-                 @dropzone
+                 @operator
                end
 
-    # The membership belongs to the dropzone it was looked up at
-    @dropzone_user = nil unless resolved == @dropzone
-    @dropzone = resolved
+    # The membership belongs to the operator it was looked up at
+    @membership = nil unless resolved == @operator
+    @operator = resolved
     self
   end
 
   # Delegates the #can? method to the user
-  # if no dropzone is set, or to the dropzone
-  # user if a dropzone is set
+  # if no operator is set, or to the operator
+  # user if an operator is set
   #
   # @param [Symbol] permission
   # @return [Boolean]
   def can?(permission)
-    return nil unless dropzone_user
-    dropzone_user.can?(permission)
+    return nil unless membership
+    membership.can?(permission)
   end
 
-  # Gets the dropzone user this access context is for
+  # Gets the operator user this access context is for
   #
-  # @return [DropzoneUser]
-  def dropzone_user
-    return nil unless dropzone
-    @dropzone_user ||= dropzone.dropzone_users.find_by(user: user)
+  # @return [Membership]
+  def membership
+    return nil unless operator
+    @membership ||= operator.memberships.find_by(user: user)
   end
 end

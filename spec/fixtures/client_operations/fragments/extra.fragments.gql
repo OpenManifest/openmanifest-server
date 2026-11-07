@@ -3,6 +3,9 @@ fragment ticketTypeExtraEssentials on Extra {
   name
   createdAt
   costCents
+  requiredQualification {
+    ...qualificationEssentials
+  }
 }
 
 fragment ticketTypeExtraDetailed on Extra {

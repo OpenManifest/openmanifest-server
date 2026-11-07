@@ -1,0 +1,50 @@
+#import "../fragments/memberships.fragments.gql"
+#import "../fragments/eligibility.fragments.gql"
+#import "../fragments/equipmentInspection.fragments.gql"
+
+# A member's profile (U5.2): who they are, whether they are ready to fly (rule by rule, on no load in particular), their
+# credit, certifications and qualifications, equipment with its inspections, role and membership, and the loads they
+# were on (newest first, `slots` of them).
+query Profile($id: ID!, $slots: Int) {
+  membership(id: $id) {
+    ...membershipDetails
+    permissions
+    eligibility {
+      ready
+      rules {
+        ...eligibilityResultEssentials
+      }
+    }
+    userCertification {
+      id
+    }
+    equipmentInspections {
+      ...equipmentInspectionEssentials
+    }
+    slots(first: $slots) {
+      edges {
+        node {
+          id
+          costCents
+          load {
+            id
+            loadNumber
+            loadDate
+            state
+          }
+          activityType {
+            id
+            name
+          }
+          ticketType {
+            id
+            name
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+      }
+    }
+  }
+}

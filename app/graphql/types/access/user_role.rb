@@ -6,8 +6,8 @@ module Types::Access
     field :name, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :dropzone_id, Int, null: false
-    field :dropzone, Types::DropzoneType, null: false
+    field :operator_id, Int, null: false
+    field :operator, Types::OperatorType, null: false
 
     field :permissions, [String], null: false
     def permissions
