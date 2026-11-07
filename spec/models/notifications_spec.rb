@@ -2,16 +2,16 @@
 
 require "rails_helper"
 
-# P6.18: rig inspection and credit notifications are created and delivered (BUG-042, BUG-043), invalid Expo tokens are
+# P6.18: equipment inspection and credit notifications are created and delivered (BUG-042, BUG-043), invalid Expo tokens are
 # cleaned, a token belongs to one user, logging out clears it (BUG-018), gauges are right (BUG-051).
 RSpec.describe "Notifications and push tokens" do
-  let(:dropzone) { create(:dropzone, state: "public") }
-  let(:member) { create(:dropzone_user, dropzone: dropzone, credits: 100) }
+  let(:operator) { create(:operator, state: "public") }
+  let(:member) { create(:membership, operator: operator, credits: 100) }
   let(:expo_url) { "https://exp.host/--/api/v2/push/send" }
   let(:token) { "ExponentPushToken[abcdefghijklmnop]" }
 
   def notification_for(dz_user, message: "Load #1 take off at 10:00")
-    Notification.create!(received_by: dz_user, message: message, resource: dropzone, notification_type: :boarding_call)
+    Notification.create!(received_by: dz_user, message: message, resource: operator, notification_type: :boarding)
   end
 
   describe Notification, "#deliver" do
@@ -20,7 +20,7 @@ RSpec.describe "Notifications and push tokens" do
     it "posts a JSON message to Expo" do
       stub = stub_request(:post, expo_url).
         with(headers: { "Content-Type" => "application/json" },
-             body: hash_including("to" => token, "title" => dropzone.name, "body" => "Load #1 take off at 10:00")).
+             body: hash_including("to" => token, "title" => operator.name, "body" => "Load #1 take off at 10:00")).
         to_return(status: 200, body: { data: { status: "ok", id: "ticket-1" } }.to_json, headers: { "Content-Type" => "application/json" })
 
       notification_for(member).deliver
@@ -105,76 +105,76 @@ RSpec.describe "Notifications and push tokens" do
     end
   end
 
-  describe RigInspection do
-    let(:rig) { create(:rig, user: member.user, dropzone: nil) }
-    let(:template) { create(:form_template, dropzone: dropzone) }
-    let(:inspector) { create(:dropzone_user, dropzone: dropzone).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
+  describe EquipmentInspection do
+    let(:equipment) { create(:equipment, user: member.user, operator: nil) }
+    let(:template) { create(:form_template, operator: operator) }
+    let(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
 
-    def inspect_rig(is_ok:)
-      RigInspection.create!(rig: rig, dropzone_user: member, inspected_by: inspector, form_template: template, is_ok: is_ok, definition: "[]")
+    def inspect_equipment(is_ok:)
+      EquipmentInspection.create!(equipment: equipment, membership: member, inspected_by: inspector, form_template: template, is_ok: is_ok, definition: "[]")
     end
 
-    it "tells the owner once when a rig is cleared to jump" do
-      expect { inspect_rig(is_ok: true) }.to change { Notification.where(received_by: member, notification_type: :rig_inspection_completed).count }.by(1)
+    it "tells the owner once when a equipment is cleared to jump" do
+      expect { inspect_equipment(is_ok: true) }.to change { Notification.where(received_by: member, notification_type: :equipment_inspection_completed).count }.by(1)
     end
 
     it "tells the owner when a failed inspection becomes ok, once" do
-      inspection = inspect_rig(is_ok: false)
+      inspection = inspect_equipment(is_ok: false)
 
-      expect { inspection.update!(is_ok: true) }.to change { Notification.where(notification_type: :rig_inspection_completed).count }.by(1)
+      expect { inspection.update!(is_ok: true) }.to change { Notification.where(notification_type: :equipment_inspection_completed).count }.by(1)
       expect { inspection.update!(definition: "[true]") }.not_to(change { Notification.count })
     end
 
     it "says nothing about a failed inspection" do
-      expect { inspect_rig(is_ok: false) }.not_to(change { Notification.count })
+      expect { inspect_equipment(is_ok: false) }.not_to(change { Notification.count })
     end
 
     it "enqueues the push for the owner" do
-      expect { inspect_rig(is_ok: true) }.to have_enqueued_job(NotifyJob)
+      expect { inspect_equipment(is_ok: true) }.to have_enqueued_job(NotifyJob)
     end
   end
 
-  describe RequestRigInspectionJob do
-    let(:rig) { create(:rig, user: member.user, dropzone: nil) }
-    let!(:inspector) { create(:dropzone_user, dropzone: dropzone).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
-    let!(:second_inspector) { create(:dropzone_user, dropzone: dropzone).tap { |inspector| inspector.grant!(:actAsRigInspector) } }
-    let!(:bystander) { create(:dropzone_user, dropzone: dropzone, user_role: dropzone.user_roles.find_by(name: "student")) }
+  describe RequestEquipmentInspectionJob do
+    let(:equipment) { create(:equipment, user: member.user, operator: nil) }
+    let!(:inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
+    let!(:second_inspector) { create(:membership, operator: operator).tap { |inspector| inspector.grant!(:actAsEquipmentInspector) } }
+    let!(:bystander) { create(:membership, operator: operator, user_role: operator.user_roles.find_by(name: "student")) }
 
-    it "asks every rig inspector and enqueues their pushes" do
-      expect { described_class.perform_now(rig.id, member.id) }.to have_enqueued_job(NotifyJob).at_least(:twice)
+    it "asks every equipment inspector and enqueues their pushes" do
+      expect { described_class.perform_now(equipment.id, member.id) }.to have_enqueued_job(NotifyJob).at_least(:twice)
 
-      asked = Notification.where(notification_type: :rig_inspection_requested, resource: rig).map(&:received_by)
+      asked = Notification.where(notification_type: :equipment_inspection_requested, resource: equipment).map(&:received_by)
       expect(asked).to contain_exactly(inspector, second_inspector)
-      expect(Notification.where(notification_type: :rig_inspection_requested).first).to have_attributes(sent_by: member, message: "#{member.user.name} needs a rig inspection")
+      expect(Notification.where(notification_type: :equipment_inspection_requested).first).to have_attributes(sent_by: member, message: "#{member.user.name} needs an equipment inspection")
     end
 
     it "asks only once" do
-      described_class.perform_now(rig.id, member.id)
+      described_class.perform_now(equipment.id, member.id)
 
-      expect { described_class.perform_now(rig.id, member.id) }.not_to(change { Notification.count })
+      expect { described_class.perform_now(equipment.id, member.id) }.not_to(change { Notification.count })
     end
 
-    it "is discarded when the rig is gone" do
+    it "is discarded when the equipment is gone" do
       expect { described_class.perform_now(0, member.id) }.not_to raise_error
     end
 
-    it "is enqueued with ids when a member with a rig, a weight and a license joins" do
-      rig
-      member.user.update!(exit_weight: 80)
-      joiner = create(:user, exit_weight: 80)
-      create(:rig, user: joiner, dropzone: nil)
+    it "is enqueued with ids when a member with a equipment, a weight and a certification_level joins" do
+      equipment
+      member.user.update!(body_mass_kg: 80)
+      joiner = create(:user, body_mass_kg: 80)
+      create(:equipment, user: joiner, operator: nil)
 
-      expect { create(:dropzone_user, dropzone: dropzone, user: joiner, license: Federation.first.licenses.where.not(name: "No license").first) }.
-        to have_enqueued_job(described_class).with(joiner.rigs.first.id, kind_of(Integer))
+      expect { create(:membership, operator: operator, user: joiner, certification_level: CertificationBody.first.certification_levels.where.not(name: "No license").first) }.
+        to have_enqueued_job(described_class).with(joiner.equipment.first.id, kind_of(Integer))
     end
   end
 
   describe Transaction do
-    let(:order) { Order.create!(dropzone: dropzone, seller: dropzone, buyer: member) }
+    let(:order) { Order.create!(operator: operator, seller: operator, buyer: member) }
     let(:receipt) { Receipt.create!(order: order, amount_cents: 4000) }
 
     def transaction(type, receiver:, amount:, status: :reserved)
-      Transaction.create!(receipt: receipt, sender: (receiver == member ? dropzone : member), receiver: receiver, amount: amount,
+      Transaction.create!(receipt: receipt, sender: (receiver == member ? operator : member), receiver: receiver, amount: amount,
                           status: status, transaction_type: type, message: "x")
     end
 
@@ -204,8 +204,8 @@ RSpec.describe "Notifications and push tokens" do
       expect(Notification.order(:id).last(2).map(&:message)).to eq(["$25.00 has been credited to your account", "$10.00 has been taken out of your account"])
     end
 
-    it "does not notify the dropzone's side of a transaction" do
-      expect { transaction(:sale, receiver: dropzone, amount: 40, status: :completed) }.not_to(change { Notification.count })
+    it "does not notify the operator's side of a transaction" do
+      expect { transaction(:sale, receiver: operator, amount: 40, status: :completed) }.not_to(change { Notification.count })
     end
 
     it "notifies only once when the transaction is saved again" do
@@ -217,13 +217,13 @@ RSpec.describe "Notifications and push tokens" do
   end
 
   describe "gauges" do
-    it "counts dropzones, not users, for dropzones.count" do
+    it "counts operators, not users, for operators.count" do
       allow(Appsignal).to receive(:set_gauge)
       create(:user)
 
-      create(:dropzone)
+      create(:operator)
 
-      expect(Appsignal).to have_received(:set_gauge).with("dropzones.count", Dropzone.count)
+      expect(Appsignal).to have_received(:set_gauge).with("operators.count", Operator.count)
     end
   end
 end

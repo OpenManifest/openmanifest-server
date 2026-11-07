@@ -18,7 +18,7 @@ class Transactions::Confirm < ApplicationInteraction
       access_context: access_context,
       resource: receipt,
       action: :confirmed,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Order ##{receipt.order.id} has been confirmed and transactions have been completed"
     )
@@ -32,7 +32,7 @@ class Transactions::Confirm < ApplicationInteraction
       access_context: access_context,
       resource: receipt,
       action: :confirmed,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
       message: "Order ##{receipt.order.id} failed to confirm",
       details: errors.full_messages.join(", ")

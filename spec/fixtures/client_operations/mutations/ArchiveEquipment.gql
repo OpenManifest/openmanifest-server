@@ -1,0 +1,12 @@
+mutation ArchiveEquipment($id: Int!) {
+  archiveEquipment(input: { id: $id }) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    equipment {
+      ...equipmentEssentials
+    }
+  }
+}

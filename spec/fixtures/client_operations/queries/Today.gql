@@ -1,0 +1,26 @@
+#import "../fragments/eligibility.fragments.gql"
+#import "../fragments/loads.fragments.gql"
+
+# What a member sees on Today: how ready they are, their credit, and the loads of the day with the people and the crew
+query Today($operatorId: ID!, $date: ISO8601Date!) {
+  operator(id: $operatorId) {
+    id
+    currentUser {
+      id
+      creditsCents
+      eligibility {
+        ready
+        rules {
+          ...eligibilityResultEssentials
+        }
+      }
+    }
+  }
+  loads(operator: $operatorId, date: $date) {
+    edges {
+      node {
+        ...loadDetails
+      }
+    }
+  }
+}

@@ -1,10 +1,27 @@
 fragment ticketTypeEssentials on TicketType {
   id
   name
-  altitude
+  defaultDestination {
+    ...destinationEssentials
+  }
   costCents
-  isTandem
+  requiresEscort
+  escortCapacity
+  escortQualification {
+    ...qualificationEssentials
+  }
+  escortCrewRole {
+    id
+    key
+    name
+  }
   allowManifestingSelf
+  participantLimits
+  groupLimits
+  minCertificationRank
+  requiredQualification {
+    ...qualificationEssentials
+  }
 }
 
 fragment ticketTypeDetails on TicketType {
@@ -18,6 +35,9 @@ fragment ticketTypeAddonEssentials on Extra {
   id
   name
   costCents
+  requiredQualification {
+    ...qualificationEssentials
+  }
 }
 
 fragment ticketTypeAddonDetails on Extra {

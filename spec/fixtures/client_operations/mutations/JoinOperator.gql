@@ -1,0 +1,12 @@
+mutation JoinOperator($operator: ID!) {
+  joinOperator(input: { operator: $operator }) {
+    membership {
+      id
+    }
+    errors
+    fieldErrors {
+      field
+      message
+    }
+  }
+}

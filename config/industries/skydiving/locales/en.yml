@@ -1,0 +1,31 @@
+# Terminology of the skydiving template (one / other forms); the client's 'terms' namespace
+terms:
+  operator: { one: Dropzone, other: Dropzones }
+  member: { one: Jumper, other: Jumpers }
+  vehicle: { one: Aircraft, other: Aircraft }
+  load: { one: Load, other: Loads }
+  slot: { one: Slot, other: Slots }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Altitude, other: Altitudes }
+  activity: { one: Jump type, other: Jump types }
+  crew:
+    pilot: { one: Pilot, other: Pilots }
+    gca: { one: GCA, other: GCAs }
+    load_master: { one: Load master, other: Load masters }
+  escort: { one: Tandem instructor, other: Tandem instructors }
+  guest: { one: Tandem passenger, other: Tandem passengers }
+  certification_body: { one: Federation, other: Federations }
+  certification: { one: Licence, other: Licences }
+  equipment: { one: Rig, other: Rigs }
+  inspection: { one: Rig inspection, other: Rig inspections }
+  service_due: { one: Reserve repack due, other: Reserve repack due }
+  daily_log: { one: Master log, other: Master logs }
+  call: { one: Boarding call, other: Boarding calls }
+  load_count: { one: Jump, other: Jumps }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding call, other: Boarding call }
+    departed: { one: In flight, other: In flight }
+    completed: { one: Landed, other: Landed }
+    cancelled: { one: Cancelled, other: Cancelled }
