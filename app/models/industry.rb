@@ -121,6 +121,9 @@ class Industry
 
   def vehicle_kinds = template.fetch("vehicle_kinds", [])
 
+  # Which illustrations the client shows (D10): "skydiving" for the skydiving family, "neutral" for every other one
+  def illustrations = template.fetch("illustrations", "neutral")
+
   def call_schedule_minutes = template.fetch("call_schedule_minutes", [])
 
   def crew_roles = template.fetch("crew_roles", [])

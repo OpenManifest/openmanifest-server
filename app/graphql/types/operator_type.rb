@@ -21,6 +21,11 @@ module Types
     async_field :user_roles, [Types::Access::UserRole], null: false
     field :settings, Types::Operator::Settings, null: true
     field :industry, Types::IndustryEnum, null: false, description: "The industry template the operator was created from"
+    field :template, Types::IndustryTemplateType, null: false, description: "The industry template the operator was created from: its icon, illustrations and vehicle kinds"
+    def template
+      object.industry_template
+    end
+    field :vehicle_kinds, [String], null: false, description: "The kinds of vehicle the operator runs (the first is the main one)"
     field :modules, GraphQL::Types::JSON, null: false, description: "The enabled modules with their configuration"
     def modules
       ::Industry::MODULES.filter_map { |name| [name, object.module_config(name)] if object.module?(name) }.to_h

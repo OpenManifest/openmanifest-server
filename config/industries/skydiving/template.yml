@@ -3,6 +3,7 @@ extends: _aviation
 name: Dropzone
 description: Aircraft, jumpers, licences, rigs and the master log
 icon: parachute
+illustrations: skydiving
 vehicle_kinds: [aircraft]
 modules:
   destinations: { kinds: [altitude], scope: per_slot }

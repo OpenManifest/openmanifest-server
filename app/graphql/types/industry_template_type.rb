@@ -11,6 +11,9 @@ class Types::IndustryTemplateType < Types::Base::Object
   field :base, String, null: true, description: "The family (the abstract base the template extends): _aviation, _water, _ground"
   field :modules, [String], null: false
   field :booking, Types::IndustryBookingType, null: false, description: "How bookings reach the manifest"
+  field :illustrations, String, null: false,
+                                description: "Which illustrations and animations the client shows: skydiving or neutral"
+  field :vehicle_kinds, [String], null: false, description: "The kinds of vehicle the template starts with (the first is the main one)"
   field :preset_summary, GraphQL::Types::JSON, null: false, description: "How many roles, ticket types, extras and activity types the presets create"
 
   def base

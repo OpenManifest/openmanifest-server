@@ -27,6 +27,13 @@
       "minLength": 1,
       "description": "MaterialCommunityIcons glyph"
     },
+    "illustrations": {
+      "enum": [
+        "skydiving",
+        "neutral"
+      ],
+      "description": "Which illustrations and animations the client shows: the skydiving set or the neutral one (the default)"
+    },
     "vehicle_kinds": {
       "type": "array",
       "items": {

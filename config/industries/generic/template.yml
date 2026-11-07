@@ -2,6 +2,7 @@ slug: generic
 name: Other
 description: Any operator that manifests people onto loads; switch on what you need
 icon: format-list-bulleted
+illustrations: neutral
 vehicle_kinds: [vehicle]
 modules:
   destinations: { kinds: [site, route], scope: per_load }
