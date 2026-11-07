@@ -435,7 +435,7 @@ RSpec.describe "Client operations: operators and access" do
       json = client_operation("EquipmentInspectionTemplate", variables: { operatorId: operator.id }, as: user)
 
       kinds = json.dig(:data, :operator, :equipmentKinds)
-      expect(kinds.find { |kind| kind[:key] == "parachute" }[:inspectionFormTemplate]).to include(id: template.id.to_s, definition: '[{"label":"Canopy"}]')
+      expect(kinds.find { |kind| kind[:key] == Skydiving::Parachutes::KIND }[:inspectionFormTemplate]).to include(id: template.id.to_s, definition: '[{"label":"Canopy"}]')
     end
   end
 

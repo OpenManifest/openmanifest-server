@@ -28,17 +28,17 @@ RSpec.describe "Equipment kinds over GraphQL", type: :request do
     end
 
     it "stores the attributes of the kind" do
-      json = run(create_mutation, attributes: { kindId: rig_kind.id.to_s, userId: user.id, make: "Vector", attributes: { parachute_type: "student", canopy_size_m2: 15 } })
+      json = run(create_mutation, attributes: { kindId: rig_kind.id.to_s, userId: user.id, make: "Vector", attributes: { rig_type: "student", canopy_size_m2: 15 } })
 
       equipment = json.dig(:data, :createEquipment, :equipment)
       expect(json.dig(:data, :createEquipment, :errors)).to be_nil
       expect(equipment[:equipmentKind][:key]).to eq("rig")
-      expect(equipment[:attributes]).to include(parachute_type: "student", canopy_size_m2: 15)
+      expect(equipment[:attributes]).to include(rig_type: "student", canopy_size_m2: 15)
     end
 
     it "refuses a value that is not in the kind's schema" do
       expect do
-        json = run(create_mutation, attributes: { kindId: rig_kind.id.to_s, userId: user.id, attributes: { parachute_type: "hang glider" } })
+        json = run(create_mutation, attributes: { kindId: rig_kind.id.to_s, userId: user.id, attributes: { rig_type: "hang glider" } })
         expect(json.dig(:data, :createEquipment, :fieldErrors, 0, :field)).to eq("properties")
       end.not_to change(Equipment, :count)
     end
