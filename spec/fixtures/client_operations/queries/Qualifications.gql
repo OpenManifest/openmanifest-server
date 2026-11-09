@@ -1,0 +1,8 @@
+query Qualifications($certificationBodyId: Int) {
+  qualifications(certificationBodyId: $certificationBodyId) {
+    ...qualificationEssentials
+    certificationBody {
+      ...certificationBodyEssentials
+    }
+  }
+}

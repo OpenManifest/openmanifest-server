@@ -1,0 +1,298 @@
+# Copied into every new skydiving operator by Presets::Apply (GENERALISATION §5). Roles keep their permission lists;
+# `all` is every permission. The operator owns the copy afterwards.
+roles:
+  tandem_guest:
+    permissions:
+    - readLoad
+  student:
+    default: true
+    permissions:
+    - readLoad
+    - createSlot
+  pilot:
+    permissions:
+    - readLoad
+    - createSlot
+    - actAsPilot
+  fun_jumper:
+    default_certified: true
+    permissions:
+    - readLoad
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - readUser
+    - actAsLoadMaster
+    - actAsGCA
+    - viewUserActivity
+    - viewStatistics
+  coach:
+    permissions:
+    - readLoad
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - readUser
+    - actAsLoadMaster
+    - actAsGCA
+    - viewUserActivity
+    - viewStatistics
+  aff_instructor:
+    permissions:
+    - readLoad
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - createUser
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - readUserTransactions
+    - updateWeatherConditions
+    - readUser
+    - actAsLoadMaster
+    - actAsGCA
+    - actAsDutyOfficer
+    - viewUserActivity
+    - viewSystemActivity
+    - viewAdminActivity
+    - viewRevenue
+    - viewStatistics
+  tandem_instructor:
+    permissions:
+    - readLoad
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
+    - readUserTransactions
+    - updateWeatherConditions
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - readUser
+    - actAsLoadMaster
+    - actAsGCA
+    - actAsDutyOfficer
+    - viewUserActivity
+    - viewStatistics
+    - viewSystemActivity
+    - viewAdminActivity
+    - viewRevenue
+  chief_instructor:
+    permissions:
+    - readLoad
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
+    - updateWeatherConditions
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - readUserTransactions
+    - grantPermission
+    - revokePermission
+    - readUser
+    - actAsLoadMaster
+    - actAsGCA
+    - actAsDutyOfficer
+    - viewUserActivity
+    - viewStatistics
+    - viewSystemActivity
+    - viewAdminActivity
+    - viewRevenue
+  manifest:
+    permissions:
+    - readLoad
+    - updateLoad
+    - createLoad
+    - updateWeatherConditions
+    - createSlot
+    - updateSlot
+    - deleteSlot
+    - createEquipment
+    - updateEquipment
+    - deleteEquipment
+    - readOperatorEquipment
+    - updateOperatorEquipment
+    - createOperatorEquipment
+    - createUserSlot
+    - createUserSlotWithSelf
+    - createPrepaidSlot
+    - deleteUserSlot
+    - updateUserSlot
+    - createPackjob
+    - updatePackjob
+    - deletePackjob
+    - readPackjob
+    - createFormTemplate
+    - updateFormTemplate
+    - deleteFormTemplate
+    - readFormTemplate
+    - createUserTransaction
+    - readUserTransactions
+    - grantPermission
+    - revokePermission
+    - readUser
+    - updateUser
+    - actAsLoadMaster
+    - actAsGCA
+    - actAsDutyOfficer
+    - viewUserActivity
+    - viewStatistics
+    - viewSystemActivity
+    - viewAdminActivity
+    - viewRevenue
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+crew_roles:
+- key: pilot
+  name: Pilot
+  scope: vehicle
+  required: true
+  permission: actAsPilot
+- key: gca
+  name: GCA
+  scope: load
+  required: true
+  permission: actAsGCA
+- key: load_master
+  name: Load master
+  scope: load
+  required: false
+  permission: actAsLoadMaster
+destinations:
+- name: Hop n Pop
+  kind: altitude
+  altitude_m: 1219.2
+- name: Full altitude
+  kind: altitude
+  altitude_m: 4267.2
+ticket_types: []
+extras: []
+activity_types:
+- angle
+- freefly
+- cam
+- hnp
+- hp
+- fs
+- ws
+equipment_kinds:
+- key: rig
+  name: Rig
+  # What a rig records: its type, the canopy size in m² (shown in the operator's area unit) and the value of a pack job
+  attribute_schema:
+    rig_type:
+      label: Rig type
+      type: enum
+      values:
+      - student
+      - sport
+      - tandem
+      default: sport
+      operator_only: true
+      not_rentable:
+      - tandem
+    canopy_size_m2:
+      label: Main canopy size
+      type: decimal
+      min: 0
+      unit: area
+    pack_value:
+      label: Pack value
+      type: integer
+      min: 0
+  # A reserve is repacked every 180 days
+  service_interval_days: 180
+  # An inspection stays valid until the rig is replaced
+  inspection_valid_days:
+  required_by:
+    always: true
+  inspection_form: equipment_inspection
+inspection_forms:
+  equipment_inspection:
+  - label: Monthly maintenance done?
+    valueType: boolean
+    value:
+  - label: Harness in good condition?
+    valueType: boolean
+    value:
+  - label: Cutaway and reserve handles secure?
+    valueType: boolean
+    value:
+  - label: 3-ring routed correctly?
+    valueType: boolean
+    value:
+  - label: RSL/Skyhook connected and routed correctly?
+    valueType: boolean
+    value:
+  - label: Riser covers secure?
+    valueType: boolean
+    value:
+  - label: Reserve closing loop in good condition?
+    valueType: boolean
+    value:
+  - label: Reserve pilot chute seated and not exposed?
+    valueType: boolean
+    value:
+  - label: Main closing loop in good condition and correct length?
+    valueType: boolean
+    value:
+  - label: Main closing loop pin adequate tension?
+    valueType: boolean
+    value:
+  - label: Main tuck flaps in good condition and secure?
+    valueType: boolean
+    value:
+  - label: Pilot chute bridle secure and not exposed?
+    valueType: boolean
+    value:
+  - label: Pilot chute BOC in good condition?
+    valueType: boolean
+    value:
+  - label: Deployment type?
+    valueType: string
+    value: BOC
+  - label: Cleared for freefly?
+    valueType: boolean
+    value:
+  - label: Container general condition?
+    valueType: string
+    value:

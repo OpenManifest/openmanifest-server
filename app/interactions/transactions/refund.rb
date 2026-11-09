@@ -19,9 +19,9 @@ class Transactions::Refund < ApplicationInteraction
       access_context: access_context,
       resource: order,
       action: :updated,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "Order ##{order.id} was refunded"
+      message: copy("activity.order.refunded", number: order.id)
     )
   end
 
@@ -33,9 +33,9 @@ class Transactions::Refund < ApplicationInteraction
       access_context: access_context,
       resource: order,
       action: :updated,
-      dropzone: access_context.dropzone,
+      operator: access_context.operator,
       created_by: access_context.subject,
-      message: "Failed to refund Order ##{order.id}",
+      message: copy("activity.order.refund_failed", number: order.id),
       details: errors.full_messages.join(", ")
     )
   end

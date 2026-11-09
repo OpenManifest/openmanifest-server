@@ -1,12 +1,19 @@
 query Activity(
-  $dropzone: [ID!],
-  $levels: [EventLevel!],
-  $actions: [EventAction!],
-  $accessLevels: [EventAccessLevel!],
+  $operator: [ID!]
+  $levels: [EventLevel!]
+  $actions: [EventAction!]
+  $accessLevels: [EventAccessLevel!]
   $timeRange: TimeRangeInput
   $createdBy: [ID!]
 ) {
-  activity(dropzone: $dropzone, timeRange: $timeRange, accessLevels: $accessLevels, levels: $levels, actions: $actions, createdBy: $createdBy) {
+  activity(
+    operator: $operator
+    timeRange: $timeRange
+    accessLevels: $accessLevels
+    levels: $levels
+    actions: $actions
+    createdBy: $createdBy
+  ) {
     edges {
       node {
         ...activityEssentials
@@ -16,15 +23,23 @@ query Activity(
 }
 
 query ActivityDetails(
-  $dropzone: [ID!],
-  $levels: [EventLevel!],
-  $actions: [EventAction!],
-  $accessLevels: [EventAccessLevel!],
+  $operator: [ID!]
+  $levels: [EventLevel!]
+  $actions: [EventAction!]
+  $accessLevels: [EventAccessLevel!]
   $timeRange: TimeRangeInput
   $createdBy: [ID!]
   $after: String
 ) {
-  activity(dropzone: $dropzone, timeRange: $timeRange, accessLevels: $accessLevels, levels: $levels, actions: $actions, createdBy: $createdBy, after: $after) {
+  activity(
+    operator: $operator
+    timeRange: $timeRange
+    accessLevels: $accessLevels
+    levels: $levels
+    actions: $actions
+    createdBy: $createdBy
+    after: $after
+  ) {
     pageInfo {
       hasNextPage
       endCursor
