@@ -5691,7 +5691,7 @@ Size: L
 Fixes: none
 
 ### P7.21 — Use operator terminology in server-generated copy
-Status: todo
+Status: done
 Repo: backend
 Depends on: P7.20
 Branch: modernise/p7-21-server-copy
