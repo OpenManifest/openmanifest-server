@@ -1,0 +1,12 @@
+mutation ArchiveDestination($id: Int!) {
+  archiveDestination(input: { id: $id }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    destination {
+      ...destinationEssentials
+    }
+  }
+}

@@ -1,0 +1,27 @@
+# Neutral terminology of the generic template
+terms:
+  operator: { one: Operator, other: Operators }
+  member: { one: Customer, other: Customers }
+  vehicle: { one: Vehicle, other: Vehicles }
+  load: { one: Load, other: Loads }
+  slot: { one: Slot, other: Slots }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Destination, other: Destinations }
+  activity: { one: Activity, other: Activities }
+  escort: { one: Escort, other: Escorts }
+  guest: { one: Guest, other: Guests }
+  certification_body: { one: Certification body, other: Certification bodies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Equipment, other: Equipment }
+  inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Daily log, other: Daily logs }
+  call: { one: Call, other: Calls }
+  load_count: { one: Load, other: Loads }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: Departed, other: Departed }
+    completed: { one: Completed, other: Completed }
+    cancelled: { one: Cancelled, other: Cancelled }

@@ -1,0 +1,10 @@
+fragment eligibilityResultEssentials on EligibilityResult {
+  code
+  ok
+  status
+  message
+  problem
+  bypassed
+  expiresAt
+  amountCents
+}

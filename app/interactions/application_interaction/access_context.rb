@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
-# Who performs an interaction, and where. Usually that is a member of the dropzone (the subject); a platform moderator
-# who is not a member has no membership, only a user and a dropzone, and no permissions of their own.
+# Who performs an interaction, and where. Usually that is a member of the operator (the subject); a platform moderator
+# who is not a member has no membership, only a user and an operator, and no permissions of their own.
 class ApplicationInteraction::AccessContext
   attr_accessor :dz_user
 
-  # @param [DropzoneUser, nil] dropzone_user
+  # @param [Membership, nil] membership
   # @param [User, nil] user the acting user when there is no membership
-  # @param [Dropzone, nil] dropzone the dropzone when there is no membership
-  def initialize(dropzone_user, user: nil, dropzone: nil)
-    self.dz_user = dropzone_user
+  # @param [Operator, nil] operator the operator when there is no membership
+  def initialize(membership, user: nil, operator: nil)
+    self.dz_user = membership
     @user = user
-    @dropzone = dropzone
+    @operator = operator
   end
 
   def user
     dz_user&.user || @user
   end
 
-  def dropzone
-    dz_user&.dropzone || @dropzone
+  def operator
+    dz_user&.operator || @operator
   end
 
   def can?(permission)
@@ -28,24 +28,24 @@ class ApplicationInteraction::AccessContext
     dz_user.can?(permission)
   end
 
-  # Gets the dropzone user this access context is for
+  # Gets the operator user this access context is for
   #
-  # @return [DropzoneUser, nil]
+  # @return [Membership, nil]
   def subject
     dz_user
   end
 
-  # Create an access context for a user by finding the DropzoneUser
-  # for the given dropzone
+  # Create an access context for a user by finding the Membership
+  # for the given operator
   #
   # @param [User] user
-  # @param [Dropzone] dropzone
-  # @param [Integer] dropzone_id
+  # @param [Operator] operator
+  # @param [Integer] operator_id
   # @return [AccessContext]
-  def self.for(user, dropzone: nil, dropzone_id: nil)
-    membership = DropzoneUser.find_by(
-      { user: user, dropzone: dropzone, dropzone_id: dropzone_id }.compact
+  def self.for(user, operator: nil, operator_id: nil)
+    membership = Membership.find_by(
+      { user: user, operator: operator, operator_id: operator_id }.compact
     )
-    new(membership, user: user, dropzone: dropzone || (dropzone_id && Dropzone.find_by(id: dropzone_id)))
+    new(membership, user: user, operator: operator || (operator_id && Operator.find_by(id: operator_id)))
   end
 end

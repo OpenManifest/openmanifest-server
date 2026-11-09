@@ -31,3 +31,60 @@
 
 en:
   hello: "Hello world"
+  # Server-generated copy. Operator#translate fills in the operator's terms (GENERALISATION §13): %{load} "Load"/"Trip",
+  # %{load_plural} "Loads", %{load_lower} "load", nested terms with an underscore (%{crew_gca}); the rest are named here.
+  notifications:
+    boarding: "%{load} #%{number}: %{call_lower} for departure at %{time}"
+    boarding_canceled: "%{load} #%{number}: %{call_lower} cancelled"
+    slot_created: "You have been manifested on %{load} #%{number}"
+    slot_destroyed: "You're no longer manifested on %{load} #%{number}"
+    inspection_passed: "%{inspection} passed: your %{equipment_lower} is cleared for use"
+    inspection_requested: "%{inspection} requested by %{name}"
+    publication_requested: "Operator %{name} has requested publication"
+    payment_confirmed: "Payment of %{amount} confirmed"
+    withdrawn: "%{amount} has been taken out of your account"
+    credited: "%{amount} has been credited to your account"
+  activity:
+    load:
+      created: "%{user} created %{load} #%{number}"
+      create_failed: "%{user} failed to create a new %{load_lower}"
+      called: "%{user} dispatched %{load} #%{number} (%{minutes} minute %{call_lower})"
+      call_cancelled: "%{user} cancelled the %{call_lower} for %{load} #%{number}"
+      vehicle_changed: "%{user} changed the %{vehicle_lower} for %{load} #%{number} to %{names}"
+      vehicles_changed: "%{user} changed the %{vehicle_plural_lower} for %{load} #%{number} to %{names}"
+      crew_changed: "%{user} changed the %{role} for %{load} #%{number} to %{name}"
+      cancelled: "%{user} cancelled %{load} #%{number}"
+      archived: "%{user} archived %{load} #%{number}"
+      archive_failed: "%{user} could not archive %{load} #%{number}"
+      finalized: "%{user} finalized %{load} #%{number}"
+    slot:
+      created: "%{user} manifested %{name} on %{load} #%{number}"
+      create_failed: "%{user} failed to manifest %{name} on %{load} #%{number}"
+      removed_self: "%{user} took themselves off %{load} #%{number}"
+      removed: "%{user} removed %{name} from %{load} #%{number}"
+      remove_self_failed: "%{user} failed to take themselves off %{load} #%{number}"
+      remove_failed: "%{user} failed to remove a %{slot_lower} on %{load} #%{number}"
+      moved: "%{user} moved %{name} from %{load} #%{from} to %{load} #%{to}"
+      move_failed: "%{user} failed to move %{name} from %{load} #%{from}"
+      a_guest: "a %{guest_lower}"
+    daily_log:
+      updated: "%{user} updated %{daily_log_lower} %{date} with %{changes}"
+      update_failed: "%{user} failed to update %{daily_log_lower} %{date} with %{changes}"
+    membership:
+      joined: "%{user} joined %{operator_name}"
+    operator:
+      publication_requested: "%{user} requested publication of %{operator_name}"
+    extra:
+      created: "A new %{extra_lower} %{name} was created by %{user}"
+    order:
+      confirmed: "Order #%{number} has been confirmed and transactions have been completed"
+      confirm_failed: "Order #%{number} failed to confirm"
+      refunded: "Order #%{number} was refunded"
+      refund_failed: "Failed to refund Order #%{number}"
+      created: "Order #%{number} created with a total value of %{amount}"
+      create_failed: "Failed to create order of value %{amount}"
+      purchased: "%{user} purchased %{item}"
+      purchase_failed: "%{user} failed to purchase %{item}"
+  errors:
+    messages:
+      unknown_industry: "is not a known industry"

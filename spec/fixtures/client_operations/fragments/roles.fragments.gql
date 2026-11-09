@@ -1,7 +1,7 @@
 fragment roleEssentials on UserRole {
   id
   name
-  dropzoneId
+  operatorId
 }
 
 fragment roleDetailed on UserRole {
