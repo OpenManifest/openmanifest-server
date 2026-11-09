@@ -1,0 +1,34 @@
+# frozen_string_literal: true
+
+RSpec.shared_context "operator_with_manifested_loads", shared_context: :metadata do
+  include_context 'operator_with_load'
+  let!(:access_context) do
+    instructor.grant! :createSlot
+    instructor.grant! :createUserSlot
+    ApplicationInteraction::AccessContext.new(instructor)
+  end
+  let!(:ticket_type) { create(:ticket_type, operator: operator) }
+  let!(:load2) { create(:load, vehicle: vehicle, pilot: pilot, gca: gca) }
+  let!(:jumpers) do
+    create_list(
+      :membership,
+      10,
+      operator: operator,
+      credits: ticket_type.cost * 2
+    )
+  end
+
+  # Manifest users on these loads
+  let!(:slots) do
+    jumpers.filter_map do |jumper|
+      Manifest::CreateSlot.run!(
+        access_context: access_context,
+        ticket_type: ticket_type,
+        membership: jumper,
+        activity_type: ActivityType.allowed_for([jumper]).sample,
+        load: [load, load2].sample,
+        body_mass_kg: jumper.body_mass_kg
+      )
+    end
+  end
+end

@@ -33,6 +33,9 @@ jobs:
       - run: echo "SECRET_KEY_BASE=$(openssl rand -hex 64)" >> "$GITHUB_ENV"
       - run: bin/rails db:create db:schema:load
       - run: bundle exec rubocop --parallel
+      - run: bin/check-industry-branches
+      - name: Vocabulary check (enforced; allow-list in config/vocabulary.yml)
+        run: bin/check-vocabulary --enforce --markdown >> "$GITHUB_STEP_SUMMARY"
       - run: bundle exec rspec
   audit:
     runs-on: ubuntu-24.04

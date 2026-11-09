@@ -4,14 +4,14 @@ require "rails_helper"
 
 # P6.9: subscriptions check membership of what they follow (BUG-011)
 RSpec.describe "Subscription authorization" do
-  let(:dropzone) { create(:dropzone, state: "public") }
-  let(:other_dropzone) { create(:dropzone, state: "public") }
-  let(:plane) { create(:plane, dropzone: dropzone, max_slots: 16) }
-  let!(:owner) { create(:dropzone_user, dropzone: dropzone, user: create(:user), user_role: dropzone.user_roles.find_by(name: "owner")) }
-  let!(:member) { create(:dropzone_user, dropzone: dropzone, user: create(:user), user_role: dropzone.user_roles.find_by(name: "fun_jumper")) }
-  let!(:student) { create(:dropzone_user, dropzone: dropzone, user: create(:user), user_role: dropzone.user_roles.find_by(name: "student")) }
-  let!(:foreign) { create(:dropzone_user, dropzone: other_dropzone, user: create(:user), user_role: other_dropzone.user_roles.find_by(name: "owner")) }
-  let!(:load_record) { create(:load, plane: plane, pilot: owner, gca: owner, load_master: owner) }
+  let(:operator) { create(:operator, state: "public") }
+  let(:other_operator) { create(:operator, state: "public") }
+  let(:vehicle) { create(:vehicle, operator: operator, capacity: 16) }
+  let!(:owner) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "owner")) }
+  let!(:member) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "fun_jumper")) }
+  let!(:student) { create(:membership, operator: operator, user: create(:user), user_role: operator.user_roles.find_by(name: "student")) }
+  let!(:foreign) { create(:membership, operator: other_operator, user: create(:user), user_role: other_operator.user_roles.find_by(name: "owner")) }
+  let!(:load_record) { create(:load, vehicle: vehicle, pilot: owner, gca: owner, load_master: owner) }
   let(:channel) { Struct.new(:params) { def stream_from(*); end }.new({ "channelId" => "subscription-authorization-spec" }) }
 
   def subscribe(query, variables, as:)
@@ -26,44 +26,44 @@ RSpec.describe "Subscription authorization" do
   describe "loadUpdated" do
     let(:query) { "subscription($id: ID!) { loadUpdated(loadId: $id) { load { id } } }" }
 
-    it "lets a member of the load's dropzone subscribe" do
+    it "lets a member of the load's operator subscribe" do
       result = subscribe(query, { "id" => load_record.id.to_s }, as: member.user)
 
       expect(result.to_h.dig("data", "loadUpdated", "load", "id")).to eq(load_record.id.to_s)
     end
 
-    it "refuses a member of another dropzone, and a user without membership" do
+    it "refuses a member of another operator, and a user without membership" do
       expect(refused?(subscribe(query, { "id" => load_record.id.to_s }, as: foreign.user))).to be(true)
       expect(refused?(subscribe(query, { "id" => load_record.id.to_s }, as: create(:user)))).to be(true)
     end
   end
 
   describe "loadCreated" do
-    let(:query) { "subscription($id: ID!) { loadCreated(dropzoneId: $id) { load { id } } }" }
+    let(:query) { "subscription($id: ID!) { loadCreated(operatorId: $id) { load { id } } }" }
 
-    it "lets a member subscribe to the dropzone and refuses everybody else" do
-      expect(subscribe(query, { "id" => dropzone.id.to_s }, as: member.user).to_h["errors"]).to be_nil
-      expect(subscribe(query, { "id" => dropzone.id.to_s }, as: foreign.user).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
-      expect(subscribe(query, { "id" => dropzone.id.to_s }, as: create(:user)).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
+    it "lets a member subscribe to the operator and refuses everybody else" do
+      expect(subscribe(query, { "id" => operator.id.to_s }, as: member.user).to_h["errors"]).to be_nil
+      expect(subscribe(query, { "id" => operator.id.to_s }, as: foreign.user).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
+      expect(subscribe(query, { "id" => operator.id.to_s }, as: create(:user)).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
     end
   end
 
   describe "userUpdated" do
-    let(:query) { "subscription($id: ID!) { userUpdated(dropzoneUserId: $id) { dropzoneUser { id } } }" }
+    let(:query) { "subscription($id: ID!) { userUpdated(membershipId: $id) { membership { id } } }" }
 
     it "lets a member follow themselves" do
       result = subscribe(query, { "id" => student.id.to_s }, as: student.user)
 
-      expect(result.to_h.dig("data", "userUpdated", "dropzoneUser", "id")).to eq(student.id.to_s)
+      expect(result.to_h.dig("data", "userUpdated", "membership", "id")).to eq(student.id.to_s)
     end
 
     it "lets somebody with readUser follow another member" do
       result = subscribe(query, { "id" => student.id.to_s }, as: owner.user)
 
-      expect(result.to_h.dig("data", "userUpdated", "dropzoneUser", "id")).to eq(student.id.to_s)
+      expect(result.to_h.dig("data", "userUpdated", "membership", "id")).to eq(student.id.to_s)
     end
 
-    it "refuses somebody without readUser, a member of another dropzone and a stranger" do
+    it "refuses somebody without readUser, a member of another operator and a stranger" do
       expect(subscribe(query, { "id" => owner.id.to_s }, as: student.user).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
       expect(subscribe(query, { "id" => student.id.to_s }, as: foreign.user).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")
       expect(subscribe(query, { "id" => student.id.to_s }, as: create(:user)).to_h.dig("errors", 0, "extensions", "code")).to eq("FORBIDDEN")

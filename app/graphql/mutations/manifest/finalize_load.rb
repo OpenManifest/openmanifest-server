@@ -11,13 +11,13 @@ module Mutations::Manifest
 
     def resolve(state:, id:)
       case state
-      when "landed"
+      when "completed"
         mutate(
           Manifest::FinalizeLoad,
           :load,
           load: load_by_id(id),
           access_context: access_context_for(
-            load_by_id(id).dropzone
+            load_by_id(id).operator
           )
         )
       when "cancelled"
@@ -26,18 +26,18 @@ module Mutations::Manifest
           :load,
           load: load_by_id(id),
           access_context: access_context_for(
-            load_by_id(id).dropzone
+            load_by_id(id).operator
           )
         )
       else
-        { load: nil, field_errors: nil, errors: ["A load can only be finalized as landed or cancelled"] }
+        { load: nil, field_errors: nil, errors: ["A load can only be finalized as completed or cancelled"] }
       end
     end
 
     def authorized?(id: nil, state: nil)
       if context[:current_resource].can?(
         "updateLoad",
-        dropzone_id: load_by_id(id).plane.dropzone_id
+        operator_id: load_by_id(id).operator_id
       )
         true
       else

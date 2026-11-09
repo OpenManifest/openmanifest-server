@@ -5,7 +5,7 @@ require "rails_helper"
 # The resolver instrumentation is skipped in the test environment, so a gem upgrade that removes an AppSignal API it
 # uses (appsignal 5 removed Appsignal::Utils::HashSanitizer) only shows up at runtime. Run it once for real.
 RSpec.describe "AppSignal resolver instrumentation" do
-  include_context "dropzone"
+  include_context "operator"
 
   it "instruments a resolver and records the variables" do
     allow(Rails.env).to receive(:test?).and_return(false)
@@ -16,7 +16,7 @@ RSpec.describe "AppSignal resolver instrumentation" do
       block.call
     end
 
-    json = client_operation("Dropzones", as: user)
+    json = client_operation("Operators", as: user)
 
     expect(json[:errors]).to be_nil
     expect(bodies).not_to be_empty
