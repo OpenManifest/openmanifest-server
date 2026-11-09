@@ -35,8 +35,8 @@ RSpec.describe Operator, "server copy" do
     it "fills in the terms, lower-cased mid-sentence, acronyms kept" do
       expect(skydiving.translate("activity.load.created", user: "Ann", number: 3)).to eq("Ann created Load #3")
       expect(skydiving.translate("activity.load.call_cancelled", user: "Ann", number: 3)).to eq("Ann cancelled the boarding call for Load #3")
-      expect(skydiving.translate("activity.load.crew_changed", user: "Ann", number: 3, role: skydiving.term("crew.gca"), name: "Bo"))
-        .to eq("Ann changed the GCA for Load #3 to Bo")
+      expect(skydiving.translate("activity.load.crew_changed", user: "Ann", number: 3, role: skydiving.term("crew.gca"), name: "Bo")).
+        to eq("Ann changed the GCA for Load #3 to Bo")
     end
   end
 
@@ -46,7 +46,7 @@ RSpec.describe Operator, "server copy" do
     # The third load of the day, with a member on it, called
     def called_load(operator)
       vehicle = create(:vehicle, operator: operator, capacity: 14)
-      load = Array.new(3) { create(:load, vehicle: vehicle) }.last
+      load = create_list(:load, 3, vehicle: vehicle).last
       load.update!(dispatch_at: departure)
       member = create(:membership, operator: operator, credits: 500)
       create(:slot, load: load, operator: operator, membership: member, activity_type: ActivityType.allowed_for([member]).first)
