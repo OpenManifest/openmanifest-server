@@ -51,6 +51,11 @@ class DailyLog::Update < ApplicationInteraction
 
   private
 
+  # What the call changes, for the activity log
+  def changes_json
+    { duty_officer: duty_officer&.user&.name, notes: notes }.compact.to_json
+  end
+
   def entry
     @entry ||= operator.daily_logs.at(date)
   end
