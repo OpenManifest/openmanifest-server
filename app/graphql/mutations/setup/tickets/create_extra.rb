@@ -18,7 +18,7 @@ module Mutations::Setup::Tickets
 
       ::Activity::Event.create(
         level: :info,
-        message: "A new Ticket add-on  #{model.name} was created by #{context[:current_resource].name}",
+        message: model.operator.translate("activity.extra.created", name: model.name, user: context[:current_resource].name),
         resource: model,
         access_level: :admin,
         action: :created,

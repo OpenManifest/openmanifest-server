@@ -85,7 +85,7 @@ class Slot < ApplicationRecord
     Notification.create(
       received_by: membership,
       notification_type: :user_manifested,
-      message: "You have been manifested on Load ##{load.load_number}",
+      message: load.operator.translate("notifications.slot_created", number: load.load_number),
       resource: self
     )
   end
@@ -94,7 +94,7 @@ class Slot < ApplicationRecord
     Notification.create(
       received_by: membership,
       notification_type: :user_manifested,
-      message: "You're no longer manifested on Load ##{load.load_number}",
+      message: load.operator.translate("notifications.slot_destroyed", number: load.load_number),
       resource: self
     )
   end

@@ -52,7 +52,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} created load ##{@load.load_number}"
+      message: copy("activity.load.created", user: access_context.user.name, number: @load.load_number)
     )
   end
 
@@ -66,7 +66,7 @@ class Manifest::CreateLoad < ApplicationInteraction
       created_at: created_at,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to create a new load"
+      message: copy("activity.load.create_failed", user: access_context.user.name)
     )
   end
 

@@ -16,7 +16,7 @@ class DailyLog::Update < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} updated master log #{date.iso8601} with #{{ duty_officer: duty_officer&.user&.name, notes: notes }.compact.to_json}",
+      message: copy("activity.daily_log.updated", user: access_context.user.name, date: date.iso8601, changes: changes_json),
     )
   end
 
@@ -30,7 +30,7 @@ class DailyLog::Update < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to update master log #{date.iso8601} with #{{ duty_officer: duty_officer&.user&.name, notes: notes }.compact.to_json}",
+      message: copy("activity.daily_log.update_failed", user: access_context.user.name, date: date.iso8601, changes: changes_json),
       details: errors.full_messages.join(", ")
     )
   end

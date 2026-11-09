@@ -21,7 +21,7 @@ class Users::JoinOperator < ApplicationInteraction
       access_context: ::ApplicationInteraction::AccessContext.new(@membership),
       level: :info,
       access_level: :admin,
-      message: "#{user.name} joined #{operator.name}",
+      message: operator.translate("activity.membership.joined", user: user.name, operator_name: operator.name),
       resource: @membership,
       action: :created,
       operator: operator,

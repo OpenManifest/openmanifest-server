@@ -65,7 +65,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} dispatched load ##{load.load_number} (#{time_left} minute call)"
+        message: copy("activity.load.called", user: access_context.user.name, number: load.load_number, minutes: time_left)
       )
     elsif inputs.given?(:dispatch_at)
       compose(
@@ -76,7 +76,7 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} cancelled call for load ##{load.load_number}"
+        message: copy("activity.load.call_cancelled", user: access_context.user.name, number: load.load_number)
       )
     end
 
@@ -89,7 +89,9 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the #{vehicles ? 'vehicles' : 'vehicle'} for load ##{load.load_number} to #{vehicle_names}"
+        message: copy(
+          "activity.load.#{vehicles ? 'vehicles' : 'vehicle'}_changed", user: access_context.user.name, number: load.load_number, names: vehicle_names
+        )
       )
     end
 
@@ -102,7 +104,9 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the GCA for load ##{load.load_number} to #{gca.user.name}"
+        message: copy(
+          "activity.load.crew_changed", user: access_context.user.name, number: load.load_number, role: access_context.operator.term("crew.gca"), name: gca.user.name
+        )
       )
     end
 
@@ -115,7 +119,13 @@ class Manifest::UpdateLoad < ApplicationInteraction
         action: :updated,
         operator: access_context.operator,
         created_by: access_context.subject,
-        message: "#{access_context.user.name} changed the load master for load ##{load.load_number} to #{load_master.user.name}"
+        message: copy(
+          "activity.load.crew_changed",
+          user: access_context.user.name,
+          number: load.load_number,
+          role: access_context.operator.term("crew.load_master"),
+          name: load_master.user.name
+        )
       )
     end
   end

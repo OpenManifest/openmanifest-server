@@ -23,7 +23,7 @@ class Transactions::Purchase < ApplicationInteraction
       action: :created,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{name_of(:buyer, buyer)} purchased #{item_name}"
+      message: copy("activity.order.purchased", user: name_of(:buyer, buyer).to_s, item: item_name.to_s)
     )
   end
 
@@ -36,7 +36,7 @@ class Transactions::Purchase < ApplicationInteraction
       action: :confirmed,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{name_of(:buyer, buyer)} failed to purchase #{item_name}",
+      message: copy("activity.order.purchase_failed", user: name_of(:buyer, buyer).to_s, item: item_name.to_s),
       details: errors.full_messages.join(", ")
     )
   end

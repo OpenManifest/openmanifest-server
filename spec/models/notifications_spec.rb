@@ -145,7 +145,7 @@ RSpec.describe "Notifications and push tokens" do
 
       asked = Notification.where(notification_type: :equipment_inspection_requested, resource: equipment).map(&:received_by)
       expect(asked).to contain_exactly(inspector, second_inspector)
-      expect(Notification.where(notification_type: :equipment_inspection_requested).first).to have_attributes(sent_by: member, message: "#{member.user.name} needs an equipment inspection")
+      expect(Notification.where(notification_type: :equipment_inspection_requested).first).to have_attributes(sent_by: member, message: "Rig inspection requested by #{member.user.name}")
     end
 
     it "asks only once" do

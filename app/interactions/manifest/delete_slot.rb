@@ -21,9 +21,9 @@ class Manifest::DeleteSlot < ApplicationInteraction
       operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
-                 "#{access_context.user.name} took themselves off load ##{slot.load.load_number}"
+                 copy("activity.slot.removed_self", user: access_context.user.name, number: slot.load.load_number)
                else
-                 "#{access_context.user.name} removed #{slot.membership.user.name} from load ##{slot.load.load_number}"
+                 copy("activity.slot.removed", user: access_context.user.name, name: slot.membership.user.name, number: slot.load.load_number)
                end
 
     )
@@ -39,9 +39,9 @@ class Manifest::DeleteSlot < ApplicationInteraction
       operator: access_context.operator,
       created_by: access_context.subject,
       message: if is_self?
-                 "#{access_context.user.name} failed to take themselves off load ##{slot.load.load_number}"
+                 copy("activity.slot.remove_self_failed", user: access_context.user.name, number: slot.load.load_number)
                else
-                 "#{access_context.user.name} failed to remove a slot on load ##{slot.load.load_number}"
+                 copy("activity.slot.remove_failed", user: access_context.user.name, number: slot.load.load_number)
                end,
       details: errors.full_messages.join(", ")
     )

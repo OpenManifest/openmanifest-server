@@ -153,6 +153,25 @@ class Operator < ApplicationRecord
     industry_template.terminology(locale).deep_merge(settings.fetch("terminology", {}))
   end
 
+  # One term in the operator's words: term(:load) is "Load" (skydiving) or "Trip" (an override), term(:load, count: 2)
+  # "Loads", term("crew.gca") "GCA". A key the terminology lacks is humanised. An override may be a plain string.
+  def term(key, count: 1, locale: :en)
+    path = key.to_s.split(".")
+    forms = terminology(locale).dig(*path)
+    return path.last.humanize if forms.blank?
+    return forms.to_s unless forms.is_a?(Hash)
+
+    (count == 1 ? forms["one"] : forms["other"]) || forms["one"] || forms["other"] || path.last.humanize
+  end
+
+  # Server-generated copy (notifications, push messages, activity events) in the operator's words: the Rails I18n key
+  # with every term available for interpolation, e.g. "%{load} #%{number}" is "Load #3" or "Trip #3". Each term comes as
+  # %{load} ("Load"), %{load_plural} ("Loads"), %{load_lower} ("load", for mid-sentence; acronyms such as "GCA" keep
+  # their case) and %{load_plural_lower}; nested terms join with an underscore (%{crew_gca}, %{state_boarding}).
+  def translate(key, locale: :en, **values)
+    I18n.t(key, locale: locale, **term_values(locale), **values)
+  end
+
   # Units: the template's, then settings["units"]
   def units
     industry_template.units.merge(settings.fetch("units", {}))
@@ -178,6 +197,36 @@ class Operator < ApplicationRecord
   end
 
   private
+
+  def term_values(locale)
+    flatten_terms(terminology(locale)).each_with_object({}) do |(name, forms), values|
+      one = forms.is_a?(Hash) ? forms["one"] || forms["other"] : forms.to_s
+      other = forms.is_a?(Hash) ? forms["other"] || one : one
+      values[name.to_sym] = one
+      values[:"#{name}_plural"] = other
+      values[:"#{name}_lower"] = lower_first(one)
+      values[:"#{name}_plural_lower"] = lower_first(other)
+    end
+  end
+
+  # { "load" => {one, other}, "crew" => { "gca" => {one, other} } } to { "load" => {one, other}, "crew_gca" => {...} }
+  def flatten_terms(terms, prefix = nil)
+    terms.each_with_object({}) do |(key, value), flat|
+      name = [prefix, key].compact.join("_")
+      if value.is_a?(Hash) && !(value.key?("one") || value.key?("other"))
+        flat.merge!(flatten_terms(value, name))
+      elsif value.present?
+        flat[name] = value
+      end
+    end
+  end
+
+  # "Load master" to "load master"; "GCA" stays "GCA"
+  def lower_first(word)
+    return word if word.blank? || word[1]&.match?(/[[:upper:]]/)
+
+    word[0].downcase + word[1..]
+  end
 
   # settings["units"] names a unit the quantity can be shown in: { "altitude" => "m", "mass" => "lb", ... }
   def units_known

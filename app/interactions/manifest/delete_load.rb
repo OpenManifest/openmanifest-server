@@ -18,7 +18,7 @@ class Manifest::DeleteLoad < ApplicationInteraction
       action: :deleted,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} archived load ##{load.load_number}"
+      message: copy("activity.load.archived", user: access_context.user.name, number: load.load_number)
     )
   end
 
@@ -31,7 +31,7 @@ class Manifest::DeleteLoad < ApplicationInteraction
       action: :deleted,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} could not archive load ##{load.load_number}",
+      message: copy("activity.load.archive_failed", user: access_context.user.name, number: load.load_number),
       details: errors.full_messages.join(", ")
     )
   end

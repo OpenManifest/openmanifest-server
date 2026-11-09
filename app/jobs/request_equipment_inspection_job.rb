@@ -18,7 +18,7 @@ class RequestEquipmentInspectionJob < ApplicationJob
 
       Notification.create!(
         received_by: inspector,
-        message: "#{equipment.user.name} needs an equipment inspection",
+        message: dz_user.operator.translate("notifications.inspection_requested", name: equipment.user.name),
         notification_type: :equipment_inspection_requested,
         resource: equipment,
         sent_by: dz_user

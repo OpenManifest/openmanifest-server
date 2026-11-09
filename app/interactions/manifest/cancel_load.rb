@@ -21,7 +21,7 @@ class Manifest::CancelLoad < ApplicationInteraction
       action: :deleted,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} cancelled load ##{load.load_number}"
+      message: copy("activity.load.cancelled", user: access_context.user.name, number: load.load_number)
     )
   end
 

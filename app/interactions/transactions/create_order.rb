@@ -29,7 +29,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       action: :created,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "Order ##{@order.id} created with a total value of #{Money.new(amount_cents)}"
+      message: copy("activity.order.created", number: @order.id, amount: Money.new(amount_cents).to_s)
     )
   end
 
@@ -44,7 +44,7 @@ class Transactions::CreateOrder < Transactions::Purchase
       action: :confirmed,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "Failed to create order of value #{Money.new(amount_cents)}",
+      message: copy("activity.order.create_failed", amount: Money.new(amount_cents).to_s),
       details: errors.full_messages.join(", ")
     )
   end

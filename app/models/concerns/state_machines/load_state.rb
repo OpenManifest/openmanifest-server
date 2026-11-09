@@ -18,7 +18,7 @@ module StateMachines::LoadState
           next if slot.membership.blank?
 
           Notification.create(
-            message: "Load ##{record.load_number} call canceled",
+            message: record.operator.translate("notifications.boarding_canceled", number: record.load_number),
             resource: record,
             received_by: slot.membership,
             notification_type: :boarding_canceled
@@ -31,7 +31,11 @@ module StateMachines::LoadState
           next if slot.membership.blank?
 
           Notification.create(
-            message: "Load ##{record.load_number} take off at #{record.dispatch_at.in_time_zone(record.operator.time_zone).strftime('%H:%M')}",
+            message: record.operator.translate(
+              "notifications.boarding",
+              number: record.load_number,
+              time: record.dispatch_at.in_time_zone(record.operator.time_zone).strftime("%H:%M")
+            ),
             resource: record,
             received_by: slot.membership,
             notification_type: :boarding

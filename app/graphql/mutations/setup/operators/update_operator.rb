@@ -60,7 +60,7 @@ module Mutations::Setup::Operators
       moderators.find_each do |moderator|
         Notification.create!(
           received_by: moderator,
-          message: "Operator #{model.name} has requested publication",
+          message: model.translate("notifications.publication_requested", name: model.name),
           notification_type: :publication_requested,
           resource: model,
           sent_by: sender
@@ -69,7 +69,7 @@ module Mutations::Setup::Operators
 
       Activity::Event.create!(
         operator: model, resource: model, action: :updated, level: :info, access_level: :admin, created_by: sender,
-        message: "#{context[:current_resource].name} requested publication of #{model.name}"
+        message: model.translate("activity.operator.publication_requested", user: context[:current_resource].name, operator_name: model.name)
       )
     end
 

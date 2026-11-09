@@ -66,7 +66,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       created_at: created_at,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} manifested #{membership.user.name} on load ##{load.load_number}"
+      message: copy("activity.slot.created", user: access_context.user.name, name: membership.user.name, number: load.load_number)
     )
   end
 
@@ -82,7 +82,7 @@ class Manifest::CreateSlot < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to manifest #{membership.user.name} on load ##{load.load_number}",
+      message: copy("activity.slot.create_failed", user: access_context.user.name, name: membership.user.name, number: load.load_number),
       details: errors.full_messages.join(", ")
     )
   end

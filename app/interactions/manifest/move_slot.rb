@@ -35,7 +35,9 @@ class Manifest::MoveSlot < ApplicationInteraction
       created_at: DateTime.current,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} moved #{source_slot.membership.user.name} from load ##{source_slot.load.load_number} to load ##{destination_load.load_number}"
+      message: copy(
+        "activity.slot.moved", user: access_context.user.name, name: source_slot.membership.user.name, from: source_slot.load.load_number, to: destination_load.load_number
+      )
     )
   end
 
@@ -51,7 +53,12 @@ class Manifest::MoveSlot < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} failed to move #{source_slot.membership&.user&.name || 'a guest'} from load ##{source_slot.load.load_number}",
+      message: copy(
+        "activity.slot.move_failed",
+        user: access_context.user.name,
+        name: source_slot.membership&.user&.name || copy("activity.slot.a_guest"),
+        from: source_slot.load.load_number
+      ),
       details: errors.full_messages.join(", ")
     )
   end

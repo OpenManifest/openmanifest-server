@@ -19,7 +19,7 @@ class Manifest::FinalizeLoad < ApplicationInteraction
       access_level: :admin,
       operator: access_context.operator,
       created_by: access_context.subject,
-      message: "#{access_context.user.name} finalized load ##{load.load_number}"
+      message: copy("activity.load.finalized", user: access_context.user.name, number: load.load_number)
     )
   end
 

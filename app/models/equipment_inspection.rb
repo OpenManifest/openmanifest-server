@@ -40,7 +40,7 @@ class EquipmentInspection < ApplicationRecord
 
     Notification.create!(
       received_by: membership,
-      message: "Your equipment has been cleared to jump",
+      message: membership.operator.translate("notifications.inspection_passed"),
       notification_type: :equipment_inspection_completed,
       resource: self
     )

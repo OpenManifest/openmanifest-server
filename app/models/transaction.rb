@@ -57,10 +57,7 @@ class Transaction < ApplicationRecord
 
   def notification_message
     value = Money.new(amount_cents.to_i).abs.to_s
-    case transaction_type
-    when "purchase" then "Payment of #{value} confirmed"
-    when "withdrawal" then "#{value} has been taken out of your account"
-    else "#{value} has been credited to your account"
-    end
+    key = { "purchase" => "payment_confirmed", "withdrawal" => "withdrawn" }.fetch(transaction_type, "credited")
+    receiver.operator.translate("notifications.#{key}", amount: value)
   end
 end
