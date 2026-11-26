@@ -1,0 +1,29 @@
+#import "../fragments/operators.fragments.gql"
+
+query Operator($operatorId: ID!) {
+  operator(id: $operatorId) {
+    ...operatorExtensive
+  }
+}
+
+query OperatorStatistics($operatorId: ID!, $timeRange: TimeRangeInput) {
+  operator(id: $operatorId) {
+    ...operatorStatistics
+  }
+}
+
+query OperatorsStatistics($timeRange: TimeRangeInput, $after: String) {
+  operators(after: $after) {
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        ...operatorStatistics
+      }
+    }
+  }
+}

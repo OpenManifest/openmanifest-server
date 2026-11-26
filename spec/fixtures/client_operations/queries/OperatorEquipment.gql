@@ -1,0 +1,8 @@
+query OperatorEquipment($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+    equipment {
+      ...equipmentEssentials
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_context "federation_sync", shared_context: :metadata do
+RSpec.shared_context "certification_body_sync", shared_context: :metadata do
   let!(:apf_response) do
     [
       {

@@ -6,9 +6,12 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
       message
     }
     ticketType {
+      ...ticketTypeEssentials
       id
       name
-      altitude
+      defaultDestination {
+        ...destinationEssentials
+      }
       costCents
       allowManifestingSelf
       extras {
@@ -17,13 +20,15 @@ mutation CreateTicketType($attributes: TicketTypeInput!) {
         costCents
       }
 
-      dropzone {
+      operator {
         id
 
         ticketTypes {
           id
           name
-          altitude
+          defaultDestination {
+            ...destinationEssentials
+          }
           costCents
           allowManifestingSelf
           extras {

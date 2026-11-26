@@ -1,0 +1,10 @@
+# How many notifications the member has not read: the badge of the Inbox in the bar
+query UnseenNotifications($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+    currentUser {
+      id
+      unseenNotifications
+    }
+  }
+}

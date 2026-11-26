@@ -6,7 +6,6 @@
 #
 #  id               :bigint           not null, primary key
 #  status           :integer
-#  amount           :float
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  message          :string
@@ -41,10 +40,10 @@ class Transaction < ApplicationRecord
   scope :cancelled, -> { where(status: :cancelled) }
 
   # Tells the member whose account the money moved to or from, once the transaction is completed (a purchase is
-  # reserved when the jumper is manifested and completed when the load lands). Transactions of the dropzone itself, the
+  # reserved when the jumper is manifested and completed when the load lands). Transactions of the operator itself, the
   # other half of every sale, notify nobody.
   def notify!
-    return unless receiver.is_a?(DropzoneUser)
+    return unless receiver.is_a?(Membership)
 
     Notification.create!(
       received_by: receiver,
@@ -58,10 +57,7 @@ class Transaction < ApplicationRecord
 
   def notification_message
     value = Money.new(amount_cents.to_i).abs.to_s
-    case transaction_type
-    when "purchase" then "Payment of #{value} confirmed"
-    when "withdrawal" then "#{value} has been taken out of your account"
-    else "#{value} has been credited to your account"
-    end
+    key = { "purchase" => "payment_confirmed", "withdrawal" => "withdrawn" }.fetch(transaction_type, "credited")
+    receiver.operator.translate("notifications.#{key}", amount: value)
   end
 end

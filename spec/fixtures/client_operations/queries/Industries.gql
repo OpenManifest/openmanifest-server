@@ -1,0 +1,21 @@
+query Industries {
+  industries {
+    slug
+    name
+    description
+    icon
+    base
+    modules
+    units
+    vehicleKinds
+    presetSummary {
+      roles
+      crewRoles
+      ticketTypes
+      extras
+      destinations
+      equipmentKinds
+      activityTypes
+    }
+  }
+}
