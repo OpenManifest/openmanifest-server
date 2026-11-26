@@ -2,23 +2,24 @@
 
 class Users::UpdateUser < ApplicationInteraction
   # The member whose profile is edited; without one the caller edits their own profile (logging out clears the push token
-  # before any dropzone is chosen)
-  record :dropzone_user, default: nil
+  # before any operator is chosen)
+  record :membership, default: nil
   record :user, default: nil
   string :name, default: nil
   string :nickname, default: nil
   string :push_token, default: nil
   string :image, default: nil
-  string :federation_number, default: nil
+  string :certification_body_number, default: nil
   string :phone, default: nil
   string :email, default: nil
-  decimal :exit_weight, default: nil
-  record :license, default: nil
+  decimal :body_mass_kg, default: nil
+  date :date_of_birth, default: nil
+  record :certification_level, default: nil
 
   steps :authorize,
         :check_email,
         :assign_attributes,
-        :assign_federation,
+        :assign_certification_body,
         :result
 
   def assign_attributes
@@ -27,7 +28,8 @@ class Users::UpdateUser < ApplicationInteraction
       nickname: nickname,
       phone: phone,
       email: email,
-      exit_weight: exit_weight,
+      body_mass_kg: body_mass_kg,
+      date_of_birth: date_of_birth,
     }.compact
     # Sending null clears the push token (logging out); leaving it out keeps it
     attributes[:push_token] = push_token if inputs.given?(:push_token)
@@ -37,7 +39,7 @@ class Users::UpdateUser < ApplicationInteraction
   end
 
   def result
-    dropzone_user
+    membership
   end
 
   def attach_avatar
@@ -63,39 +65,38 @@ class Users::UpdateUser < ApplicationInteraction
     errors.add(:email, "has already been taken")
   end
 
-  def assign_federation
-    return unless license
-    # If license id changed, then update all DropzoneUsers
-    # with the same federation as that license to have the
-    # new license:
+  def assign_certification_body
+    return unless certification_level
+    # Joining the body of the chosen level updates the level of every membership
+    # at an operator that accepts that body:
     compose(
-      Federations::AssignUser,
+      Certifications::AssignUser,
       user: target_user,
-      license: license,
-      uid: federation_number,
-      federation: license.federation,
+      certification_level: certification_level,
+      uid: certification_body_number,
+      certification_body: certification_level.certification_body,
       access_context: access_context
     )
   end
 
-  # Users can always update their own profile. A profile belongs to the user, not to a dropzone, so staff may edit it
-  # only while the user is a member of no other dropzone than the one the staff member acts in (updateUser there).
+  # Users can always update their own profile. A profile belongs to the user, not to an operator, so staff may edit it
+  # only while the user is a member of no other operator than the one the staff member acts in (updateUser there).
   def authorize
     return errors.add(:base, "Nobody to update") unless target_user
     return if access_context.user&.id == target_user.id
-    return errors.add(:base, "You cant update other users") unless dropzone_user
+    return errors.add(:base, "You cant update other users") unless membership
 
-    dropzone_ids = target_user.dropzone_users.kept.pluck(:dropzone_id)
-    if !access_context.can?(:updateUser) || dropzone_user.dropzone_id != access_context.dropzone&.id
+    operator_ids = target_user.memberships.kept.pluck(:operator_id)
+    if !access_context.can?(:updateUser) || membership.operator_id != access_context.operator&.id
       errors.add(:base, "You cant update other users")
-    elsif dropzone_ids.uniq.size > 1
-      errors.add(:base, "Update failed. User is a member of multiple dropzones")
+    elsif operator_ids.uniq.size > 1
+      errors.add(:base, "Update failed. User is a member of multiple operators")
     end
   end
 
   private
 
   def target_user
-    dropzone_user&.user || user
+    membership&.user || user
   end
 end

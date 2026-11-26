@@ -1,0 +1,5 @@
+query Vehicles($operatorId: ID!) {
+  vehicles(operator: $operatorId) {
+    ...vehicleEssentials
+  }
+}

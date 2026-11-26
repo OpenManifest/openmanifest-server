@@ -2,8 +2,8 @@
 
 FactoryBot.define do
   factory :qualification do
-    name { "MyString" }
-    slug { "MyString" }
-    federation { nil }
+    sequence(:name) { |n| "Qualification #{n}" }
+    sequence(:slug) { |n| "qualification-#{n}" }
+    certification_body { CertificationBody.first }
   end
 end

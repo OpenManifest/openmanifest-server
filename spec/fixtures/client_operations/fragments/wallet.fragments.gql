@@ -1,0 +1,55 @@
+# What the Wallet shows of an order: what it was for, what it cost, who paid whom, and the money that moved
+fragment walletOrder on Order {
+  id
+  state
+  amountCents
+  title
+  orderNumber
+  createdAt
+  buyer {
+    __typename
+    ... on Membership {
+      id
+    }
+    ... on Operator {
+      id
+      name
+    }
+  }
+  seller {
+    __typename
+    ... on Membership {
+      id
+      user {
+        id
+        name
+      }
+    }
+    ... on Operator {
+      id
+      name
+    }
+  }
+  receipts {
+    id
+    amountCents
+    createdAt
+    transactions {
+      id
+      transactionType
+      amountCents
+      status
+      createdAt
+      message
+      receiver {
+        __typename
+        ... on Membership {
+          id
+        }
+        ... on Operator {
+          id
+        }
+      }
+    }
+  }
+}

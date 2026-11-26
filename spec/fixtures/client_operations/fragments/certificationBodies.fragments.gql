@@ -1,0 +1,41 @@
+fragment certificationBodyEssentials on CertificationBody {
+  id
+  name
+  slug
+  industry
+  verificationProvider
+}
+
+fragment qualificationEssentials on Qualification {
+  id
+  name
+  slug
+}
+
+fragment userQualificationEssentials on UserQualification {
+  id
+  name
+  number
+  expiresAt
+  current
+  verifiedAt
+  qualification {
+    ...qualificationEssentials
+  }
+}
+
+fragment userCertificationEssentials on UserCertification {
+  id
+  uid
+  number
+  verifiedAt
+  certificationBody {
+    ...certificationBodyEssentials
+  }
+  certificationLevel {
+    ...certificationLevelEssentials
+  }
+  qualifications {
+    ...userQualificationEssentials
+  }
+}

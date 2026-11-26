@@ -3,7 +3,7 @@
 module Mutations::Setup::Tickets
   class UpdateExtra < Mutations::BaseMutation
     field :errors, [String], null: true
-    field :extra, Types::Dropzone::Tickets::Addon, null: true
+    field :extra, Types::Operator::Tickets::Addon, null: true
     field :field_errors, [Types::System::FieldError], null: true
 
     argument :attributes, Types::Input::ExtraInput, required: true
@@ -12,9 +12,9 @@ module Mutations::Setup::Tickets
     def resolve(attributes:, id: nil)
       model = Extra.find(id)
 
-      # An add-on never moves to another dropzone, and only this dropzone's ticket types can be linked to it
-      attrs = attributes.to_h.except(:dropzone_id, :ticket_type_ids)
-      attrs[:ticket_type_ids] = model.dropzone.ticket_types.where(id: attributes[:ticket_type_ids]).pluck(:id) unless attributes[:ticket_type_ids].nil?
+      # An add-on never moves to another operator, and only this operator's ticket types can be linked to it
+      attrs = attributes.to_h.except(:operator_id, :ticket_type_ids)
+      attrs[:ticket_type_ids] = model.operator.ticket_types.where(id: attributes[:ticket_type_ids]).pluck(:id) unless attributes[:ticket_type_ids].nil?
       model.update!(attrs)
 
       {
@@ -44,13 +44,13 @@ module Mutations::Setup::Tickets
       }
     end
 
-    # The add-on's own dropzone decides. The id stays optional in the schema (the client's document declares it
+    # The add-on's own operator decides. The id stays optional in the schema (the client's document declares it
     # nullable) but updating needs one.
     def authorized?(id: nil, attributes: nil)
       extra = Extra.find_by(id: id)
       return [false, { errors: ["Ticket add-on not found"] }] unless extra
 
-      if context[:current_resource].can?("updateExtra", dropzone_id: extra.dropzone_id)
+      if context[:current_resource].can?("updateExtra", operator_id: extra.operator_id)
         true
       else
         [
