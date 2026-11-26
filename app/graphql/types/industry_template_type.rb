@@ -8,16 +8,18 @@ class Types::IndustryTemplateType < Types::Base::Object
   field :name, String, null: false
   field :description, String, null: false
   field :icon, String, null: false, description: "A MaterialCommunityIcons glyph"
-  field :base, String, null: true, description: "The family (the abstract base the template extends): _aviation, _water, _ground"
+  field :base, String, null: true, description: "The family (the abstract base at the root of what the template extends): _aviation, _water, _ground"
   field :modules, [String], null: false
   field :booking, Types::IndustryBookingType, null: false, description: "How bookings reach the manifest"
   field :illustrations, String, null: false,
                                 description: "Which illustrations and animations the client shows: skydiving or neutral"
   field :vehicle_kinds, [String], null: false, description: "The kinds of vehicle the template starts with (the first is the main one)"
-  field :preset_summary, GraphQL::Types::JSON, null: false, description: "How many roles, ticket types, extras and activity types the presets create"
+  field :preset_summary, Types::IndustryPresetSummaryType, null: false,
+                                                           description: "What the presets create: roles, crew roles, ticket types, extras, destinations"
+  field :units, GraphQL::Types::JSON, null: false, description: "The units the template starts with: { altitude: \"ft\", mass: \"kg\", ... }"
 
   def base
-    object.extends
+    object.family
   end
 
   def booking

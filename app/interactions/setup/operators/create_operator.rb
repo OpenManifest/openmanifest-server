@@ -6,6 +6,10 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
   object :owner, class: User
   string :industry
   string :time_zone
+  # ISO 4217; the column's default when not given
+  string :currency, default: nil
+  # The units shown, over the template's ({ "mass" => "lb" })
+  hash :units, default: nil, strip: false
   array :certification_body_ids, default: [] do
     integer
   end
@@ -65,6 +69,8 @@ class Setup::Operators::CreateOperator < ApplicationInteraction
       secondary_color: secondary_color,
       is_credit_system_enabled: is_credit_system_enabled
     )
+    @operator.currency = currency.upcase if currency.present?
+    @operator.settings = { units: units.to_h.stringify_keys } if units.present?
     save!
   end
 

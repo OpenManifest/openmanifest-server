@@ -188,6 +188,33 @@ RSpec.describe "Client operations: operators and access" do
       expect(json[:errors].first[:message]).to match(/name/i)
     end
 
+    it "takes the currency and units the wizard chose (P7.23)" do
+      json = client_operation("CreateOperator", variables: variables.merge(currency: "nzd", units: { mass: "lb", altitude: "m" }), as: user)
+
+      expect(json.dig(:data, :createOperator, :errors)).to be_nil
+      expect(json.dig(:data, :createOperator, :operator)).to include(currency: "NZD")
+      expect(json.dig(:data, :createOperator, :operator, :units)).to include("mass" => "lb", "altitude" => "m", "speed" => "kn")
+      created = Operator.find(json.dig(:data, :createOperator, :operator, :id))
+      # The template's settings and vehicle kinds are still there
+      expect(created.settings).to include("vehicle_kinds" => ["aircraft"], "units" => { "mass" => "lb", "altitude" => "m" })
+    end
+
+    it "creates no operator with a unit the quantity cannot be shown in" do
+      json = nil
+      expect { json = client_operation("CreateOperator", variables: variables.merge(units: { mass: "stone" }), as: user) }.not_to change(Operator, :count)
+
+      expect(json.dig(:data, :createOperator, :errors).join).to match(/mass in stone/)
+    end
+
+    it "creates a generic operator without certification bodies, with the template's presets" do
+      json = client_operation("CreateOperator", variables: { industry: "GENERIC", name: "Harbour", timeZone: "Pacific/Auckland", currency: "NZD" }, as: user)
+
+      expect(json.dig(:data, :createOperator, :errors)).to be_nil
+      created = Operator.find(json.dig(:data, :createOperator, :operator, :id))
+      expect(created).to have_attributes(industry: "generic", currency: "NZD", time_zone: "Pacific/Auckland")
+      expect(created.user_roles.pluck(:name)).to include("owner", "customer", "front_desk")
+    end
+
     it "requires authentication" do
       json = client_operation("CreateOperator", variables: variables)
 
@@ -206,6 +233,22 @@ RSpec.describe "Client operations: operators and access" do
       expect(skydiving).to include(name: Industry.fetch("skydiving").name, icon: Industry.fetch("skydiving").icon)
       expect(skydiving[:modules]).to include("destinations", "certifications", "equipment", "conditions")
     end
+
+    it "gives the wizard each template's family, units and what its presets create (P7.23)" do
+      industries = client_operation("Industries", as: user).dig(:data, :industries).index_by { |industry| industry[:slug] }
+
+      skydiving = industries.fetch("SKYDIVING")
+      expect(skydiving).to include(base: "_aviation", description: Industry.fetch("skydiving").description, vehicleKinds: ["aircraft"])
+      expect(skydiving[:units]).to include("altitude" => "ft", "mass" => "kg")
+      expect(skydiving[:presetSummary]).to include(
+        crewRoles: ["Pilot", "GCA", "Load master"], destinations: ["Hop n Pop", "Full altitude"], ticketTypes: [], activityTypes: 7
+      )
+      expect(skydiving.dig(:presetSummary, :roles)).to include("Owner", "Manifest", "Tandem guest")
+
+      generic = industries.fetch("GENERIC")
+      expect(generic).to include(base: nil, vehicleKinds: ["vehicle"])
+      expect(generic[:presetSummary]).to include(crewRoles: [], destinations: [], equipmentKinds: [])
+    end
   end
 
   describe "UpdateOperator" do
@@ -215,6 +258,14 @@ RSpec.describe "Client operations: operators and access" do
       expect(json.dig(:data, :updateOperator, :errors)).to be_nil
       expect(operator.reload.call_schedule_minutes).to eq([25, 5])
       expect(json.dig(:data, :updateOperator, :operator, :callScheduleMinutes)).to eq([25, 5])
+    end
+
+    it "takes units at the top of the attributes, as createOperator does" do
+      json = client_operation("UpdateOperator", variables: { id: operator.id, attributes: { name: operator.name, units: { mass: "lb" } } }, as: moderator)
+
+      expect(json.dig(:data, :updateOperator, :errors)).to be_nil
+      expect(operator.reload.units).to include("mass" => "lb")
+      expect(operator.settings).to include("require_credits")
     end
 
     it "changes the certification bodies the operator accepts" do

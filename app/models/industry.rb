@@ -104,6 +104,9 @@ class Industry
 
   def extends = @chain[1]
 
+  # The abstract base at the root of the chain (_aviation, _water, _ground), or nil: the wizard groups templates by it
+  def family = @chain.find { |slug| slug.start_with?("_") }
+
   # @return [Hash{String => Hash}] the enabled modules with their configuration (`false` and missing ones are off)
   def modules
     template.fetch("modules", {}).filter_map do |name, config|
@@ -147,12 +150,23 @@ class Industry
     { slug: slug, name: name, description: description, icon: icon, base: extends, modules: modules.keys }
   end
 
-  # How many of each record the presets create, for the picker's preview
+  # What the presets create, by name, for the wizard's preview and review step: roles, crew roles, ticket types, extras,
+  # destinations and equipment kinds, plus how many activity types are enabled
   def preset_summary
-    presets.slice("roles", "ticket_types", "extras", "activity_types").transform_values(&:size)
+    {
+      "roles" => presets.fetch("roles", {}).keys.map(&:humanize),
+      "crew_roles" => presets.fetch("crew_roles", []).map { |role| role["name"].presence || role.fetch("key").humanize },
+      "ticket_types" => names_of(presets.fetch("ticket_types", [])),
+      "extras" => names_of(presets.fetch("extras", [])),
+      "destinations" => names_of(presets.fetch("destinations", [])),
+      "equipment_kinds" => presets.fetch("equipment_kinds", []).map { |kind| kind["name"].presence || kind.fetch("key").humanize },
+      "activity_types" => presets.fetch("activity_types", []).size,
+    }
   end
 
   private
+
+  def names_of(records) = records.map { |record| record.fetch("name") }
 
   # The file of every template of the chain, the base first, deep-merged
   def merged(file)

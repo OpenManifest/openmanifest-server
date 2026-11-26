@@ -1282,11 +1282,35 @@ type IndustryBooking {
 }
 
 """
+What an industry template's presets create in a new operator, by name (the wizard's preview and review)
+"""
+type IndustryPresetSummary {
+  """
+  How many activity types are enabled
+  """
+  activityTypes: Int!
+
+  """
+  The crew roles of a load or vehicle
+  """
+  crewRoles: [String!]!
+  destinations: [String!]!
+  equipmentKinds: [String!]!
+  extras: [String!]!
+
+  """
+  The roles members can have
+  """
+  roles: [String!]!
+  ticketTypes: [String!]!
+}
+
+"""
 What an operator of an industry starts with: modules, terms, and the presets copied into it
 """
 type IndustryTemplate {
   """
-  The family (the abstract base the template extends): _aviation, _water, _ground
+  The family (the abstract base at the root of what the template extends): _aviation, _water, _ground
   """
   base: String
 
@@ -1309,10 +1333,15 @@ type IndustryTemplate {
   name: String!
 
   """
-  How many roles, ticket types, extras and activity types the presets create
+  What the presets create: roles, crew roles, ticket types, extras, destinations
   """
-  presetSummary: JSON!
+  presetSummary: IndustryPresetSummary!
   slug: Industry!
+
+  """
+  The units the template starts with: { altitude: "ft", mass: "kg", ... }
+  """
+  units: JSON!
 
   """
   The kinds of vehicle the template starts with (the first is the main one)
@@ -2621,6 +2650,11 @@ input OperatorInput {
   IANA time zone; needed to create an operator
   """
   timeZone: String
+
+  """
+  The units shown, over the template's: { altitude: "ft" | "m", mass: "kg" | "lb", ... }
+  """
+  units: JSON
 }
 
 enum OperatorState {

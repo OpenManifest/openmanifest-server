@@ -26,7 +26,9 @@ module Mutations::Setup::Operators
           :primary_color,
           :secondary_color,
           :is_credit_system_enabled,
-          :time_zone
+          :time_zone,
+          :currency,
+          :units
         )
       )
     end

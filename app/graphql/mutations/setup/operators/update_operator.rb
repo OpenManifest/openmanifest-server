@@ -13,6 +13,8 @@ module Mutations::Setup::Operators
       model = Operator.find(id)
       attrs = attributes.to_h.except(:banner, :industry)
       attrs[:modules] = model.modules.merge(attrs[:modules].stringify_keys) if attrs[:modules]
+      # Units live in the settings, as the settings input's `units` does
+      attrs[:settings] = (attrs[:settings] || {}).merge(units: attrs.delete(:units)) if attrs[:units]
       Support::ImageUpload.attach(model.banner, attributes[:banner], name: "banner") if attributes[:banner]
       # The state machine's event has the name of the request_publication column and takes over its accessors, so the
       # request is made through the event; a private operator moves to in_review and the moderators are told, once

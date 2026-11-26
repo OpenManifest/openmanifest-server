@@ -15,6 +15,8 @@ module Types
       argument :is_credit_system_enabled, Boolean, required: false
       argument :currency, String, required: false, description: "ISO 4217 code, for example AUD"
       argument :time_zone, String, required: false, description: "IANA time zone; needed to create an operator"
+      argument :units, GraphQL::Types::JSON, required: false,
+                                             description: 'The units shown, over the template\'s: { altitude: "ft" | "m", mass: "kg" | "lb", ... }'
       argument :modules, GraphQL::Types::JSON, required: false,
                                                description: "Module overrides: name => false (off), true or a configuration (on)"
 

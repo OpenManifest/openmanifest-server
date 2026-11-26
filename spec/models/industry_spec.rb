@@ -54,8 +54,14 @@ RSpec.describe Industry do
       expect { described_class.fetch("nope") }.to raise_error(KeyError)
     end
 
-    it "summarises the presets for the picker" do
-      expect(described_class.fetch("skydiving").preset_summary).to include("roles" => 11)
+    it "summarises the presets for the picker by name" do
+      summary = described_class.fetch("skydiving").preset_summary
+      expect(summary["roles"].size).to eq(11)
+      expect(summary["roles"]).to include("Owner")
+      expect(summary["crew_roles"]).to eq(["Pilot", "GCA", "Load master"])
+      expect(summary["destinations"]).to eq(["Hop n Pop", "Full altitude"])
+      expect(summary["equipment_kinds"]).to include("Rig")
+      expect(summary).to include("ticket_types" => [], "extras" => [], "activity_types" => 7)
     end
   end
 

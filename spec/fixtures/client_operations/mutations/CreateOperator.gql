@@ -8,6 +8,8 @@ mutation CreateOperator(
   $lng: Float
   $primaryColor: String
   $secondaryColor: String
+  $currency: String
+  $units: JSON
 ) {
   createOperator(
     input: {
@@ -21,6 +23,8 @@ mutation CreateOperator(
         secondaryColor: $secondaryColor
         lat: $lat
         lng: $lng
+        currency: $currency
+        units: $units
       }
     }
   ) {
