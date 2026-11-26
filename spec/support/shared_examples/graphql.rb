@@ -4,11 +4,11 @@ require "spec_helper"
 
 # Usage:
 # it_behaves_like 'mutation', {
-#   permissions: [:viewDropzone], # Not actually needed for creating one
+#   permissions: [:viewOperator], # Not actually needed for creating one
 #   expect: {
-#     createDropzone: {
+#     createOperator: {
 #       id: /\d/,
-#       name: 'My Dropzone'
+#       name: 'My Operator'
 #     }
 #   }
 # }

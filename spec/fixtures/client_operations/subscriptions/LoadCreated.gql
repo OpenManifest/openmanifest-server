@@ -1,5 +1,5 @@
-subscription LoadCreated($dropzoneId: ID!) {
-  loadCreated(dropzoneId: $dropzoneId) {
+subscription LoadCreated($operatorId: ID!) {
+  loadCreated(operatorId: $operatorId) {
     load {
       ...loadDetails
     }

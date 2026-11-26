@@ -35,7 +35,7 @@ module Support
       { io: StringIO.new(bytes), filename: "#{name}.#{EXTENSIONS.fetch(content_type)}", content_type: content_type, identify: false }
     end
 
-    # Attaches the image to an attachment of a record, e.g. `attach(dropzone.banner, data_url, name: "banner")`
+    # Attaches the image to an attachment of a record, e.g. `attach(operator.banner, data_url, name: "banner")`
     def self.attach(attachment, data_url, name:)
       attachment.attach(**attachable(data_url, name: name))
     end

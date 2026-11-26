@@ -1,0 +1,8 @@
+query EquipmentInspectionTemplate($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+    equipmentKinds {
+      ...equipmentKindEssentials
+    }
+  }
+}
