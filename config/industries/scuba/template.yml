@@ -1,0 +1,35 @@
+# Dive centre: boat trips to one to three dive sites, certified divers, rental gear, nitrox and try dives (GENERALISATION §5)
+slug: scuba
+extends: _water
+name: Dive centre
+description: Boats to dive sites, certified divers, rental gear
+icon: diving-scuba-tank
+vehicle_kinds: [boat]
+crew_roles: [skipper, dive_supervisor, divemaster]
+modules:
+  destinations: { kinds: [site], scope: per_load, max_per_load: 3 }
+  activities: {}
+  certifications: { required_by_default: true }
+  equipment: { rentals: true, personal: true }
+  # A try dive: an instructor takes guests who hold no certification
+  escorts: {}
+  crew: {}
+  limits: { age: true }
+  # Marine conditions are a later module (GENERALISATION §16)
+  conditions: false
+units: { depth: m, distance: km, mass: kg, temperature: c, speed: kn }
+call_schedule_minutes: [60, 30, 15]
+# Starting values of the operator's rules; the operator owns them afterwards
+settings:
+  require_equipment_inspection: false
+  require_certification: true
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: true
+  allow_self_manifest: true
+# A booking is for a dive trip that is scheduled ahead (GENERALISATION §17)
+booking: { manifest_link: load }

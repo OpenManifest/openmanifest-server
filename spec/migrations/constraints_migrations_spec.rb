@@ -102,7 +102,7 @@ RSpec.describe "P6.16 constraint migrations" do
       duplicate = duplicate_membership
       vehicle_load = create(:load, vehicle: vehicle, gca: duplicate, pilot: duplicate)
       slot = Slot.new(load: vehicle_load, membership: duplicate, created_by: duplicate, body_mass_kg: 80,
-                      ticket_type: create(:ticket_type, operator: operator), activity_type: ActivityType.first).tap { |new_slot| new_slot.save!(validate: false) }
+                      ticket_type: create(:ticket_type, operator: operator), activity_type: ActivityType.find_by!(slug: "fs")).tap { |new_slot| new_slot.save!(validate: false) }
       order = create(:order, operator: operator, seller: operator, buyer: duplicate)
       duplicate.grant!(:actAsPilot)
 
@@ -120,7 +120,7 @@ RSpec.describe "P6.16 constraint migrations" do
       ticket = create(:ticket_type, operator: operator)
       connection.remove_index :slots, name: "index_slots_on_load_id_and_membership_id"
       [oldest, duplicate].each do |member|
-        Slot.new(load: vehicle_load, membership: member, body_mass_kg: 80, ticket_type: ticket, activity_type: ActivityType.first).save!(validate: false)
+        Slot.new(load: vehicle_load, membership: member, body_mass_kg: 80, ticket_type: ticket, activity_type: ActivityType.find_by!(slug: "fs")).save!(validate: false)
       end
 
       with_legacy_schema { run_quietly(migration, :merge_duplicate_memberships) }

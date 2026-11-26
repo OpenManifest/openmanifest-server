@@ -1,0 +1,31 @@
+# Terminology of the scuba template (one / other forms); the client's 'terms' namespace
+terms:
+  operator: { one: Dive centre, other: Dive centres }
+  member: { one: Diver, other: Divers }
+  vehicle: { one: Boat, other: Boats }
+  load: { one: Load, other: Loads }
+  slot: { one: Slot, other: Slots }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Dive site, other: Dive sites }
+  activity: { one: Dive type, other: Dive types }
+  crew:
+    skipper: { one: Skipper, other: Skippers }
+    dive_supervisor: { one: Dive supervisor, other: Dive supervisors }
+    divemaster: { one: Divemaster, other: Divemasters }
+  escort: { one: Instructor, other: Instructors }
+  guest: { one: Try diver, other: Try divers }
+  certification_body: { one: Agency, other: Agencies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Gear, other: Gear }
+  inspection: { one: Gear check, other: Gear checks }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Passenger list, other: Passenger lists }
+  call: { one: Call, other: Calls }
+  load_count: { one: Dive, other: Dives }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: At sea, other: At sea }
+    completed: { one: Back, other: Back }
+    cancelled: { one: Cancelled, other: Cancelled }

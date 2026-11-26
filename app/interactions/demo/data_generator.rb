@@ -7,10 +7,20 @@ class Demo::DataGenerator < ApplicationInteraction
 
   import_filters Demo::Generators::Users
 
-  steps :create_tickets,
+  steps :create_template_demo,
+        :create_tickets,
         :create_vehicles,
         :create_users,
         :create_loads
+
+  # A template with demo data of its own (demo.yml: scuba, snorkel, ...) gets that instead of the skydiving demo below
+  def create_template_demo
+    return unless template_demo?
+
+    compose(::Demo::Generators::TemplateOperator, operator: operator)
+  end
+
+  def template_demo? = operator.industry_template.demo.present?
 
   def check_eligibility
     errors.add(:base, "You cannot add demo data to a live operator") if operator.state == "public"
@@ -28,7 +38,7 @@ class Demo::DataGenerator < ApplicationInteraction
       primary_color: Faker::Color.hex_color,
       secondary_color: Faker::Color.hex_color,
       is_credit_system_enabled: true,
-      certification_body_ids: [CertificationBody.first.id],
+      certification_body_ids: CertificationBody.for_industry(industry).pluck(:id),
     )
   end
 
@@ -41,6 +51,8 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_tickets
+    return if template_demo?
+
     return nil if operator.ticket_types.any?
     compose(
       ::Demo::Generators::Tickets,
@@ -49,6 +61,8 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_vehicles
+    return if template_demo?
+
     return nil if operator.vehicles.any?
     compose(
       ::Demo::Generators::Vehicles,
@@ -57,6 +71,8 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_users
+    return if template_demo?
+
     return if owner_access_context.operator.memberships.count > 20
     compose(
       ::Demo::Generators::Users,
@@ -72,6 +88,8 @@ class Demo::DataGenerator < ApplicationInteraction
   end
 
   def create_loads
+    return if template_demo?
+
     compose(
       ::Demo::Generators::Loads,
       start_date: start_date,

@@ -1,0 +1,43 @@
+# Copied into every new snorkel operator by Presets::Apply, over the scuba presets (roles merge; the lists below replace
+# the dive centre's; a role set to ~ is left out). No certifications; children under 12 come with an adult. Ages are
+# defaults the owner reviews.
+roles:
+  divemaster: ~
+  instructor: ~
+  guide:
+    permissions: [readLoad, createSlot, updateSlot, readUser, readEquipment, viewUserActivity]
+crew_roles:
+  - { key: skipper, name: Skipper, scope: load, required: true, occupies_slot: false }
+  - { key: guide, name: Guide, scope: load, required: false, occupies_slot: true }
+destinations:
+  - { name: Inner reef, kind: site, location: { max_depth_m: 4 } }
+  - { name: Outer reef, kind: site, location: { max_depth_m: 8 } }
+ticket_types:
+  - name: Snorkel trip
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { min_age: 12 }
+  # An adult takes up to two children (and pays their places)
+  - name: Adult with children
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_escort: true
+    escort_capacity: 2
+extras:
+  - { name: Snorkel gear rental, cost_cents: 0 }
+  - { name: Stinger suit rental, cost_cents: 0 }
+activity_types: []
+equipment_kinds:
+  - key: mask
+    name: Mask
+    attribute_schema:
+      size: { label: Size, type: enum, values: [child, adult], default: adult }
+  - key: fins
+    name: Fins
+    attribute_schema:
+      size: { label: Size, type: string }
+  - key: stinger_suit
+    name: Stinger suit
+    attribute_schema:
+      size: { label: Size, type: enum, values: [XS, S, M, L, XL, XXL], default: M }
+inspection_forms: {}

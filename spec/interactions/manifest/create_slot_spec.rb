@@ -215,7 +215,7 @@ RSpec.describe Manifest::CreateSlot do
     it "does not constrain guest slots, which have no member" do
       guest = Guest.create!(name: "Pat", body_mass_kg: 70, operator: operator)
       ticket = create(:ticket_type, operator: operator, requires_escort: true)
-      slots = Array.new(2) { Slot.create!(load: vehicle_load, guest: guest, ticket_type: ticket, activity_type: ActivityType.first, body_mass_kg: 70) }
+      slots = Array.new(2) { Slot.create!(load: vehicle_load, guest: guest, ticket_type: ticket, activity_type: ActivityType.find_by!(slug: "fs"), body_mass_kg: 70) }
 
       expect(slots.map(&:membership_id)).to eq([nil, nil])
     end

@@ -19,7 +19,7 @@ owner = dev_user("owner@example.com", "Olive Owner")
 operator = Operator.find_by(name: "Demo Dropzone")
 operator ||= Setup::Operators::CreateOperator.run!(
   name: "Demo Dropzone", industry: "skydiving", time_zone: "Australia/Brisbane", owner: owner,
-  certification_body_ids: [(CertificationBody.find_by(slug: "apf") || CertificationBody.first).id],
+  certification_body_ids: [CertificationBody.find_by!(slug: "apf").id],
   lat: nil, lng: nil, is_credit_system_enabled: true, primary_color: "#1D3557", secondary_color: "#E63946"
 )
 operator.update!(state: "public", settings: {
@@ -34,7 +34,7 @@ ticket = operator.ticket_types.find_or_create_by!(name: "Full altitude", cost_ce
 operator.ticket_types.find_or_create_by!(name: "Tandem", cost_cents: 0, default_destination: Destination.altitude_for(operator, 14_000),
                                          allow_manifesting_self: false, requires_escort: true, currency: "AUD")
 roles = operator.user_roles.index_by(&:name)
-apf = CertificationBody.find_by(slug: "apf") || CertificationBody.first
+apf = CertificationBody.find_by!(slug: "apf")
 level = apf.certification_levels.where.not(name: "No license").first
 members = {}
 [
@@ -65,4 +65,19 @@ if Load.where(operator_id: operator.id).none?
                               activity_type: ActivityType.find_by(slug: "fs") || ActivityType.first, body_mass_kg: 80)
   end
 end
+# One demo operator for each template with demo data (config/industries/<slug>/demo.yml), owned by `<slug>-owner@example.com`
+# so that the owner's own operators stay as they are; its people are `<slug>-<first>.<last>@example.com`
+Industry.selectable.select { |industry| industry.demo.present? }.each do |industry|
+  demo = industry.demo
+  next if Operator.exists?(name: demo.fetch("name"))
+
+  template_owner = dev_user("#{industry.slug}-owner@example.com", "#{industry.name} Owner")
+  demo_operator = Setup::Operators::CreateOperator.run!(
+    name: demo.fetch("name"), industry: industry.slug, time_zone: "Australia/Brisbane", owner: template_owner,
+    certification_body_ids: CertificationBody.where(slug: demo.fetch("certification_bodies", [])).pluck(:id)
+  )
+  Demo::Generators::TemplateOperator.run!(operator: demo_operator, email_prefix: "#{industry.slug}-", password: "Password1!")
+  puts "dev_baseline: #{industry.slug} operator #{demo_operator.id}. Login #{industry.slug}-owner@example.com / Password1!"
+end
+
 puts "dev_baseline: operator #{operator.id}, #{operator.loads.count} loads. Login owner@example.com / Password1!"

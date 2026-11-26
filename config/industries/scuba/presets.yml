@@ -1,0 +1,107 @@
+# Copied into every new dive centre by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in the wizard's
+# review step); ages, escort capacities, depths and service intervals are defaults the owner reviews, not regulatory values.
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  divemaster:
+    permissions: [readLoad, createSlot, updateSlot, readUser, readEquipment, viewUserActivity]
+  instructor:
+    permissions:
+      - readLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - readUser
+      - createUser
+      - readEquipment
+      - readOperatorEquipment
+      - actAsEquipmentInspector
+      - viewUserActivity
+  skipper:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createEquipment
+      - updateEquipment
+      - readOperatorEquipment
+      - createOperatorEquipment
+      - updateOperatorEquipment
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# Who a boat trip needs: a skipper drives the boat, a dive supervisor runs the dives from the boat (and dives), a
+# divemaster leads a group under water. Any member can be put on the crew; the owner narrows that with the role's permission.
+crew_roles:
+  - { key: skipper, name: Skipper, scope: load, required: true, occupies_slot: false }
+  - { key: dive_supervisor, name: Dive supervisor, scope: load, required: true, occupies_slot: true }
+  - { key: divemaster, name: Divemaster, scope: load, required: false, occupies_slot: true }
+# Dive sites, with the deepest point (location.max_depth_m) and the certification rank they ask for (catalogue.yml: 20 open
+# water, 30 advanced)
+destinations:
+  - { name: House reef, kind: site, location: { max_depth_m: 12 }, min_certification_rank: 10 }
+  - { name: Coral garden, kind: site, location: { max_depth_m: 18 }, min_certification_rank: 20 }
+  - { name: The wreck, kind: site, location: { max_depth_m: 30 }, min_certification_rank: 30 }
+ticket_types:
+  - { name: Double-tank boat dive, cost_cents: 0, allow_manifesting_self: true, min_certification_rank: 20 }
+  - { name: Single-tank boat dive, cost_cents: 0, allow_manifesting_self: true, min_certification_rank: 20 }
+  # An instructor takes up to two guests without a certification, from 10 years old; the instructor needs the
+  # instructor qualification of an accepted body
+  - name: Try dive
+    cost_cents: 0
+    allow_manifesting_self: false
+    requires_escort: true
+    escort_capacity: 2
+    escort_qualification: instructor
+    participant_limits: { min_age: 10 }
+  - { name: Snorkeller, cost_cents: 0, allow_manifesting_self: true }
+extras:
+  - { name: Nitrox, cost_cents: 0, requires_qualification: nitrox }
+  - { name: Full gear rental, cost_cents: 0 }
+  - { name: Wetsuit rental, cost_cents: 0 }
+activity_types: [fun_dive, night_dive, deep_dive, wreck_dive, drift_dive, training_dive]
+equipment_kinds:
+  - key: bcd
+    name: BCD
+    attribute_schema:
+      size: { label: Size, type: enum, values: [XS, S, M, L, XL, XXL], default: M }
+    # Serviced once a year
+    service_interval_days: 365
+  - key: regulator
+    name: Regulator
+    attribute_schema:
+      first_stage: { label: First stage, type: enum, values: [din, yoke], default: din }
+    service_interval_days: 365
+  - key: wetsuit
+    name: Wetsuit
+    attribute_schema:
+      size: { label: Size, type: enum, values: [XS, S, M, L, XL, XXL], default: M }
+      thickness_mm: { label: Thickness (mm), type: integer, min: 0 }
+  - key: cylinder
+    name: Cylinder
+    attribute_schema:
+      volume_l: { label: Volume (litres), type: integer, min: 0 }
+      gas: { label: Gas, type: enum, values: [air, nitrox], default: air }
+    # A visual inspection once a year
+    service_interval_days: 365
+inspection_forms: {}

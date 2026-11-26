@@ -5,7 +5,7 @@ require "json_schemer"
 # An industry template (GENERALISATION §5): `config/industries/<slug>/` holds template.yml (modules, units, call schedule,
 # starting settings), presets.yml (copied into each new operator by Presets::Apply), catalogue.yml (global data seeded
 # once) and locales/<locale>.yml (terminology). A template may `extends:` another one: every file is merged over the same
-# file of its base (maps deep-merge, lists replace). Templates whose slug starts with `_` are abstract bases and cannot be
+# file of its base (maps deep-merge, lists replace, a key set to `~` is left out; catalogue.yml is not inherited). Templates whose slug starts with `_` are abstract bases and cannot be
 # chosen. All templates are loaded and validated at boot, so a broken one fails fast.
 class Industry
   ROOT = Rails.root.join("config/industries")
@@ -97,8 +97,12 @@ class Industry
   # What Presets::Apply copies into a new operator: roles, ticket_types, extras, activity_types, inspection_forms, ...
   def presets = @presets ||= merged("presets.yml")
 
-  # Global data seeded once: activity_types and certification_bodies
-  def catalogue = @catalogue ||= merged("catalogue.yml")
+  # Global data seeded once: activity_types and certification_bodies. Not inherited: a body belongs to the template that
+  # lists it (snorkel extends scuba but accepts no dive agency)
+  def catalogue = @catalogue ||= self.class.send(:read_yaml, @root.join(slug, "catalogue.yml"))
+
+  # Demo data (demo.yml): what Demo::Generators::TemplateOperator makes a demo operator of. Not inherited.
+  def demo = @demo ||= self.class.send(:read_yaml, @root.join(slug, "demo.yml"))
 
   %w(name description icon).each { |key| define_method(key) { template[key] } }
 
@@ -173,9 +177,11 @@ class Industry
     @chain.reverse.map { |slug| self.class.send(:read_yaml, @root.join(slug, file)) }.reduce({}) { |memo, data| deep_merge(memo, data) }
   end
 
+  # A key the extending template sets to `~` (null) leaves the base's out (snorkel has no instructor role)
   def deep_merge(base, override)
-    base.merge(override) do |_key, old, new|
+    merged = base.merge(override) do |_key, old, new|
       old.is_a?(Hash) && new.is_a?(Hash) ? deep_merge(old, new) : new
     end
+    merged.reject { |key, value| value.nil? && base.key?(key) && override.key?(key) }
   end
 end

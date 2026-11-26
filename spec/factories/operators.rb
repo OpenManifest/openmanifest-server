@@ -32,7 +32,7 @@ FactoryBot.define do
     is_credit_system_enabled { true }
     industry { "skydiving" }
     time_zone { "Australia/Brisbane" }
-    certification_bodies { [CertificationBody.first] }
+    certification_bodies { [CertificationBody.find_by!(slug: "apf")] }
     # Most specs manifest without choosing equipment; the specs of the equipment rules turn the requirement on (P7.16)
     settings { { "require_equipment" => false } }
 

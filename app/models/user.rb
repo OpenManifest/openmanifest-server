@@ -88,11 +88,16 @@ class User < ApplicationRecord
     levels.reorder(rank: :desc, id: :desc).first
   end
 
-  # Does the user hold the qualification and is it still valid?
+  # Does the user hold the qualification and is it still valid? The same qualification of another body of the industry
+  # counts (GENERALISATION §8): an SSI nitrox card meets a nitrox extra that names PADI's
   def qualified_for?(qualification)
     return true if qualification.blank?
+    return user_qualifications.current.exists?(qualification_id: qualification.id) if qualification.slug.blank?
 
-    user_qualifications.current.exists?(qualification_id: qualification.id)
+    equivalent = ::Qualification.joins(:certification_body).
+      where(slug: qualification.slug, certification_bodies: { industry: qualification.certification_body.industry }).
+      select(:id)
+    user_qualifications.current.where(qualification_id: qualification.id).or(user_qualifications.current.where(qualification_id: equivalent)).exists?
   end
 
   # @return [Membership, nil] the membership at the operator, nil for a user who has not joined it

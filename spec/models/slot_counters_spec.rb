@@ -38,7 +38,7 @@ RSpec.describe Slot, "counter caches" do
   it "counts a tandem guest's slot as a slot and as ready" do
     guest = Guest.create!(name: "Pat Guest", body_mass_kg: 70, operator: operator)
     ticket_type = create(:ticket_type, operator: operator).tap { |t| t.update!(requires_escort: true) }
-    activity_type = ActivityType.first
+    activity_type = ActivityType.find_by!(slug: "fs")
 
     Slot.create!(load: vehicle_load, guest: guest, ticket_type: ticket_type, activity_type: activity_type, body_mass_kg: 70)
 

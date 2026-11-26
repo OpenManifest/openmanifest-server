@@ -5,7 +5,7 @@ require "rails_helper"
 # P7.12: the units an operator shows and the currency it sells in
 RSpec.describe Operator, "units and currency" do
   let(:owner) { create(:user) }
-  let(:skydiving) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.first.id]) }
+  let(:skydiving) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane", certification_body_ids: [CertificationBody.find_by!(slug: "apf").id]) }
   let(:boats) { Setup::Operators::CreateOperator.run!(owner: owner, industry: "generic", name: "Boats", time_zone: "Australia/Brisbane") }
 
   it "shows the template's units until the operator picks its own" do

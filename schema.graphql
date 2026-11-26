@@ -1265,9 +1265,19 @@ enum Industry {
   GENERIC
 
   """
+  Boats to dive sites, certified divers, rental gear
+  """
+  SCUBA
+
+  """
   Aircraft, jumpers, licences, rigs and the master log
   """
   SKYDIVING
+
+  """
+  Boats to reefs, snorkel gear, children with an adult
+  """
+  SNORKEL
 }
 
 """
@@ -2942,9 +2952,16 @@ type Query {
   ): EventConnection!
 
   """
-  Get all jump types
+  Get the activity types: those the members may all do, or those an operator offers
   """
-  activityTypes(memberships: [Int!]): [ActivityType!]!
+  activityTypes(
+    memberships: [Int!]
+
+    """
+    Only the activity types this operator offers (those its template enables)
+    """
+    operator: ID
+  ): [ActivityType!]!
 
   """
   Get user equipment that have been inspected and marked as OK + operator equipment

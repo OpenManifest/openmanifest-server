@@ -42,14 +42,24 @@ class Presets::Apply < ApplicationInteraction
     end
   end
 
-  # A ticket type names its default destination (`destination:`), one of the destinations above
+  TICKET_ATTRIBUTES = %w(
+    cost_cents allow_manifesting_self requires_escort escort_capacity currency min_certification_rank participant_limits
+    group_limits
+  ).freeze
+
+  # A ticket type names its default destination (`destination:`), one of the destinations above; the qualification a
+  # member (`requires_qualification:`) or an escort (`escort_qualification:`) needs, by slug; the crew role an escort
+  # holds (`escort_crew_role:`), by key
   def create_ticket_types
     presets.fetch("ticket_types", []).each do |attrs|
       ticket = operator.ticket_types.find_or_initialize_by(name: attrs.fetch("name"))
       next if ticket.persisted?
 
-      ticket.assign_attributes(attrs.slice("cost_cents", "allow_manifesting_self", "requires_escort", "currency"))
+      ticket.assign_attributes(attrs.slice(*TICKET_ATTRIBUTES))
       ticket.default_destination = operator.destinations.find_by!(name: attrs["destination"]) if attrs["destination"]
+      ticket.required_qualification = qualification(attrs["requires_qualification"])
+      ticket.escort_qualification = qualification(attrs["escort_qualification"])
+      ticket.escort_crew_role = operator.crew_roles.kept.find_by!(key: attrs["escort_crew_role"]) if attrs["escort_crew_role"]
       ticket.save!
     end
   end
@@ -60,6 +70,7 @@ class Presets::Apply < ApplicationInteraction
       next if extra.persisted?
 
       extra.assign_attributes(attrs.slice("cost_cents"))
+      extra.required_qualification = qualification(attrs["requires_qualification"])
       extra.save!
     end
   end
@@ -83,4 +94,13 @@ class Presets::Apply < ApplicationInteraction
   def template = operator.industry_template
 
   def presets = template.presets
+
+  # The qualification of this slug at the first body the operator accepts that issues it. Holders of the same
+  # qualification at another accepted body meet it too (User#qualified_for? compares slugs). None when no accepted body
+  # issues it: the owner sets it after accepting one.
+  def qualification(slug)
+    return nil if slug.blank?
+
+    ::Qualification.where(slug: slug, certification_body_id: operator.certification_body_ids).order(:certification_body_id, :id).first
+  end
 end

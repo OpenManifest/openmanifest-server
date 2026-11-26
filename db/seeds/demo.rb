@@ -10,7 +10,7 @@ operator = Operator.find_or_initialize_by(
 if operator.new_record?
   # Create a fake user
   owner = User.create_fake
-  operator.certification_bodies = [CertificationBody.first]
+  operator.certification_bodies = [CertificationBody.find_by!(slug: "apf")]
   operator.industry = "skydiving"
   operator.time_zone = "Australia/Brisbane"
   operator.is_public = true

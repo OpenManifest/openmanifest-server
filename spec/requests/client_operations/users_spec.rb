@@ -458,7 +458,7 @@ RSpec.describe "Client operations: users, permissions, certification_body and no
   end
 
   describe "JoinCertificationBody" do
-    let(:certification_body) { CertificationBody.find_by(slug: "apf") || CertificationBody.first }
+    let(:certification_body) { CertificationBody.find_by!(slug: "apf") }
     let(:variables) { { certificationBody: certification_body.id, uid: "12345", number: "C-42", certificationLevel: certification_body.certification_levels.first.id } }
 
     it "links the caller to the certification_body" do

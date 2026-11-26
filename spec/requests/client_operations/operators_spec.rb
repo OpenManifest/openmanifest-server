@@ -157,7 +157,7 @@ RSpec.describe "Client operations: operators and access" do
   end
 
   describe "CreateOperator" do
-    let(:variables) { { industry: "SKYDIVING", name: "New Operator", certificationBodyIds: [CertificationBody.first.id], timeZone: "Australia/Brisbane", primaryColor: "#112233" } }
+    let(:variables) { { industry: "SKYDIVING", name: "New Operator", certificationBodyIds: [CertificationBody.find_by!(slug: "apf").id], timeZone: "Australia/Brisbane", primaryColor: "#112233" } }
 
     it "creates a private operator owned by the caller" do
       json = nil

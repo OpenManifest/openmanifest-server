@@ -17,7 +17,7 @@ module Eligibility
         return not_required("activity") unless context.operator.require_certification?
         return pass("activity") if activity.allowed_for?(context.membership)
 
-        fail_with("activity", "User cannot be manifested for #{activity.name} jumps", field: :activity_type)
+        fail_with("activity", "#{context.membership.user.name}'s certification does not permit #{activity.name}", field: :activity_type)
       end
     end
   end

@@ -32,6 +32,7 @@ class Load < ApplicationRecord
   belongs_to :operator
 
   validate :destination_called, if: -> { boarding? }
+  validate :destinations_within_limit, if: -> { operator.present? }
   before_validation :apply_crew_requests
   validate :crew_known, :crew_required, :crew_permitted, if: -> { operator.present? }
   validate :vehicles_allowed, :vehicle_free, if: -> { operator.present? }
@@ -237,6 +238,14 @@ class Load < ApplicationRecord
     return if load_destinations.any? { |stop| !stop.marked_for_destruction? }
 
     errors.add(:destinations, "must include at least one place before the load is called")
+  end
+
+  # The destinations module may limit the places one load visits (`max_per_load`: a dive boat does up to three sites)
+  def destinations_within_limit
+    limit = operator.module_config(:destinations)&.fetch("max_per_load", nil)
+    return if limit.nil? || load_destinations.count { |stop| !stop.marked_for_destruction? } <= limit
+
+    errors.add(:destinations, "can include at most #{limit} places")
   end
 
   # One vehicle that carries swapped for another keeps its crew (the pilot of the aeroplane that was changed)

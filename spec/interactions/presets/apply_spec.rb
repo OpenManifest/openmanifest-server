@@ -11,7 +11,7 @@ RSpec.describe Presets::Apply do
 
   describe "a skydiving operator" do
     let(:parity) { YAML.safe_load_file(Rails.root.join("spec/fixtures/industries/skydiving_parity.yml")) }
-    let(:operator) { create_operator("skydiving", certification_body_ids: [CertificationBody.first.id]) }
+    let(:operator) { create_operator("skydiving", certification_body_ids: [CertificationBody.find_by!(slug: "apf").id]) }
 
     it "has the roles it had before industry templates" do
       expect(operator.user_roles.pluck(:name)).to match_array(parity["roles"].keys)
@@ -47,14 +47,14 @@ RSpec.describe Presets::Apply do
 
   describe "applying twice" do
     it "adds nothing the second time" do
-      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.first.id])
+      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.find_by!(slug: "apf").id])
 
       expect { described_class.run!(operator: operator) }.
         not_to(change { [operator.user_roles.count, UserRolePermission.count, operator.ticket_types.count, OperatorActivityType.count] })
     end
 
     it "leaves the changes an operator made to its roles" do
-      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.first.id])
+      operator = create_operator("skydiving", certification_body_ids: [CertificationBody.find_by!(slug: "apf").id])
       role = operator.user_roles.find_by!(name: "student")
       role.user_role_permissions.destroy_all
 

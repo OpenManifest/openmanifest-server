@@ -1,0 +1,19 @@
+# Snorkel trips: the dive centre's boat and sites without certifications; children come with an adult (GENERALISATION §5)
+slug: snorkel
+extends: scuba
+name: Snorkel trips
+description: Boats to reefs, snorkel gear, children with an adult
+icon: diving-snorkel
+crew_roles: [skipper, guide]
+modules:
+  destinations: { kinds: [site], scope: per_load, max_per_load: 3 }
+  activities: false
+  certifications: false
+  equipment: { rentals: true, personal: true }
+  escorts: {}
+  crew: {}
+  limits: { age: true }
+call_schedule_minutes: [60, 30]
+settings:
+  require_certification: false
+  require_equipment_in_service: false

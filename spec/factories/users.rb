@@ -56,8 +56,8 @@ FactoryBot.define do
 
   factory :user_with_certification_level, parent: :user do
     transient do
-      certification_body { CertificationBody.first }
-      certification_level { CertificationBody.first.certification_levels.sample }
+      certification_body { CertificationBody.find_by!(slug: "apf") }
+      certification_level { CertificationBody.find_by!(slug: "apf").certification_levels.sample }
     end
 
     after(:create) do |user, evaluator|
