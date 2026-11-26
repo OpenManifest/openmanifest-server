@@ -1,5 +1,5 @@
-query ActivityTypes($allowedForMembershipIds: [Int!]) {
-  activityTypes(memberships: $allowedForMembershipIds) {
+query ActivityTypes($allowedForMembershipIds: [Int!], $operatorId: ID) {
+  activityTypes(memberships: $allowedForMembershipIds, operator: $operatorId) {
     ...activityTypeEssentials
   }
 }
@@ -20,7 +20,7 @@ query AllowedActivityTypes(
       ...ticketTypeEssentials
     }
   }
-  activityTypes {
+  activityTypes(operator: $operatorId) {
     ...activityTypeEssentials
   }
 }

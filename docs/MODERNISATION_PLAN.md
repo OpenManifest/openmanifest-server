@@ -243,7 +243,7 @@ order is the priority. Tasks with status `done`, `owner-check` or `superseded` a
 |---|---|---|---|
 | 4 | Manifest UI | U3.1 | Board, load and picker built once, for the generic model (replaces P7.19). Checkpoints U3.6, U3.10. |
 | 8 | UI hardening | U6.5 | Remove Paper, motion, performance, retire the old board; U6.5 is the UI owner gate. |
-| 9 | Phase 7 stage D: onboarding and templates | P7.24, P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
+| 9 | Phase 7 stage D: onboarding and templates | P7.25, P7.26, P7.27, P7.28, P7.29, P7.30, P7.31 | Operator wizard on the new UI, then one template per task; P7.31 verifies. |
 | 10 | Release | P8.1, P8.2, P8.3, P8.4, P8.5, P8.6, P8.7, P8.8, P8.9 | Versioning, deploy and stores; most tasks wait for D1 and D2, and the queue moves on while they do. |
 | 11 | Commerce foundation | C1.1, C1.2, C1.3, C2.1, C2.2, C2.3, C2.4, C2.5, C2.6, C2.7, C2.8, C2.9, C2.10, C2.11 | Money, ledger, Stripe, platform fee, checkout, coupons. Shared by booking and the webshop. |
 | 12 | Booking | B1.1, B1.2, B1.3, B1.4, B1.5, B1.6, B1.7, B1.8, B2.1, B2.2, B2.3, B2.4, B2.5, B3.1, B3.2, B3.3, B3.4 | Operators' highest-value sales; if a booking task is blocked, the queue continues with the webshop. |
@@ -5786,7 +5786,7 @@ Template tasks P7.24–P7.30 share these steps; each task lists only what differ
 - Risk / rollback: revert both.
 
 ### P7.24 — Add the scuba and snorkel templates
-Status: todo
+Status: done
 Repo: both
 Depends on: P7.23
 Branch: modernise/p7-24-scuba-snorkel

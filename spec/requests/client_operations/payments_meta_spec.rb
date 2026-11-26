@@ -406,6 +406,17 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
       expect(json.dig(:data, :activityTypes).pluck(:id)).to match_array(ActivityType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
     end
+
+    # P7.24: with the dive types seeded, a dropzone lists only the activity types its template enables
+    it "lists only the activity types an operator offers" do
+      dropzone = Setup::Operators::CreateOperator.run!(owner: owner_user, industry: "skydiving", name: "DZ", time_zone: "Australia/Brisbane",
+                                                       certification_body_ids: [CertificationBody.find_by!(slug: "apf").id])
+
+      json = client_operation("ActivityTypes", variables: { operatorId: dropzone.id.to_s }, as: user)
+
+      expect(json.dig(:data, :activityTypes).pluck(:name)).to include("Freefly")
+      expect(json.dig(:data, :activityTypes).pluck(:name)).not_to include("Wreck dive")
+    end
   end
 
   describe "AllowedActivityTypes" do
@@ -416,7 +427,8 @@ RSpec.describe "Client operations: payments, activity and meta" do
 
       expect(json.dig(:data, :operator, :allowedActivityTypes).pluck(:id)).to match_array(ActivityType.allowed_for([fun_jumper]).map { |j| j.id.to_s })
       expect(json.dig(:data, :operator, :ticketTypes).pluck(:name)).to include("Height")
-      expect(json.dig(:data, :activityTypes)).to be_present
+      # Every activity type the operator offers (P7.24: not another industry's)
+      expect(json.dig(:data, :activityTypes).pluck(:id)).to match_array(operator.activity_types.map { |type| type.id.to_s })
     end
 
     it "limits ticket types to public ones when isPublic is set" do
