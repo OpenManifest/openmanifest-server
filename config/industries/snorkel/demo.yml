@@ -1,0 +1,13 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo snorkel
+# operator from it with Demo::Generators::TemplateOperator
+name: Lagoon Snorkel Trips
+certification_bodies: []
+vehicles:
+  - { name: Lagoon Star, registration: SN-201, capacity: 20 }
+people:
+  - { name: Rory Skipper, role: skipper }
+  - { name: Gale Guide, role: guide, date_of_birth: "1988-08-08" }
+  - { name: Alex Adult, role: customer, date_of_birth: "1983-01-15" }
+  - { name: Sasha Snorkeller, role: customer, date_of_birth: "1995-06-30" }
+guests:
+  - { name: Kit Child, date_of_birth: "2017-09-12", body_mass_kg: 25 }

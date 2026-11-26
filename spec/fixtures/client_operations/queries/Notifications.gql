@@ -1,58 +1,57 @@
-query Notifications($dropzoneId: ID!) {
-    dropzone(id: $dropzoneId) {
+query Notifications($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+
+    currentUser {
       id
 
-      currentUser {
-        id
-
-        notifications {
-          edges {
-            node {
+      notifications {
+        edges {
+          node {
+            id
+            message
+            notificationType
+            createdAt
+            sentBy {
               id
-              message
-              notificationType
-              createdAt
-              sentBy {
+              user {
                 id
-                user {
-                  id
-                  name
-                }
+                name
+              }
+            }
+
+            resource {
+              ... on Load {
+                ...loadEssentials
+              }
+              ... on Transaction {
+                id
+                amountCents
+                message
+                status
               }
 
-              resource {
-                ... on Load {
-                  ...loadEssentials
-                }
-                ... on Transaction {
+              ... on Slot {
+                ...slotEssentials
+              }
+
+              ... on Equipment {
+                ...equipmentEssentials
+                equipmentInspections(operatorId: $operatorId) {
                   id
-                  amountCents
-                  message
-                  status
-                }
-
-                ... on Slot {
-                  ...slotEssentials
-                }
-
-                ... on Rig {
-                  ...rigEssentials
-                  rigInspections(dropzoneId: $dropzoneId) {
+                  createdAt
+                  inspectedBy {
                     id
-                    createdAt
-                    inspectedBy {
+                    user {
                       id
-                      user {
-                        id
-                        name
-                      }
+                      name
                     }
                   }
                 }
+              }
 
-                ... on RigInspection {
-                  ...rigInspectionEssentials
-                }
+              ... on EquipmentInspection {
+                ...equipmentInspectionEssentials
               }
             }
           }
@@ -60,3 +59,4 @@ query Notifications($dropzoneId: ID!) {
       }
     }
   }
+}

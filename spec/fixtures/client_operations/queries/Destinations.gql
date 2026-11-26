@@ -1,0 +1,8 @@
+query Destinations($operatorId: ID!) {
+  operator(id: $operatorId) {
+    id
+    destinations {
+      ...destinationEssentials
+    }
+  }
+}

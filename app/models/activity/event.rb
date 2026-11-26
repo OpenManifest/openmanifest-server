@@ -4,8 +4,8 @@ class Activity::Event < ApplicationRecord
   self.table_name = "events"
 
   belongs_to :resource, polymorphic: true, optional: true
-  belongs_to :created_by, foreign_key: :dropzone_user_id, optional: true, class_name: "DropzoneUser"
-  belongs_to :dropzone
+  belongs_to :created_by, foreign_key: :membership_id, optional: true, class_name: "Membership"
+  belongs_to :operator
 
   enum :level, { :debug => 0, :info => 1, :error => 2 }
 

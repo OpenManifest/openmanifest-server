@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Behaviour depends on `operator.module?(...)` and operator settings, never on which industry an operator is (D5, P7.7).
+# Fails on `industry ==`, `industry?(`, `skydiving?` and similar outside config/industries/** and the allow-listed
+# skydiving namespaces. Usage: bin/check-industry-branches
+PATTERN = /\bindustry\s*(==|!=|\.eql\?)|\bindustry\?\(|\.industry\s*==|industry_slug\s*==|\bskydiving\?|\bis_skydiving\b|\bisSkydiving\b|\bindustry\s+in\b|case\s+(\w+\.)?industry\b/
+ALLOW = %w(
+  config/industries/
+  app/models/industry.rb
+  db/migrate/
+  db/seeds/
+  docs/
+  spec/
+  bin/check-industry-branches
+).freeze
+
+root = File.expand_path("..", __dir__)
+files = IO.popen(["git", "-C", root, "ls-files", "-z", "app", "lib", "config", "bin"], &:read).split("\0")
+hits = files.flat_map do |path|
+  next [] if ALLOW.any? { |allowed| path.start_with?(allowed) } || path.include?("/skydiving/")
+  next [] unless File.file?(File.join(root, path))
+
+  File.foreach(File.join(root, path)).each_with_index.filter_map do |line, index|
+    "#{path}:#{index + 1}: #{line.strip}" if line.match?(PATTERN) && !line.lstrip.start_with?("#")
+  end
+rescue ArgumentError, Encoding::InvalidByteSequenceError
+  []
+end
+
+if hits.any?
+  puts "Industry branches found (use operator.module?(...) or a setting instead):", hits
+  exit 1
+end
+puts "No industry branches outside config/industries."

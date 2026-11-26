@@ -1,0 +1,5 @@
+query CertificationBodies($industry: Industry) {
+  certificationBodies(industry: $industry) {
+    ...certificationBodyEssentials
+  }
+}

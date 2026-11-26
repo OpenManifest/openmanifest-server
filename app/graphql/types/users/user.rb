@@ -8,20 +8,21 @@ module Types::Users
     field :name, String, null: true
     field :moderation_role, Types::Users::ModerationRole, null: true
     field :push_token, String, null: true, broadcastable: false
-    field :exit_weight, String, null: true
+    field :body_mass_kg, String, null: true
     field :nickname, String, null: true
+    field :date_of_birth, GraphQL::Types::ISO8601Date, null: true, broadcastable: false, description: "Needed where a ticket or an activity has an age limit"
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false
-    field :apf_number, String, null: true
-    async_field :rigs, [Types::Equipment::Rig], null: true
-    async_field :licenses, [Types::Meta::License], null: true
-    async_field :dropzone_users, [Types::Users::DropzoneUser], null: true
-    async_field :user_federations, [Types::Users::UserFederation], null: true
+    async_field :equipment, [Types::Equipment::Equipment], null: true
+    async_field :certification_levels, [Types::Meta::CertificationLevel], null: true
+    async_field :memberships, [Types::Users::Membership], null: true
+    async_field :user_certifications, [Types::Users::UserCertification], null: true
+    async_field :user_qualifications, [Types::Users::UserQualification], null: true
 
     field :image, String, null: true, method: :avatar_url
     timestamp_fields
 
-    # Personal data: your own, or a member's of a dropzone where you have readUser. nil (not an error) otherwise, so
+    # Personal data: your own, or a member's of an operator where you have readUser. nil (not an error) otherwise, so
     # lists of members still render.
     def push_token
       object.push_token if viewer_is_self?
@@ -29,6 +30,10 @@ module Types::Users
 
     def email
       object.email if can_read_personal_data?
+    end
+
+    def date_of_birth
+      object.date_of_birth if can_read_personal_data?
     end
 
     def phone
@@ -52,11 +57,11 @@ module Types::Users
       readable_user_ids.include?(object.id)
     end
 
-    # Users who are members of a dropzone where the viewer may read user data, worked out once per request
+    # Users who are members of an operator where the viewer may read user data, worked out once per request
     def readable_user_ids
       context[:readable_user_ids] ||= begin
-        dropzone_ids = ::DropzoneUser.kept.where(user_id: viewer.id).includes(:user_role).select { |membership| membership.can?(:readUser) }.map(&:dropzone_id)
-        ::DropzoneUser.kept.where(dropzone_id: dropzone_ids).distinct.pluck(:user_id).to_set
+        operator_ids = ::Membership.kept.where(user_id: viewer.id).includes(:user_role).select { |membership| membership.can?(:readUser) }.map(&:operator_id)
+        ::Membership.kept.where(operator_id: operator_ids).distinct.pluck(:user_id).to_set
       end
     end
   end

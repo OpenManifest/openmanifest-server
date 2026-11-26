@@ -1,20 +1,12 @@
-mutation UpdateLoad(
-    $id: ID!
-    $attributes: LoadInput!
-  ) {
-    updateLoad(
-      input: {
-        id: $id
-        attributes: $attributes
-      }
-    ) {
-      fieldErrors {
-        field
-        message
-      }
-      errors
-      load {
-        ...loadDetails
-      }
+mutation UpdateLoad($id: ID!, $attributes: LoadInput!) {
+  updateLoad(input: { id: $id, attributes: $attributes }) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    load {
+      ...loadDetails
     }
   }
+}

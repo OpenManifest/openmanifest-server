@@ -1,0 +1,26 @@
+query ActivityTypes($allowedForMembershipIds: [Int!], $operatorId: ID) {
+  activityTypes(memberships: $allowedForMembershipIds, operator: $operatorId) {
+    ...activityTypeEssentials
+  }
+}
+
+query AllowedActivityTypes(
+  $operatorId: ID!
+  $allowedForMembershipIds: [Int!]!
+  $isPublic: Boolean
+) {
+  operator(id: $operatorId) {
+    id
+
+    allowedActivityTypes(userId: $allowedForMembershipIds) {
+      ...activityTypeEssentials
+    }
+
+    ticketTypes(isPublic: $isPublic) {
+      ...ticketTypeEssentials
+    }
+  }
+  activityTypes(operator: $operatorId) {
+    ...activityTypeEssentials
+  }
+}

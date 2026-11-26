@@ -1,0 +1,40 @@
+mutation CreateOperator(
+  $industry: Industry!
+  $name: String!
+  $banner: String
+  $certificationBodyIds: [Int!]
+  $timeZone: String!
+  $lat: Float
+  $lng: Float
+  $primaryColor: String
+  $secondaryColor: String
+  $currency: String
+  $units: JSON
+) {
+  createOperator(
+    input: {
+      industry: $industry
+      attributes: {
+        name: $name
+        banner: $banner
+        certificationBodyIds: $certificationBodyIds
+        timeZone: $timeZone
+        primaryColor: $primaryColor
+        secondaryColor: $secondaryColor
+        lat: $lat
+        lng: $lng
+        currency: $currency
+        units: $units
+      }
+    }
+  ) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    operator {
+      ...operatorExtensive
+    }
+  }
+}

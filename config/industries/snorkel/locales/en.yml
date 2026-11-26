@@ -1,0 +1,11 @@
+# Terminology of the snorkel template, over the scuba template's
+terms:
+  operator: { one: Snorkel operator, other: Snorkel operators }
+  member: { one: Snorkeller, other: Snorkellers }
+  destination: { one: Reef, other: Reefs }
+  activity: { one: Activity, other: Activities }
+  crew:
+    guide: { one: Guide, other: Guides }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  load_count: { one: Trip, other: Trips }

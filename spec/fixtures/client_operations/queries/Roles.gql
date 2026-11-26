@@ -1,5 +1,5 @@
-query Roles($dropzoneId: ID!, $selectable: Boolean) {
-  dropzone(id: $dropzoneId) {
+query Roles($operatorId: ID!, $selectable: Boolean) {
+  operator(id: $operatorId) {
     id
     roles(selectable: $selectable) {
       ...roleDetailed
