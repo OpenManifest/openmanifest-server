@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+class Resolvers::Operator::Load < Resolvers::Base
+  description "Get load by id"
+  type Types::Manifest::Load, null: true
+  argument :id, GraphQL::Types::ID, required: true
+
+  def resolve(
+    id: nil
+  )
+    load = Load.kept.find_by(id: id)
+    authorize_record!(load) if load
+    load
+  end
+end

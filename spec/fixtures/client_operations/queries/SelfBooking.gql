@@ -1,0 +1,27 @@
+#import "../fragments/memberships.fragments.gql"
+#import "../fragments/eligibility.fragments.gql"
+#import "../fragments/slots.fragments.gql"
+
+# The member themselves for a load: whether they are ready to fly on it and what they flew last time
+query SelfBooking($operatorId: ID!, $loadId: ID!) {
+  operator(id: $operatorId) {
+    id
+    currentUser {
+      ...membershipEssentials
+      creditsCents
+      eligibility(loadId: $loadId) {
+        ready
+        rules {
+          ...eligibilityResultEssentials
+        }
+      }
+      lastSlot {
+        ...slotDetails
+        load {
+          id
+          loadDate
+        }
+      }
+    }
+  }
+}

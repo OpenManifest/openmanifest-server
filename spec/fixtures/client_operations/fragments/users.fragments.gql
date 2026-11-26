@@ -4,26 +4,26 @@ fragment userEssentials on User {
   nickname
   phone
   email
-  exitWeight
+  bodyMassKg
+  dateOfBirth
   moderationRole
   image
-  apfNumber
 }
 
 fragment userDetailed on User {
   ...userEssentials
-  userFederations {
-    ...userFederationEssentials
+  userCertifications {
+    ...userCertificationEssentials
   }
-  rigs {
-    ...userRigDetailed
+  equipment {
+    ...userEquipmentDetailed
   }
 }
 
 fragment currentUser on User {
   ...userDetailed
-  dropzoneUsers {
-    ...dropzoneUserDetails
+  memberships {
+    ...membershipDetails
   }
   pushToken
 }

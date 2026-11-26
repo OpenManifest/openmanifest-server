@@ -1,5 +1,5 @@
 mutation ManifestGroup(
-  $jumpType: ID
+  $activityType: ID
   $extras: [ID!]
   $load: ID
   $ticketType: ID
@@ -9,7 +9,7 @@ mutation ManifestGroup(
   createSlots(
     input: {
       attributes: {
-        jumpType: $jumpType
+        activityType: $activityType
         groupNumber: $groupNumber
         extras: $extras
         load: $load

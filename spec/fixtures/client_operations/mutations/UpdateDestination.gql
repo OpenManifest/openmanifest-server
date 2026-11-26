@@ -1,0 +1,12 @@
+mutation UpdateDestination($id: Int!, $attributes: DestinationInput!) {
+  updateDestination(input: { id: $id, attributes: $attributes }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    destination {
+      ...destinationEssentials
+    }
+  }
+}

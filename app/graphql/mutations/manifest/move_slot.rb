@@ -13,16 +13,21 @@ module Mutations::Manifest
     argument :target_slot, Integer, required: false,
                                     prepare: -> (value, ctx) { Slot.find_by(id: value) }
 
-    def resolve(target_load: nil, source_slot: nil, target_slot: nil)
+    argument :target_load_vehicle, Integer, required: false,
+                                            prepare: -> (value, ctx) { LoadVehicle.find_by(id: value) },
+                                            description: "The vehicle of the target load the slot rides in"
+
+    def resolve(target_load: nil, source_slot: nil, target_slot: nil, target_load_vehicle: nil)
       mutate(
         Manifest::MoveSlot,
         :loads,
         access_context: access_context_for(
-          source_slot.dropzone
+          source_slot.operator
         ),
         source_slot: source_slot,
         target_slot: target_slot,
-        target_load: target_load
+        target_load: target_load,
+        target_load_vehicle: target_load_vehicle
       )
     end
   end
