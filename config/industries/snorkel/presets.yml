@@ -17,12 +17,14 @@ ticket_types:
     cost_cents: 0
     allow_manifesting_self: true
     participant_limits: { min_age: 12 }
+    extras: [Snorkel gear rental, Stinger suit rental]
   # An adult takes up to two children (and pays their places)
   - name: Adult with children
     cost_cents: 0
     allow_manifesting_self: true
     requires_escort: true
     escort_capacity: 2
+    extras: [Snorkel gear rental, Stinger suit rental]
 extras:
   - { name: Snorkel gear rental, cost_cents: 0 }
   - { name: Stinger suit rental, cost_cents: 0 }

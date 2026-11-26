@@ -5,7 +5,7 @@ require "active_interaction"
 class Manifest::CreateMultipleSlots < ApplicationInteraction
   record :load
   record :ticket_type
-  record :activity_type
+  record :activity_type, default: nil
   integer :group_number, default: nil
   # Add-ons bought for every member of the group
   array :extra_ids, default: nil do
@@ -32,7 +32,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
     end
   end
 
-  validates :ticket_type, :activity_type, :users, presence: true
+  validates :ticket_type, :users, presence: true
+  # Only operators with the activities module (skydiving: jump types) manifest people for an activity
+  validates :activity_type, presence: true, if: -> { load&.operator&.module?(:activities) }
 
   steps :lock_load_and_members,
         :check_available_slots,
@@ -96,8 +98,9 @@ class Manifest::CreateMultipleSlots < ApplicationInteraction
   end
 
   def check_allowed_activity_type
-    return if activity_type.allowed_for?(memberships)
-    errors.add(:activity_type_id, "Not all members are licensed for #{activity_type.name} jumps")
+    return if activity_type.nil? || activity_type.allowed_for?(memberships)
+
+    errors.add(:activity_type_id, "Not everyone's certification permits #{activity_type.name}")
   end
 
   def check_double_manifesting

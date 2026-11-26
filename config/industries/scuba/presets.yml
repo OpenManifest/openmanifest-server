@@ -63,8 +63,16 @@ destinations:
   - { name: Coral garden, kind: site, location: { max_depth_m: 18 }, min_certification_rank: 20 }
   - { name: The wreck, kind: site, location: { max_depth_m: 30 }, min_certification_rank: 30 }
 ticket_types:
-  - { name: Double-tank boat dive, cost_cents: 0, allow_manifesting_self: true, min_certification_rank: 20 }
-  - { name: Single-tank boat dive, cost_cents: 0, allow_manifesting_self: true, min_certification_rank: 20 }
+  - name: Double-tank boat dive
+    cost_cents: 0
+    allow_manifesting_self: true
+    min_certification_rank: 20
+    extras: [Nitrox, Full gear rental, Wetsuit rental]
+  - name: Single-tank boat dive
+    cost_cents: 0
+    allow_manifesting_self: true
+    min_certification_rank: 20
+    extras: [Nitrox, Full gear rental, Wetsuit rental]
   # An instructor takes up to two guests without a certification, from 10 years old; the instructor needs the
   # instructor qualification of an accepted body
   - name: Try dive
@@ -74,7 +82,8 @@ ticket_types:
     escort_capacity: 2
     escort_qualification: instructor
     participant_limits: { min_age: 10 }
-  - { name: Snorkeller, cost_cents: 0, allow_manifesting_self: true }
+    extras: [Full gear rental, Wetsuit rental]
+  - { name: Snorkeller, cost_cents: 0, allow_manifesting_self: true, extras: [Wetsuit rental] }
 extras:
   - { name: Nitrox, cost_cents: 0, requires_qualification: nitrox }
   - { name: Full gear rental, cost_cents: 0 }

@@ -29,7 +29,7 @@ RSpec.describe Industry do
     end
 
     it "offers only the selectable templates" do
-      expect(described_class.slugs).to contain_exactly("generic", "skydiving")
+      expect(described_class.slugs).to contain_exactly("generic", "scuba", "skydiving", "snorkel")
       expect(described_class.selectable).to all(have_attributes(base?: false))
     end
 
@@ -66,6 +66,21 @@ RSpec.describe Industry do
   end
 
   describe "extends" do
+    it "leaves out a key the extending template sets to ~, and does not inherit the catalogue" do
+      Dir.mktmpdir do |dir|
+        root = Pathname.new(dir)
+        write(root, "_base", "template.yml" => base_template("_base"), "presets.yml" => { "roles" => { "a" => {}, "b" => {} } },
+                             "catalogue.yml" => { "certification_bodies" => { "x" => { "name" => "X" } } })
+        write(root, "child", "template.yml" => base_template("child", "extends" => "_base"), "presets.yml" => { "roles" => { "b" => nil, "c" => {} } })
+
+        described_class.reload!(root: root)
+        child = described_class.fetch("child")
+
+        expect(child.presets["roles"].keys).to eq(%w(a c))
+        expect(child.catalogue).to eq({})
+      end
+    end
+
     it "overrides a key of the base and inherits the rest" do
       Dir.mktmpdir do |dir|
         root = Pathname.new(dir)

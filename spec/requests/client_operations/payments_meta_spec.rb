@@ -303,8 +303,6 @@ RSpec.describe "Client operations: payments, activity and meta" do
     end
 
     it "lists the bodies of one industry" do
-      CertificationBody.create!(name: "PADI", slug: "padi", industry: "generic")
-
       json = client_operation("CertificationBodies", variables: { industry: "SKYDIVING" }, as: user)
 
       expect(json.dig(:data, :certificationBodies).pluck(:slug)).to include("apf")

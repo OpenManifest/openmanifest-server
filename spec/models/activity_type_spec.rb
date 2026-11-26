@@ -41,7 +41,7 @@ RSpec.describe ActivityType do
       ActivityType.allowed_for(
         certificate_e_user
       ).pluck(:slug).sort
-    ).to eq ActivityType.all.pluck(:slug).sort
+    ).to eq Industry.fetch("skydiving").catalogue["activity_types"].pluck("slug").sort
   end
 
   it "A certification_level only allowed for flat" do

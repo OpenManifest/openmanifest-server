@@ -8,7 +8,8 @@ class Manifest::CreateSlot < ApplicationInteraction
   record :load
   record :membership
   record :ticket_type
-  record :activity_type
+  # None for an operator without the activities module (a snorkel trip); the slot asks for one when the module is on
+  record :activity_type, default: nil
   # Where the slot goes (per-slot destinations); the ticket type's destination when left out
   record :destination, default: nil
   # The vehicle of the load the slot rides in; none: the load's (only) one

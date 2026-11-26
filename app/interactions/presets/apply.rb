@@ -12,8 +12,8 @@ class Presets::Apply < ApplicationInteraction
         :create_roles,
         :create_crew_roles,
         :create_destinations,
-        :create_ticket_types,
         :create_extras,
+        :create_ticket_types,
         :enable_activity_types,
         :create_equipment_kinds
 
@@ -49,7 +49,7 @@ class Presets::Apply < ApplicationInteraction
 
   # A ticket type names its default destination (`destination:`), one of the destinations above; the qualification a
   # member (`requires_qualification:`) or an escort (`escort_qualification:`) needs, by slug; the crew role an escort
-  # holds (`escort_crew_role:`), by key
+  # holds (`escort_crew_role:`), by key; the extras offered with it (`extras:`), by name
   def create_ticket_types
     presets.fetch("ticket_types", []).each do |attrs|
       ticket = operator.ticket_types.find_or_initialize_by(name: attrs.fetch("name"))
@@ -60,6 +60,7 @@ class Presets::Apply < ApplicationInteraction
       ticket.required_qualification = qualification(attrs["requires_qualification"])
       ticket.escort_qualification = qualification(attrs["escort_qualification"])
       ticket.escort_crew_role = operator.crew_roles.kept.find_by!(key: attrs["escort_crew_role"]) if attrs["escort_crew_role"]
+      ticket.extras = Array(attrs["extras"]).map { |name| operator.extras.find_by!(name: name) }
       ticket.save!
     end
   end
