@@ -20,7 +20,7 @@
 #
 # A job on a load (GENERALISATION §7): pilot, GCA, skipper, guide, ranger. An operator defines its own. A `load` role is
 # filled once per load; a `vehicle` role once per vehicle of the load that it applies to (the ones that carry, or the
-# kinds in `vehicle_kinds`). `permission` is what a member needs to fill it; crew with `occupies_slot` take a seat.
+# kinds in `vehicle_kinds`; a support vehicle only when its kind is named, as the chase crew of a balloon's chase vehicle). `permission` is what a member needs to fill it; crew with `occupies_slot` take a seat.
 class CrewRole < ApplicationRecord
   include Discard::Model
 
@@ -49,9 +49,11 @@ class CrewRole < ApplicationRecord
 
   def vehicle_scope? = scope == "vehicle"
 
-  # Does a role of vehicle scope apply to this vehicle of a load? (the kinds named on the role, else any that carries)
+  # Does a role of vehicle scope apply to this vehicle of a load? The kinds named on the role, else any that carries: a
+  # support vehicle (a chase vehicle, a shuttle) has crew only of a role that names its kind
   def applies_to?(load_vehicle)
-    return false if load_vehicle.nil? || !load_vehicle.carrying?
+    return false if load_vehicle.nil?
+    return vehicle_kinds.include?(load_vehicle.vehicle.kind) if load_vehicle.support?
 
     vehicle_kinds.blank? || vehicle_kinds.include?(load_vehicle.vehicle.kind)
   end

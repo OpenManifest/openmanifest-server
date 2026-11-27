@@ -167,7 +167,8 @@ class Load < ApplicationRecord
   # What the load weighs, in kilograms: the slots, and the crew that rides in a vehicle (the pilot; not the GCA on the
   # ground), without the slot being asked about
   def mass_kg(except: nil)
-    aboard = crew_assignments.includes(:crew_role, membership: :user).select { |assignment| assignment.crew_role.vehicle_scope? }
+    # Crew of a vehicle that carries ride in it (the pilot); the chase crew of a support vehicle do not
+    aboard = crew_assignments.includes(:crew_role, :load_vehicle, membership: :user).select { |assignment| assignment.crew_role.vehicle_scope? && assignment.load_vehicle&.carrying? != false }
     crew = aboard.sum { |assignment| assignment.membership.user.try(:body_mass_kg) || 0 }
     others = ::Slot.where(load_id: id).reject { |slot| except&.persisted? && (slot.id == except.id || slot.escort_slot_id == except.id) }
     crew + others.sum { |slot| slot.body_mass_kg.to_f }
@@ -264,7 +265,7 @@ class Load < ApplicationRecord
     assignments = current_crew_assignments.select { |assignment| assignment.crew_role_id == role.id || assignment.crew_role.equal?(role) }
     return assignments.size == 1 if role.load_scope?
 
-    carrying_load_vehicles.select { |load_vehicle| role.applies_to?(load_vehicle) }.all? do |load_vehicle|
+    kept_load_vehicles.select { |load_vehicle| role.applies_to?(load_vehicle) }.all? do |load_vehicle|
       assignments.any? { |assignment| assignment.load_vehicle.equal?(load_vehicle) || (assignment.load_vehicle_id && assignment.load_vehicle_id == load_vehicle.id) }
     end
   end
@@ -316,6 +317,9 @@ class Load < ApplicationRecord
       errors.add(:base, "#{assignment.membership.user&.name || 'This member'} cannot act as #{assignment.crew_role.name}")
     end
   end
+
+  # The vehicles of the load, carrying and support, without the ones being taken off
+  def kept_load_vehicles = load_vehicles.reject(&:marked_for_destruction?)
 
   def support_load_vehicles = load_vehicles.select { |load_vehicle| !load_vehicle.marked_for_destruction? && load_vehicle.support? }
 

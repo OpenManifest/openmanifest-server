@@ -8,6 +8,8 @@ class Setup::Vehicles::CreateVehicle < ApplicationInteraction
   decimal :max_payload_kg, default: nil
   integer :min_capacity, default: 0
   integer :capacity, default: 4
+  # One of the operator's vehicle kinds; the main one when left out
+  string :kind, default: nil
 
   steps :build_vehicle,
         :save
@@ -45,7 +47,8 @@ class Setup::Vehicles::CreateVehicle < ApplicationInteraction
       registration: registration,
       max_payload_kg: max_payload_kg,
       min_capacity: min_capacity,
-      capacity: capacity
+      capacity: capacity,
+      kind: kind.presence
     )
   end
 

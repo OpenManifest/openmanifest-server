@@ -8,6 +8,8 @@ crew_roles: [pilot]
 modules:
   limits: { mass: true, payload: true }
   crew: {}
+  # The flight log (flight_log below): when each flight left and landed, its pilot, aircraft and who flew
+  daily_log: {}
 units: { altitude: ft, distance: km, mass: kg, temperature: c, speed: kn }
 call_schedule_minutes: [20, 15, 10]
 daily_log: { template: flight_log }

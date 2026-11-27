@@ -1,0 +1,61 @@
+# Copied into every new balloon operator by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in the
+# wizard's review step); the age and body-mass limits and escort capacity are defaults the owner reviews, not regulatory
+# values (operators commonly fly children from about 8 who are tall enough to see over the basket, and passengers up to
+# about 127 kg, 20 stone, who can climb in and take the landing position).
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  pilot:
+    permissions: [readLoad, readUser, actAsPilot]
+  chase_crew:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# The pilot of each balloon of a flight (required), and the chase crew of each chase vehicle (who drive it, help inflate
+# and pack the balloon and bring the passengers back). Neither takes a passenger's place in the basket.
+crew_roles:
+  - { key: pilot, name: Pilot, scope: vehicle, required: true, occupies_slot: false, permission: actAsPilot, vehicle_kinds: [balloon] }
+  - { key: chase_crew, name: Chase crew, scope: vehicle, required: false, occupies_slot: false, vehicle_kinds: [chase_vehicle] }
+# Launch sites (the owner names their own; the pilot picks the one the morning's wind suits)
+destinations:
+  - { name: Valley field, kind: site }
+  - { name: Riverside park, kind: site }
+ticket_types:
+  - name: Adult
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { min_age: 8, max_body_mass_kg: 127 }
+  # A child flies as the guest of the adult who brings them, within the same limits
+  - name: Adult with child
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_escort: true
+    escort_capacity: 1
+    participant_limits: { min_age: 8, max_body_mass_kg: 127 }
+extras: []
+activity_types: []
+equipment_kinds: []
+inspection_forms: {}

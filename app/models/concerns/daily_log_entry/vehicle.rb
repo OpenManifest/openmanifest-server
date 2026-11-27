@@ -10,7 +10,8 @@ module DailyLogEntry::Vehicle
       slice(
         :id,
         :name,
-        :registration
+        :registration,
+        :kind
       )
     end
   end

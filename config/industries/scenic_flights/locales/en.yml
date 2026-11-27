@@ -1,0 +1,27 @@
+# Terminology of the scenic-flight template (one / other forms); the client's 'terms' namespace. The states (in flight,
+# landed) are the _aviation family's.
+terms:
+  operator: { one: Scenic-flight operator, other: Scenic-flight operators }
+  member: { one: Passenger, other: Passengers }
+  vehicle: { one: Aircraft, other: Aircraft }
+  vehicle_kind:
+    helicopter: { one: Helicopter, other: Helicopters }
+    aeroplane: { one: Aeroplane, other: Aeroplanes }
+  load: { one: Flight, other: Flights }
+  slot: { one: Seat, other: Seats }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Route, other: Routes }
+  activity: { one: Activity, other: Activities }
+  crew:
+    pilot: { one: Pilot, other: Pilots }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  certification_body: { one: Certification body, other: Certification bodies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Equipment, other: Equipment }
+  inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Flight log, other: Flight logs }
+  call: { one: Call, other: Calls }
+  load_count: { one: Flight, other: Flights }

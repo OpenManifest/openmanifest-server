@@ -1,0 +1,40 @@
+# Hot-air balloons: a balloon flies passengers from a launch site, and a chase vehicle with its crew follows it to where
+# it lands. No certifications or rental gear; children fly with an adult; each passenger has an age and body-mass limit
+# and the balloon a payload; the daily log is the flight log with the times each flight left and landed (_aviation)
+# (GENERALISATION §1, §5, §7, §11)
+slug: hot_air_balloon
+extends: _aviation
+name: Hot-air balloons
+description: Balloon flights from launch sites, a chase vehicle and crew, age and weight limits, a flight log
+icon: airballoon
+# The balloon carries the passengers; the chase vehicle supports the flight (carries nobody on the manifest)
+vehicle_kinds: [balloon, chase_vehicle]
+crew_roles: [pilot, chase_crew]
+modules:
+  destinations: { kinds: [site], scope: per_load, max_per_load: 1 }
+  # A flight has its balloon and its chase vehicle (GENERALISATION §7)
+  multi_vehicle: {}
+  activities: false
+  certifications: false
+  equipment: false
+  # A child flies as the guest of an adult (GENERALISATION §10)
+  escorts: {}
+  crew: {}
+  limits: { mass: true, payload: true, age: true }
+  # When each flight left and landed (departed_at, completed_at) go in the flight log
+  flight_times: {}
+call_schedule_minutes: [60, 30]
+# Starting values of the operator's rules; the operator owns them afterwards
+settings:
+  require_equipment_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: false
+  allow_self_manifest: true
+# A booking is for a flight that is scheduled ahead (GENERALISATION §17)
+booking: { manifest_link: load }

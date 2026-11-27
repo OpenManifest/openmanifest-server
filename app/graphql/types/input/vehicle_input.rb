@@ -11,6 +11,7 @@ module Types
       argument :hours, Int, required: false
       argument :next_maintenance_hours, Int, required: false
       argument :registration, String, required: false
+      argument :kind, String, required: false, description: "One of the operator's vehicle kinds (a helicopter or an aeroplane, a balloon or its chase vehicle); the main kind when left out"
     end
   end
 end

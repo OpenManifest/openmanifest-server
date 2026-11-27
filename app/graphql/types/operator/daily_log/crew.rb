@@ -5,4 +5,5 @@ class Types::Operator::DailyLog::Crew < Types::Base::Object
   field :role, String, null: true
   field :name, String, null: true
   field :phone, String, null: true
+  field :vehicle, String, null: true, description: "The name of the vehicle the role is filled for (a role per vehicle); none for a role of the load"
 end

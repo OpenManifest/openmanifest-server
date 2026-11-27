@@ -29,7 +29,7 @@ RSpec.describe Industry do
     end
 
     it "offers only the selectable templates" do
-      expect(described_class.slugs).to contain_exactly("fishing_charter", "generic", "scuba", "skydiving", "snorkel", "whale_watching")
+      expect(described_class.slugs).to contain_exactly("fishing_charter", "generic", "hot_air_balloon", "scenic_flights", "scuba", "skydiving", "snorkel", "whale_watching")
       expect(described_class.selectable).to all(have_attributes(base?: false))
     end
 

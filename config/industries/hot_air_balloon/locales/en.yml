@@ -1,0 +1,28 @@
+# Terminology of the balloon template (one / other forms); the client's 'terms' namespace. The states (in flight,
+# landed) are the _aviation family's.
+terms:
+  operator: { one: Balloon operator, other: Balloon operators }
+  member: { one: Passenger, other: Passengers }
+  vehicle: { one: Vehicle, other: Vehicles }
+  vehicle_kind:
+    balloon: { one: Balloon, other: Balloons }
+    chase_vehicle: { one: Chase vehicle, other: Chase vehicles }
+  load: { one: Flight, other: Flights }
+  slot: { one: Place, other: Places }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Launch site, other: Launch sites }
+  activity: { one: Activity, other: Activities }
+  crew:
+    pilot: { one: Pilot, other: Pilots }
+    chase_crew: { one: Chase crew, other: Chase crew }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  certification_body: { one: Certification body, other: Certification bodies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Equipment, other: Equipment }
+  inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Flight log, other: Flight logs }
+  call: { one: Call, other: Calls }
+  load_count: { one: Flight, other: Flights }

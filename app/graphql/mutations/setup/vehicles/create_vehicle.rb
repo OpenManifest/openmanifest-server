@@ -19,7 +19,8 @@ module Mutations::Setup::Vehicles
           :capacity,
           :hours,
           :max_payload_kg,
-          :registration
+          :registration,
+          :kind
         )
       )
     end
