@@ -539,6 +539,12 @@ dive); each guest slot points at its escort's slot (`escort_slot_id`); guests wi
 participants). The escort must hold the crew role or qualification the ticket names (tandem rating, instructor). A
 child-with-adult ticket uses the same mechanism with the adult as escort and no qualification.
 
+Tandem paragliding (P7.27): the pilot takes the place and the passenger is the pilot's guest; the "Tandem flight" ticket
+names the `tandem_pilot` qualification, which each national association of the template issues (BHPA, USHPA, SAFA,
+SAHPA; qualification-only bodies like the fishing licences of §8). A rating the operator issues itself is not modelled
+(BUG-139), and the ticket's participant limits apply to the pilot too (BUG-140). Parasailing flight groups are slots
+of one `group_number`, not escorts (§11).
+
 ## 11. Eligibility and participant limits
 
 The server is the single source of truth. Today the rules are duplicated in the client (`app/hooks/useManifestValidator.ts`)
