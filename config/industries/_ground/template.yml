@@ -9,6 +9,8 @@ modules:
   crew: {}
   multi_vehicle: {}
   destinations: { kinds: [route], scope: per_load }
+  # The passenger list (guest_list below): who was on each trip, how to reach them and who to call for them
+  daily_log: {}
 units: { distance: km, mass: kg, temperature: c }
 call_schedule_minutes: [30, 15, 5]
 daily_log: { template: guest_list }

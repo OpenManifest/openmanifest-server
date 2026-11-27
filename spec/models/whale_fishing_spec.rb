@@ -59,7 +59,7 @@ RSpec.describe "Whale-watching and fishing-charter templates" do
     end
 
     it "keeps certifications and gear off for whale watching, and the licence and gear on for fishing" do
-      expect(Industry.fetch("whale_watching").modules.keys).to include("destinations", "escorts", "crew")
+      expect(Industry.fetch("whale_watching").modules.keys).to include("destinations", "escorts", "crew", "daily_log")
       expect(Industry.fetch("whale_watching").modules.keys).not_to include("certifications", "activities", "equipment", "limits")
       expect(Industry.fetch("whale_watching").modules.dig("destinations", "kinds")).to eq(["route"])
       expect(Industry.fetch("fishing_charter").modules.keys).to include("certifications", "equipment", "escorts", "crew")
