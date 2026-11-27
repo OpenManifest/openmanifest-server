@@ -505,7 +505,16 @@ An operator accepts many bodies (`operator_certification_bodies`); today's singl
 
 Qualifications cross-recognise by slug (P7.24): every dive agency's nitrox card has the slug `nitrox`, so a nitrox extra
 that names PADI's is met by an SSI card (`User#qualified_for?` matches the slug among the bodies of the same industry).
-A template names a required qualification by slug in its presets and gets the first accepted body's.
+A template names a required qualification by slug in its presets and gets the first accepted body's. Only the bodies the
+operator accepts count (P7.25, BUG-133): a fishing charter accepts its jurisdiction's licensing authority, so a licence of
+another jurisdiction (same slug `fishing_licence`) does not meet its adult ticket. A licence is a qualification of a
+qualification-only body (no levels) with `expires_at`; a ticket that includes the licence simply names none.
+
+**Guest list** (P7.25). The water and ground bases keep the `guest_list` daily log (module `daily_log` on): per load its
+destinations, crew by role, and each person with phone, email, emergency contact (`users.emergency_contact`, or for a guest
+`guests.emergency_contact`, else the escort's name and phone), ticket and escort. `dailyLog { template csv }` gives the
+template and the day as CSV with headers in the operator's terms; the client exports it (download on the web, share sheet
+on a phone).
 
 ## 9. Equipment
 
