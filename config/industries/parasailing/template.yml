@@ -1,0 +1,36 @@
+# Parasailing: a boat tows flyers under a parasail from its deck, one, two or three at a time. Each flight is a flight
+# group (the slots of one `group_number`) within the ticket's group size and combined body mass, each flyer within a
+# minimum body mass and age; the captain and the winch operator are both needed; harnesses are inspected; the daily log
+# is the passenger list (_water) (GENERALISATION §1, §5, §11)
+slug: parasailing
+extends: _water
+name: Parasailing
+description: Solo, tandem and triple flights from a boat, weight limits per flyer and per flight, a passenger list
+icon: kite
+vehicle_kinds: [boat]
+crew_roles: [captain, winch_operator]
+modules:
+  # The flights leave from the boat: no places to go to
+  destinations: false
+  activities: false
+  certifications: false
+  equipment: { rentals: true, personal: false }
+  escorts: false
+  crew: {}
+  # Each flyer's age and body mass, and the size and combined body mass of each flight group
+  limits: { mass: true, age: true }
+call_schedule_minutes: [30, 15]
+# Starting values of the operator's rules; the operator owns them afterwards
+settings:
+  require_equipment_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: false
+  allow_self_manifest: true
+# A booking is for a trip that is scheduled ahead (GENERALISATION §17)
+booking: { manifest_link: load }

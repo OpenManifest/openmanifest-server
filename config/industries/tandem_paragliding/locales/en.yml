@@ -1,0 +1,26 @@
+# Terminology of the tandem-paragliding template (one / other forms); the client's 'terms' namespace. A load is a run of
+# the shuttle van to a launch site; the states (in flight, landed) are the _aviation family's.
+terms:
+  operator: { one: Paragliding operator, other: Paragliding operators }
+  member: { one: Member, other: Members }
+  vehicle: { one: Van, other: Vans }
+  vehicle_kind:
+    van: { one: Van, other: Vans }
+  load: { one: Run, other: Runs }
+  slot: { one: Place, other: Places }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Launch site, other: Launch sites }
+  activity: { one: Activity, other: Activities }
+  crew:
+    driver: { one: Driver, other: Drivers }
+  escort: { one: Tandem pilot, other: Tandem pilots }
+  guest: { one: Passenger, other: Passengers }
+  certification_body: { one: Association, other: Associations }
+  certification: { one: Rating, other: Ratings }
+  equipment: { one: Equipment, other: Equipment }
+  inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Check due, other: Checks due }
+  daily_log: { one: Flight log, other: Flight logs }
+  call: { one: Call, other: Calls }
+  load_count: { one: Run, other: Runs }

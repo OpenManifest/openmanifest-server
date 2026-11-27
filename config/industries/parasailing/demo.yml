@@ -1,0 +1,13 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo parasailing
+# operator from it with Demo::Generators::TemplateOperator. Flyers have their own body mass (`body_mass_kg:`).
+name: Bayside Parasail
+certification_bodies: []
+vehicles:
+  - { name: Skyline, registration: PS-501, kind: boat, capacity: 12 }
+people:
+  - { name: Cora Captain, role: captain, date_of_birth: "1980-11-02" }
+  - { name: Will Winch, role: winch_operator, date_of_birth: "1995-04-19" }
+  - { name: Fran Flyer, role: customer, date_of_birth: "1990-02-14", body_mass_kg: 85, emergency_contact: "Gus Flyer 0400 121 212" }
+  - { name: Hal Heavy, role: customer, date_of_birth: "1984-06-30", body_mass_kg: 95, emergency_contact: "Ida Heavy 0400 343 434" }
+  - { name: Kai Kite, role: customer, date_of_birth: "2001-09-09", body_mass_kg: 60, emergency_contact: "Lou Kite 0400 565 656" }
+guests: []

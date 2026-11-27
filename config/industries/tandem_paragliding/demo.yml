@@ -1,0 +1,17 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo tandem
+# operator from it with Demo::Generators::TemplateOperator. Three pilots hold SAFA's tandem rating (`licence:` with the
+# qualification and the day it expires); the driver holds none. The passengers are guests of the pilots.
+name: Ridge Lift Tandems
+certification_bodies: [safa]
+vehicles:
+  - { name: Shuttle One, registration: PG-301, kind: van, capacity: 8 }
+people:
+  - { name: Rhea Ridge, role: tandem_pilot, date_of_birth: "1982-04-11", licence: { body: safa, qualification: tandem_pilot, expires_on: "2029-03-31" } }
+  - { name: Theo Thermal, role: tandem_pilot, date_of_birth: "1988-09-23", licence: { body: safa, qualification: tandem_pilot, expires_on: "2029-03-31" } }
+  - { name: Wren Wingover, role: tandem_pilot, date_of_birth: "1991-01-30", licence: { body: safa, qualification: tandem_pilot, expires_on: "2029-03-31" } }
+  - { name: Dev Driver, role: driver, date_of_birth: "1979-06-05" }
+guests:
+  - { name: Ana Airborne, date_of_birth: "1994-03-03", body_mass_kg: 62 }
+  - { name: Ben Breeze, date_of_birth: "1987-12-12", body_mass_kg: 88 }
+  - { name: Cam Cloud, date_of_birth: "2014-08-08", body_mass_kg: 38 }
+  - { name: Dot Drift, date_of_birth: "1999-05-15", body_mass_kg: 70 }

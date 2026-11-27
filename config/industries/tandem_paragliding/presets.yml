@@ -1,0 +1,92 @@
+# Copied into every new tandem-paragliding operator by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets
+# them in the wizard's review step); the age and body-mass limits are defaults the owner reviews, not regulatory values
+# (operators commonly fly passengers from about 5 or 6 years old and from 20 to 25 kg up to 100 to 110 kg, within the
+# tandem wing's weight range). The limits are checked for everyone who flies on the ticket, the pilot included.
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad]
+  tandem_pilot:
+    permissions: [readLoad, readUser, createSlot, createUserSlotWithSelf, updateSlot]
+  driver:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# The driver of each van (required); the van seats the pilots and their passengers on the manifest, not the driver
+crew_roles:
+  - { key: driver, name: Driver, scope: vehicle, required: true, occupies_slot: false, vehicle_kinds: [van] }
+# Launch sites (the owner names their own; the run goes to the one the wind suits)
+destinations:
+  - { name: North launch, kind: site }
+  - { name: Ridge launch, kind: site }
+ticket_types:
+  # The pilot takes the place and the passenger rides as the pilot's guest, one each; the pilot needs the tandem rating
+  # of an accepted association (the wizard asks the new operator to accept at least one)
+  - name: Tandem flight
+    cost_cents: 0
+    allow_manifesting_self: false
+    requires_escort: true
+    escort_capacity: 1
+    escort_qualification: tandem_pilot
+    participant_limits: { min_age: 6, min_body_mass_kg: 20, max_body_mass_kg: 110 }
+extras: []
+activity_types: []
+equipment_kinds:
+  - key: wing
+    name: Wing
+    attribute_schema:
+      size: { label: Size, type: enum, values: [tandem_s, tandem_m, tandem_l], default: tandem_m }
+      max_takeoff_mass_kg: { label: Maximum take-off mass (kg), type: integer, min: 0 }
+    # A tandem wing is checked once a year (line trim, porosity, strength)
+    service_interval_days: 365
+    inspection_form: wing_inspection
+  - key: harness
+    name: Harness
+    attribute_schema:
+      role: { label: Worn by, type: enum, values: [pilot, passenger], default: pilot }
+    # The reserve parachute in the pilot's harness is repacked about twice a year
+    service_interval_days: 180
+    inspection_form: harness_inspection
+inspection_forms:
+  wing_inspection:
+  - label: Canopy free of tears and damage?
+    valueType: boolean
+    value:
+  - label: Lines and risers undamaged and untangled?
+    valueType: boolean
+    value:
+  - label: Spreader bars and carabiners secure?
+    valueType: boolean
+    value:
+  harness_inspection:
+  - label: Webbing and buckles in good condition?
+    valueType: boolean
+    value:
+  - label: Reserve handle and pins secure?
+    valueType: boolean
+    value:
+  - label: Passenger harness straps adjusted?
+    valueType: boolean
+    value:

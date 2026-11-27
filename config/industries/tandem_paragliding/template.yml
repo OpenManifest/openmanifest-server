@@ -1,0 +1,39 @@
+# Tandem paragliding: a van shuttles tandem pilots and their passengers to a launch site; each passenger flies with one
+# rated tandem pilot, who takes a place on the van too. The pilots' tandem ratings are the escort qualification; wings
+# and harnesses are inspected; each passenger has an age and a body-mass limit; the daily log is the flight log (_aviation)
+# (GENERALISATION §1, §5, §10, §11)
+slug: tandem_paragliding
+extends: _aviation
+name: Tandem paragliding
+description: A shuttle van to launch sites, tandem pilots with one passenger each, wing and harness checks, a flight log
+icon: paragliding
+vehicle_kinds: [van]
+crew_roles: [driver]
+modules:
+  destinations: { kinds: [site], scope: per_load, max_per_load: 1 }
+  activities: false
+  # The tandem rating of a pilot (a qualification of an accepted body); passengers hold none
+  certifications: { required_by_default: false }
+  # Wings and harnesses are the operator's or the pilot's own, each with its inspection
+  equipment: { rentals: false, personal: true }
+  # A passenger flies as the guest of a tandem pilot, one each (GENERALISATION §10)
+  escorts: { ratio: "1:1" }
+  crew: {}
+  # Age and body mass of each passenger; a van has no payload to check
+  limits: { mass: true, payload: false, age: true }
+call_schedule_minutes: [30, 15]
+# Starting values of the operator's rules; the operator owns them afterwards. Equipment is tracked, not required on a
+# place: the owner turns that on once the wings and harnesses are entered.
+settings:
+  require_equipment_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: false
+  allow_self_manifest: false
+# A booking is checked in on the day and put on whichever run the wind allows (GENERALISATION §17)
+booking: { manifest_link: checkin }

@@ -1,0 +1,79 @@
+# Copied into every new parasailing operator by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in
+# the wizard's review step); the limits are defaults the owner reviews, not regulatory values, and the captain lowers
+# them on a windy day (operators commonly fly solo flyers from about 45 to 135 kg, and tandem and triple flights up to a
+# combined 200 to 225 kg, 450 to 500 lb; children fly with an adult in a tandem or triple). Each ticket is one flyer's
+# place; the flyers of one flight share a group number on the trip.
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  captain:
+    permissions: [readLoad, readUser]
+  winch_operator:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# The captain drives the boat and the winch operator lets the flyers out and in: a trip needs both
+crew_roles:
+  - { key: captain, name: Captain, scope: load, required: true, occupies_slot: false }
+  - { key: winch_operator, name: Winch operator, scope: load, required: true, occupies_slot: false }
+destinations: []
+ticket_types:
+  - name: Solo flight
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { min_age: 12, min_body_mass_kg: 45 }
+    group_limits: { max_group_size: 1, max_group_body_mass_kg: 135 }
+  - name: Tandem flight
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { min_age: 6, min_body_mass_kg: 20 }
+    group_limits: { max_group_size: 2, max_group_body_mass_kg: 200 }
+  - name: Triple flight
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { min_age: 6, min_body_mass_kg: 20 }
+    group_limits: { max_group_size: 3, max_group_body_mass_kg: 225 }
+extras: []
+activity_types: []
+equipment_kinds:
+  - key: harness
+    name: Harness
+    attribute_schema:
+      size: { label: Size, type: enum, values: [child, S, M, L, XL], default: M }
+    # Harnesses and their webbing are replaced or recertified once a year
+    service_interval_days: 365
+    inspection_form: harness_check
+inspection_forms:
+  harness_check:
+  - label: Webbing free of fraying and sun damage?
+    valueType: boolean
+    value:
+  - label: Buckles and quick release work?
+    valueType: boolean
+    value:
+  - label: Attachment rings and shackles secure?
+    valueType: boolean
+    value:

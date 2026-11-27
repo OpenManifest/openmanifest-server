@@ -1,0 +1,30 @@
+# Terminology of the parasailing template (one / other forms); the client's 'terms' namespace
+terms:
+  operator: { one: Parasailing operator, other: Parasailing operators }
+  member: { one: Flyer, other: Flyers }
+  vehicle: { one: Boat, other: Boats }
+  load: { one: Trip, other: Trips }
+  slot: { one: Place, other: Places }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Destination, other: Destinations }
+  activity: { one: Activity, other: Activities }
+  crew:
+    captain: { one: Captain, other: Captains }
+    winch_operator: { one: Winch operator, other: Winch operators }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  certification_body: { one: Certification body, other: Certification bodies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Gear, other: Gear }
+  inspection: { one: Harness check, other: Harness checks }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Passenger list, other: Passenger lists }
+  call: { one: Call, other: Calls }
+  load_count: { one: Trip, other: Trips }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: At sea, other: At sea }
+    completed: { one: Back, other: Back }
+    cancelled: { one: Cancelled, other: Cancelled }

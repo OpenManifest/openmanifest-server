@@ -1,0 +1,35 @@
+# Global catalogue of the tandem-paragliding template, seeded once by Setup::Global::Seeds. One qualification-only body
+# per supported national association (no certification levels; the solo pilot ratings are not checked here): each
+# issues the rating a pilot needs to fly a passenger, under the one slug `tandem_pilot` so that a ticket names it once.
+# The associations' own names (sources in the P7.27 PR):
+#   BHPA (UK): the Tandem rating (Pilot Rating Scheme, bhpa.co.uk/safety/prs).
+#   USHPA (US): the Tandem instructor rating, basic or full (ushpa.org ratings and skills).
+#   SAFA (Australia): the tandem endorsement of a PG pilot certificate.
+#   SAHPA (South Africa): a tandem rating (SACAA Part 62) with an IPPI 6 card.
+# A rating the operator issues itself has no body of its own: bodies are global (BUG-139).
+activity_types: []
+certification_bodies:
+  bhpa:
+    name: British Hang Gliding and Paragliding Association
+    slug: bhpa
+    qualifications:
+    - name: Tandem pilot rating
+      slug: tandem_pilot
+  ushpa:
+    name: United States Hang Gliding and Paragliding Association
+    slug: ushpa
+    qualifications:
+    - name: Tandem pilot rating
+      slug: tandem_pilot
+  safa:
+    name: Sporting Aviation Federation of Australia
+    slug: safa
+    qualifications:
+    - name: Tandem pilot rating
+      slug: tandem_pilot
+  sahpa:
+    name: South African Hang Gliding and Paragliding Association
+    slug: sahpa
+    qualifications:
+    - name: Tandem pilot rating
+      slug: tandem_pilot
