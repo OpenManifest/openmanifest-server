@@ -117,6 +117,9 @@ RSpec.describe "Tandem-paragliding and parasailing templates" do
       two = manifest(operator, shuttle, member(operator, role: "tandem_pilot", rating: safa), ticket: "Tandem flight",
                                                                                               guests: [passenger("Passenger 4"), passenger("Passenger 5")])
       expect(two.errors.full_messages.join).to match(/takes at most 1 guest for each escort/)
+      # Also a pilot on the run already, given a second passenger (BUG-141)
+      again = manifest(operator, shuttle, pilots.first, ticket: "Tandem flight", guests: [passenger("Passenger 1"), passenger("Passenger 4")])
+      expect(again.errors.full_messages.join).to match(/takes at most 1 guest for each escort/)
       expect(shuttle.reload.slots_count).to eq(6)
     end
 

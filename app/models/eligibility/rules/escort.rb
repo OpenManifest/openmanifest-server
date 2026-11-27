@@ -11,10 +11,10 @@ module Eligibility
       # Too many guests is no bypass; an unqualified escort is
       def bypassable?(result) = result.problem == "escort_unqualified"
 
+      # On a new slot, and on one that takes more guests (a member manifested again with guests, BUG-141)
       def check(context)
-        return unless context.create?
-
         guest_slots = context.guest_slots
+        return unless context.create? || guest_slots.any?(&:new_record?)
         return if guest_slots.empty? || context.membership.nil?
 
         ticket = context.ticket_type
