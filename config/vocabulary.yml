@@ -29,6 +29,9 @@ allow:
   - package.json
   - Gemfile.lock
   - config/vocabulary.yml
+  # Specs and scripts that quote the words of a template or of the seeded skydiving operator on purpose
+  - e2e/templates.spec.ts
+  - scripts/measure-ui.mjs
   # The tests of the tools themselves name the old terms on purpose
   - spec/lib/vocabulary_spec.rb
   - scripts/__tests__/vocabulary.test.ts
