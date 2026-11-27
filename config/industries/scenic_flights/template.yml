@@ -1,0 +1,37 @@
+# Scenic flights: a helicopter or an aeroplane flies passengers on a route. No certifications or rental gear; children
+# fly with an adult; each passenger has a body-mass limit and the aircraft a payload; the daily log is the flight log
+# with the times each flight left and landed (_aviation) (GENERALISATION §1, §5, §7, §11)
+slug: scenic_flights
+extends: _aviation
+name: Scenic flights
+description: Helicopters and aeroplanes on scenic routes, weight limits, a flight log
+icon: helicopter
+vehicle_kinds: [helicopter, aeroplane]
+crew_roles: [pilot]
+modules:
+  destinations: { kinds: [route], scope: per_load, max_per_load: 1 }
+  activities: false
+  certifications: false
+  equipment: false
+  # A child flies as the guest of an adult (GENERALISATION §10)
+  escorts: {}
+  crew: {}
+  # Each passenger's body mass, and what the aircraft may carry (`max_payload_kg` of the vehicle)
+  limits: { mass: true, payload: true }
+  # When each flight left and landed (departed_at, completed_at) go in the flight log
+  flight_times: {}
+call_schedule_minutes: [30, 15]
+# Starting values of the operator's rules; the operator owns them afterwards
+settings:
+  require_equipment_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: false
+  allow_self_manifest: true
+# A booking is for a flight that is scheduled ahead (GENERALISATION §17)
+booking: { manifest_link: load }

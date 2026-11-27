@@ -3,27 +3,27 @@
 require "rails_helper"
 
 # BUG-001: the access context used to be a process-wide singleton, so concurrent requests overwrote each other's user and
-# dropzone and the membership was memoised for the lifetime of the process.
+# operator and the membership was memoised for the lifetime of the process.
 RSpec.describe "Access context isolation" do
-  # Private dropzones: a user sees only the ones they are staff at
-  let(:dropzone_a) { create(:dropzone, state: "private") }
-  let(:dropzone_b) { create(:dropzone, state: "private") }
+  # Private operators: a user sees only the ones they are staff at
+  let(:operator_a) { create(:operator, state: "private") }
+  let(:operator_b) { create(:operator, state: "private") }
   let(:user_a) { create(:user) }
   let(:user_b) { create(:user) }
-  let!(:owner_a) { create(:dropzone_user, dropzone: dropzone_a, user: user_a, user_role: dropzone_a.user_roles.find_by(name: "owner")) }
-  let!(:owner_b) { create(:dropzone_user, dropzone: dropzone_b, user: user_b, user_role: dropzone_b.user_roles.find_by(name: "owner")) }
+  let!(:owner_a) { create(:membership, operator: operator_a, user: user_a, user_role: operator_a.user_roles.find_by(name: "owner")) }
+  let!(:owner_b) { create(:membership, operator: operator_b, user: user_b, user_role: operator_b.user_roles.find_by(name: "owner")) }
 
-  # Resolved through the access context (`dropzones` reads `access_context.dropzones`)
-  let(:query) { "query { dropzones { edges { node { id } } } }" }
+  # Resolved through the access context (`operators` reads `access_context.operators`)
+  let(:query) { "query { operators { edges { node { id } } } }" }
 
-  def dropzone_ids(result)
-    result.dig("data", "dropzones", "edges").to_a.map { |edge| edge.dig("node", "id") }
+  def operator_ids(result)
+    result.dig("data", "operators", "edges").to_a.map { |edge| edge.dig("node", "id") }
   end
 
   it "answers each request with that request's own user, one after the other" do
-    [[user_a, dropzone_a], [user_b, dropzone_b], [user_a, dropzone_a]].each do |user, dropzone|
+    [[user_a, operator_a], [user_b, operator_b], [user_a, operator_a]].each do |user, operator|
       post "/graphql", params: { query: query }, headers: user.create_new_auth_token
-      expect(dropzone_ids(response.parsed_body)).to eq([dropzone.id.to_s])
+      expect(operator_ids(response.parsed_body)).to eq([operator.id.to_s])
     end
   end
 
@@ -37,17 +37,17 @@ RSpec.describe "Access context isolation" do
         # A request spends time between building its context and using it; the other thread runs meanwhile
         sleep 0.001
         result = DzSchema.execute(query, context: { current_resource: user, access_context: access_context })
-        dropzone_ids(result.to_h)
+        operator_ids(result.to_h)
       end
     end
 
     # Compare on the main thread: the example's connection is shared with the threads while they run
-    results = [[user_a, dropzone_a], [user_b, dropzone_b]].map do |user, dropzone|
-      [dropzone, Thread.new { run.call(user) }]
-    end.map { |dropzone, thread| [dropzone, thread.value] }
+    results = [[user_a, operator_a], [user_b, operator_b]].map do |user, operator|
+      [operator, Thread.new { run.call(user) }]
+    end.map { |operator, thread| [operator, thread.value] }
 
-    results.each do |dropzone, id_lists|
-      expect(id_lists).to all(eq([dropzone.id.to_s]))
+    results.each do |operator, id_lists|
+      expect(id_lists).to all(eq([operator.id.to_s]))
     end
   ensure
     ActiveRecord::Base.connection_pool.unpin_connection!

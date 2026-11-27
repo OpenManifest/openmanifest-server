@@ -1,0 +1,57 @@
+# Copied into every new scenic-flight operator by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in
+# the wizard's review step); the body-mass limit and escort capacity are defaults the owner reviews, not regulatory values
+# (operators commonly ask passengers over about 135 kg to buy a second seat, and weigh everyone before a flight).
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  pilot:
+    permissions: [readLoad, readUser, actAsPilot]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# The pilot in command of each aircraft of a flight; the pilot does not take a passenger's seat
+crew_roles:
+  - { key: pilot, name: Pilot, scope: vehicle, required: true, occupies_slot: false, permission: actAsPilot }
+# Routes the aircraft fly (the owner names their own)
+destinations:
+  - { name: Coastal loop, kind: route }
+  - { name: Mountain range, kind: route }
+# Each passenger is weighed: one over the limit buys a second seat (a ticket the owner adds) or does not fly
+ticket_types:
+  - name: Adult
+    cost_cents: 0
+    allow_manifesting_self: true
+    participant_limits: { max_body_mass_kg: 135 }
+  # A child flies as the guest of the adult who brings them, within the same limit
+  - name: Adult with child
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_escort: true
+    escort_capacity: 1
+    participant_limits: { max_body_mass_kg: 135 }
+extras: []
+activity_types: []
+equipment_kinds: []
+inspection_forms: {}

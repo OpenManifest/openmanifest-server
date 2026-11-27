@@ -1,0 +1,12 @@
+# Terms the _aviation family shares
+terms:
+  vehicle: { one: Aircraft, other: Aircraft }
+  crew:
+    pilot: { one: Pilot, other: Pilots }
+  # A flight is in the air, then down (the dropzone says "Boarding call" for its boarding)
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: In flight, other: In flight }
+    completed: { one: Landed, other: Landed }
+    cancelled: { one: Cancelled, other: Cancelled }

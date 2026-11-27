@@ -1,0 +1,87 @@
+# Copied into every new fishing charter by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in the
+# wizard's review step); escort capacities and service intervals are defaults the owner reviews, not regulatory values.
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  deckhand:
+    permissions: [readLoad, readUser, readEquipment, readOperatorEquipment]
+  skipper:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createEquipment
+      - updateEquipment
+      - readOperatorEquipment
+      - createOperatorEquipment
+      - updateOperatorEquipment
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# Who a charter needs: the skipper (master) drives the boat; a deckhand rigs lines, baits and gaffs. Crew do not take an
+# angler's place.
+crew_roles:
+  - { key: skipper, name: Skipper, scope: load, required: true, occupies_slot: false }
+  - { key: deckhand, name: Deckhand, scope: load, required: false, occupies_slot: false }
+# Fishing grounds (the owner names their own)
+destinations:
+  - { name: Inshore reef, kind: site }
+  - { name: Offshore grounds, kind: site }
+ticket_types:
+  # An angler brings their own recreational fishing licence (the qualification of a body the operator accepts)
+  - name: Adult
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_qualification: fishing_licence
+    extras: [Rod and reel hire, Tackle pack]
+  # Where the operator's charter licence covers its passengers (NSW, Victoria, Florida), or the operator sells a licence
+  # with the trip: no licence of the angler's own
+  - name: Adult, licence included
+    cost_cents: 0
+    allow_manifesting_self: true
+    extras: [Rod and reel hire, Tackle pack]
+  # A licensed adult takes up to two children (exempt from a licence in the jurisdictions above; the owner reviews it)
+  - name: Adult with children
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_qualification: fishing_licence
+    requires_escort: true
+    escort_capacity: 2
+    extras: [Rod and reel hire, Tackle pack]
+extras:
+  - { name: Rod and reel hire, cost_cents: 0 }
+  - { name: Tackle pack, cost_cents: 0 }
+activity_types: []
+equipment_kinds:
+  - key: rod
+    name: Rod and reel
+    attribute_schema:
+      style: { label: Style, type: enum, values: [spinning, baitcaster, overhead, fly], default: spinning }
+      length_cm: { label: Length (cm), type: integer, min: 0 }
+      line_class_kg: { label: Line class (kg), type: integer, min: 0 }
+    # Reels are serviced once a year
+    service_interval_days: 365
+  - key: tackle
+    name: Tackle box
+    attribute_schema:
+      contents: { label: Contents, type: string }
+inspection_forms: {}

@@ -1,0 +1,12 @@
+mutation ArchiveVehicle($id: Int!) {
+  deleteVehicle(input: { id: $id }) {
+    fieldErrors {
+      field
+      message
+    }
+    errors
+    vehicle {
+      ...vehicleEssentials
+    }
+  }
+}

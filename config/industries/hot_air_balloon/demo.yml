@@ -1,0 +1,15 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo balloon
+# operator from it with Demo::Generators::TemplateOperator. The basket takes eight passengers up to 720 kg (an example,
+# not the figure of a type); the chase vehicle supports the flight.
+name: Valley Dawn Balloons
+certification_bodies: []
+vehicles:
+  - { name: Sunrise, registration: HB-201, kind: balloon, capacity: 8, max_payload_kg: 720 }
+  - { name: Chase One, registration: HB-202, kind: chase_vehicle, capacity: 8 }
+people:
+  - { name: Aria Pilot, role: pilot, date_of_birth: "1979-02-17" }
+  - { name: Cole Chaser, role: chase_crew, date_of_birth: "1993-10-02" }
+  - { name: Fay Flyer, role: customer, date_of_birth: "1984-07-07", emergency_contact: "Gil Flyer 0400 787 878" }
+  - { name: Hugo Highfield, role: customer, date_of_birth: "1969-12-12", emergency_contact: "Ida Highfield 0400 909 090" }
+guests:
+  - { name: Ivy Young, date_of_birth: "2015-06-21", body_mass_kg: 34 }

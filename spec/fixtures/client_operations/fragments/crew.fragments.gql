@@ -1,0 +1,24 @@
+fragment crewRoleEssentials on CrewRole {
+  id
+  key
+  name
+  scope
+  required
+  occupiesSlot
+  permission
+  vehicleKinds
+  position
+}
+
+fragment loadCrewEssentials on LoadCrewAssignment {
+  id
+  crewRole {
+    ...crewRoleEssentials
+  }
+  membership {
+    ...membershipEssentials
+  }
+  loadVehicle {
+    id
+  }
+}

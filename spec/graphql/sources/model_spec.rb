@@ -4,13 +4,13 @@ require "rails_helper"
 
 # BUG-091: nil and unknown keys used to be dropped, which shifted every following result onto the wrong key.
 RSpec.describe Sources::Model do
-  let(:dropzone) { create(:dropzone) }
-  let!(:first_user) { create(:dropzone_user, dropzone: dropzone) }
-  let!(:second_user) { create(:dropzone_user, dropzone: dropzone) }
+  let(:operator) { create(:operator) }
+  let!(:first_user) { create(:membership, operator: operator) }
+  let!(:second_user) { create(:membership, operator: operator) }
 
   def fetch(*ids)
     GraphQL::Dataloader.with_dataloading do |dataloader|
-      dataloader.with(described_class, DropzoneUser).load_all(ids)
+      dataloader.with(described_class, Membership).load_all(ids)
     end
   end
 

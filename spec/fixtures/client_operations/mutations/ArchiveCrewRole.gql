@@ -1,0 +1,12 @@
+mutation ArchiveCrewRole($id: Int!) {
+  archiveCrewRole(input: { id: $id }) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    crewRole {
+      ...crewRoleEssentials
+    }
+  }
+}

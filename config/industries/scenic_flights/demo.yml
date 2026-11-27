@@ -1,0 +1,15 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo scenic-flight
+# operator from it with Demo::Generators::TemplateOperator. The helicopter takes three passengers up to 300 kg, the
+# aeroplane five up to 450 kg (examples, not the figures of a type).
+name: Harbour Scenic Flights
+certification_bodies: []
+vehicles:
+  - { name: Kestrel, registration: SF-101, kind: helicopter, capacity: 3, max_payload_kg: 300 }
+  - { name: Skylark, registration: SF-102, kind: aeroplane, capacity: 5, max_payload_kg: 450 }
+people:
+  - { name: Hollis Pilot, role: pilot, date_of_birth: "1982-06-30" }
+  - { name: Tara Tourist, role: customer, date_of_birth: "1988-09-14", emergency_contact: "Ray Tourist 0400 121 212" }
+  - { name: Vic Visitor, role: customer, date_of_birth: "1971-01-25", emergency_contact: "Una Visitor 0400 343 434" }
+  - { name: Quinn Sightseer, role: customer, date_of_birth: "1995-05-05", emergency_contact: "Ash Sightseer 0400 565 656" }
+guests:
+  - { name: Milo Junior, date_of_birth: "2016-03-08", body_mass_kg: 30 }
