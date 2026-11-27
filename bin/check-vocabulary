@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Counts the old terms of config/vocabulary.yml (GENERALISATION.md §3) per term and per top-level directory.
+# Usage: bin/check-vocabulary [--group tenant]... [--enforce] [--markdown]
+#   --enforce   exit 1 when an old term appears outside the allowed paths (CI enforces from P7.20)
+#   --markdown  print GitHub-flavoured tables (for the job summary)
+require "optparse"
+require_relative "../lib/vocabulary/tree"
+
+options = { groups: [] }
+OptionParser.new do |opts|
+  opts.on("--group GROUP") { |group| options[:groups] << group }
+  opts.on("--enforce") { options[:enforce] = true }
+  opts.on("--markdown") { options[:markdown] = true }
+end.parse!
+
+entries = Vocabulary.entries(options[:groups])
+counts, by_directory = Vocabulary::Tree.new(root: File.expand_path("..", __dir__)).count(entries)
+
+rows = entries.map { |entry| [entry.group, entry.old, entry.new, counts[:pending][entry.old], counts[:allowed][entry.old]] }
+pending = rows.sum { |row| row[3] }
+
+if options[:markdown]
+  puts "### Vocabulary check (backend)", "", "| Group | Old | New | Hits | Allowed hits |", "|---|---|---|---:|---:|"
+  rows.each { |row| puts "| #{row.join(' | ')} |" }
+  puts "", "| Directory | Hits |", "|---|---:|"
+  by_directory.sort_by { |_, n| -n }.each { |dir, n| puts "| #{dir} | #{n} |" if n.positive? }
+else
+  width = rows.map { |row| row[1].size }.max || 0
+  puts "#{'term'.ljust(width)}  group           hits  allowed"
+  rows.each { |group, old, _new, hits, allowed| puts "#{old.ljust(width)}  #{group.ljust(14)}  #{hits.to_s.rjust(4)}  #{allowed.to_s.rjust(7)}" }
+  puts "", "by directory:"
+  by_directory.sort_by { |_, n| -n }.each { |dir, n| puts "  #{dir.ljust(24)} #{n}" if n.positive? }
+end
+puts "", "#{pending} old-term hits outside the allowed paths."
+
+exit(options[:enforce] && pending.positive? ? 1 : 0)

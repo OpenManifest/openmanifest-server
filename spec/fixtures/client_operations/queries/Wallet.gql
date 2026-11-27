@@ -1,0 +1,20 @@
+#import "../fragments/wallet.fragments.gql"
+
+# The member's balance and their orders, newest first: what the Wallet is made of
+query Wallet($membershipId: ID!, $first: Int) {
+  membership(id: $membershipId) {
+    id
+    creditsCents
+    orders(first: $first) {
+      edges {
+        node {
+          ...walletOrder
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}

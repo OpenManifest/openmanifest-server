@@ -1,0 +1,35 @@
+# Fishing charters: a boat takes anglers to fishing grounds; anglers may need a recreational fishing licence of the
+# jurisdiction (a qualification with an expiry, no levels); rods and tackle are hired; children come with an adult; the
+# daily log is the passenger list (_water) (GENERALISATION §1, §5, §8)
+slug: fishing_charter
+extends: _water
+name: Fishing charter
+description: Boats to fishing grounds, fishing licences, rod and tackle hire
+icon: fish
+vehicle_kinds: [boat]
+crew_roles: [skipper, deckhand]
+modules:
+  destinations: { kinds: [site], scope: per_load, max_per_load: 3 }
+  activities: false
+  # A licence is a qualification a ticket asks for; there are no levels to hold
+  certifications: { required_by_default: false }
+  equipment: { rentals: true, personal: true }
+  escorts: {}
+  crew: {}
+  limits: false
+call_schedule_minutes: [30, 15]
+# Starting values of the operator's rules; the operator owns them afterwards. require_certification stays off: nobody
+# holds a level, the adult ticket asks for the licence itself.
+settings:
+  require_equipment_inspection: false
+  require_certification: false
+  require_credits: false
+  require_membership: false
+  allow_negative_credits: false
+  allow_manifest_bypass: false
+  allow_double_manifesting: false
+  require_equipment: false
+  require_equipment_in_service: false
+  allow_self_manifest: true
+# A booking is for a charter that is scheduled ahead (GENERALISATION §17)
+booking: { manifest_link: load }

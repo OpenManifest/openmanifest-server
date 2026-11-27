@@ -4,7 +4,7 @@ module Mutations::Setup::Tickets
   class DeleteTicketType < Mutations::BaseMutation
     field :errors, [String], null: true
     field :field_errors, [Types::System::FieldError], null: true
-    field :ticket_type, Types::Dropzone::Ticket, null: true
+    field :ticket_type, Types::Operator::Ticket, null: true
 
     argument :id, Int, required: true
 
@@ -45,7 +45,7 @@ module Mutations::Setup::Tickets
       ticket_type = TicketType.find_by(id: id)
       return [false, { errors: ["Ticket type not found"] }] unless ticket_type
 
-      if context[:current_resource].can?(:deleteTicketType, dropzone_id: ticket_type.dropzone_id)
+      if context[:current_resource].can?(:deleteTicketType, operator_id: ticket_type.operator_id)
         true
       else
         [

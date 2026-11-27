@@ -5,18 +5,18 @@ mutation UserSignUp(
   $name: String!
   $phone: String!
   $pushToken: String
-  $exitWeight: Float!
-  $licenseId: Int
+  $bodyMassKg: Float!
+  $certificationLevelId: Int
 ) {
   userRegister(
     email: $email
     password: $password
     passwordConfirmation: $passwordConfirmation
-    exitWeight: $exitWeight
+    bodyMassKg: $bodyMassKg
     name: $name
     phone: $phone
     pushToken: $pushToken
-    licenseId: $licenseId
+    certificationLevelId: $certificationLevelId
     confirmUrl: "https://openmanifest.org/confirm/"
   ) {
     fieldErrors {

@@ -1,0 +1,14 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo fishing
+# charter from it with Demo::Generators::TemplateOperator. A licence is a qualification of an accepted body without a
+# level (`licence:` with the body and the day it expires).
+name: Reef & Reel Charters
+certification_bodies: [nsw_fisheries]
+vehicles:
+  - { name: Reel Deal, registration: FC-401, capacity: 10 }
+people:
+  - { name: Cody Skipper, role: skipper }
+  - { name: Dale Deckhand, role: deckhand }
+  - { name: Lee Licensed, role: customer, date_of_birth: "1975-08-19", licence: { body: nsw_fisheries, expires_on: "2029-06-30" }, emergency_contact: "Pat Licensed 0400 555 666" }
+  - { name: Nico Nolicence, role: customer, date_of_birth: "1991-02-11", emergency_contact: "Sam Nolicence 0400 777 888" }
+guests:
+  - { name: Rio Junior, date_of_birth: "2015-10-10", body_mass_kg: 35 }

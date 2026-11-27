@@ -1,0 +1,30 @@
+#import "../fragments/operators.fragments.gql"
+#import "../fragments/wallet.fragments.gql"
+
+# The operator's orders for the staff who run the money (Money): newest first, with who paid whom
+query OperatorTransactions($operatorId: ID!, $first: Int, $after: String) {
+  operator(id: $operatorId) {
+    ...operatorEssentials
+    orders(first: $first, after: $after) {
+      edges {
+        node {
+          ...walletOrder
+          buyer {
+            __typename
+            ... on Membership {
+              id
+              user {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}

@@ -116,7 +116,9 @@ Rules:
 4. **Industry-only features stay, inside a namespace.** Wing loading, jump run, winds aloft and packing jobs move to
    `app/**/skydiving/` (backend) and `app/features/skydiving/` (client); gliding's flying log and duration charges are a
    `flight_times` module, not gliding code, because scenic flights and balloons use it too.
-5. **Templates inherit.** A template may `extends:` one other template; maps deep-merge and lists are replaced. Abstract
+5. **Templates inherit.** A template may `extends:` one other template; maps deep-merge, lists are replaced and a key
+   set to `~` drops the base's (snorkel has no instructor role); `catalogue.yml` and `demo.yml` are not inherited (a
+   certification body belongs to the template that lists it). Abstract
    bases (`_aviation`, `_water`, `_ground`, not selectable) hold what a family shares: crew role names, units,
    daily-log template, default call schedule.
 6. **`generic`** has only the core and `destinations` on and neutral terms, for industries without a template.
@@ -289,6 +291,8 @@ config/industries/
                           # extras, destinations, equipment kinds (+ attribute schema, inspection form), activity types,
                           # booking defaults (§17)
     catalogue.yml         # global, seeded once: certification bodies/levels/qualifications, activity types
+    demo.yml              # demo operator (vehicles, people with levels and qualifications, guests) for the demo
+                          # generator and the dev seed (Demo::Generators::TemplateOperator)
     locales/en.yml        # terminology (one/other forms) and industry copy
   scuba/  snorkel/  whale_watching/  fishing_charter/  parasailing/  whitewater_rafting/
   scenic_flights/  hot_air_balloon/  gliding/  tandem_paragliding/
@@ -498,6 +502,19 @@ per-level permitted activities (today's `licensed_jump_types`). APF verification
 of the APF body; other bodies have none (manual verification by staff).
 
 An operator accepts many bodies (`operator_certification_bodies`); today's single `dropzones.federation_id` goes.
+
+Qualifications cross-recognise by slug (P7.24): every dive agency's nitrox card has the slug `nitrox`, so a nitrox extra
+that names PADI's is met by an SSI card (`User#qualified_for?` matches the slug among the bodies of the same industry).
+A template names a required qualification by slug in its presets and gets the first accepted body's. Only the bodies the
+operator accepts count (P7.25, BUG-133): a fishing charter accepts its jurisdiction's licensing authority, so a licence of
+another jurisdiction (same slug `fishing_licence`) does not meet its adult ticket. A licence is a qualification of a
+qualification-only body (no levels) with `expires_at`; a ticket that includes the licence simply names none.
+
+**Guest list** (P7.25). The water and ground bases keep the `guest_list` daily log (module `daily_log` on): per load its
+destinations, crew by role, and each person with phone, email, emergency contact (`users.emergency_contact`, or for a guest
+`guests.emergency_contact`, else the escort's name and phone), ticket and escort. `dailyLog { template csv }` gives the
+template and the day as CSV with headers in the operator's terms; the client exports it (download on the web, share sheet
+on a phone).
 
 ## 9. Equipment
 

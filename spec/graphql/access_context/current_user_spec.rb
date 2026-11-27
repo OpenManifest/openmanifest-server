@@ -3,12 +3,12 @@
 require "rails_helper"
 
 RSpec.describe AccessContext::CurrentUser do
-  let(:dropzone_a) { create(:dropzone) }
-  let(:dropzone_b) { create(:dropzone) }
+  let(:operator_a) { create(:operator) }
+  let(:operator_b) { create(:operator) }
   let(:user_a) { create(:user) }
   let(:user_b) { create(:user) }
-  let!(:member_a) { create(:dropzone_user, dropzone: dropzone_a, user: user_a, user_role: dropzone_a.user_roles.find_by(name: "fun_jumper")) }
-  let!(:member_b) { create(:dropzone_user, dropzone: dropzone_b, user: user_b, user_role: dropzone_b.user_roles.find_by(name: "fun_jumper")) }
+  let!(:member_a) { create(:membership, operator: operator_a, user: user_a, user_role: operator_a.user_roles.find_by(name: "fun_jumper")) }
+  let!(:member_b) { create(:membership, operator: operator_b, user: user_b, user_role: operator_b.user_roles.find_by(name: "fun_jumper")) }
 
   describe "BUG-001: one access context per request" do
     it "gives every caller its own object" do
@@ -21,25 +21,25 @@ RSpec.describe AccessContext::CurrentUser do
     end
 
     it "does not carry state from one context to the next" do
-      described_class.for(user_a).at_dropzone(dropzone_a)
+      described_class.for(user_a).at_operator(operator_a)
 
-      expect(described_class.for(user_b).dropzone).to be_nil
+      expect(described_class.for(user_b).operator).to be_nil
     end
 
-    it "returns the membership of the dropzone it was last moved to" do
+    it "returns the membership of the operator it was last moved to" do
       context = described_class.for(user_a)
 
-      expect(context.at_dropzone(dropzone_a).dropzone_user).to eq(member_a)
+      expect(context.at_operator(operator_a).membership).to eq(member_a)
       # A user without a membership in B has none there, rather than the memoised one of A
-      expect(context.at_dropzone(dropzone_b).dropzone_user).to be_nil
-      expect(context.at_dropzone(dropzone_a).dropzone_user).to eq(member_a)
+      expect(context.at_operator(operator_b).membership).to be_nil
+      expect(context.at_operator(operator_a).membership).to eq(member_a)
     end
 
     it "resolves ids as well as records" do
       context = described_class.for(user_a)
 
-      expect(context.at_dropzone(dropzone_a.id.to_s).dropzone).to eq(dropzone_a)
-      expect(context.at_dropzone(dropzone_b.id).dropzone).to eq(dropzone_b)
+      expect(context.at_operator(operator_a.id.to_s).operator).to eq(operator_a)
+      expect(context.at_operator(operator_b.id).operator).to eq(operator_b)
     end
   end
 end

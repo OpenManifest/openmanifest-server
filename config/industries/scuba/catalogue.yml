@@ -1,0 +1,347 @@
+# Global catalogue of the scuba template, seeded once by Setup::Global::Seeds (GENERALISATION §8). Recreational levels of the
+# agencies a dive centre accepts, on one scale so that centres can cross-recognise them:
+#   rank 10 supervised (to 12 m with a professional), 20 open water (18 m), 30 advanced (30 m), 40 rescue, 50 dive leader.
+# The rank and equivalence_key are what requirements compare (a 30 m site asks for rank 30), never a body's own level.
+# Qualifications share a slug across bodies (`nitrox`, `instructor`) so that a requirement accepts any accepted body's.
+# Names are the agencies' own course names (see the P7.24 PR for the sources); ranks are defaults the owner reviews.
+activity_types:
+- name: Fun dive
+  slug: fun_dive
+- name: Night dive
+  slug: night_dive
+- name: Deep dive
+  slug: deep_dive
+- name: Wreck dive
+  slug: wreck_dive
+- name: Drift dive
+  slug: drift_dive
+- name: Training dive
+  slug: training_dive
+certification_bodies:
+  padi:
+    name: PADI
+    slug: padi
+    certification_levels:
+    - name: Scuba Diver
+      rank: 10
+      equivalence_key: supervised
+      permitted_activities:
+      - fun_dive
+      - training_dive
+    - name: Open Water Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Advanced Open Water Diver
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Rescue Diver
+      rank: 40
+      equivalence_key: rescue
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Divemaster
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Enriched Air Diver
+      slug: nitrox
+    - name: Open Water Scuba Instructor
+      slug: instructor
+  ssi:
+    name: SSI
+    slug: ssi
+    certification_levels:
+    - name: Scuba Diver
+      rank: 10
+      equivalence_key: supervised
+      permitted_activities:
+      - fun_dive
+      - training_dive
+    - name: Open Water Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Advanced Adventurer
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Stress & Rescue
+      rank: 40
+      equivalence_key: rescue
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Divemaster
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Enriched Air Nitrox
+      slug: nitrox
+    - name: Open Water Instructor
+      slug: instructor
+  naui:
+    name: NAUI
+    slug: naui
+    certification_levels:
+    - name: Scuba Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Advanced Scuba Diver
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Rescue Scuba Diver
+      rank: 40
+      equivalence_key: rescue
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Divemaster
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Enriched Air Nitrox Diver
+      slug: nitrox
+    - name: Instructor
+      slug: instructor
+  cmas:
+    name: CMAS
+    slug: cmas
+    certification_levels:
+    - name: One Star Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Two Star Diver
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Three Star Diver
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Nitrox Diver
+      slug: nitrox
+    - name: One Star Instructor
+      slug: instructor
+  raid:
+    name: RAID
+    slug: raid
+    certification_levels:
+    - name: Open Water 20
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Advanced 35
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Master Rescue
+      rank: 40
+      equivalence_key: rescue
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Divemaster
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Nitrox
+      slug: nitrox
+    - name: Open Water 20 Instructor
+      slug: instructor
+  sdi:
+    name: SDI/TDI
+    slug: sdi
+    certification_levels:
+    - name: Scuba Diver
+      rank: 10
+      equivalence_key: supervised
+      permitted_activities:
+      - fun_dive
+      - training_dive
+    - name: Open Water Scuba Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Advanced Adventure Diver
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Rescue Diver
+      rank: 40
+      equivalence_key: rescue
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Divemaster
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Computer Nitrox Diver
+      slug: nitrox
+    - name: Open Water Scuba Diver Instructor
+      slug: instructor
+  bsac:
+    name: BSAC
+    slug: bsac
+    certification_levels:
+    - name: Ocean Diver
+      rank: 20
+      equivalence_key: open_water
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - drift_dive
+      - training_dive
+    - name: Sports Diver
+      rank: 30
+      equivalence_key: advanced
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    - name: Dive Leader
+      rank: 50
+      equivalence_key: dive_leader
+      permitted_activities:
+      - fun_dive
+      - night_dive
+      - deep_dive
+      - wreck_dive
+      - drift_dive
+      - training_dive
+    qualifications:
+    - name: Nitrox Diver
+      slug: nitrox
+    - name: Open Water Instructor
+      slug: instructor

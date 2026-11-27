@@ -14,7 +14,7 @@ module Mutations::Manifest
         :slot,
         slot: slot_by_id(id),
         access_context: access_context_for(
-          slot_by_id(id).load.dropzone
+          slot_by_id(id).load.operator
         )
       )
     end

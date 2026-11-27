@@ -1,0 +1,30 @@
+# Terminology of the fishing-charter template (one / other forms); the client's 'terms' namespace
+terms:
+  operator: { one: Fishing charter, other: Fishing charters }
+  member: { one: Angler, other: Anglers }
+  vehicle: { one: Boat, other: Boats }
+  load: { one: Charter, other: Charters }
+  slot: { one: Place, other: Places }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Fishing ground, other: Fishing grounds }
+  activity: { one: Activity, other: Activities }
+  crew:
+    skipper: { one: Skipper, other: Skippers }
+    deckhand: { one: Deckhand, other: Deckhands }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  certification_body: { one: Licensing authority, other: Licensing authorities }
+  certification: { one: Licence, other: Licences }
+  equipment: { one: Gear, other: Gear }
+  inspection: { one: Gear check, other: Gear checks }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Passenger list, other: Passenger lists }
+  call: { one: Call, other: Calls }
+  load_count: { one: Charter, other: Charters }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: At sea, other: At sea }
+    completed: { one: Back, other: Back }
+    cancelled: { one: Cancelled, other: Cancelled }

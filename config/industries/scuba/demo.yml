@@ -1,0 +1,14 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo dive centre
+# from it with Demo::Generators::TemplateOperator. People get example.com addresses; ranks are those of catalogue.yml.
+name: Coral Bay Dive Centre
+certification_bodies: [padi, ssi]
+vehicles:
+  - { name: Reef Runner, registration: DV-101, capacity: 12 }
+people:
+  - { name: Sandy Skipper, role: skipper }
+  - { name: Indi Instructor, role: instructor, certification: { body: padi, rank: 50 }, qualifications: [instructor, nitrox], date_of_birth: "1985-03-14" }
+  - { name: Dana Divemaster, role: divemaster, certification: { body: ssi, rank: 50 }, qualifications: [nitrox], date_of_birth: "1990-07-02" }
+  - { name: Avery Advanced, role: customer, certification: { body: padi, rank: 30 }, qualifications: [nitrox], date_of_birth: "1992-11-20" }
+  - { name: Owen Openwater, role: customer, certification: { body: ssi, rank: 20 }, date_of_birth: "1998-05-09" }
+guests:
+  - { name: Tess Trydive, date_of_birth: "2010-02-01", body_mass_kg: 45 }

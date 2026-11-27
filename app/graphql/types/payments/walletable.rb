@@ -2,8 +2,8 @@
 
 class Types::Payments::Walletable < Types::Base::Enum
   [
-    DropzoneUser,
-    Dropzone,
+    Membership,
+    Operator,
   ].map do |model|
     value model.name.camelize(:lower), value: model.name
   end

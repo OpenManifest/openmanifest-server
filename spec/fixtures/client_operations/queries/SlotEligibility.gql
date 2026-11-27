@@ -1,0 +1,31 @@
+#import "../fragments/eligibility.fragments.gql"
+
+query SlotEligibility(
+  $loadId: ID!
+  $membershipId: ID
+  $guest: GuestInput
+  $ticketTypeId: ID!
+  $activityTypeId: ID
+  $extraIds: [ID!]
+  $equipmentIds: [ID!]
+  $loadVehicleId: ID
+  $groupNumber: Int
+  $bodyMassKg: Float
+  $guests: [GuestInput!]
+) {
+  slotEligibility(
+    loadId: $loadId
+    membershipId: $membershipId
+    guest: $guest
+    ticketTypeId: $ticketTypeId
+    activityTypeId: $activityTypeId
+    extraIds: $extraIds
+    equipmentIds: $equipmentIds
+    loadVehicleId: $loadVehicleId
+    groupNumber: $groupNumber
+    bodyMassKg: $bodyMassKg
+    guests: $guests
+  ) {
+    ...eligibilityResultEssentials
+  }
+}

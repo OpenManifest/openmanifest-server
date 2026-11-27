@@ -1,0 +1,45 @@
+#import "../fragments/equipment.fragments.gql"
+mutation UpdateEquipment(
+  $id: Int!
+  $name: String
+  $make: String
+  $model: String
+  $serial: String
+  $isPublic: Boolean
+  $kindId: ID
+  $attributes: JSON
+  $maintainedAt: Int
+  $packingCard: String
+  $serviceDueAt: Int
+  $userId: Int
+  $operatorId: Int
+) {
+  updateEquipment(
+    input: {
+      id: $id
+      attributes: {
+        name: $name
+        make: $make
+        packingCard: $packingCard
+        isPublic: $isPublic
+        model: $model
+        serial: $serial
+        serviceDueAt: $serviceDueAt
+        operatorId: $operatorId
+        userId: $userId
+        kindId: $kindId
+        attributes: $attributes
+        maintainedAt: $maintainedAt
+      }
+    }
+  ) {
+    errors
+    fieldErrors {
+      field
+      message
+    }
+    equipment {
+      ...userEquipmentDetailed
+    }
+  }
+}
