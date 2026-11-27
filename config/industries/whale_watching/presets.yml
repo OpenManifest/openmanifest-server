@@ -1,0 +1,64 @@
+# Copied into every new whale-watching operator by Presets::Apply (GENERALISATION §5). Prices are 0 (the owner sets them in
+# the wizard's review step); escort capacities are defaults the owner reviews, not regulatory values.
+roles:
+  customer:
+    default: true
+    default_certified: true
+    permissions: [readLoad, createSlot]
+  deckhand:
+    permissions: [readLoad, readUser]
+  naturalist:
+    permissions: [readLoad, readUser]
+  skipper:
+    permissions: [readLoad, readUser]
+  front_desk:
+    permissions:
+      - readLoad
+      - createLoad
+      - updateLoad
+      - createSlot
+      - updateSlot
+      - deleteSlot
+      - createUserSlot
+      - createPrepaidSlot
+      - createUserSlotWithSelf
+      - updateUserSlot
+      - deleteUserSlot
+      - createUserTransaction
+      - readUserTransactions
+      - readUser
+      - updateUser
+      - viewUserActivity
+      - viewStatistics
+  admin:
+    permissions: all
+  owner:
+    permissions: all
+# Who a trip needs: the skipper (master) drives the boat; a deckhand handles lines and passengers; a naturalist (marine
+# guide) gives the commentary. Crew do not take a passenger's place.
+crew_roles:
+  - { key: skipper, name: Skipper, scope: load, required: true, occupies_slot: false }
+  - { key: deckhand, name: Deckhand, scope: load, required: false, occupies_slot: false }
+  - { key: naturalist, name: Naturalist, scope: load, required: false, occupies_slot: false }
+# Routes the boat runs (the owner names their own)
+destinations:
+  - { name: Bay run, kind: route }
+  - { name: Outer shelf, kind: route }
+# A child rides as the guest of the adult who brings them, so a child's place is sold with the adult's (GENERALISATION §10)
+ticket_types:
+  - { name: Adult, cost_cents: 0, allow_manifesting_self: true }
+  - name: Adult with child
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_escort: true
+    escort_capacity: 1
+  # Two adults and two children: the member who books and three guests
+  - name: Family
+    cost_cents: 0
+    allow_manifesting_self: true
+    requires_escort: true
+    escort_capacity: 3
+extras: []
+activity_types: []
+equipment_kinds: []
+inspection_forms: {}

@@ -90,13 +90,17 @@ class User < ApplicationRecord
 
   # Does the user hold the qualification and is it still valid? The same qualification of another body of the industry
   # counts (GENERALISATION §8): an SSI nitrox card meets a nitrox extra that names PADI's
-  def qualified_for?(qualification)
+  #
+  # `body_ids` (the bodies an operator accepts) narrows the equivalents to those bodies: a dive centre that accepts PADI
+  # and SSI takes an SSI nitrox card, a NSW fishing charter does not take a Florida fishing licence (BUG-133)
+  def qualified_for?(qualification, body_ids: nil)
     return true if qualification.blank?
     return user_qualifications.current.exists?(qualification_id: qualification.id) if qualification.slug.blank?
 
     equivalent = ::Qualification.joins(:certification_body).
-      where(slug: qualification.slug, certification_bodies: { industry: qualification.certification_body.industry }).
-      select(:id)
+      where(slug: qualification.slug, certification_bodies: { industry: qualification.certification_body.industry })
+    equivalent = equivalent.where(certification_body_id: body_ids) unless body_ids.nil?
+    equivalent = equivalent.select(:id)
     user_qualifications.current.where(qualification_id: qualification.id).or(user_qualifications.current.where(qualification_id: equivalent)).exists?
   end
 

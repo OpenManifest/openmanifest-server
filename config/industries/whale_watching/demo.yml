@@ -1,0 +1,14 @@
+# Demo data of the template (not copied into operators): the demo generator and the dev seed create one demo
+# whale-watching operator from it with Demo::Generators::TemplateOperator
+name: Humpback Bay Whale Watch
+certification_bodies: []
+vehicles:
+  - { name: Ocean Spirit, registration: WW-301, capacity: 40 }
+people:
+  - { name: Skye Skipper, role: skipper }
+  - { name: Dex Deckhand, role: deckhand }
+  - { name: Nina Naturalist, role: naturalist }
+  - { name: Wren Watcher, role: customer, date_of_birth: "1979-04-21", emergency_contact: "Rob Watcher 0400 111 222" }
+  - { name: Morgan Parent, role: customer, date_of_birth: "1986-12-03", emergency_contact: "Jo Parent 0400 333 444" }
+guests:
+  - { name: Charlie Child, date_of_birth: "2018-04-04", body_mass_kg: 22 }

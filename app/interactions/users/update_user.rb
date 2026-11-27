@@ -14,6 +14,7 @@ class Users::UpdateUser < ApplicationInteraction
   string :email, default: nil
   decimal :body_mass_kg, default: nil
   date :date_of_birth, default: nil
+  string :emergency_contact, default: nil
   record :certification_level, default: nil
 
   steps :authorize,
@@ -30,6 +31,7 @@ class Users::UpdateUser < ApplicationInteraction
       email: email,
       body_mass_kg: body_mass_kg,
       date_of_birth: date_of_birth,
+      emergency_contact: emergency_contact,
     }.compact
     # Sending null clears the push token (logging out); leaving it out keeps it
     attributes[:push_token] = push_token if inputs.given?(:push_token)

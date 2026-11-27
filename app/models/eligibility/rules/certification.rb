@@ -18,7 +18,7 @@ module Eligibility
 
         unmet = context.ticket_type.unmet_certification_requirements(member)
         context.extras.each do |extra|
-          unmet << :qualification unless member.user.qualified_for?(extra.required_qualification)
+          unmet << :qualification unless member.user.qualified_for?(extra.required_qualification, body_ids: context.operator.certification_body_ids)
         end
         too_deep = destinations(context).select { |place| place.min_certification_rank && member.certification_rank < place.min_certification_rank }
         return pass("certification") if unmet.empty? && too_deep.empty?

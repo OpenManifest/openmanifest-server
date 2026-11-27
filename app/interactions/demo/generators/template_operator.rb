@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 # Fills an operator with the demo data of its industry template (`config/industries/<slug>/demo.yml`): vehicles, staff and
-# participants with their roles, certifications, qualifications and dates of birth, and guests. The destinations, ticket
+# participants with their roles, certifications, qualifications (a licence of a qualification-only body, with its expiry),
+# dates of birth and emergency contacts, and guests. The destinations, ticket
 # types and crew roles come from the template's presets already. People get example.com addresses: `email_prefix`
 # makes them predictable (the dev seed's `scuba-sandy.skipper@example.com`), else they are unique. Safe to run again.
 class Demo::Generators::TemplateOperator < ApplicationInteraction
@@ -29,6 +30,7 @@ class Demo::Generators::TemplateOperator < ApplicationInteraction
       membership.user_role = operator.user_roles.find_by!(name: attrs.fetch("role"))
       membership.save!
       certify(user, attrs) if attrs["certification"]
+      license(user, attrs["licence"]) if attrs["licence"]
       membership.refresh_certification_level
     end
   end
@@ -49,7 +51,8 @@ class Demo::Generators::TemplateOperator < ApplicationInteraction
     name = attrs.fetch("name")
     email = email_prefix ? "#{email_prefix}#{name.parameterize(separator: '.')}@example.com" : "demo+#{SecureRandom.hex(6)}@example.com"
     user = ::User.find_or_initialize_by(email: email)
-    user.assign_attributes(name: name, phone: "0400000000", body_mass_kg: attrs.fetch("body_mass_kg", 75), date_of_birth: attrs["date_of_birth"])
+    user.assign_attributes(name: name, phone: "0400000000", body_mass_kg: attrs.fetch("body_mass_kg", 75), date_of_birth: attrs["date_of_birth"],
+                           emergency_contact: attrs["emergency_contact"])
     if user.new_record?
       user.password = user.password_confirmation = password
       user.skip_confirmation!
@@ -67,5 +70,13 @@ class Demo::Generators::TemplateOperator < ApplicationInteraction
     Array(attrs["qualifications"]).each do |slug|
       held.user_qualifications.find_or_create_by!(qualification: body.qualifications.find_by!(slug: slug))
     end
+  end
+
+  # A licence of a body that issues qualifications only (a fishing licence): the card has no level, the licence expires
+  def license(user, licence)
+    body = ::CertificationBody.find_by!(slug: licence.fetch("body"))
+    held = ::UserCertification.find_or_create_by!(user: user, certification_body: body)
+    qualification = body.qualifications.find_by!(slug: licence.fetch("qualification", "fishing_licence"))
+    held.user_qualifications.find_or_initialize_by(qualification: qualification).update!(expires_at: Date.parse(licence.fetch("expires_on")).end_of_day)
   end
 end

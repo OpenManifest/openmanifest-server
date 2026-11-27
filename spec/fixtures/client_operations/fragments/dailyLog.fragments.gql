@@ -3,6 +3,18 @@ fragment dailyLogSlot on DailyLogSlot {
   altitudeM
   activityType
   name
+  phone
+  email
+  emergencyContact
+  ticketType
+  escort
+}
+
+fragment dailyLogCrew on DailyLogCrew {
+  id
+  role
+  name
+  phone
 }
 
 fragment dailyLogUser on DailyLogUser {
@@ -22,7 +34,14 @@ fragment dailyLogVehicle on DailyLogVehicle {
 fragment dailyLogLoad on DailyLogLoad {
   id
   loadNumber
+  name
   dispatchAt
+  departedAt
+  completedAt
+  destinations
+  crew {
+    ...dailyLogCrew
+  }
   vehicle {
     ...dailyLogVehicle
   }
@@ -45,6 +64,8 @@ fragment dailyLogEntry on DailyLogEntry {
   date
   notes
   downloadUrl
+  template
+  csv
   dutyOfficer {
     ...dailyLogUser
   }

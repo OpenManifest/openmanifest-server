@@ -52,14 +52,14 @@ class TicketType < ApplicationRecord
   def unmet_certification_requirements(membership)
     unmet = []
     unmet << :certification_rank if min_certification_rank && membership.certification_rank < min_certification_rank
-    unmet << :qualification unless membership.user.qualified_for?(required_qualification)
+    unmet << :qualification unless membership.user.qualified_for?(required_qualification, body_ids: membership.operator.certification_body_ids)
     unmet
   end
 
   # @return [Array<Symbol>] what the escort lacks: `:qualification`, `:crew_role`
   def unmet_escort_requirements(membership)
     unmet = []
-    unmet << :qualification unless membership.user.qualified_for?(escort_qualification)
+    unmet << :qualification unless membership.user.qualified_for?(escort_qualification, body_ids: membership.operator.certification_body_ids)
     unmet << :crew_role if escort_crew_role && !escort_crew_role.fillable_by?(membership)
     unmet
   end

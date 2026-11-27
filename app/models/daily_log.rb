@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "csv"
+
 # == Schema Information
 #
 # Table name: daily_logs
@@ -43,6 +45,31 @@ class DailyLog < ApplicationRecord
     )
   end
 
+  # Which daily log the operator's template keeps (config/industries/*/template.yml `daily_log.template`): apf_log
+  # (skydiving), flight_log (aviation) or guest_list (water and ground); nil for a template without one
+  def template
+    operator.industry_template.daily_log_template
+  end
+
+  CSV_COLUMNS = %w(load departure name phone email emergency_contact ticket escort).freeze
+
+  # The guest list of the day as CSV: one row per person on each load (members, then the guests they escort), with how to
+  # reach them and who to call for them. The headers are in the operator's words ("Trip", "Ticket", "With (adult)").
+  #
+  # @return [String]
+  def to_csv(data = generate_json)
+    CSV.generate do |csv|
+      csv << CSV_COLUMNS.map { |column| operator.translate("daily_log_csv.#{column}") }
+      data.fetch(:loads).each do |load|
+        departure = load[:dispatch_at] || load[:departed_at]
+        load_name = [load[:load_number], load[:name].presence].compact.join(" ")
+        load.fetch(:slots).each do |slot|
+          csv << [load_name, departure, *slot.values_at(:name, :phone, :email, :emergency_contact, :ticket_type, :escort)].map { |value| safe_cell(value) }
+        end
+      end
+    end
+  end
+
   def download_url
     Rails.application.routes.url_helpers.rails_blob_url(json)
   end
@@ -53,5 +80,16 @@ class DailyLog < ApplicationRecord
       filename: "daily-log-#{date.iso8601}.json",
       content_type: 'application/json'
     )
+  end
+
+  private
+
+  # A cell that a spreadsheet would run as a formula is quoted as text (CSV injection); a phone number such as
+  # "+61 400 000 000" stays as it is
+  def safe_cell(value)
+    text = value.to_s
+    return text if text.match?(/\A\+[\d\s()-]+\z/)
+
+    text.start_with?("=", "+", "-", "@", "\t", "\r") ? "'#{text}" : text
   end
 end

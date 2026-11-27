@@ -13,6 +13,7 @@ module Types::Users
     field :date_of_birth, GraphQL::Types::ISO8601Date, null: true, broadcastable: false, description: "Needed where a ticket or an activity has an age limit"
     field :email, String, null: true, broadcastable: false
     field :phone, String, null: true, broadcastable: false
+    field :emergency_contact, String, null: true, broadcastable: false, description: "Who to call for the member (name and phone): the passenger list shows it"
     async_field :equipment, [Types::Equipment::Equipment], null: true
     async_field :certification_levels, [Types::Meta::CertificationLevel], null: true
     async_field :memberships, [Types::Users::Membership], null: true
@@ -38,6 +39,10 @@ module Types::Users
 
     def phone
       object.phone if can_read_personal_data?
+    end
+
+    def emergency_contact
+      object.emergency_contact if can_read_personal_data?
     end
 
     private

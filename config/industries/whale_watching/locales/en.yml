@@ -1,0 +1,31 @@
+# Terminology of the whale-watching template (one / other forms); the client's 'terms' namespace
+terms:
+  operator: { one: Whale-watching operator, other: Whale-watching operators }
+  member: { one: Passenger, other: Passengers }
+  vehicle: { one: Boat, other: Boats }
+  load: { one: Trip, other: Trips }
+  slot: { one: Place, other: Places }
+  ticket: { one: Ticket, other: Tickets }
+  extra: { one: Extra, other: Extras }
+  destination: { one: Route, other: Routes }
+  activity: { one: Activity, other: Activities }
+  crew:
+    skipper: { one: Skipper, other: Skippers }
+    deckhand: { one: Deckhand, other: Deckhands }
+    naturalist: { one: Naturalist, other: Naturalists }
+  escort: { one: Adult, other: Adults }
+  guest: { one: Child, other: Children }
+  certification_body: { one: Certification body, other: Certification bodies }
+  certification: { one: Certification, other: Certifications }
+  equipment: { one: Equipment, other: Equipment }
+  inspection: { one: Inspection, other: Inspections }
+  service_due: { one: Service due, other: Service due }
+  daily_log: { one: Passenger list, other: Passenger lists }
+  call: { one: Call, other: Calls }
+  load_count: { one: Trip, other: Trips }
+  state:
+    open: { one: Open, other: Open }
+    boarding: { one: Boarding, other: Boarding }
+    departed: { one: At sea, other: At sea }
+    completed: { one: Back, other: Back }
+    cancelled: { one: Cancelled, other: Cancelled }

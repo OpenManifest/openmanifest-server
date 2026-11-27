@@ -44,6 +44,16 @@ en:
     payment_confirmed: "Payment of %{amount} confirmed"
     withdrawn: "%{amount} has been taken out of your account"
     credited: "%{amount} has been credited to your account"
+  # Columns of the daily log's guest list (CSV), in the operator's words
+  daily_log_csv:
+    load: "%{load}"
+    departure: "Departure"
+    name: "Name"
+    phone: "Phone"
+    email: "Email"
+    emergency_contact: "Emergency contact"
+    ticket: "%{ticket}"
+    escort: "With (%{escort_lower})"
   activity:
     load:
       created: "%{user} created %{load} #%{number}"

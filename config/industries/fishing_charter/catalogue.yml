@@ -1,0 +1,36 @@
+# Global catalogue of the fishing-charter template, seeded once by Setup::Global::Seeds. One qualification-only body per
+# supported jurisdiction (no certification levels): each issues a "Recreational fishing licence" that expires (the
+# qualification's `expires_at` on the member's card). The slug is shared, but a ticket accepts the licence only of a body
+# the operator accepts (User#qualified_for? with the operator's bodies), so a Florida licence does not count in NSW.
+# Whether charter passengers need their own licence differs by jurisdiction, so it is a ticket setting (the adult ticket
+# asks for it; "Adult, licence included" does not), never a rule here. Sources are in the P7.25 PR.
+#   NSW: the Recreational Fishing Fee; charter passengers are covered by the operator's charter licence.
+#   Victoria: the Recreational Fishing Licence; clients of a licensed charter operator are exempt.
+#   Florida: the Saltwater Fishing License; passengers of a licensed for-hire vessel are covered by the vessel's licence.
+#   Alaska: the Sport Fishing License; every angler needs one, on a charter too.
+activity_types: []
+certification_bodies:
+  nsw_fisheries:
+    name: NSW Fisheries
+    slug: nsw_fisheries
+    qualifications:
+    - name: Recreational fishing licence
+      slug: fishing_licence
+  vic_fisheries:
+    name: Victorian Fisheries Authority
+    slug: vic_fisheries
+    qualifications:
+    - name: Recreational fishing licence
+      slug: fishing_licence
+  florida_fwc:
+    name: Florida Fish and Wildlife Conservation Commission
+    slug: florida_fwc
+    qualifications:
+    - name: Recreational fishing licence
+      slug: fishing_licence
+  alaska_adfg:
+    name: Alaska Department of Fish and Game
+    slug: alaska_adfg
+    qualifications:
+    - name: Recreational fishing licence
+      slug: fishing_licence

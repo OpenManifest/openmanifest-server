@@ -13,7 +13,9 @@ module DailyLogEntry::Operator
       {
         date: date.iso8601,
         location: slice(:lat, :lng),
-        loads: loads.where(dispatch_at: day).where.not(state: %i(cancelled)).order(load_number: :asc).map(&:to_daily_log),
+        # The loads called that day, and those that left that day without a call
+        loads: loads.where(dispatch_at: day).or(loads.where(dispatch_at: nil, departed_at: day)).
+          where.not(state: %i(cancelled)).order(load_number: :asc).map(&:to_daily_log),
       }
     end
   end

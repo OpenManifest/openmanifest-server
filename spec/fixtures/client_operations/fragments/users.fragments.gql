@@ -6,6 +6,7 @@ fragment userEssentials on User {
   email
   bodyMassKg
   dateOfBirth
+  emergencyContact
   moderationRole
   image
 }

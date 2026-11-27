@@ -6,6 +6,16 @@ class Types::Operator::DailyLogEntry < Types::Base::Object
   field :location, Types::Operator::GeocodedLocation, null: true
   field :loads, [Types::Operator::DailyLog::Load], null: true
   field :download_url, String, null: true
+  field :template, String, null: true, description: "Which daily log the operator keeps: apf_log, flight_log or guest_list"
+  field :csv, String, null: true, description: "The day's guest list as CSV: one row per person on each load"
+
+  def template
+    object.template
+  end
+
+  def csv
+    object.to_csv(json)
+  end
 
   def date
     json.fetch(:date)

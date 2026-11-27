@@ -137,6 +137,9 @@ class Industry
 
   def booking = template.fetch("booking", {})
 
+  # Which daily log the operator keeps: apf_log, flight_log, guest_list, or nil
+  def daily_log_template = template.dig("daily_log", "template")
+
   # Terms of the industry in a language: `{ "load" => { "one" => "Load", "other" => "Loads" }, "crew" => { ... } }`
   def terminology(locale = :en)
     merged("locales/#{locale}.yml").fetch("terms", {})
