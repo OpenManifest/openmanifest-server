@@ -471,7 +471,9 @@ stateDiagram-v2
 - **Crew.** Each crew role has a scope: `load` (GCA, dive supervisor, guide) or `vehicle` (pilot of each aircraft, guide
   of each raft, ranger of each 4×4, tug pilot). A load is valid when every required role is assigned for its scope, to
   a member holding the role's permission (replaces `validates :gca, :pilot`). Crew with `occupies_slot` count against
-  capacity.
+  capacity. A role per vehicle applies to the vehicles that carry (of the kinds it names, if any) and to a support
+  vehicle only when it names that vehicle's kind (a balloon's chase crew on the chase vehicle, P7.26); crew of a vehicle
+  that carries count towards its payload, crew of a support vehicle do not.
 - **Destinations.** Per slot (skydiving altitude, aerotow release height) or per load, ordered (§4).
 - **Dates.** Loads can be created for any date, not only today, so staff can schedule tomorrow's departures and the
   booking plan can attach sessions to them (§17). The manifest board gets a date picker.
