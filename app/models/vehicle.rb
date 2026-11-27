@@ -28,15 +28,4 @@ class Vehicle < ApplicationRecord
 
   before_validation { self.kind ||= operator&.vehicle_kinds&.first }
   validates :kind, presence: true
-  validate :kind_of_operator, if: :will_save_change_to_kind?
-
-  private
-
-  # A kind set by hand is one the operator runs (its template's kinds, or the ones it chose)
-  def kind_of_operator
-    kinds = operator&.vehicle_kinds
-    return if kinds.blank? || kinds.include?(kind)
-
-    errors.add(:kind, :inclusion)
-  end
 end

@@ -39,7 +39,7 @@ RSpec.describe "Client operations: guest list" do
     expect(entry[:template]).to eq("guest_list")
     load = entry[:loads].sole
     expect(load).to include(loadNumber: trip.load_number, name: "Morning", destinations: ["Bay run"])
-    expect(load[:crew].map { |crew| crew.to_h.symbolize_keys }).to eq([{ id: skipper.id.to_s, role: "Skipper", name: "Skye Skipper", phone: skipper.user.phone }])
+    expect(load[:crew].map { |crew| crew.to_h.symbolize_keys }).to eq([{ id: skipper.id.to_s, role: "Skipper", name: "Skye Skipper", phone: skipper.user.phone, vehicle: nil }])
     expect(load[:slots].map { |slot| slot.to_h.symbolize_keys.slice(:name, :phone, :emergencyContact, :ticketType, :escort) }).to eq(
       [
         { name: "Morgan Parent", phone: "0400 333 444", emergencyContact: "Jo Parent 0400 333 555", ticketType: "Adult with child", escort: nil },

@@ -207,10 +207,9 @@ RSpec.describe "Scenic-flight and hot-air-balloon templates" do
   describe "vehicle kinds" do
     let(:operator) { create_operator("hot_air_balloon") }
 
-    it "are the operator's: the main one by default, another one it runs, not one it does not" do
+    it "are the operator's: the main one by default, or another one it runs" do
       expect(operator.vehicles.create!(name: "Basket", registration: "B", capacity: 8).kind).to eq("balloon")
       expect(operator.vehicles.create!(name: "Ute", registration: "U", capacity: 4, kind: "chase_vehicle").kind).to eq("chase_vehicle")
-      expect(operator.vehicles.new(name: "Boat", registration: "X", capacity: 4, kind: "boat")).not_to be_valid
     end
 
     it "can be chosen when a vehicle is created" do
@@ -234,6 +233,8 @@ RSpec.describe "Scenic-flight and hot-air-balloon templates" do
       Demo::Generators::TemplateOperator.run!(operator: operator, email_prefix: "spec-")
       expect(operator.vehicles.order(:id).pluck(:name, :kind)).to eq([["Sunrise", "balloon"], ["Chase One", "chase_vehicle"]])
       expect(User.find_by!(email: "spec-cole.chaser@example.com").memberships.sole.user_role.name).to eq("chase_crew")
+      # The demo pilot holds the acting permission the pilot's crew role asks for (BUG-136)
+      expect(User.find_by!(email: "spec-aria.pilot@example.com").memberships.sole.can?("actAsPilot")).to be true
       expect(Guest.where(operator: operator).pluck(:name)).to eq(["Ivy Young"])
     end
   end

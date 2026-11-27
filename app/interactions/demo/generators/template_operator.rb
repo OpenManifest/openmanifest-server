@@ -29,6 +29,7 @@ class Demo::Generators::TemplateOperator < ApplicationInteraction
       membership = operator.memberships.find_or_initialize_by(user: user)
       membership.user_role = operator.user_roles.find_by!(name: attrs.fetch("role"))
       membership.save!
+      grant_acting(membership)
       certify(user, attrs) if attrs["certification"]
       license(user, attrs["licence"]) if attrs["licence"]
       membership.refresh_certification_level
@@ -46,6 +47,13 @@ class Demo::Generators::TemplateOperator < ApplicationInteraction
   private
 
   def demo = operator.industry_template.demo
+
+  # The acting permissions of the person's role preset (a pilot's actAsPilot): they are granted to members, not roles, so
+  # a demo pilot can fill the crew role that asks for one (BUG-136)
+  def grant_acting(membership)
+    preset = operator.industry_template.presets.dig("roles", membership.user_role.name) || {}
+    Array(preset["permissions"]).map(&:to_s).grep(/\AactAs/).each { |permission| membership.grant!(permission) }
+  end
 
   def person(attrs)
     name = attrs.fetch("name")
