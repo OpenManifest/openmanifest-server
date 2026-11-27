@@ -1349,6 +1349,11 @@ enum Industry {
   HOT_AIR_BALLOON
 
   """
+  Solo, tandem and triple flights from a boat, weight limits per flyer and per flight, a passenger list
+  """
+  PARASAILING
+
+  """
   Helicopters and aeroplanes on scenic routes, weight limits, a flight log
   """
   SCENIC_FLIGHTS
@@ -1367,6 +1372,11 @@ enum Industry {
   Boats to reefs, snorkel gear, children with an adult
   """
   SNORKEL
+
+  """
+  A shuttle van to launch sites, tandem pilots with one passenger each, wing and harness checks, a flight log
+  """
+  TANDEM_PARAGLIDING
 
   """
   Boats on whale-watching routes, a passenger list, children with an adult
